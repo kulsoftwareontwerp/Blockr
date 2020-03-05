@@ -2,13 +2,14 @@ package domainLayer;
 
 public abstract class UnaryOperatorBlock extends OperatorBlock {
 
-	private AssassebleBlock operand;
+	private AssessebleBlock operand;
 
 	/**
 	 * 
 	 * @param blockId
 	 */
 	public UnaryOperatorBlock(String blockId) {
+		super(blockId);
 		// TODO - implement UnaryOperatorBlock.UnaryOperatorBlock
 		throw new UnsupportedOperationException();
 	}

@@ -7,10 +7,7 @@ public class BlockRepository {
 
 	private BlockFactory blockFactory;
 	private Collection<Block> headBlocks;
-	/**
-	 * Hashmap<String, Block>
-	 */
-	private Collection<Block> allBlocks;
+	private HashMap<String,Block> allBlocks;
 	private int maxNbOfBlocks;
 	private static BlockRepository instance;
 
@@ -113,7 +110,7 @@ public class BlockRepository {
 	}
 
 	public static BlockRepository getInstance() {
-		return this.instance;
+		return BlockRepository.instance;
 	}
 
 }

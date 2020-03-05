@@ -8,6 +8,7 @@ public class Goal extends Element {
 	 * @param yCoordinate
 	 */
 	public Goal(int xCoordinate, int yCoordinate) {
+		super(xCoordinate, yCoordinate);
 		// TODO - implement Goal.Goal
 		throw new UnsupportedOperationException();
 	}

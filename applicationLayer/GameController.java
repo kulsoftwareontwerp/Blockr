@@ -108,4 +108,28 @@ public class GameController implements DomainListener, GUISubject {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public void removeListener(GUIListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addListener(GUIListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onResetExecutionEvent(ResetExecutionEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onUpdateGameStateEvent(UpdateGameStateEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

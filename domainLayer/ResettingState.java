@@ -11,6 +11,7 @@ public class ResettingState extends GameState {
 	 * @param game
 	 */
 	public ResettingState(GameController game) {
+		super(game);
 		// TODO - implement ResettingState.ResettingState
 		throw new UnsupportedOperationException();
 	}

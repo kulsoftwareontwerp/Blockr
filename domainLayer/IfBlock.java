@@ -7,6 +7,7 @@ public class IfBlock extends ControlBlock {
 	 * @param blockId
 	 */
 	public IfBlock(String blockId) {
+		super(blockId);
 		// TODO - implement IfBlock.IfBlock
 		throw new UnsupportedOperationException();
 	}
@@ -16,7 +17,7 @@ public class IfBlock extends ControlBlock {
 		throw new UnsupportedOperationException();
 	}
 
-	public AssassebleBlock getCondition() {
+	public AssessebleBlock getCondition() {
 		// TODO - implement IfBlock.getCondition
 		throw new UnsupportedOperationException();
 	}

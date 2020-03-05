@@ -1,10 +1,12 @@
 package applicationLayer;
 
+import domainLayer.ElementType;
+
 public class ElementAddedEvent implements EventObject {
 
 	private int xCoordinate;
 	private int yCoordinate;
-	private elementType type;
+	private ElementType type;
 
 	/**
 	 * 
@@ -12,7 +14,7 @@ public class ElementAddedEvent implements EventObject {
 	 * @param yCoordinate
 	 * @param type
 	 */
-	public ElementAddedEvent(int xCoordinate, int yCoordinate, elementType type) {
+	public ElementAddedEvent(int xCoordinate, int yCoordinate, ElementType type) {
 		// TODO - implement ElementAddedEvent.ElementAddedEvent
 		throw new UnsupportedOperationException();
 	}

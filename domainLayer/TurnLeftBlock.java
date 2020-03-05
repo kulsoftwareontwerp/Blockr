@@ -5,9 +5,9 @@ public class TurnLeftBlock extends ActionBlock {
 	/**
 	 * 
 	 * @param blockId
-	 * @param mediator
 	 */
-	public TurnLeftBlock(String blockId, GameMovement mediator) {
+	public TurnLeftBlock(String blockId) {
+		super(blockId);
 		// TODO - implement TurnLeftBlock.TurnLeftBlock
 		throw new UnsupportedOperationException();
 	}

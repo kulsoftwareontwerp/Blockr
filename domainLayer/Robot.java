@@ -11,6 +11,7 @@ public class Robot extends Element implements SolidElement {
 	 * @param Orientation
 	 */
 	public Robot(int xCoordinate, int yCoordinate, int Orientation) {
+		super(xCoordinate, yCoordinate);
 		// TODO - implement Robot.Robot
 		throw new UnsupportedOperationException();
 	}

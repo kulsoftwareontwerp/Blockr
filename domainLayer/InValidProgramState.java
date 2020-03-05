@@ -9,6 +9,7 @@ public class InValidProgramState extends GameState {
 	 * @param game
 	 */
 	public InValidProgramState(GameController game) {
+		super(game);
 		// TODO - implement InValidProgramState.InValidProgramState
 		throw new UnsupportedOperationException();
 	}

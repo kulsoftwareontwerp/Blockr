@@ -60,7 +60,7 @@ public class ElementRepository {
 	}
 
 	public static ElementRepository getInstance() {
-		return this.instance;
+		return ElementRepository.instance;
 	}
 
 }

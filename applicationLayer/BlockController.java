@@ -90,4 +90,28 @@ public class BlockController implements GUISubject, DomainSubject {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public void addDomainListener(DomainListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeDomainListener(DomainListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void removeListener(GUIListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addListener(GUIListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

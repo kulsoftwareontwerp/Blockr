@@ -7,6 +7,7 @@ public class WhileBlock extends ControlBlock {
 	 * @param blockId
 	 */
 	public WhileBlock(String blockId) {
+		super(blockId);
 		// TODO - implement WhileBlock.WhileBlock
 		throw new UnsupportedOperationException();
 	}
@@ -16,7 +17,7 @@ public class WhileBlock extends ControlBlock {
 		throw new UnsupportedOperationException();
 	}
 
-	public AssassebleBlock getCondition() {
+	public AssessebleBlock getCondition() {
 		// TODO - implement WhileBlock.getCondition
 		throw new UnsupportedOperationException();
 	}

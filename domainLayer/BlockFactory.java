@@ -1,5 +1,6 @@
 package domainLayer;
 
+
 public class BlockFactory {
 
 	private BlockIDGenerator blockIDGenerator;

@@ -44,7 +44,7 @@ public abstract class Block {
 	 * 
 	 * @param block
 	 */
-	public void setConditionBlock(AssassebleBlock block) {
+	public void setConditionBlock(AssessebleBlock block) {
 		// TODO - implement Block.setConditionBlock
 		throw new UnsupportedOperationException();
 	}
@@ -64,7 +64,7 @@ public abstract class Block {
 		throw new UnsupportedOperationException();
 	}
 
-	public AssassebleBlock getConditionBlock() {
+	public AssessebleBlock getConditionBlock() {
 		// TODO - implement Block.getConditionBlock
 		throw new UnsupportedOperationException();
 	}

@@ -1,5 +1,9 @@
 package applicationLayer;
 
+import java.util.Collection;
+
+import domainLayer.BlockType;
+
 public class DomainController {
 
 	private GameController gameController;

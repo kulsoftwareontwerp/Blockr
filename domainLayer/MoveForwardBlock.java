@@ -5,9 +5,9 @@ public class MoveForwardBlock extends ActionBlock {
 	/**
 	 * 
 	 * @param blockId
-	 * @param mediator
 	 */
-	public MoveForwardBlock(String blockId, GameMovement mediator) {
+	public MoveForwardBlock(String blockId) {
+		super(blockId);
 		// TODO - implement MoveForwardBlock.MoveForwardBlock
 		throw new UnsupportedOperationException();
 	}

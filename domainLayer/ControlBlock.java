@@ -3,13 +3,14 @@ package domainLayer;
 public abstract class ControlBlock extends ExecutableBlock {
 
 	private ExecutableBlock firstBlockOfBody;
-	private AssassebleBlock condition;
+	private AssessebleBlock condition;
 
 	/**
 	 * 
 	 * @param blockId
 	 */
 	public ControlBlock(String blockId) {
+		super(blockId);
 		// TODO - implement ControlBlock.ControlBlock
 		throw new UnsupportedOperationException();
 	}
@@ -26,7 +27,7 @@ public abstract class ControlBlock extends ExecutableBlock {
 	 * 
 	 * @param block
 	 */
-	public void setConditionBlock(AssassebleBlock block) {
+	public void setConditionBlock(AssessebleBlock block) {
 		// TODO - implement ControlBlock.setConditionBlock
 		throw new UnsupportedOperationException();
 	}

@@ -12,6 +12,7 @@ public class InExecutionState extends GameState {
 	 * @param nextBlock
 	 */
 	public InExecutionState(GameController game, ActionBlock nextBlock) {
+		super(game);
 		// TODO - implement InExecutionState.InExecutionState
 		throw new UnsupportedOperationException();
 	}
