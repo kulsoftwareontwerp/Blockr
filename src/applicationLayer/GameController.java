@@ -69,7 +69,7 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	public void executeBlock() {
-		// TODO - implement GameController.executeBlock
+		// TODO - implement GameController.executeBlock -> JONATHAN
 		throw new UnsupportedOperationException();
 	}
 
