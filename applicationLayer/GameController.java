@@ -11,8 +11,13 @@ public class GameController implements DomainListener, GUISubject {
 	private ElementRepository gameElementRepository;
 
 	public GameController() {
-		// TODO - implement GameController.GameController
-		throw new UnsupportedOperationException();
+		programBlockRepository=BlockRepository.getInstance();
+		gameElementRepository=gameElementRepository.getInstance();
+		
+		guiListeners=new HashSet<GUIListener>();
+		
+		toState(new InValidProgramState(this));
+		
 	}
 
 	public void fireRobotChangeEvent() {
@@ -30,13 +35,6 @@ public class GameController implements DomainListener, GUISubject {
 		throw new UnsupportedOperationException();
 	}
 
-	/**
-	 * 
-	 * @param state
-	 */
-	private void setCurrentState(GameState state) {
-		this.currentState = state;
-	}
 
 	public GameState getCurrentState() {
 		return this.currentState;
@@ -47,8 +45,7 @@ public class GameController implements DomainListener, GUISubject {
 	 * @param state
 	 */
 	protected void toState(GameState state) {
-		// TODO - implement GameController.toState
-		throw new UnsupportedOperationException();
+		this.currentState = state;
 	}
 
 	public void updateState() {
@@ -110,13 +107,12 @@ public class GameController implements DomainListener, GUISubject {
 
 	@Override
 	public void removeListener(GUIListener listener) {
-		// TODO Auto-generated method stub
-		
+		this.guiListeners.remove(listener);
 	}
 
 	@Override
 	public void addListener(GUIListener listener) {
-		// TODO Auto-generated method stub
+		this.guiListeners.add(listener);
 		
 	}
 

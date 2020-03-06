@@ -6,7 +6,15 @@ import domainLayer.*;
 public class BlockController implements GUISubject, DomainSubject {
 
 	private Collection<GUIListener> guiListeners;
+	private Collection<DomainListener> domainListeners;
 	private BlockRepository programBlockRepository;
+
+	public BlockController() {
+		guiListeners=new HashSet<GUIListener>();
+		domainListeners=new HashSet<DomainListener>();
+		programBlockRepository=BlockRepository.getInstance();
+		
+	}
 
 	private void fireBlockAdded() {
 		// TODO - implement BlockController.fireBlockAdded
@@ -50,8 +58,7 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	public int getMaxNbOfBlocks() {
-		// TODO - implement BlockController.getMaxNbOfBlocks
-		throw new UnsupportedOperationException();
+		return programBlockRepository.getMaxNbOfBlocks();
 	}
 
 	/**
@@ -85,32 +92,28 @@ public class BlockController implements GUISubject, DomainSubject {
 		throw new UnsupportedOperationException();
 	}
 
-	public BlockController() {
-		// TODO - implement BlockController.BlockController
-		throw new UnsupportedOperationException();
-	}
 
 	@Override
 	public void addDomainListener(DomainListener listener) {
-		// TODO Auto-generated method stub
+		domainListeners.add(listener);
 		
 	}
 
 	@Override
 	public void removeDomainListener(DomainListener listener) {
-		// TODO Auto-generated method stub
+		domainListeners.remove(listener);
 		
 	}
 
 	@Override
 	public void removeListener(GUIListener listener) {
-		// TODO Auto-generated method stub
+		guiListeners.remove(listener);
 		
 	}
 
 	@Override
 	public void addListener(GUIListener listener) {
-		// TODO Auto-generated method stub
+		guiListeners.add(listener);
 		
 	}
 

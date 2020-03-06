@@ -3,11 +3,11 @@ package domainLayer;
 
 public class BlockFactory {
 
+	@SuppressWarnings("unused")
 	private BlockIDGenerator blockIDGenerator;
 
 	public BlockFactory() {
-		// TODO - implement BlockFactory.BlockFactory
-		throw new UnsupportedOperationException();
+		blockIDGenerator= BlockIDGenerator.getInstance();
 	}
 
 	/**

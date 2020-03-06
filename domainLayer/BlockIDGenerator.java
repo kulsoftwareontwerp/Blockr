@@ -3,20 +3,21 @@ package domainLayer;
 public class BlockIDGenerator {
 
 	private static BlockIDGenerator generator;
+	private Integer id;
 
 	private BlockIDGenerator() {
-		// TODO - implement BlockIDGenerator.BlockIDGenerator
-		throw new UnsupportedOperationException();
+		this.id = 0;
 	}
 
 	public String getBlockID() {
-		// TODO - implement BlockIDGenerator.getBlockID
-		throw new UnsupportedOperationException();
+		return id.toString();
 	}
 
 	public static BlockIDGenerator getInstance() {
-		// TODO - implement BlockIDGenerator.getInstance
-		throw new UnsupportedOperationException();
+		if(generator==null) {
+			generator = new BlockIDGenerator();
+		}
+		return generator;
 	}
 
 }

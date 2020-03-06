@@ -10,6 +10,17 @@ public class DomainController {
 	private BlockController blockController;
 	private ElementController elementController;
 
+	
+	public DomainController() {
+		gameController=new GameController();
+		blockController=new BlockController();
+		elementController=new ElementController();
+		
+		blockController.addDomainListener(gameController);
+		elementController.addDomainListener(gameController);
+	}
+
+	
 	/**
 	 * 
 	 * @param blockType
@@ -80,9 +91,5 @@ public class DomainController {
 		throw new UnsupportedOperationException();
 	}
 
-	public DomainController() {
-		// TODO - implement DomainController.DomainController
-		throw new UnsupportedOperationException();
-	}
 
 }

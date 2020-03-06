@@ -2,9 +2,23 @@ package applicationLayer;
 
 import java.util.*;
 
+import domainLayer.ElementRepository;
+import domainLayer.ElementType;
+
 public class ElementController implements GUISubject, DomainSubject {
 
 	private Collection<GUIListener> guiListeners;
+	private Collection<DomainListener> domainListeners;
+	private ElementRepository elementRepository;
+	
+	
+	public ElementController() {
+		guiListeners=new HashSet<GUIListener>();
+		domainListeners=new HashSet<DomainListener>();
+		elementRepository=ElementRepository.getInstance();
+		
+		initializeElements();
+	}
 
 	public void fireElementAddedEvent() {
 		// TODO - implement ElementController.fireElementAddedEvent
@@ -22,41 +36,39 @@ public class ElementController implements GUISubject, DomainSubject {
 	}
 
 	private void initializeElements() {
-		// TODO - implement ElementController.initializeElements
-		throw new UnsupportedOperationException();
+		elementRepository.initializeRobot();
+		
+		elementRepository.addElement(ElementType.WALL,0,0);
+		elementRepository.addElement(ElementType.WALL,4,0);
+		elementRepository.addElement(ElementType.WALL,1,2);
+		elementRepository.addElement(ElementType.WALL,2,2);
+		elementRepository.addElement(ElementType.WALL,3,2);
+		
+		elementRepository.addElement(ElementType.GOAL,2,1);
 	}
 
-	private void initializeRobot() {
-		// TODO - implement ElementController.initializeRobot
-		throw new UnsupportedOperationException();
-	}
-
-	public ElementController() {
-		// TODO - implement ElementController.ElementController
-		throw new UnsupportedOperationException();
-	}
 
 	@Override
 	public void addDomainListener(DomainListener listener) {
-		// TODO Auto-generated method stub
+		domainListeners.add(listener);
 		
 	}
 
 	@Override
 	public void removeDomainListener(DomainListener listener) {
-		// TODO Auto-generated method stub
+		domainListeners.remove(listener);
 		
 	}
 
 	@Override
 	public void removeListener(GUIListener listener) {
-		// TODO Auto-generated method stub
+		guiListeners.remove(listener);
 		
 	}
 
 	@Override
 	public void addListener(GUIListener listener) {
-		// TODO Auto-generated method stub
+		guiListeners.add(listener);
 		
 	}
 

@@ -11,8 +11,7 @@ public abstract class GameState {
 	 * @param game
 	 */
 	public GameState(GameController game) {
-		// TODO - implement GameState.GameState
-		throw new UnsupportedOperationException();
+		gameController=game;
 	}
 
 	public void reset() {

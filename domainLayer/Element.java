@@ -5,6 +5,16 @@ public abstract class Element {
 	private int xCoordinate;
 	private int yCoordinate;
 
+	/**
+	 * 
+	 * @param xCoordinate
+	 * @param yCoordinate
+	 */
+	public Element(int xCoordinate, int yCoordinate) {
+		setxCoordinate(xCoordinate);
+		setyCoordinate(yCoordinate);
+	}
+
 	public int getXCoordinate() {
 		return this.xCoordinate;
 	}
@@ -13,14 +23,15 @@ public abstract class Element {
 		return this.yCoordinate;
 	}
 
-	/**
-	 * 
-	 * @param xCoordinate
-	 * @param yCoordinate
-	 */
-	public Element(int xCoordinate, int yCoordinate) {
-		// TODO - implement Element.Element
-		throw new UnsupportedOperationException();
+	
+	
+	protected void setxCoordinate(int xCoordinate) {
+		this.xCoordinate = xCoordinate;
 	}
+
+	protected void setyCoordinate(int yCoordinate) {
+		this.yCoordinate = yCoordinate;
+	}
+
 
 }

@@ -8,23 +8,14 @@ public class Robot extends Element implements SolidElement {
 	 * 
 	 * @param xCoordinate
 	 * @param yCoordinate
-	 * @param Orientation
+	 * @param orientation
 	 */
-	public Robot(int xCoordinate, int yCoordinate, int Orientation) {
+	public Robot(int xCoordinate, int yCoordinate, Orientation orientation) {
 		super(xCoordinate, yCoordinate);
-		// TODO - implement Robot.Robot
-		throw new UnsupportedOperationException();
+		this.orientation=orientation;
 	}
 
-	public int getXCoordinate() {
-		// TODO - implement Robot.getXCoordinate
-		throw new UnsupportedOperationException();
-	}
-
-	public int getYCoordinate() {
-		// TODO - implement Robot.getYCoordinate
-		throw new UnsupportedOperationException();
-	}
+	
 
 	public Orientation getOrientation() {
 		return this.orientation;
@@ -42,18 +33,16 @@ public class Robot extends Element implements SolidElement {
 	 * 
 	 * @param x
 	 */
-	public void setXCoordinate(int x) {
-		// TODO - implement Robot.setXCoordinate
-		throw new UnsupportedOperationException();
+	public void setXCoordinate(int xCoordinate) {
+		super.setxCoordinate(xCoordinate);
 	}
 
 	/**
 	 * 
 	 * @param y
 	 */
-	public void setYCoordinate(int y) {
-		// TODO - implement Robot.setYCoordinate
-		throw new UnsupportedOperationException();
+	public void setYCoordinate(int yCoordinate) {
+		super.setyCoordinate(yCoordinate);
 	}
 
 }
