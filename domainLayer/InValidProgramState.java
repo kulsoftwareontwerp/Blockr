@@ -10,8 +10,6 @@ public class InValidProgramState extends GameState {
 	 */
 	public InValidProgramState(GameController game) {
 		super(game);
-		// TODO - implement InValidProgramState.InValidProgramState
-		throw new UnsupportedOperationException();
 	}
 
 	public void update() {

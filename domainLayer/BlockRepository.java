@@ -8,12 +8,13 @@ public class BlockRepository {
 	private BlockFactory blockFactory;
 	private Collection<Block> headBlocks;
 	private HashMap<String,Block> allBlocks;
-	private int maxNbOfBlocks;
+	private final int maxNbOfBlocks=20;
 	private static BlockRepository instance;
 
 	private BlockRepository() {
-		// TODO - implement BlockRepository.BlockRepository
-		throw new UnsupportedOperationException();
+		headBlocks=new HashSet<Block>();
+		allBlocks=new HashMap<String,Block>();
+		blockFactory=new BlockFactory();
 	}
 
 	/**
@@ -110,7 +111,14 @@ public class BlockRepository {
 	}
 
 	public static BlockRepository getInstance() {
-		return BlockRepository.instance;
+		if(instance==null) {
+			instance = new BlockRepository();
+		}
+		return instance;
+	}
+
+	public int getMaxNbOfBlocks() {
+		return maxNbOfBlocks;
 	}
 
 }

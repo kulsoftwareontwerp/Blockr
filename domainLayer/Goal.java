@@ -9,18 +9,6 @@ public class Goal extends Element {
 	 */
 	public Goal(int xCoordinate, int yCoordinate) {
 		super(xCoordinate, yCoordinate);
-		// TODO - implement Goal.Goal
-		throw new UnsupportedOperationException();
-	}
-
-	public int getXCoordinate() {
-		// TODO - implement Goal.getXCoordinate
-		throw new UnsupportedOperationException();
-	}
-
-	public int getYCoordinate() {
-		// TODO - implement Goal.getYCoordinate
-		throw new UnsupportedOperationException();
 	}
 
 }

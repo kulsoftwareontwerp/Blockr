@@ -5,11 +5,17 @@ import java.util.*;
 public class ElementRepository {
 
 	private Collection<Element> elements;
-	ElementFactory elementFactory;
-	private int gameAreaHeight;
-	private int gameAreaWidth;
+	private ElementFactory factory;
+	private final int gameAreaHeight=4;
+	private final int gameAreaWidth=5;
 	private static ElementRepository instance;
 
+	private ElementRepository() {
+		factory=new ElementFactory();
+		elements=new HashSet<Element>();
+	}
+
+	
 	public void removeRobot() {
 		// TODO - implement ElementRepository.removeRobot
 		throw new UnsupportedOperationException();
@@ -26,8 +32,8 @@ public class ElementRepository {
 	}
 
 	public void initializeRobot() {
-		// TODO - implement ElementRepository.initializeRobot
-		throw new UnsupportedOperationException();
+		Element robot = factory.createElement(ElementType.ROBOT, 2, 3);
+		elements.add(robot);
 	}
 
 	public Robot getRobot() {
@@ -54,13 +60,18 @@ public class ElementRepository {
 		throw new UnsupportedOperationException();
 	}
 
-	private ElementRepository() {
-		// TODO - implement ElementRepository.ElementRepository
-		throw new UnsupportedOperationException();
-	}
 
 	public static ElementRepository getInstance() {
-		return ElementRepository.instance;
+		if(instance==null) {
+			instance = new ElementRepository();
+		}
+		return instance;
+	}
+
+
+	public void addElement(ElementType type, int xCoordinate, int yCoordinate) {
+		Element el = factory.createElement(type, xCoordinate, yCoordinate);
+		elements.add(el);
 	}
 
 }
