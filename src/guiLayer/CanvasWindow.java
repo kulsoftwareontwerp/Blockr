@@ -34,7 +34,7 @@ public class CanvasWindow implements GUIListener {
 	}
 	@Override
 	public void onBlockChangeEvent(BlockChangeEvent event) {
-		// TODO Auto-generated method stub
+		
 		
 	}
 	@Override

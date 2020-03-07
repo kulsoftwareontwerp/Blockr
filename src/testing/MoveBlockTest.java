@@ -8,10 +8,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import applicationLayer.BlockController;
+import applicationLayer.ConnectionType;
+import applicationLayer.DomainController;
+import domainLayer.blocks.*;
+
 public class MoveBlockTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		
 	}
 
 	@AfterClass

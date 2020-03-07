@@ -150,7 +150,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	 */
 	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
 		// TODO - implement BlockController.moveBlock
-		throw new UnsupportedOperationException();
+		programBlockRepository.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+		fireBlockChanged();
 	}
 
 	/**

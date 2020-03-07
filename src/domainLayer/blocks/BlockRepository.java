@@ -168,10 +168,114 @@ public class BlockRepository {
 	 * @param connectionAfterMove
 	 * @return TODO
 	 */
-	public Set<String> moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove,
+	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove,
 			String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-		// TODO - implement BlockRepository.moveBlock
-		throw new UnsupportedOperationException();
+		Block movedBlock = getBlockByID(movedBlockId);
+		Block bfm = getBlockByID(connectedBeforeMoveBlockId);
+		Block afm = getBlockByID(connectedAfterMoveBlockId);
+		
+		if(connectionBeforeMove == ConnectionType.NOCONNECTION) {
+			//indien no connection dan is er hier geen nood aan verandering
+			if(connectionAfterMove == ConnectionType.UP) {
+				headBlocks.remove(movedBlock);
+				afm.setNextBlock((ExecutableBlock) movedBlock);
+			}
+			else if(connectionAfterMove == ConnectionType.DOWN)
+			{
+				if(movedBlock.getNextBlock() != null)
+				{
+					Block nextBlockInCHain = movedBlock;
+					while(nextBlockInCHain.getNextBlock() != null) {
+						nextBlockInCHain = nextBlockInCHain.getNextBlock();
+					}
+					nextBlockInCHain.setNextBlock((ExecutableBlock) afm);
+				}
+				else
+				{
+					movedBlock.setNextBlock((ExecutableBlock) afm);
+				}
+				
+			}
+			else if(connectionAfterMove == ConnectionType.BODY) {
+				headBlocks.remove(movedBlock);
+				afm.setFirstBlockOfBody((ExecutableBlock) movedBlock);
+			}
+			else {
+				headBlocks.remove(movedBlock);
+				afm.setConditionBlock((ConditionBlock)movedBlock);
+			}
+		}
+		else if(connectionBeforeMove == ConnectionType.UP) {
+			bfm.setNextBlock(null);//verwijderen referentie van block bij vorige verbonden block
+			
+			if(connectionAfterMove == ConnectionType.NOCONNECTION) {
+				headBlocks.add(movedBlock);
+			}
+			else if(connectionAfterMove == ConnectionType.UP) {
+				afm.setNextBlock((ExecutableBlock) movedBlock);	
+			}
+			else if(connectionAfterMove == ConnectionType.DOWN) {
+				
+				headBlocks.add(movedBlock); //connection up is broken so there is no upper block	
+				if(movedBlock.getNextBlock() != null) //block is Head block of a blockChain
+				{
+					Block nextBlockInCHain = movedBlock;
+					while(nextBlockInCHain.getNextBlock() != null) {
+						nextBlockInCHain = nextBlockInCHain.getNextBlock();
+					}
+					nextBlockInCHain.setNextBlock((ExecutableBlock) afm);
+				}
+				else
+				{
+					movedBlock.setNextBlock((ExecutableBlock) afm);
+				}
+				
+			}
+			else if(connectionAfterMove == ConnectionType.BODY) {
+				afm.setFirstBlockOfBody((ExecutableBlock) movedBlock);
+			}
+			//conditionBlock is hier niet mogelijk aangezien we met een UP connectie zaten.
+		}
+		//ConnectionBeforeMove == connectionType.DOWN neemt nooit plaats wanneer een block ge-moved wordt.
+		else if(connectionBeforeMove == ConnectionType.CONDITION) {
+			bfm.setConditionBlock(null);
+			if(connectionAfterMove == ConnectionType.NOCONNECTION) {
+				headBlocks.add(movedBlock);
+			}
+			else if(connectionAfterMove == ConnectionType.CONDITION) {
+				movedBlock.setConditionBlock((ConditionBlock) afm);
+			}
+		}
+		else if(connectionBeforeMove == ConnectionType.BODY) {
+			bfm.setFirstBlockOfBody(null);
+			if(connectionAfterMove == ConnectionType.NOCONNECTION)
+			{
+				headBlocks.add(movedBlock);
+			}
+			else if(connectionAfterMove == ConnectionType.UP) {
+				afm.setNextBlock((ExecutableBlock) movedBlock);
+			}
+			else if(connectionAfterMove == ConnectionType.DOWN) {
+				if(movedBlock.getNextBlock() != null)
+				{
+					Block nextBlockInCHain = movedBlock;
+					while(nextBlockInCHain.getNextBlock() != null) {
+						nextBlockInCHain = nextBlockInCHain.getNextBlock();
+					}
+					nextBlockInCHain.setNextBlock((ExecutableBlock) afm);
+				}
+				else
+				{
+					movedBlock.setNextBlock((ExecutableBlock) afm);
+				}
+			}
+			else if(connectionAfterMove == ConnectionType.CONDITION) { 
+				//hoe bepalen of een conditie links of rechts meegegeven wordt ?
+			}
+			else if(connectionAfterMove == ConnectionType.BODY) {
+				movedBlock.setNextBlock((ExecutableBlock) movedBlock);
+			}
+		}
 	}
 
 	public boolean checkIfValidProgram() {
