@@ -54,13 +54,13 @@ public class GameController implements DomainListener, GUISubject {
 	 * 
 	 * @param state
 	 */
-	protected void toState(GameState state) {
+	public void toState(GameState state) {
 		this.currentState = state;
 	}
 
 	public void updateState() {
-		// TODO - implement GameController.updateState
-		throw new UnsupportedOperationException();
+		GameState currentState = getCurrentState();
+		currentState.update();
 	}
 
 	public void resetRobot() {
@@ -97,8 +97,7 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	public boolean checkIfValidProgram() {
-		// TODO - implement GameController.checkIfValidProgram
-		throw new UnsupportedOperationException();
+		return programBlockRepository.checkIfValidProgram();
 	}
 
 	/**

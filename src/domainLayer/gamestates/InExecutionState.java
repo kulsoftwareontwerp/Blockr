@@ -29,8 +29,9 @@ public class InExecutionState extends GameState {
 	}
 
 	public void update() {
-		// TODO - implement InExecutionState.update
-		throw new UnsupportedOperationException();
+			GameState newState = new ResettingState(gameController);
+			gameController.toState(newState);
+			gameController.updateState();
 	}
 
 	public ActionBlock getNextActionBlockToBeExecuted() {

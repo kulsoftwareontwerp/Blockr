@@ -17,8 +17,15 @@ public class ResettingState extends GameState {
 	}
 
 	public void update() {
-		// TODO - implement ResettingState.update
-		throw new UnsupportedOperationException();
+		boolean currentState = gameController.checkIfValidProgram();
+		if(!currentState) {
+			GameState newState = new InValidProgramState(gameController);
+			gameController.toState(newState);
+		}
+		else {
+			GameState newState = new ValidProgramState(gameController);
+			gameController.toState(newState);
+		}
 	}
 
 	public void reset() {
