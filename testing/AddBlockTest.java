@@ -16,6 +16,9 @@ import org.junit.Test;
  *
  */
 public class AddBlockTest {
+	/*
+	 * Deze comment is een test om te zien of een merge na het veranderen van de git structuur problemen oplevert.
+	 */
 
 	/**
 	 * @throws java.lang.Exception
