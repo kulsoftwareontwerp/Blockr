@@ -143,8 +143,8 @@ public class AddBlockTest {
 
 	}
 
-	@Mock
-	private BlockController blockController;
+	@Mock(name="blockController")
+	private BlockController mockBlockController;
 	@Spy @InjectMocks
 	private DomainController dc;
 
@@ -164,7 +164,7 @@ public class AddBlockTest {
 	 * {@link applicationLayer.DomainController#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
-	public void testAddBlockDCNegativeNoBlockType() {
+	public void testDCAddBlockNegativeNoBlockType() {
 		String excMessage = "No blockType given.";
 		exceptionRule.expect(IllegalArgumentException.class);
 		exceptionRule.expectMessage(excMessage);
@@ -173,7 +173,7 @@ public class AddBlockTest {
 		for (ConnectionType c : ConnectionType.values()) {
 			dc.addBlock(null, "", c);
 			assertExceptionDCAddBlockCombination(null, "", c, excMessage);
-			verifyNoInteractions(blockController);
+			verifyNoInteractions(mockBlockController);
 		}
 	}
 
@@ -182,7 +182,7 @@ public class AddBlockTest {
 	 * {@link applicationLayer.DomainController#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
-	public void testAddBlockDCNegativeConnectedBlockNoConnection() {
+	public void testDCAddBlockNegativeConnectedBlockNoConnection() {
 		String excMessage = "No connection given for connected block.";
 		exceptionRule.expect(IllegalArgumentException.class);
 		exceptionRule.expectMessage(excMessage);
@@ -191,7 +191,7 @@ public class AddBlockTest {
 		for (BlockType b : BlockType.values()) {
 			dc.addBlock(b, "connectedBlockId", ConnectionType.NOCONNECTION);
 			assertExceptionDCAddBlockCombination(b, "connectedBlockId", ConnectionType.NOCONNECTION, excMessage);
-			verifyNoInteractions(blockController);
+			verifyNoInteractions(mockBlockController);
 		}
 
 	}
@@ -201,14 +201,14 @@ public class AddBlockTest {
 	 * {@link applicationLayer.DomainController#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
-	public void testAddBlockDCNegativeConnectionTypeNull() {
+	public void testDCAddBlockNegativeConnectionTypeNull() {
 		String excMessage = "Null given as connection, use ConnectionType.NOCONNECTION.";
 		exceptionRule.expect(IllegalArgumentException.class);
 		exceptionRule.expectMessage(excMessage);
-		dc = new DomainController();
+		
 
-		dc.addBlock(BlockType.If, anyString(), null);
-		verifyNoInteractions(blockController);
+		dc.addBlock(BlockType.If, "connectedBlockId", null);
+		verifyNoInteractions(mockBlockController);
 	}
 
 	/**
@@ -216,7 +216,7 @@ public class AddBlockTest {
 	 * {@link applicationLayer.DomainController#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
-	public void testAddBlockDCNegativeConnectionNoConnectedBlock() {
+	public void testDCAddBlockNegativeConnectionNoConnectedBlock() {
 		String excMessage = "No connected block given with connection.";
 		exceptionRule.expect(IllegalArgumentException.class);
 		exceptionRule.expectMessage(excMessage);
@@ -227,7 +227,7 @@ public class AddBlockTest {
 			for (ConnectionType c : ConnectionType.values()) {
 				dc.addBlock(b, null, c);
 				assertExceptionDCAddBlockCombination(b, null, c, excMessage);
-				verifyNoInteractions(blockController);
+				verifyNoInteractions(mockBlockController);
 			}
 		}
 
@@ -238,14 +238,15 @@ public class AddBlockTest {
 	 * {@link applicationLayer.DomainController#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
-	public void testAddBlockDCPositiveNoConnectedBlock() {
-		dc = new DomainController();
+	public void testDCAddBlockPositiveNoConnectedBlock() {
+		
 		ArgumentCaptor<BlockType> blockType = ArgumentCaptor.forClass(BlockType.class);
-
+		ArgumentCaptor<ConnectionType> connectionType = ArgumentCaptor.forClass(ConnectionType.class);
 		for (BlockType b : BlockType.values()) {
 			dc.addBlock(b,"", ConnectionType.NOCONNECTION);
-			verify(blockController).addBlock(blockType.capture(), anyString(), ConnectionType.NOCONNECTION);
+			verify(mockBlockController,atLeastOnce()).addBlock(blockType.capture(), anyString(), connectionType.capture());
 			assertEquals(b, blockType.getValue());
+			assertEquals(ConnectionType.NOCONNECTION, connectionType.getValue());
 		}
 
 	}
@@ -261,8 +262,8 @@ public class AddBlockTest {
 	 * {@link applicationLayer.BlockController#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
-	public void testAddBlockBCPositiveMaxNbOfBlocksReached() {
-		bc = new BlockController();
+	public void testBCAddBlockPositiveMaxNbOfBlocksReached() {
+		//bc = new BlockController();
 		bc.addListener(mockGuiListener);
 		bc.addDomainListener(mockDomainListener);
 
@@ -301,7 +302,7 @@ public class AddBlockTest {
 	 * {@link applicationLayer.BlockController#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
-	public void testAddBlockBCPositiveMaxNbOfBlocksNotReached() {
+	public void testBCAddBlockPositiveMaxNbOfBlocksNotReached() {
 		bc = new BlockController();
 		bc.addListener(mockGuiListener);
 		bc.addDomainListener(mockDomainListener);
@@ -396,7 +397,7 @@ public class AddBlockTest {
 	 * {@link applicationLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
-	public void testAddBlockBRPositive() {
+	public void testBRAddBlockPositive() {
 
 		ArgumentCaptor<BlockType> blockType = ArgumentCaptor.forClass(BlockType.class);
 		ArgumentCaptor<ConnectionType> connectionType = ArgumentCaptor.forClass(ConnectionType.class);
@@ -471,7 +472,7 @@ public class AddBlockTest {
 	 * {@link applicationLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
-	public void testAddBlockBRNegativeAddExecutableBlockAsCondition() {
+	public void testBRAddBlockNegativeAddExecutableBlockAsCondition() {
 		String excMessage = "This block can't be added as a condition for another block.";
 		exceptionRule.expect(InvalidBlockConnectionException.class);
 		exceptionRule.expectMessage(excMessage);
@@ -491,7 +492,7 @@ public class AddBlockTest {
 	 * {@link applicationLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
-	public void testAddBlockBRNegativeAddBlockConnectedBlockNoCompatibleCavity() {
+	public void testBRAddBlockNegativeAddBlockConnectedBlockNoCompatibleCavity() {
 		String excMessage = "The connected block doesn't have the requested connection.";
 
 		testAddBlockBRMain();
@@ -523,7 +524,7 @@ public class AddBlockTest {
 	 * {@link applicationLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
-	public void testAddBlockBRNegativeAddAssessableBlockNoCompatible() {
+	public void testBRAddBlockNegativeAddAssessableBlockNoCompatible() {
 		String excMessage = "The connected block doesn't have the requested connection.";
 
 		testAddBlockBRMain();
@@ -556,7 +557,7 @@ public class AddBlockTest {
 	 * {@link domainLayer.BlockFactory#addBlock(domainLayer.BlockType)}.
 	 */
 	@Test
-	public void testAddBlockBFPositive() {
+	public void testBFAddBlockPositive() {
 		when(mockBlockIDGenerator.getBlockID()).thenReturn("newBlock");
 		blockFactory=new BlockFactory();
 		Block block;
@@ -599,7 +600,7 @@ public class AddBlockTest {
 	 * {@link domainLayer.BlockIDGenerator#getBlockID()}.
 	 */
 	@Test
-	public void testAddBlockBIDGPositive() {
+	public void testBIDAddBlockGPositive() {
 		idGenerator=BlockIDGenerator.getInstance();
 		
 		String id1 = idGenerator.getBlockID();

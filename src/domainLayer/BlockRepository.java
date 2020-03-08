@@ -30,8 +30,9 @@ public class BlockRepository {
 	 * @param connection
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
-		// TODO - implement BlockRepository.addBlock
-		throw new UnsupportedOperationException();
+		Block newBlock = blockFactory.createBlock(blockType);
+		
+		
 	}
 
 	/**

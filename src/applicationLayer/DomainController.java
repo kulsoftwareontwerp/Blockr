@@ -31,17 +31,18 @@ public class DomainController {
 		if(blockType == null) {
 			throw new IllegalArgumentException("No blockType given.");
 		}
-		if(connection == null) {
+		else if(connection == null) {
 			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
 		}
-		if((connectedBlockId==null ||connectedBlockId.equals("")) && connection != ConnectionType.NOCONNECTION){
+		else if((connectedBlockId==null ||connectedBlockId.equals("")) && connection != ConnectionType.NOCONNECTION){
 			throw new IllegalArgumentException("No connected block given with connection.");
 		}
-		if((connectedBlockId!=null && !connectedBlockId.equals("")) && connection == ConnectionType.NOCONNECTION){
+		else if((connectedBlockId!=null && !connectedBlockId.equals("")) && connection == ConnectionType.NOCONNECTION){
 			throw new IllegalArgumentException("No connection given for connected block.");
 		}
-		
-		blockController.addBlock(blockType, connectedBlockId, connection);
+		else {
+			blockController.addBlock(blockType, connectedBlockId, connection);
+		}
 	}
 
 	/**
