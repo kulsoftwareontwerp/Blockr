@@ -8,8 +8,6 @@ public class NotBlock extends UnaryOperatorBlock {
 	 */
 	public NotBlock(String blockId) {
 		super(blockId);
-		// TODO - implement NotBlock.NotBlock
-		throw new UnsupportedOperationException();
 	}
 
 	public boolean assess() {

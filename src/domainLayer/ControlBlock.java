@@ -11,8 +11,6 @@ public abstract class ControlBlock extends ExecutableBlock {
 	 */
 	public ControlBlock(String blockId) {
 		super(blockId);
-		// TODO - implement ControlBlock.ControlBlock
-		throw new UnsupportedOperationException();
 	}
 
 	/**

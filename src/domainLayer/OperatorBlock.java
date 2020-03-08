@@ -8,8 +8,6 @@ public abstract class OperatorBlock extends AssessebleBlock {
 	 */
 	public OperatorBlock(String blockId) {
 		super(blockId);
-		// TODO - implement OperatorBlock.OperatorBlock
-		throw new UnsupportedOperationException();
 	}
 
 	public boolean assess() {

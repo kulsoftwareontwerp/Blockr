@@ -9,8 +9,6 @@ public abstract class ActionBlock extends ExecutableBlock {
 	 */
 	public ActionBlock(String blockId) {
 		super(blockId);
-		// TODO - implement ActionBlock.ActionBlock
-		throw new UnsupportedOperationException();
 	}
 
 }

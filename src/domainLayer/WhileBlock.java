@@ -8,8 +8,6 @@ public class WhileBlock extends ControlBlock {
 	 */
 	public WhileBlock(String blockId) {
 		super(blockId);
-		// TODO - implement WhileBlock.WhileBlock
-		throw new UnsupportedOperationException();
 	}
 
 	public ExecutableBlock getFirstBlockOfBody() {

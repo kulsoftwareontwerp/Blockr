@@ -8,8 +8,6 @@ public class MoveForwardBlock extends ActionBlock {
 	 */
 	public MoveForwardBlock(String blockId) {
 		super(blockId);
-		// TODO - implement MoveForwardBlock.MoveForwardBlock
-		throw new UnsupportedOperationException();
 	}
 
 }

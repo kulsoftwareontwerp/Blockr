@@ -10,8 +10,6 @@ public abstract class UnaryOperatorBlock extends OperatorBlock {
 	 */
 	public UnaryOperatorBlock(String blockId) {
 		super(blockId);
-		// TODO - implement UnaryOperatorBlock.UnaryOperatorBlock
-		throw new UnsupportedOperationException();
 	}
 
 	public boolean assess() {

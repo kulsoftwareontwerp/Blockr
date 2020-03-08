@@ -48,27 +48,27 @@ public class AddBlockTest {
 
 	private ArrayList<String> blockIdsInRepository = new ArrayList<String>();
 
-	@Spy
+	
 	private ActionBlock connectedActionBlock;
-	@Spy
+	
 	private ControlBlock connectedControlBlock;
-	@Spy
+	
 	private ConditionBlock connectedConditionBlock;
-	@Spy
+	
 	private OperatorBlock connectedOperatorBlock;
-	@Spy
+	
 	private IfBlock newIfBlock;
-	@Spy
+	
 	private NotBlock newNotBlock;
-	@Spy
+	
 	private MoveForwardBlock newMoveForwardBlock;
-	@Spy
+	
 	private TurnLeftBlock newTurnLeftBlock;
-	@Spy
+	
 	private TurnRightBlock newTurnRightBlock;
-	@Spy
+	
 	private WallInFrontBlock newWallInFrontBlock;
-	@Spy
+	
 	private WhileBlock newWhileBlock;
 
 	/**
@@ -107,18 +107,18 @@ public class AddBlockTest {
 		blockIdsInRepository.add("actionBlock");
 		blockIdsInRepository.add("nonExisting");
 
-		connectedActionBlock = new MoveForwardBlock("actionBlock");
-		connectedControlBlock = new WhileBlock("controlBlock");
-		connectedOperatorBlock = new NotBlock("operatorBlock");
-		connectedConditionBlock = new WallInFrontBlock("conditionBlock");
+		connectedActionBlock = spy(new MoveForwardBlock("actionBlock"));
+		connectedControlBlock = spy(new WhileBlock("controlBlock"));
+		connectedOperatorBlock = spy(new NotBlock("operatorBlock"));
+		connectedConditionBlock = spy(new WallInFrontBlock("conditionBlock"));
 
-		newIfBlock = new IfBlock("newBlock");
-		newMoveForwardBlock = new MoveForwardBlock("newBlock");
-		newNotBlock = new NotBlock("newBlock");
-		newTurnLeftBlock = new TurnLeftBlock("newBlock");
-		newTurnRightBlock = new TurnRightBlock("newBlock");
-		newWallInFrontBlock = new WallInFrontBlock("newBlock");
-		newWhileBlock = new WhileBlock("newBlock");
+		newIfBlock = spy(new IfBlock("newBlock"));
+		newMoveForwardBlock = spy(new MoveForwardBlock("newBlock"));
+		newNotBlock = spy(new NotBlock("newBlock"));
+		newTurnLeftBlock = spy(new TurnLeftBlock("newBlock"));
+		newTurnRightBlock = spy(new TurnRightBlock("newBlock"));
+		newWallInFrontBlock = spy(new WallInFrontBlock("newBlock"));
+		newWhileBlock = spy(new WhileBlock("newBlock"));
 
 		allBlocks.add(connectedActionBlock);
 		allBlocks.add(connectedControlBlock);
@@ -130,6 +130,8 @@ public class AddBlockTest {
 		allBlocks.add(newTurnRightBlock);
 		allBlocks.add(newWallInFrontBlock);
 		allBlocks.add(newWhileBlock);
+		
+		
 
 	}
 
@@ -142,9 +144,9 @@ public class AddBlockTest {
 	}
 
 	@Mock
-	BlockController mockBlockController;
-	@InjectMocks
-	DomainController dc;
+	private BlockController blockController;
+	@Spy @InjectMocks
+	private DomainController dc;
 
 	private void assertExceptionDCAddBlockCombination(BlockType bt, String cb, ConnectionType ct, String excMessage) {
 		boolean pass = false;
@@ -171,7 +173,7 @@ public class AddBlockTest {
 		for (ConnectionType c : ConnectionType.values()) {
 			dc.addBlock(null, "", c);
 			assertExceptionDCAddBlockCombination(null, "", c, excMessage);
-			verifyNoInteractions(mockBlockController);
+			verifyNoInteractions(blockController);
 		}
 	}
 
@@ -189,7 +191,7 @@ public class AddBlockTest {
 		for (BlockType b : BlockType.values()) {
 			dc.addBlock(b, "connectedBlockId", ConnectionType.NOCONNECTION);
 			assertExceptionDCAddBlockCombination(b, "connectedBlockId", ConnectionType.NOCONNECTION, excMessage);
-			verifyNoInteractions(mockBlockController);
+			verifyNoInteractions(blockController);
 		}
 
 	}
@@ -205,8 +207,8 @@ public class AddBlockTest {
 		exceptionRule.expectMessage(excMessage);
 		dc = new DomainController();
 
-		dc.addBlock(any(BlockType.class), anyString(), null);
-		verifyNoInteractions(mockBlockController);
+		dc.addBlock(BlockType.If, anyString(), null);
+		verifyNoInteractions(blockController);
 	}
 
 	/**
@@ -225,7 +227,7 @@ public class AddBlockTest {
 			for (ConnectionType c : ConnectionType.values()) {
 				dc.addBlock(b, null, c);
 				assertExceptionDCAddBlockCombination(b, null, c, excMessage);
-				verifyNoInteractions(mockBlockController);
+				verifyNoInteractions(blockController);
 			}
 		}
 
@@ -241,8 +243,8 @@ public class AddBlockTest {
 		ArgumentCaptor<BlockType> blockType = ArgumentCaptor.forClass(BlockType.class);
 
 		for (BlockType b : BlockType.values()) {
-			dc.addBlock(b, null, ConnectionType.NOCONNECTION);
-			verify(mockBlockController).addBlock(blockType.capture(), any(), ConnectionType.NOCONNECTION);
+			dc.addBlock(b,"", ConnectionType.NOCONNECTION);
+			verify(blockController).addBlock(blockType.capture(), anyString(), ConnectionType.NOCONNECTION);
 			assertEquals(b, blockType.getValue());
 		}
 

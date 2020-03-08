@@ -8,8 +8,6 @@ public class IfBlock extends ControlBlock {
 	 */
 	public IfBlock(String blockId) {
 		super(blockId);
-		// TODO - implement IfBlock.IfBlock
-		throw new UnsupportedOperationException();
 	}
 
 	public ExecutableBlock getFirstBlockOfBody() {

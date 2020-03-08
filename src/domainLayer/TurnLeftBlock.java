@@ -8,8 +8,6 @@ public class TurnLeftBlock extends ActionBlock {
 	 */
 	public TurnLeftBlock(String blockId) {
 		super(blockId);
-		// TODO - implement TurnLeftBlock.TurnLeftBlock
-		throw new UnsupportedOperationException();
 	}
 
 }

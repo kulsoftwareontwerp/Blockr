@@ -9,8 +9,7 @@ public abstract class Block {
 	 * @param blockID
 	 */
 	public Block(String blockID) {
-		// TODO - implement Block.Block
-		throw new UnsupportedOperationException();
+		this.blockId=blockID;
 	}
 
 	/**

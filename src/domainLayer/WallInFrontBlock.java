@@ -8,8 +8,6 @@ public class WallInFrontBlock extends ConditionBlock {
 	 */
 	public WallInFrontBlock(String blockId) {
 		super(blockId);
-		// TODO - implement WallInFrontBlock.WallInFrontBlock
-		throw new UnsupportedOperationException();
 	}
 
 	public boolean assess() {

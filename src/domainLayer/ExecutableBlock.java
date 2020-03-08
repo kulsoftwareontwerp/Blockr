@@ -10,8 +10,6 @@ public abstract class ExecutableBlock extends Block {
 	 */
 	public ExecutableBlock(String blockId) {
 		super(blockId);
-		// TODO - implement ExecutableBlock.ExecutableBlock
-		throw new UnsupportedOperationException();
 	}
 
 	/**
