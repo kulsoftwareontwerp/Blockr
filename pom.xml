@@ -22,7 +22,7 @@
   		<groupId>org.mockito</groupId>
   		<artifactId>mockito-core</artifactId>
   		<version>3.3.0</version>
-  		<scope>test</scope>
+  		<scope>provided</scope>
   	</dependency>
   </dependencies>
 </project>
