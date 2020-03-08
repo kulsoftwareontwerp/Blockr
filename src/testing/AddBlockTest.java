@@ -187,8 +187,8 @@ public class AddBlockTest {
 		dc = new DomainController();
 
 		for (BlockType b : BlockType.values()) {
-			dc.addBlock(b, anyString(), ConnectionType.NOCONNECTION);
-			assertExceptionDCAddBlockCombination(b, anyString(), ConnectionType.NOCONNECTION, excMessage);
+			dc.addBlock(b, "connectedBlockId", ConnectionType.NOCONNECTION);
+			assertExceptionDCAddBlockCombination(b, "connectedBlockId", ConnectionType.NOCONNECTION, excMessage);
 			verifyNoInteractions(mockBlockController);
 		}
 
@@ -272,7 +272,7 @@ public class AddBlockTest {
 
 		for (BlockType b : BlockType.values()) {
 			for (ConnectionType c : ConnectionType.values()) {
-				String cb = anyString();
+				String cb = "connectedBlockId";
 				bc.addBlock(b, cb, c);
 
 				verify(mockBlockRepository).addBlock(blockType.capture(), connectedBlock.capture(),
@@ -312,7 +312,7 @@ public class AddBlockTest {
 
 		for (BlockType b : BlockType.values()) {
 			for (ConnectionType c : ConnectionType.values()) {
-				String cb = anyString();
+				String cb = "connectedBlockId";
 				bc.addBlock(b, cb, c);
 
 				verify(mockBlockRepository).addBlock(blockType.capture(), connectedBlock.capture(),
