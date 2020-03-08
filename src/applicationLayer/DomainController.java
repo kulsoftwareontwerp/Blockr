@@ -28,8 +28,20 @@ public class DomainController {
 	 * @param connection
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
-		// TODO - implement DomainController.addBlock
-		throw new UnsupportedOperationException();
+		if(blockType == null) {
+			throw new IllegalArgumentException("No blockType given.");
+		}
+		if(connection == null) {
+			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
+		}
+		if((connectedBlockId==null ||connectedBlockId.equals("")) && connection != ConnectionType.NOCONNECTION){
+			throw new IllegalArgumentException("No connected block given with connection.");
+		}
+		if((connectedBlockId!=null && !connectedBlockId.equals("")) && connection == ConnectionType.NOCONNECTION){
+			throw new IllegalArgumentException("No connection given for connected block.");
+		}
+		
+		blockController.addBlock(blockType, connectedBlockId, connection);
 	}
 
 	/**
