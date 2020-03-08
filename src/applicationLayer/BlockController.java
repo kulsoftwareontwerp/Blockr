@@ -17,8 +17,12 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	private void fireBlockAdded() {
-		// TODO - implement BlockController.fireBlockAdded
-		throw new UnsupportedOperationException();
+		String blockId = programBlockRepository.getLastAddedBlockId();
+		BlockAddedEvent event = new BlockAddedEvent(blockId);
+		
+		for(GUIListener listener:guiListeners) {
+			listener.onBlockAdded(event);
+		}
 	}
 
 	private void fireBlockRemoved() {
@@ -32,18 +36,26 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	private void firePanelChangedEvent() {
-		// TODO - implement BlockController.firePanelChangedEvent
-		throw new UnsupportedOperationException();
+		PanelChangeEvent event = new PanelChangeEvent(false);
+		for(GUIListener listener:guiListeners) {
+			listener.onPanelChangedEvent(event);
+		}
 	}
 
 	private void fireUpdateGameState() {
-		// TODO - implement BlockController.fireUpdateGameState
-		throw new UnsupportedOperationException();
+		UpdateGameStateEvent event = new UpdateGameStateEvent();
+		
+		for(DomainListener listener:domainListeners) {
+			listener.onUpdateGameStateEvent(event);
+		}
+		
 	}
 
 	private void fireResetExecutionEvent() {
-		// TODO - implement BlockController.fireResetExecutionEvent
-		throw new UnsupportedOperationException();
+		ResetExecutionEvent event = new ResetExecutionEvent();
+		for(DomainListener listener:domainListeners) {
+			listener.onResetExecutionEvent(event);
+		}
 	}
 
 	/**
@@ -53,8 +65,15 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @param connection
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
-		// TODO - implement BlockController.addBlock
-		throw new UnsupportedOperationException();
+		programBlockRepository.addBlock(blockType, connectedBlockId, connection);
+		
+		
+		fireUpdateGameState();
+		fireResetExecutionEvent();
+		if(programBlockRepository.checkIfMaxNbOfBlocksReached()) {
+			firePanelChangedEvent();
+		}
+		fireBlockAdded();
 	}
 
 	public int getMaxNbOfBlocks() {

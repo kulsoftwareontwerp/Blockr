@@ -8,6 +8,7 @@ public class BlockRepository {
 	private BlockFactory blockFactory;
 	private Collection<Block> headBlocks;
 	private HashMap<String,Block> allBlocks;
+	private String lastAddedBlockId;
 	private final int maxNbOfBlocks=20;
 	private static BlockRepository instance;
 
@@ -15,6 +16,11 @@ public class BlockRepository {
 		headBlocks=new HashSet<Block>();
 		allBlocks=new HashMap<String,Block>();
 		blockFactory=new BlockFactory();
+	}
+	
+	
+	public String getLastAddedBlockId() {
+		return lastAddedBlockId;
 	}
 
 	/**
