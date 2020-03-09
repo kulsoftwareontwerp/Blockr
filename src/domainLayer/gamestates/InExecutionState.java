@@ -24,8 +24,8 @@ public class InExecutionState extends GameState {
 	}
 
 	public void execute() {
-		// TODO - implement InExecutionState.execute
-		throw new UnsupportedOperationException();
+		gameController.performRobotAction(getNextActionBlockToBeExecuted());
+		
 	}
 
 	public void update() {

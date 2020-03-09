@@ -54,7 +54,7 @@ public class GameController implements DomainListener, GUISubject {
 	 * 
 	 * @param state
 	 */
-	protected void toState(GameState state) {
+	public void toState(GameState state) {
 		this.currentState = state;
 	}
 
@@ -69,13 +69,14 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	public void executeBlock() {
-		// TODO - implement GameController.executeBlock -> JONATHAN
-		throw new UnsupportedOperationException();
+		GameState currentState = getCurrentState();
+		currentState.execute();
 	}
 
 	public ActionBlock findFirstBlockToBeExecuted() {
-		// TODO - implement GameController.findFirstBlockToBeExecuted
-		throw new UnsupportedOperationException();
+		ExecutableBlock firstExecutableBlock = programBlockRepository.findFirstBlockToBeExecuted();
+		ActionBlock firstActionBlock = findNextActionBlockToBeExecuted(firstExecutableBlock);
+		return firstActionBlock;
 	}
 
 	/**
@@ -92,10 +93,17 @@ public class GameController implements DomainListener, GUISubject {
 	 * @param block
 	 */
 	public void performRobotAction(ActionBlock block) {
-		// TODO - implement GameController.performRobotAction
-		throw new UnsupportedOperationException();
+		switch(block.getClass().toString()) {
+			case "TurnLeftBlock":
+				gameElementRepository.turnRobotLeft();
+			case "TurnRightBlock":
+				gameElementRepository.turnRobotRight();
+			case "MoveForwardBlock":
+				gameElementRepository.moveRobotForward();
+		}
+		fireRobotChangeEvent();
 	}
-
+	
 	public boolean checkIfValidProgram() {
 		// TODO - implement GameController.checkIfValidProgram
 		throw new UnsupportedOperationException();
