@@ -1,5 +1,9 @@
 package domainLayer.blocks;
 
+
+import java.util.HashSet;
+
+
 /**
  * The abstract class for the concept of a Not block.
  * 
@@ -17,10 +21,9 @@ public class NotBlock extends UnaryOperatorBlock {
 		super(blockId);
 	}
 
-	public boolean assess() {
-		// TODO - implement NotBlock.assess
-		throw new UnsupportedOperationException();
-	}
+//	public boolean assess(HashSet<Element> gameElements) {
+//		return !getOperand().assess(gameElements);
+//	}
 
 
 

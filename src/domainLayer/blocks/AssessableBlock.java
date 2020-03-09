@@ -19,6 +19,6 @@ public abstract class AssessableBlock extends Block {
 	}
 
 	//TODO: write documentation for this method.
-	abstract public boolean assess();
+	//abstract public boolean assess();
 
 }

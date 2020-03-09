@@ -24,8 +24,13 @@ public class InExecutionState extends GameState {
 	}
 
 	public void execute() {
-		gameController.performRobotAction(getNextActionBlockToBeExecuted());
+		ActionBlock currentActionBlockToBeExecuted = getNextActionBlockToBeExecuted();
+		gameController.performRobotAction(currentActionBlockToBeExecuted);
 		
+		ActionBlock newNextActionBlockToBeExecuted = gameController.findNextActionBlockToBeExecuted(currentActionBlockToBeExecuted);
+		setNextActionBlockToBeExecuted(newNextActionBlockToBeExecuted);
+		
+		gameController.fireUpdateHighlightingEvent(getNextActionBlockToBeExecuted().getBlockId());
 	}
 
 	public void update() {
@@ -35,6 +40,10 @@ public class InExecutionState extends GameState {
 
 	public ActionBlock getNextActionBlockToBeExecuted() {
 		return this.nextActionBlockToBeExecuted;
+	}
+	
+	public void setNextActionBlockToBeExecuted(ActionBlock nextActionBlockToBeExecuted) {
+		this.nextActionBlockToBeExecuted = nextActionBlockToBeExecuted;
 	}
 
 }

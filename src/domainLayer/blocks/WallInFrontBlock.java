@@ -1,5 +1,6 @@
 package domainLayer.blocks;
 
+import java.util.HashSet;
 /**
  * The concrete class for the concept of a WallInFront block.
  * 
@@ -17,9 +18,15 @@ public class WallInFrontBlock extends ConditionBlock {
 		super(blockId);
 	}
 
-	public boolean assess() {
-		// TODO - implement WallInFrontBlock.assess
-		throw new UnsupportedOperationException();
-	}
+//	public boolean assess(HashSet<Element> gameElements) {
+//		Iterator<Element> iterator = gameElements.iterator();
+//		Robot robot;
+//		while(iterator.hasNext()){
+//			Element nextElem = iterator.next();
+//			if(nextElem.getClass().equals(Robot.class)) {
+//				robot = nextElem;
+//			}
+//		}
+//	}
 
 }

@@ -1,5 +1,7 @@
 package domainLayer.blocks;
 
+import java.util.HashSet;
+
 /**
  * The abstract class for the concept of a condition block.
  * 
@@ -7,6 +9,7 @@ package domainLayer.blocks;
  * @author group17
  */
 public abstract class ConditionBlock extends AssessableBlock {
+
 
 	/**
 	 * Create a Condition Block
@@ -17,9 +20,9 @@ public abstract class ConditionBlock extends AssessableBlock {
 		super(blockId);
 	}
 
-	public boolean assess() {
-		// TODO - implement ConditionBlock.assess
-		throw new UnsupportedOperationException();
-	}
+//	public boolean assess(HashSet<Element> gameElements) {
+//		// TODO - implement ConditionBlock.assess
+//		throw new UnsupportedOperationException();
+//	}
 
 }

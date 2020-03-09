@@ -1,17 +1,11 @@
 package applicationLayer;
 
 import java.util.*;
-import domainLayer.blocks.ActionBlock;
-import domainLayer.blocks.BlockRepository;
-import domainLayer.blocks.ExecutableBlock;
-import domainLayer.elements.ElementRepository;
+import domainLayer.blocks.*;
+import domainLayer.elements.*;
 import domainLayer.gamestates.GameState;
 import domainLayer.gamestates.InValidProgramState;
-import events.DomainListener;
-import events.GUIListener;
-import events.GUISubject;
-import events.ResetExecutionEvent;
-import events.UpdateGameStateEvent;
+import events.*;
 
 public class GameController implements DomainListener, GUISubject {
 
@@ -31,8 +25,11 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	public void fireRobotChangeEvent() {
-		// TODO - implement GameController.fireRobotChangeEvent
-		throw new UnsupportedOperationException();
+		Robot robot = gameElementRepository.getRobot();
+		RobotChangeEvent robotChangeEvent = new RobotChangeEvent(robot.getXCoordinate(), robot.getYCoordinate(), robot.getOrientation());
+		for(GUIListener listener: guiListeners) {
+			listener.onRobotChangeEvent(robotChangeEvent);
+		}
 	}
 
 	private boolean isMaxNbOfBlocksReached() {
@@ -71,6 +68,7 @@ public class GameController implements DomainListener, GUISubject {
 	public void executeBlock() {
 		GameState currentState = getCurrentState();
 		currentState.execute();
+		// ActionBlock nextActionBlockToBeExecuted = ((InExecutionState) currentState).getNextActionBlockToBeExecuted();
 	}
 
 	public ActionBlock findFirstBlockToBeExecuted() {
@@ -84,8 +82,51 @@ public class GameController implements DomainListener, GUISubject {
 	 * @param block
 	 */
 	public ActionBlock findNextActionBlockToBeExecuted(ExecutableBlock block) {
-		// TODO - implement GameController.findNextActionBlockToBeExecuted
-		throw new UnsupportedOperationException();
+		ExecutableBlock nextBlock = block.getNextBlock();
+		if (nextBlock instanceof ActionBlock) {
+			return (ActionBlock) nextBlock;
+		}
+		else if (nextBlock instanceof WhileBlock) {
+			AssessableBlock condition = nextBlock.getConditionBlock();
+			if (assessCondition(condition)) {
+				return findNextActionBlockToBeExecuted(nextBlock.getFirstBlockOfBody());
+			} else {
+				return findNextActionBlockToBeExecuted(nextBlock.getNextBlock());
+			}
+		}
+		// nextBlock instanceof IfBlock
+		else {
+			// Check if this IfBlock is reached because it's beneath another block (so we need to continue with the firstBlockOfBody of this IfBlock)
+			// OR it's reached because we are at the end of executing this IfBlock (so we need to continue with the nextBlock of this IfBlock)
+			if (!isReachedFromEndOfBody(block.getBlockId(),nextBlock.getBlockId(),nextBlock.getFirstBlockOfBody())) {
+				return findNextActionBlockToBeExecuted(nextBlock.getFirstBlockOfBody());
+			} else {
+				return findNextActionBlockToBeExecuted(nextBlock.getNextBlock());
+			}
+		}
+	}
+	
+	// TODO: WRITE EXPLANATION
+	private boolean isReachedFromEndOfBody(String endOfBodyBlockId, String ifBlockId, ExecutableBlock nextBlockToCheck) {
+		if (nextBlockToCheck.getBlockId().equals(endOfBodyBlockId))	{
+			return true;
+		}
+		else if (nextBlockToCheck.getBlockId().equals(ifBlockId)) {
+			return false;
+		}
+		else {
+			return isReachedFromEndOfBody(endOfBodyBlockId, ifBlockId, nextBlockToCheck.getNextBlock());
+		}
+	}
+	
+	private boolean assessCondition(AssessableBlock condition) {
+		if (condition instanceof NotBlock) {
+			return !assessCondition(condition.getOperand());
+		} 
+		// condition instanceof WallInFront
+		else {
+			return gameElementRepository.wallInFrontOfRobot();
+		}
 	}
 
 	/**
@@ -113,9 +154,11 @@ public class GameController implements DomainListener, GUISubject {
 	 * 
 	 * @param highlightedBlockId
 	 */
-	private void fireUpdateHighlightingEvent(String highlightedBlockId) {
-		// TODO - implement GameController.fireUpdateHighlightingEvent
-		throw new UnsupportedOperationException();
+	public void fireUpdateHighlightingEvent(String highlightedBlockId) {
+		UpdateHighlightingEvent updateHighlightingEvent = new UpdateHighlightingEvent(highlightedBlockId);
+		for(GUIListener listener: guiListeners) {
+			listener.onUpdateHighlightingEvent(updateHighlightingEvent);
+		}
 	}
 
 	private HashMap<String, Integer> findNextPosition() {
