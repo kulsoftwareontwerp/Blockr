@@ -2,6 +2,7 @@ package domainLayer.blocks;
 
 import java.util.*;
 import applicationLayer.*;
+import domainLayer.blocks.*;
 import exceptions.InvalidBlockConnectionException;
 import exceptions.NoSuchConnectedBlockException;
 
@@ -169,18 +170,18 @@ public class BlockRepository {
 	 * @return TODO
 	 */
 	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove,
-			String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+		String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
 		Block movedBlock = getBlockByID(movedBlockId);
 		Block bfm = getBlockByID(connectedBeforeMoveBlockId);
 		Block afm = getBlockByID(connectedAfterMoveBlockId);
 		
 		if(connectionBeforeMove == ConnectionType.NOCONNECTION) {
 			//indien no connection dan is er hier geen nood aan verandering
-			if(connectionAfterMove == ConnectionType.UP) {
-				headBlocks.remove(movedBlock);
+			if(connectionAfterMove == ConnectionType.DOWN) {
+				removeBlockFromHeadBlocks(movedBlock);
 				afm.setNextBlock((ExecutableBlock) movedBlock);
 			}
-			else if(connectionAfterMove == ConnectionType.DOWN)
+			else if(connectionAfterMove == ConnectionType.UP)
 			{
 				if(movedBlock.getNextBlock() != null)
 				{
@@ -197,26 +198,25 @@ public class BlockRepository {
 				
 			}
 			else if(connectionAfterMove == ConnectionType.BODY) {
-				headBlocks.remove(movedBlock);
+				removeBlockFromHeadBlocks(movedBlock);
 				afm.setFirstBlockOfBody((ExecutableBlock) movedBlock);
 			}
-			else {
+			else if(connectionAfterMove == ConnectionType.CONDITION){
 				headBlocks.remove(movedBlock);
 				afm.setConditionBlock((ConditionBlock)movedBlock);
 			}
 		}
-		else if(connectionBeforeMove == ConnectionType.UP) {
+		else if(connectionBeforeMove == ConnectionType.DOWN) {
 			bfm.setNextBlock(null);//verwijderen referentie van block bij vorige verbonden block
 			
 			if(connectionAfterMove == ConnectionType.NOCONNECTION) {
-				headBlocks.add(movedBlock);
-			}
-			else if(connectionAfterMove == ConnectionType.UP) {
-				afm.setNextBlock((ExecutableBlock) movedBlock);	
+				addBlockToHeadBlocks(movedBlock);
 			}
 			else if(connectionAfterMove == ConnectionType.DOWN) {
-				
-				headBlocks.add(movedBlock); //connection up is broken so there is no upper block	
+				afm.setNextBlock((ExecutableBlock) movedBlock);	
+			}
+			else if(connectionAfterMove == ConnectionType.UP) {
+				addBlockToHeadBlocks(movedBlock);//connection up is broken so there is no upper block	
 				if(movedBlock.getNextBlock() != null) //block is Head block of a blockChain
 				{
 					Block nextBlockInCHain = movedBlock;
@@ -236,26 +236,27 @@ public class BlockRepository {
 			}
 			//conditionBlock is hier niet mogelijk aangezien we met een UP connectie zaten.
 		}
-		//ConnectionBeforeMove == connectionType.DOWN neemt nooit plaats wanneer een block ge-moved wordt.
+		//ConnectionBeforeMove == connectionType.UP neemt nooit plaats wanneer een block ge-moved wordt.
 		else if(connectionBeforeMove == ConnectionType.CONDITION) {
 			bfm.setConditionBlock(null);
 			if(connectionAfterMove == ConnectionType.NOCONNECTION) {
-				headBlocks.add(movedBlock);
+				addBlockToHeadBlocks(movedBlock);
 			}
 			else if(connectionAfterMove == ConnectionType.CONDITION) {
 				movedBlock.setConditionBlock((ConditionBlock) afm);
 			}
+			//Connectie rechts van andere conditie
 		}
 		else if(connectionBeforeMove == ConnectionType.BODY) {
 			bfm.setFirstBlockOfBody(null);
 			if(connectionAfterMove == ConnectionType.NOCONNECTION)
 			{
-				headBlocks.add(movedBlock);
-			}
-			else if(connectionAfterMove == ConnectionType.UP) {
-				afm.setNextBlock((ExecutableBlock) movedBlock);
+				addBlockToHeadBlocks(movedBlock);
 			}
 			else if(connectionAfterMove == ConnectionType.DOWN) {
+				afm.setNextBlock((ExecutableBlock) movedBlock);
+			}
+			else if(connectionAfterMove == ConnectionType.UP) {
 				if(movedBlock.getNextBlock() != null)
 				{
 					Block nextBlockInCHain = movedBlock;
@@ -279,8 +280,7 @@ public class BlockRepository {
 	}
 
 	public boolean checkIfValidProgram() {
-		// TODO - implement BlockRepository.checkIfValidProgram
-		throw new UnsupportedOperationException();
+		return headBlocks.size() == 1;
 	}
 
 	public ExecutableBlock findFirsttBlockToBeExecuted() {
