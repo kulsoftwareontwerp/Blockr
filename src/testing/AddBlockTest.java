@@ -278,7 +278,7 @@ public class AddBlockTest {
 				String cb = "connectedBlockId";
 				bc.addBlock(b, cb, c);
 
-				verify(mockBlockRepository).addBlock(blockType.capture(), connectedBlock.capture(),
+				verify(mockBlockRepository,atLeastOnce()).addBlock(blockType.capture(), connectedBlock.capture(),
 						connectionType.capture());
 
 				assertEquals(b, blockType.getValue());
@@ -286,13 +286,13 @@ public class AddBlockTest {
 				assertEquals(c, connectionType.getValue());
 
 				InOrder updateResetOrder = inOrder(mockDomainListener);
-				updateResetOrder.verify(mockDomainListener).onUpdateGameStateEvent(any(UpdateGameStateEvent.class));
-				updateResetOrder.verify(mockDomainListener).onResetExecutionEvent(any(ResetExecutionEvent.class));
+				updateResetOrder.verify(mockDomainListener,atLeastOnce()).onUpdateGameStateEvent(any(UpdateGameStateEvent.class));
+				updateResetOrder.verify(mockDomainListener,atLeastOnce()).onResetExecutionEvent(any(ResetExecutionEvent.class));
 
 				ArgumentCaptor<PanelChangeEvent> panelChangeEvent = ArgumentCaptor.forClass(PanelChangeEvent.class);
-				verify(mockGuiListener).onPanelChangedEvent(panelChangeEvent.capture());
+				verify(mockGuiListener,atLeastOnce()).onPanelChangedEvent(panelChangeEvent.capture());
 				assertFalse(panelChangeEvent.getValue().isShown());
-				verify(mockGuiListener).onBlockAdded(any(BlockAddedEvent.class));
+				verify(mockGuiListener,atLeastOnce()).onBlockAdded(any(BlockAddedEvent.class));
 			}
 		}
 	}
@@ -303,7 +303,6 @@ public class AddBlockTest {
 	 */
 	@Test
 	public void testBCAddBlockPositiveMaxNbOfBlocksNotReached() {
-		bc = new BlockController();
 		bc.addListener(mockGuiListener);
 		bc.addDomainListener(mockDomainListener);
 
@@ -318,7 +317,7 @@ public class AddBlockTest {
 				String cb = "connectedBlockId";
 				bc.addBlock(b, cb, c);
 
-				verify(mockBlockRepository).addBlock(blockType.capture(), connectedBlock.capture(),
+				verify(mockBlockRepository,atLeastOnce()).addBlock(blockType.capture(), connectedBlock.capture(),
 						connectionType.capture());
 
 				assertEquals(b, blockType.getValue());
@@ -331,7 +330,7 @@ public class AddBlockTest {
 
 				verify(mockGuiListener, never()).onPanelChangedEvent(any(PanelChangeEvent.class));
 
-				verify(mockGuiListener).onBlockAdded(any(BlockAddedEvent.class));
+				verify(mockGuiListener,atLeastOnce()).onBlockAdded(any(BlockAddedEvent.class));
 			}
 		}
 	}
@@ -394,7 +393,7 @@ public class AddBlockTest {
 	// Todo: Vind een manier om headBlocks en allblocks te controleren.
 	/**
 	 * Test method for
-	 * {@link applicationLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link domainLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockPositive() {
@@ -469,7 +468,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link domainLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockNegativeAddExecutableBlockAsCondition() {
@@ -489,7 +488,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link domainLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockNegativeAddBlockConnectedBlockNoCompatibleCavity() {
@@ -521,7 +520,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link domainLayer.BlockRepository#addBlock(domainLayer.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockNegativeAddAssessableBlockNoCompatible() {
@@ -559,7 +558,6 @@ public class AddBlockTest {
 	@Test
 	public void testBFAddBlockPositive() {
 		when(mockBlockIDGenerator.getBlockID()).thenReturn("newBlock");
-		blockFactory=new BlockFactory();
 		Block block;
 		block = blockFactory.createBlock(BlockType.If);
 		assertEquals(IfBlock.class, block.getClass());
