@@ -1,5 +1,7 @@
 package domainLayer.blocks;
 
+import domainLayer.elements.ElementRepository;
+
 /**
  * The abstract class for the concept of an assessable block.
  * 
@@ -19,6 +21,6 @@ public abstract class AssessableBlock extends Block {
 	}
 
 	//TODO: write documentation for this method.
-	//abstract public boolean assess();
+	abstract public boolean assess(ElementRepository elementsRepo);
 
 }

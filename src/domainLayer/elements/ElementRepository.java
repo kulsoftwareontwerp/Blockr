@@ -136,33 +136,29 @@ public class ElementRepository {
 		return (HashSet<Element>) elements;
 	}
 
-	// TODO: Possible improvement = reuse more code from moveRobotForward() method
-	public boolean wallInFrontOfRobot() {
+	/**
+	 * 
+	 * @return
+	 */
+	public HashMap<String, Integer> getCoördinatesInFrontOfRobot() {
 		Robot robot = getRobot();
 		Orientation currentRobotOrientation = robot.getOrientation();
-		int newXCo = robot.getXCoordinate();
-		int newYCo = robot.getYCoordinate();
+		
+		
+		HashMap<String, Integer> newCoördinates=new HashMap<>();
+		newCoördinates.put("X", robot.getXCoordinate());
+		newCoördinates.put("Y", robot.getYCoordinate());
 		switch(currentRobotOrientation) {
 			case UP:
-				newYCo -= 1;
+				newCoördinates.put("Y", newCoördinates.get("Y")-1);
 			case DOWN:
-				newYCo += 1;
+				newCoördinates.put("Y", newCoördinates.get("Y")+1);
 			case LEFT:
-				newXCo -= 1;
+				newCoördinates.put("X", newCoördinates.get("X")-1);
 			case RIGHT:
-				newXCo += 1;
+				newCoördinates.put("X", newCoördinates.get("X")+1);
 		}
-		HashSet<Element> elements = getElements(newXCo, newYCo);
-		
-		Iterator<Element> iterator = elements.iterator();
-		while(iterator.hasNext()) {
-			Element element = iterator.next();
-			if (element instanceof Wall) {
-				return true;
-			}
-		}
-		
-		return false;
+		return newCoördinates;
 	}
 
 }

@@ -21,6 +21,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import applicationLayer.*;
 import domainLayer.*;
+import domainLayer.gamestates.GameState;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ExecuteBlockTest {

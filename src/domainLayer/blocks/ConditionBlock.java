@@ -2,6 +2,8 @@ package domainLayer.blocks;
 
 import java.util.HashSet;
 
+import domainLayer.elements.ElementRepository;
+
 /**
  * The abstract class for the concept of a condition block.
  * 
@@ -20,9 +22,6 @@ public abstract class ConditionBlock extends AssessableBlock {
 		super(blockId);
 	}
 
-//	public boolean assess(HashSet<Element> gameElements) {
-//		// TODO - implement ConditionBlock.assess
-//		throw new UnsupportedOperationException();
-//	}
+
 
 }
