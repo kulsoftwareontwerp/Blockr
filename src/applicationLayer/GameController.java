@@ -68,7 +68,6 @@ public class GameController implements DomainListener, GUISubject {
 	public void executeBlock() {
 		GameState currentState = getCurrentState();
 		currentState.execute();
-		// ActionBlock nextActionBlockToBeExecuted = ((InExecutionState) currentState).getNextActionBlockToBeExecuted();
 	}
 
 	public ActionBlock findFirstBlockToBeExecuted() {
