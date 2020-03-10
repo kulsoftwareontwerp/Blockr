@@ -29,9 +29,10 @@ public class InExecutionState extends GameState {
 	}
 
 	public void update() {
-			GameState newState = new ResettingState(gameController);
-			gameController.toState(newState);
-			gameController.updateState();
+			GameState ResettingStateFollowingUpdate = new ResettingState(gameController);
+			ResettingStateFollowingUpdate.update();
+			gameController.toState(ResettingStateFollowingUpdate);
+			
 	}
 
 	public ActionBlock getNextActionBlockToBeExecuted() {

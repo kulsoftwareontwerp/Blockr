@@ -4,7 +4,7 @@ import applicationLayer.*;
 
 public class ResettingState extends GameState {
 
-	private String nextState;
+	private Class nextState;
 
 	/**
 	 * 
@@ -12,37 +12,35 @@ public class ResettingState extends GameState {
 	 */
 	public ResettingState(GameController game) {
 		super(game);
-		// TODO - implement ResettingState.ResettingState
-		throw new UnsupportedOperationException();
 	}
+	
+
 
 	public void update() {
 		boolean currentState = gameController.checkIfValidProgram();
 		if(!currentState) {
-			GameState newState = new InValidProgramState(gameController);
-			gameController.toState(newState);
+			setNextState(InValidProgramState.class);
 		}
 		else {
-			GameState newState = new ValidProgramState(gameController);
-			gameController.toState(newState);
+			setNextState(ValidProgramState.class);
 		}
 	}
+
 
 	public void reset() {
 		// TODO - implement ResettingState.reset
 		throw new UnsupportedOperationException();
 	}
-
-	/**
-	 * 
-	 * @param state
-	 */
-	private void setNextState(String state) {
+	
+	private void setNextState(Class state) {
 		this.nextState = state;
 	}
 
-	private String getNextState() {
+	private Class getNextState() {
 		return this.nextState;
 	}
+
+
+
 
 }
