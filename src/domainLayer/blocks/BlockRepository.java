@@ -2,6 +2,8 @@ package domainLayer.blocks;
 
 import java.util.*;
 import applicationLayer.*;
+import exceptions.InvalidBlockConnectionException;
+import exceptions.NoSuchConnectedBlockException;
 
 public class BlockRepository {
 
@@ -38,18 +40,23 @@ public class BlockRepository {
 			addBlockToHeadBlocks(newBlock);
 			break;
 		case UP:
+			validateConnectedBlock(connectedBlock, connection);
 			newBlock.setNextBlock(connectedBlock);
 			break;
 		case DOWN:
+			validateConnectedBlock(connectedBlock, connection);
 			connectedBlock.setNextBlock(newBlock);
 			break;
 		case BODY:
+			validateConnectedBlock(connectedBlock, connection);
 			connectedBlock.setFirstBlockOfBody(newBlock);
 			break;
 		case CONDITION:
+			validateConnectedBlock(connectedBlock, connection);
 			connectedBlock.setConditionBlock(newBlock);
 			break;
 		case RIGHT:
+			validateConnectedBlock(connectedBlock, connection);
 			connectedBlock.setOperand(newBlock);
 			break;
 
@@ -60,6 +67,41 @@ public class BlockRepository {
 
 		addBlockToAllBlocks(newBlock);
 
+	}
+
+	private void validateConnectedBlock(Block connectedBlock, ConnectionType connection) {
+		if(connectedBlock==null) {
+			throw new NoSuchConnectedBlockException("The requested connectedBlockId does not exist in the domain.");
+		}
+		boolean connectionOccupied=false;
+		switch (connection) {
+		case NOCONNECTION:
+
+			break;
+		case UP:
+			break;
+		case DOWN:
+			connectionOccupied = connectedBlock.getNextBlock()!=null;
+			break;
+		case BODY:
+			connectionOccupied = connectedBlock.getFirstBlockOfBody()!=null;
+			break;
+		case CONDITION:
+			connectionOccupied = connectedBlock.getConditionBlock()!=null;
+			break;
+		case RIGHT:
+			connectionOccupied = connectedBlock.getOperand()!=null;
+			break;
+
+		default:
+			// It shouldn't be possible to get here.
+			break;
+		}
+		
+		if(connectionOccupied) {
+			throw new InvalidBlockConnectionException("Connection at connectedBlock is already occupied.");
+		}
+		
 	}
 
 	/**

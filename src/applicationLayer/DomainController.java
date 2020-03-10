@@ -4,7 +4,12 @@ import java.util.Collection;
 
 import domainLayer.blocks.BlockType;
 import events.GUIListener;
-
+/**
+ * The DomainController performs initial checks on the parameters and forwards the requests to the relevant controller.
+ * 
+ * @version 0.1
+ * @author group17
+ */
 public class DomainController {
 
 	private GameController gameController;
@@ -23,10 +28,30 @@ public class DomainController {
 
 	
 	/**
+	 * Add a block of the given blockType to the domain and connect it with the given connectedBlockId on the given connection
 	 * 
-	 * @param blockType
-	 * @param connectedBlockId
-	 * @param connection
+	 * @param 	blockType
+	 * 			The type of block to be added, this parameter is required.
+	 * @param 	connectedBlockId
+	 * 			The ID of the block to connect to, can be empty.
+	 * @param 	connection
+	 * 			The connection of the connected block on which the new block must be connected.
+	 * 			If no connectedBlockId was given, this parameter must be set to "ConnectionType.NOCONNECTION".
+	 * @throws 	IllegalArgumentException 
+	 * 			There can't be a block added with the given parameters because either:
+	 * 			- the given blockType or the given connection are null
+	 * 			- the given connectedBlockId is empty and the connection isn't equal to ConnectionType.NOCONNECTION
+	 * 			- the given connectedBlockId is not empty and the connection is equal to ConnectionType.NOCONNECTION
+	 * @throws	InvalidBlockConnectionException
+	 * 			The given combination of the blockType,connectedBlockId and connection is impossible.
+	 * 			- an ExecutableBlock added to an AssessableBlock or ControlBlock as condition
+	 * 			- an AssessableBlock added to a block as a body or "next block"
+	 * 			- a block added to another block of which the required connection is not provided.
+	 * 			- a block added to a connection of a connected block to which there is already a block connected.
+	 * @throws	NoSuchConnectedBlockException
+	 * 			Is thrown when a connectedBlockId is given that is not present in the domain.
+	 * @throws	MaxNbOfBlocksReachedException
+	 * 			The maximum number of blocks in the domain is reached, no extra blocks can be added.
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		if(blockType == null) {

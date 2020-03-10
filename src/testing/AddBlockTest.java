@@ -24,7 +24,6 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import applicationLayer.*;
-import domainLayer.*;
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.AssessableBlock;
 import domainLayer.blocks.Block;
@@ -51,10 +50,11 @@ import events.ResetExecutionEvent;
 import events.UpdateGameStateEvent;
 import exceptions.InvalidBlockConnectionException;
 import exceptions.MaxNbOfBlocksReachedException;
+import exceptions.NoSuchConnectedBlockException;
 
 /**
- * @author arnel
- *
+ * 
+ * @author group17
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AddBlockTest {
@@ -129,7 +129,7 @@ public class AddBlockTest {
 		blockIdsInRepository.add("operatorBlock");
 		blockIdsInRepository.add("controlBlock");
 		blockIdsInRepository.add("actionBlock");
-		blockIdsInRepository.add("nonExisting");
+		blockIdsInRepository.add("noBlock");
 
 		connectedActionBlock = spy(new MoveForwardBlock("actionBlock"));
 		connectedControlBlock = spy(new WhileBlock("controlBlock"));
@@ -411,6 +411,7 @@ public class AddBlockTest {
 		lenient().when(blockRepo.getBlockByID("operatorBlock")).thenReturn(connectedOperatorBlock);
 		when(blockRepo.getBlockByID("controlBlock")).thenReturn(connectedControlBlock);
 		when(blockRepo.getBlockByID("actionBlock")).thenReturn(connectedActionBlock);
+		when(blockRepo.getBlockByID("noBlock")).thenReturn(null);
 		when(blockRepo.getBlockByID("newBlock")).thenCallRealMethod();
 
 	}
@@ -590,7 +591,7 @@ public class AddBlockTest {
 								}
 							} else {
 								if (newBlock instanceof ExecutableBlock) {
-								assertExceptionBRInvalidBlockConnection(nb, "actionBlock", ct, excMessage);
+									assertExceptionBRInvalidBlockConnection(nb, "actionBlock", ct, excMessage);
 								}
 							}
 						}
@@ -619,17 +620,90 @@ public class AddBlockTest {
 	 * {@link domainLayer.blocks.BlockRepository#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
+	public void testBRAddBlockNegativeAddBlockNoSuchConnectedBlock() {
+		String excMessage = "The requested connectedBlockId does not exist in the domain.";
+		testAddBlockBRMain();
+		for (BlockType nb : BlockType.values()) {
+
+			for (ConnectionType ct : ConnectionType.values()) {
+				if (ct != ConnectionType.NOCONNECTION) {
+					boolean pass = false;
+					try {
+						blockRepo.addBlock(nb, "noBlock", ct);
+					} catch (NoSuchConnectedBlockException e) {
+						pass = e.getMessage().equals(excMessage);
+					}
+					assertTrue("addBlock failed in the blockRepository for combination: BlockType=" + nb.toString()
+							+ " ConnectedBlockId= noBlock ConnectionType=" + ct.toString(), pass);
+
+				}
+			}
+
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link domainLayer.blocks.BlockRepository#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 */
+	@Test
+	public void testBRAddBlockNegativeAddBlockConnectionAlreadyOccupied() {
+		String excMessage = "Connection at connectedBlock is already occupied.";
+		testAddBlockBRMain();
+		
+		doReturn(connectedOperatorBlock).when(connectedControlBlock).getConditionBlock();
+		doReturn(connectedConditionBlock).when(connectedOperatorBlock).getOperand();
+		doReturn(connectedActionBlock).when(connectedControlBlock).getFirstBlockOfBody();
+		doReturn(connectedActionBlock).when(connectedActionBlock).getNextBlock();
+
+		
+		when(blockRepo.getBlockByID("conditionBlock")).thenReturn(connectedConditionBlock);
+		lenient().when(blockRepo.getBlockByID("operatorBlock")).thenReturn(connectedOperatorBlock);
+		when(blockRepo.getBlockByID("controlBlock")).thenReturn(connectedControlBlock);
+		when(blockRepo.getBlockByID("actionBlock")).thenReturn(connectedActionBlock);
+		
+		boolean pass = false;
+		for (String c : blockIdsInRepository) {
+			
+			if (c != "noBlock" && c!="conditionBlock") {
+				for (BlockType bt : BlockType.values()) {
+					for (ConnectionType ct : ConnectionType.values()) {
+						if (ct != ConnectionType.NOCONNECTION && ct!=ConnectionType.UP) {
+
+							try {
+								blockRepo.addBlock(bt, c, ct);
+							} catch (InvalidBlockConnectionException e) {
+								if(pass==false) {
+								pass = e.getMessage().equals(excMessage);
+								}
+							} catch (Exception e) {
+								// Not the purpose of this test.
+							}
+
+						}
+					}
+				}
+			}
+			
+		}
+		assertTrue("addBlock failed in the blockRepository for alreadyOccupied", pass);
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link domainLayer.blocks.BlockRepository#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 */
+	@Test
 	public void testBRAddBlockNegativeAddAssessableBlockNoCompatible() {
 		String excMessage = "The new block and/or the connected block is no ExecutableBlock.";
-
 		testAddBlockBRMain();
 		for (BlockType nb : assessableBlockTypes) {
 
-				for (ConnectionType ct : ConnectionType.values()) {
-					if (ct == ConnectionType.DOWN || ct == ConnectionType.BODY) {
-						assertExceptionBRInvalidBlockConnection(nb, "actionBlock", ct, excMessage);
-						// TODO: make sure block wasn't added to allBlocks or headBlocks
-					
+			for (ConnectionType ct : ConnectionType.values()) {
+				if (ct == ConnectionType.DOWN || ct == ConnectionType.BODY) {
+					assertExceptionBRInvalidBlockConnection(nb, "actionBlock", ct, excMessage);
+
 				}
 			}
 
