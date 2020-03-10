@@ -1,6 +1,5 @@
 package events;
 
-import domainLayer.*;
 import domainLayer.elements.Orientation;
 
 public class RobotAddedEvent implements EventObject {

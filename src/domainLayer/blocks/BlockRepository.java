@@ -3,8 +3,16 @@ package domainLayer.blocks;
 import java.util.*;
 import applicationLayer.*;
 import exceptions.InvalidBlockConnectionException;
+import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
 
+
+/**
+ * The BlockRepository performs Create, Update, Delete and Retrieve operations for Blocks.
+ * 
+ * @version 0.1
+ * @author group17
+ */
 public class BlockRepository {
 
 	private BlockFactory blockFactory;
@@ -25,10 +33,23 @@ public class BlockRepository {
 	}
 
 	/**
+	 * Add a block of the given blockType to the domain and connect it with the given connectedBlockId on the given connection
 	 * 
-	 * @param blockType
-	 * @param connectedBlockId
-	 * @param connection
+	 * @param 	blockType
+	 * 			The type of block to be added, this parameter is required.
+	 * @param 	connectedBlockId
+	 * 			The ID of the block to connect to, can be empty.
+	 * @param 	connection
+	 * 			The connection of the connected block on which the new block must be connected.
+	 * 			If no connectedBlockId was given, this parameter must be set to "ConnectionType.NOCONNECTION".
+	 * @throws	InvalidBlockConnectionException
+	 * 			The given combination of the blockType,connectedBlockId and connection is impossible.
+	 * 			- an ExecutableBlock added to an AssessableBlock or ControlBlock as condition
+	 * 			- an AssessableBlock added to a block as a body or "next block"
+	 * 			- a block added to another block of which the required connection is not provided.
+	 * 			- a block added to a connection of a connected block to which there is already a block connected.
+	 * @throws	NoSuchConnectedBlockException
+	 * 			Is thrown when a connectedBlockId is given that is not present in the domain.
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		Block newBlock = blockFactory.createBlock(blockType);
@@ -178,13 +199,18 @@ public class BlockRepository {
 	}
 
 	/**
+	 * Checks if the maximum number of blocks has been reached.
 	 * 
-	 * @return True totalNumberOfBlocks >= getMaxNbOfBlocks()
+	 * @return totalNumberOfBlocks >= getMaxNbOfBlocks()
 	 */
 	public boolean checkIfMaxNbOfBlocksReached() {
 		return this.getMaxNbOfBlocks() <= this.allBlocks.size();
 	}
 
+	/**
+	 * Retrieve the instantiation of BlockRepository.
+	 * @return	The instantiation of BlockRepository.
+	 */
 	public static BlockRepository getInstance() {
 		if (instance == null) {
 			instance = new BlockRepository();

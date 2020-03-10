@@ -1,7 +1,6 @@
 package applicationLayer;
 
 import java.util.*;
-import domainLayer.*;
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.ExecutableBlock;

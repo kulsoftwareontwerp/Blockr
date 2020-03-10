@@ -10,9 +10,12 @@ public class ElementAddedEvent implements EventObject {
 
 	/**
 	 * 
-	 * @param xCoordinate
-	 * @param yCoordinate
-	 * @param type
+	 * @param 	xCoordinate
+	 * 			The xCoordinate of the element that's been added.
+	 * @param 	yCoordinate
+	 * 			The yCoordinate of the element that's been added.
+	 * @param 	type
+	 * 			The type of element that's been added.
 	 */
 	public ElementAddedEvent(int xCoordinate, int yCoordinate, ElementType type) {
 		// TODO - implement ElementAddedEvent.ElementAddedEvent

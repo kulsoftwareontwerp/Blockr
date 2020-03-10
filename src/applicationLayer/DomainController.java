@@ -16,7 +16,12 @@ public class DomainController {
 	private BlockController blockController;
 	private ElementController elementController;
 
-	
+	/**
+	 * Construct a domainController and it's dependencies.
+	 * - GameController
+	 * - BlockController
+	 * - ElementController
+	 */
 	public DomainController() {
 		gameController=new GameController();
 		blockController=new BlockController();
@@ -52,6 +57,10 @@ public class DomainController {
 	 * 			Is thrown when a connectedBlockId is given that is not present in the domain.
 	 * @throws	MaxNbOfBlocksReachedException
 	 * 			The maximum number of blocks in the domain is reached, no extra blocks can be added.
+	 * @event	AddBlockEvent
+	 * 			Fires AddBlockEvent if the execution was succesful.
+	 * @event	BlockChangedEvent
+	 * 			Fires AddBlockEvent if the execution was succesful.
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		if(blockType == null) {
