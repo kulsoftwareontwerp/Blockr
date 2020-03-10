@@ -657,7 +657,6 @@ public class AddBlockTest {
 		doReturn(connectedActionBlock).when(connectedActionBlock).getNextBlock();
 
 		
-		when(blockRepo.getBlockByID("conditionBlock")).thenReturn(connectedConditionBlock);
 		lenient().when(blockRepo.getBlockByID("operatorBlock")).thenReturn(connectedOperatorBlock);
 		when(blockRepo.getBlockByID("controlBlock")).thenReturn(connectedControlBlock);
 		when(blockRepo.getBlockByID("actionBlock")).thenReturn(connectedActionBlock);
