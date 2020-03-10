@@ -3,7 +3,7 @@ package domainLayer;
 public abstract class ControlBlock extends ExecutableBlock {
 
 	private ExecutableBlock firstBlockOfBody;
-	private AssessebleBlock condition;
+	private AssessableBlock condition;
 
 	/**
 	 * 
@@ -20,14 +20,27 @@ public abstract class ControlBlock extends ExecutableBlock {
 	public void setFirstBlockOfBody(ExecutableBlock block) {
 		this.firstBlockOfBody = block;
 	}
+	
+	
+
+	@Override
+	public ExecutableBlock getFirstBlockOfBody() {
+		return this.firstBlockOfBody;
+	}
 
 	/**
 	 * 
 	 * @param block
 	 */
-	public void setConditionBlock(AssessebleBlock block) {
-		// TODO - implement ControlBlock.setConditionBlock
-		throw new UnsupportedOperationException();
+	public void setConditionBlock(AssessableBlock block) {
+		this.condition=block;
 	}
+
+	@Override
+	public AssessableBlock getConditionBlock() {
+		return this.condition;
+	}
+	
+	
 
 }

@@ -1,12 +1,12 @@
 package domainLayer;
 
-public abstract class AssessebleBlock extends Block {
+public abstract class AssessableBlock extends Block {
 
 	/**
 	 * 
 	 * @param blockId
 	 */
-	public AssessebleBlock(String blockId) {
+	public AssessableBlock(String blockId) {
 		super(blockId);
 	}
 

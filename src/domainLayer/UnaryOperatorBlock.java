@@ -2,7 +2,7 @@ package domainLayer;
 
 public abstract class UnaryOperatorBlock extends OperatorBlock {
 
-	private AssessebleBlock operand;
+	private AssessableBlock operand;
 
 	/**
 	 * 
@@ -21,9 +21,12 @@ public abstract class UnaryOperatorBlock extends OperatorBlock {
 	 * 
 	 * @param block
 	 */
-	public void setOperand(AssessebleBlock block) {
-		// TODO - implement UnaryOperatorBlock.setOperand
-		throw new UnsupportedOperationException();
+	public void setOperand(AssessableBlock block) {
+		this.operand=block;
+	}
+	
+	public AssessableBlock getOperand() {
+		return this.operand;
 	}
 
 }

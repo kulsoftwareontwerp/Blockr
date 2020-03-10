@@ -6,10 +6,11 @@ public class BlockIDGenerator {
 	private Integer id;
 
 	private BlockIDGenerator() {
-		this.id = 0;
+		this.id = -1;
 	}
 
 	public String getBlockID() {
+		this.id+=1;
 		return id.toString();
 	}
 

@@ -1,6 +1,6 @@
 package domainLayer;
 
-public abstract class OperatorBlock extends AssessebleBlock {
+public abstract class OperatorBlock extends AssessableBlock {
 
 	/**
 	 * 

@@ -10,14 +10,4 @@ public class IfBlock extends ControlBlock {
 		super(blockId);
 	}
 
-	public ExecutableBlock getFirstBlockOfBody() {
-		// TODO - implement IfBlock.getFirstBlockOfBody
-		throw new UnsupportedOperationException();
-	}
-
-	public AssessebleBlock getCondition() {
-		// TODO - implement IfBlock.getCondition
-		throw new UnsupportedOperationException();
-	}
-
 }

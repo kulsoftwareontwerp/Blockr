@@ -7,18 +7,17 @@ public class BlockRepository {
 
 	private BlockFactory blockFactory;
 	private Collection<Block> headBlocks;
-	private HashMap<String,Block> allBlocks;
+	private HashMap<String, Block> allBlocks;
 	private String lastAddedBlockId;
-	private final int maxNbOfBlocks=20;
+	private final int maxNbOfBlocks = 20;
 	private static BlockRepository instance;
 
 	private BlockRepository() {
-		headBlocks=new HashSet<Block>();
-		allBlocks=new HashMap<String,Block>();
-		blockFactory=new BlockFactory();
+		headBlocks = new HashSet<Block>();
+		allBlocks = new HashMap<String, Block>();
+		blockFactory = new BlockFactory();
 	}
-	
-	
+
 	public String getLastAddedBlockId() {
 		return lastAddedBlockId;
 	}
@@ -31,8 +30,36 @@ public class BlockRepository {
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		Block newBlock = blockFactory.createBlock(blockType);
-		
-		
+		this.lastAddedBlockId = newBlock.getBlockId();
+		Block connectedBlock = getBlockByID(connectedBlockId);
+
+		switch (connection) {
+		case NOCONNECTION:
+			addBlockToHeadBlocks(newBlock);
+			break;
+		case UP:
+			newBlock.setNextBlock(connectedBlock);
+			break;
+		case DOWN:
+			connectedBlock.setNextBlock(newBlock);
+			break;
+		case BODY:
+			connectedBlock.setFirstBlockOfBody(newBlock);
+			break;
+		case CONDITION:
+			connectedBlock.setConditionBlock(newBlock);
+			break;
+		case RIGHT:
+			connectedBlock.setOperand(newBlock);
+			break;
+
+		default:
+			// It shouldn't be possible to get here.
+			break;
+		}
+
+		addBlockToAllBlocks(newBlock);
+
 	}
 
 	/**
@@ -40,8 +67,7 @@ public class BlockRepository {
 	 * @param id
 	 */
 	public Block getBlockByID(String id) {
-		// TODO - implement BlockRepository.getBlockByID
-		throw new UnsupportedOperationException();
+		return allBlocks.get(id);
 	}
 
 	/**
@@ -61,7 +87,8 @@ public class BlockRepository {
 	 * @param connectedAfterMoveBlockId
 	 * @param connectionAfterMove
 	 */
-	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove,
+			String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
 		// TODO - implement BlockRepository.moveBlock
 		throw new UnsupportedOperationException();
 	}
@@ -81,8 +108,7 @@ public class BlockRepository {
 	 * @param block
 	 */
 	private void addBlockToHeadBlocks(Block block) {
-		// TODO - implement BlockRepository.addBlockToHeadBlocks
-		throw new UnsupportedOperationException();
+		this.headBlocks.add(block);
 	}
 
 	/**
@@ -90,8 +116,7 @@ public class BlockRepository {
 	 * @param block
 	 */
 	private void addBlockToAllBlocks(Block block) {
-		// TODO - implement BlockRepository.addBlockToAllBlocks
-		throw new UnsupportedOperationException();
+		this.allBlocks.put(block.getBlockId(), block);
 	}
 
 	/**
@@ -99,8 +124,7 @@ public class BlockRepository {
 	 * @param block
 	 */
 	private void removeBlockFromHeadBlocks(Block block) {
-		// TODO - implement BlockRepository.removeBlockFromHeadBlocks
-		throw new UnsupportedOperationException();
+		this.headBlocks.remove(block);
 	}
 
 	/**
@@ -108,17 +132,19 @@ public class BlockRepository {
 	 * @param block
 	 */
 	private void removeBlockFromAllBlocks(Block block) {
-		// TODO - implement BlockRepository.removeBlockFromAllBlocks
-		throw new UnsupportedOperationException();
+		this.allBlocks.remove(block.getBlockId());
 	}
 
+	/**
+	 * 
+	 * @return True totalNumberOfBlocks >= getMaxNbOfBlocks()
+	 */
 	public boolean checkIfMaxNbOfBlocksReached() {
-		// TODO - implement BlockRepository.checkIfMaxNbOfBlocksReached
-		throw new UnsupportedOperationException();
+		return this.getMaxNbOfBlocks() <= this.allBlocks.size();
 	}
 
 	public static BlockRepository getInstance() {
-		if(instance==null) {
+		if (instance == null) {
 			instance = new BlockRepository();
 		}
 		return instance;

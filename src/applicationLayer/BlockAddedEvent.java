@@ -9,8 +9,7 @@ public class BlockAddedEvent implements EventObject {
 	 * @param addedBlockId
 	 */
 	public BlockAddedEvent(String addedBlockId) {
-		// TODO - implement BlockAddedEvent.BlockAddedEvent
-		throw new UnsupportedOperationException();
+		this.addedBlockId=addedBlockId;
 	}
 
 }

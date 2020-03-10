@@ -65,6 +65,9 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @param connection
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
+		if(programBlockRepository.checkIfMaxNbOfBlocksReached()) {
+			throw new MaxNbOfBlocksReachedException("The maximum number of blocks has already been reached.");
+		}
 		programBlockRepository.addBlock(blockType, connectedBlockId, connection);
 		
 		

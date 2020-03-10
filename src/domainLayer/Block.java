@@ -9,16 +9,68 @@ public abstract class Block {
 	 * @param blockID
 	 */
 	public Block(String blockID) {
-		this.blockId=blockID;
+		this.blockId = blockID;
 	}
 
 	/**
 	 * 
 	 * @param block
 	 */
-	public void setOperand(AssessebleBlock block) {
-		// TODO - implement Block.setOperand
-		throw new UnsupportedOperationException();
+	public final void setOperand(Block block) {
+		if (!(block instanceof AssessableBlock)) {
+			throw new InvalidBlockConnectionException("This block is no AssessableBlock.");
+		} else {
+
+			this.setOperand((AssessableBlock) block);
+
+		}
+	}
+
+	/**
+	 * 
+	 * @param block
+	 */
+	public final void setNextBlock(Block block) {
+		if (!(block instanceof ExecutableBlock)) {
+			throw new InvalidBlockConnectionException(
+					"The new block and/or the connected block is no ExecutableBlock.");
+		} else {
+			this.setNextBlock((ExecutableBlock) block);
+		}
+	}
+
+	/**
+	 * 
+	 * @param block
+	 */
+	public final void setFirstBlockOfBody(Block block) {
+		if (!(block instanceof ExecutableBlock)) {
+			throw new InvalidBlockConnectionException(
+					"The new block and/or the connected block is no ExecutableBlock.");
+		} else {
+			this.setFirstBlockOfBody((ExecutableBlock) block);
+		}
+	}
+
+	/**
+	 * 
+	 * @param block
+	 */
+	public final void setConditionBlock(Block block) {
+		if (!(block instanceof AssessableBlock)) {
+			throw new InvalidBlockConnectionException("This block is no AssessableBlock.");
+		} else {
+			this.setConditionBlock((AssessableBlock) block);
+		}
+
+	}
+
+	/**
+	 * 
+	 * @param block
+	 */
+	public void setOperand(AssessableBlock block) {
+		throw new InvalidBlockConnectionException("The connected block doesn't have the requested connection.");
 	}
 
 	/**
@@ -26,8 +78,7 @@ public abstract class Block {
 	 * @param block
 	 */
 	public void setNextBlock(ExecutableBlock block) {
-		// TODO - implement Block.setNextBlock
-		throw new UnsupportedOperationException();
+		throw new InvalidBlockConnectionException("The connected block doesn't have the requested connection.");
 	}
 
 	/**
@@ -35,37 +86,31 @@ public abstract class Block {
 	 * @param block
 	 */
 	public void setFirstBlockOfBody(ExecutableBlock block) {
-		// TODO - implement Block.setFirstBlockOfBody
-		throw new UnsupportedOperationException();
+		throw new InvalidBlockConnectionException("The connected block doesn't have the requested connection.");
 	}
 
 	/**
 	 * 
 	 * @param block
 	 */
-	public void setConditionBlock(AssessebleBlock block) {
-		// TODO - implement Block.setConditionBlock
-		throw new UnsupportedOperationException();
+	public void setConditionBlock(AssessableBlock block) {
+		throw new InvalidBlockConnectionException("The connected block doesn't have the requested connection.");
 	}
 
-	public AssessebleBlock getOperand() {
-		// TODO - implement Block.getOperand
-		throw new UnsupportedOperationException();
+	public AssessableBlock getOperand() {
+		return null;
 	}
 
 	public ExecutableBlock getNextBlock() {
-		// TODO - implement Block.getNextBlock
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
 	public ExecutableBlock getFirstBlockOfBody() {
-		// TODO - implement Block.getFirstBlockOfBody
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
-	public AssessebleBlock getConditionBlock() {
-		// TODO - implement Block.getConditionBlock
-		throw new UnsupportedOperationException();
+	public AssessableBlock getConditionBlock() {
+		return null;
 	}
 
 	public String getBlockId() {

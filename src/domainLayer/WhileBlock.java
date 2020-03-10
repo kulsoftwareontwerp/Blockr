@@ -10,14 +10,4 @@ public class WhileBlock extends ControlBlock {
 		super(blockId);
 	}
 
-	public ExecutableBlock getFirstBlockOfBody() {
-		// TODO - implement WhileBlock.getFirstBlockOfBody
-		throw new UnsupportedOperationException();
-	}
-
-	public AssessebleBlock getCondition() {
-		// TODO - implement WhileBlock.getCondition
-		throw new UnsupportedOperationException();
-	}
-
 }

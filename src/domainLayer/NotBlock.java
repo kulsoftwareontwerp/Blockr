@@ -15,9 +15,6 @@ public class NotBlock extends UnaryOperatorBlock {
 		throw new UnsupportedOperationException();
 	}
 
-	public AssessebleBlock getOperand() {
-		// TODO - implement NotBlock.getOperand
-		throw new UnsupportedOperationException();
-	}
+
 
 }

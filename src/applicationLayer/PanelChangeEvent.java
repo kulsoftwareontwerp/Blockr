@@ -9,13 +9,11 @@ public class PanelChangeEvent implements EventObject {
 	 * @param show
 	 */
 	public PanelChangeEvent(boolean show) {
-		// TODO - implement PanelChangeEvent.PanelChangeEvent
-		throw new UnsupportedOperationException();
+		this.show=show;
 	}
 
 	public boolean isShown() {
-		// TODO - implement PanelChangeEvent.isShown
-		throw new UnsupportedOperationException();
+		return show;
 	}
 
 }

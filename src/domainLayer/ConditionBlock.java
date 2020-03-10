@@ -1,6 +1,6 @@
 package domainLayer;
 
-public abstract class ConditionBlock extends AssessebleBlock {
+public abstract class ConditionBlock extends AssessableBlock {
 
 	/**
 	 * 
