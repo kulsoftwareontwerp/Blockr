@@ -72,8 +72,11 @@ public class GameController implements DomainListener, GUISubject {
 
 	public ActionBlock findFirstBlockToBeExecuted() {
 		ExecutableBlock firstExecutableBlock = programBlockRepository.findFirstBlockToBeExecuted();
-		ActionBlock firstActionBlock = findNextActionBlockToBeExecuted(firstExecutableBlock);
-		return firstActionBlock;
+		if(!(firstExecutableBlock instanceof ActionBlock)) {
+			ActionBlock firstActionBlock = findNextActionBlockToBeExecuted(firstExecutableBlock);
+			return firstActionBlock;
+		}
+		return (ActionBlock) firstExecutableBlock;
 	}
 
 	/**
@@ -82,6 +85,9 @@ public class GameController implements DomainListener, GUISubject {
 	 */
 	public ActionBlock findNextActionBlockToBeExecuted(ExecutableBlock block) {
 		ExecutableBlock nextBlock = block.getNextBlock();
+		if (nextBlock == null) {
+			return null;
+		}
 		if (nextBlock instanceof ActionBlock) {
 			return (ActionBlock) nextBlock;
 		}

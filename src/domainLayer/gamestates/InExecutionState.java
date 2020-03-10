@@ -25,12 +25,19 @@ public class InExecutionState extends GameState {
 
 	public void execute() {
 		ActionBlock currentActionBlockToBeExecuted = getNextActionBlockToBeExecuted();
-		gameController.performRobotAction(currentActionBlockToBeExecuted);
 		
-		ActionBlock newNextActionBlockToBeExecuted = gameController.findNextActionBlockToBeExecuted(currentActionBlockToBeExecuted);
-		setNextActionBlockToBeExecuted(newNextActionBlockToBeExecuted);
-		
-		gameController.fireUpdateHighlightingEvent(getNextActionBlockToBeExecuted().getBlockId());
+		// If there is no next actionBlock to be executed, the program has finished and the user needs to reset
+		if (currentActionBlockToBeExecuted != null) {
+			gameController.performRobotAction(currentActionBlockToBeExecuted);
+			
+			ActionBlock newNextActionBlockToBeExecuted = gameController.findNextActionBlockToBeExecuted(currentActionBlockToBeExecuted);
+			setNextActionBlockToBeExecuted(newNextActionBlockToBeExecuted);
+			
+			if (newNextActionBlockToBeExecuted != null)
+				gameController.fireUpdateHighlightingEvent(getNextActionBlockToBeExecuted().getBlockId());
+			else
+				gameController.fireUpdateHighlightingEvent(null);
+		}
 	}
 
 	public void update() {

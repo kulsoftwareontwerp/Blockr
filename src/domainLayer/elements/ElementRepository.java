@@ -140,25 +140,25 @@ public class ElementRepository {
 	 * 
 	 * @return
 	 */
-	public HashMap<String, Integer> getCoördinatesInFrontOfRobot() {
+	public HashMap<String, Integer> getCoordinatesInFrontOfRobot() {
 		Robot robot = getRobot();
 		Orientation currentRobotOrientation = robot.getOrientation();
 		
 		
-		HashMap<String, Integer> newCoördinates=new HashMap<>();
-		newCoördinates.put("X", robot.getXCoordinate());
-		newCoördinates.put("Y", robot.getYCoordinate());
+		HashMap<String, Integer> newCoordinates=new HashMap<>();
+		newCoordinates.put("X", robot.getXCoordinate());
+		newCoordinates.put("Y", robot.getYCoordinate());
 		switch(currentRobotOrientation) {
 			case UP:
-				newCoördinates.put("Y", newCoördinates.get("Y")-1);
+				newCoordinates.put("Y", newCoordinates.get("Y")-1);
 			case DOWN:
-				newCoördinates.put("Y", newCoördinates.get("Y")+1);
+				newCoordinates.put("Y", newCoordinates.get("Y")+1);
 			case LEFT:
-				newCoördinates.put("X", newCoördinates.get("X")-1);
+				newCoordinates.put("X", newCoordinates.get("X")-1);
 			case RIGHT:
-				newCoördinates.put("X", newCoördinates.get("X")+1);
+				newCoordinates.put("X", newCoordinates.get("X")+1);
 		}
-		return newCoördinates;
+		return newCoordinates;
 	}
 
 }

@@ -25,8 +25,8 @@ public class WallInFrontBlock extends ConditionBlock {
 	
 	@Override
 	public boolean assess(ElementRepository elementsRepo) {		
-		HashMap<String, Integer> newCoördinates=elementsRepo.getCoördinatesInFrontOfRobot();
-		HashSet<Element> elements = elementsRepo.getElements(newCoördinates.get("X"),newCoördinates.get("Y"));
+		HashMap<String, Integer> newCoordinates = elementsRepo.getCoordinatesInFrontOfRobot();
+		HashSet<Element> elements = elementsRepo.getElements(newCoordinates.get("X"),newCoordinates.get("Y"));
 		
 		Iterator<Element> iterator = elements.iterator();
 		while(iterator.hasNext()) {

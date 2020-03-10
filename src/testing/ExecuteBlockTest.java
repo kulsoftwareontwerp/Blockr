@@ -28,6 +28,9 @@ public class ExecuteBlockTest {
 	
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();	
+	
+	private ActionBlock actionBlock;
+	private ControlBlock controlBlock;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -39,6 +42,8 @@ public class ExecuteBlockTest {
 
 	@Before
 	public void setUp() throws Exception {
+		actionBlock = new MoveForwardBlock("actionBlock");
+		controlBlock = new WhileBlock("controlBlock");
 	}
 
 	@After
@@ -74,6 +79,38 @@ public class ExecuteBlockTest {
 		gc.executeBlock();
 		verify(mockGameState,atLeastOnce()).execute();
 	}
+	
+	
+	@Mock(name="blockRepository")
+	private BlockRepository mockBlockRepository;
+	
+	/**
+	 * Test method for
+	 * {@link applicationLayer.GameController#findFirstBlockToBeExecuted()}.
+	 */
+	@Test
+	public void testGCFindFirstBlockToBeExecutedPositiveActionBlock() {
+		when(mockBlockRepository.findFirstBlockToBeExecuted()).thenReturn(actionBlock);
+		
+		assertEquals(gc.findFirstBlockToBeExecuted(), actionBlock);
+		verify(mockBlockRepository,atLeastOnce()).findFirstBlockToBeExecuted();
+	}
+	
+	/**
+	 * Test method for
+	 * {@link applicationLayer.GameController#findFirstBlockToBeExecuted()}.
+	 */
+	@Test
+	public void testGCFindFirstBlockToBeExecutedPositiveNoActionBlock() {
+		when(mockBlockRepository.findFirstBlockToBeExecuted()).thenReturn(controlBlock);
+		when(gc.findNextActionBlockToBeExecuted(controlBlock)).thenReturn(actionBlock);
+		
+		assertEquals(gc.findFirstBlockToBeExecuted(), actionBlock);
+		verify(mockBlockRepository,atLeastOnce()).findFirstBlockToBeExecuted();
+		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(controlBlock);
+	}
+	
+	
 	
 	
 	
