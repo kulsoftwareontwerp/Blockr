@@ -2,6 +2,17 @@ package applicationLayer;
 
 import java.util.*;
 import domainLayer.*;
+import domainLayer.blocks.BlockRepository;
+import domainLayer.blocks.BlockType;
+import events.BlockAddedEvent;
+import events.DomainListener;
+import events.DomainSubject;
+import events.GUIListener;
+import events.GUISubject;
+import events.PanelChangeEvent;
+import events.ResetExecutionEvent;
+import events.UpdateGameStateEvent;
+import exceptions.MaxNbOfBlocksReachedException;
 
 public class BlockController implements GUISubject, DomainSubject {
 

@@ -2,7 +2,8 @@ package applicationLayer;
 
 import java.util.Collection;
 
-import domainLayer.BlockType;
+import domainLayer.blocks.BlockType;
+import events.GUIListener;
 
 public class DomainController {
 

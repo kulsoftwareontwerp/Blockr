@@ -2,8 +2,12 @@ package applicationLayer;
 
 import java.util.*;
 
-import domainLayer.ElementRepository;
-import domainLayer.ElementType;
+import domainLayer.elements.ElementRepository;
+import domainLayer.elements.ElementType;
+import events.DomainListener;
+import events.DomainSubject;
+import events.GUIListener;
+import events.GUISubject;
 
 public class ElementController implements GUISubject, DomainSubject {
 
