@@ -86,8 +86,9 @@ public class GameController implements DomainListener, GUISubject {
 			return (ActionBlock) nextBlock;
 		}
 		else if (nextBlock instanceof WhileBlock) {
+
 			AssessableBlock condition = nextBlock.getConditionBlock();
-			if (assessCondition(condition)) {
+			if (condition.assess(gameElementRepository)) {
 				return findNextActionBlockToBeExecuted(nextBlock.getFirstBlockOfBody());
 			} else {
 				return findNextActionBlockToBeExecuted(nextBlock.getNextBlock());
@@ -118,15 +119,9 @@ public class GameController implements DomainListener, GUISubject {
 		}
 	}
 	
-	private boolean assessCondition(AssessableBlock condition) {
-		if (condition instanceof NotBlock) {
-			return !assessCondition(condition.getOperand());
-		} 
-		// condition instanceof WallInFront
-		else {
-			return gameElementRepository.wallInFrontOfRobot();
-		}
-	}
+
+
+
 
 	/**
 	 * 
