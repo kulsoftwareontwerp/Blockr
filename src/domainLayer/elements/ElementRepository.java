@@ -97,20 +97,9 @@ public class ElementRepository {
 
 
 	public void moveRobotForward() {
-		Robot robot = getRobot();
-		Orientation currentRobotOrientation = robot.getOrientation();
-		int newXCo = robot.getXCoordinate();
-		int newYCo = robot.getYCoordinate();
-		switch(currentRobotOrientation) {
-			case UP:
-				newYCo -= 1;
-			case DOWN:
-				newYCo += 1;
-			case LEFT:
-				newXCo -= 1;
-			case RIGHT:
-				newXCo += 1;
-		}
+		HashMap<String, Integer> coordsInFrontOfRobot = getCoordinatesInFrontOfRobot();
+		int newXCo = coordsInFrontOfRobot.get("X");
+		int newYCo = coordsInFrontOfRobot.get("Y");
 		HashSet<Element> elements = getElements(newXCo, newYCo);
 		
 		// Check if the robot stays within the boundries of the Game Area
@@ -144,19 +133,24 @@ public class ElementRepository {
 		Robot robot = getRobot();
 		Orientation currentRobotOrientation = robot.getOrientation();
 		
-		
 		HashMap<String, Integer> newCoordinates=new HashMap<>();
-		newCoordinates.put("X", robot.getXCoordinate());
-		newCoordinates.put("Y", robot.getYCoordinate());
+		int robotXCo = robot.getXCoordinate();
+		int robotYCo = robot.getYCoordinate();
+		newCoordinates.put("X", robotXCo);
+		newCoordinates.put("Y", robotYCo);
 		switch(currentRobotOrientation) {
 			case UP:
-				newCoordinates.put("Y", newCoordinates.get("Y")-1);
+				newCoordinates.put("Y", robotYCo-1);
+				break;
 			case DOWN:
-				newCoordinates.put("Y", newCoordinates.get("Y")+1);
+				newCoordinates.put("Y", robotYCo+1);
+				break;
 			case LEFT:
-				newCoordinates.put("X", newCoordinates.get("X")-1);
+				newCoordinates.put("X", robotXCo-1);
+				break;
 			case RIGHT:
-				newCoordinates.put("X", newCoordinates.get("X")+1);
+				newCoordinates.put("X", robotXCo+1);
+				break;
 		}
 		return newCoordinates;
 	}

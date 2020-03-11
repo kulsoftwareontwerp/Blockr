@@ -42,14 +42,6 @@ public abstract class ControlBlock extends ExecutableBlock {
 	public AssessableBlock getConditionBlock() {
 		return this.conditionBlock;
 	}
-	
-<<<<<<< HEAD
-
-=======
-	public ExecutableBlock getFirstBlockOfBody() {
-		return this.firstBlockOfBody;
-	}
->>>>>>> Added more tests for executeBlock + fixed minor bugs (2)
 
 
 }

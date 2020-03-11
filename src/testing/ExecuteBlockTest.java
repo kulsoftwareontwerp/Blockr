@@ -3,6 +3,10 @@ package testing;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.awt.Robot;
+import java.util.HashMap;
+import java.util.HashSet;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -40,9 +44,17 @@ public class ExecuteBlockTest extends GameController {
 	private ControlBlock ifBlock;
 	private WallInFrontBlock condition;
 
+	private WallInFrontBlock wallInFrontBlock;
+	
+	private HashMap<String, Integer> inFrontOfRobotCoords;
+	private HashSet<Element> elementsWithWall;
+	private HashSet<Element> elementsWithoutWall;
 	
 	private InExecutionState ies;
 	private ValidProgramState vps;
+	
+	private domainLayer.Robot robot;
+	private HashMap<String, Integer> robotCoords;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -62,10 +74,21 @@ public class ExecuteBlockTest extends GameController {
 		controlBlock = spy(new WhileBlock("controlBlock"));
 		whileBlock = spy(new WhileBlock("whileBlock"));
 		ifBlock = spy(new IfBlock("ifBlock"));
-		condition = spy(new WallInFrontBlock("wallInFrontBlock"));
+		condition = spy(new WallInFrontBlock("condition"));
+		wallInFrontBlock = spy(new WallInFrontBlock("wallInFrontBlock"));
+		
+		inFrontOfRobotCoords = new HashMap<String, Integer>();
+		inFrontOfRobotCoords.put("X", 1);
+		inFrontOfRobotCoords.put("Y", 1);
+		elementsWithWall = new HashSet<Element>();
+		elementsWithWall.add(new Wall(1, 1));
+		elementsWithoutWall = new HashSet<Element>();
 		
 		ies = spy(new InExecutionState(mockGameController, actionBlock));
 		vps = spy(new ValidProgramState(mockGameController));
+		
+		robot = new domainLayer.Robot(2, 2, Orientation.UP);
+		robotCoords = new HashMap<String, Integer>();
 	}
 
 	@After
@@ -244,6 +267,20 @@ public class ExecuteBlockTest extends GameController {
 		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(actionBlock2);				
 	}
 	
+	/**
+	 * Test method for
+	 * {@link domainLayer.GameState#execute()}.
+	 */
+	@Test
+	public void testGSExecutePositive() {
+		GameState gameState = Mockito.mock(
+				GameState.class, 
+				Mockito.CALLS_REAL_METHODS);
+	  
+		gameState.execute();
+		// Nothing should happen
+	}
+	
 	// TODO: Check if the executionState gets made correctly and if execute gets called on it
 	/**
 	 * Test method for
@@ -316,6 +353,86 @@ public class ExecuteBlockTest extends GameController {
 	}
 	
 	
+	/**
+	 * Test method for
+	 * {@link domainLayer.WallInFrontBlock#assess(ElementRepository)}.
+	 */
+	@Test
+	public void testWIFAssessPositiveWithWallTrue() {
+		Mockito.doReturn(inFrontOfRobotCoords).when(mockElementRepository).getCoordinatesInFrontOfRobot();
+		Mockito.doReturn(elementsWithWall).when(mockElementRepository).getElements(1,1);
+		
+		assertTrue(wallInFrontBlock.assess(mockElementRepository));
+	}
 	
-
+	/**
+	 * Test method for
+	 * {@link domainLayer.WallInFrontBlock#assess(ElementRepository)}.
+	 */
+	@Test
+	public void testWIFAssessPositiveWithoutWallFalse() {
+		Mockito.doReturn(inFrontOfRobotCoords).when(mockElementRepository).getCoordinatesInFrontOfRobot();
+		Mockito.doReturn(elementsWithoutWall).when(mockElementRepository).getElements(1,1);
+		
+		assertFalse(wallInFrontBlock.assess(mockElementRepository));
+	}
+	
+	
+	@Spy @InjectMocks
+	private ElementRepository er;
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.ElementRepository#getCoordinatesInFrontOfRobot()}.
+	 */
+	@Test
+	public void testERGetCoordinatesInFrontOfRobotPositiveUP() {
+		Mockito.doReturn(robot).when(er).getRobot();
+		robotCoords.put("X", 2);
+		robotCoords.put("Y", 1);
+		
+		assertEquals(robotCoords,er.getCoordinatesInFrontOfRobot());
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.ElementRepository#getCoordinatesInFrontOfRobot()}.
+	 */
+	@Test
+	public void testERGetCoordinatesInFrontOfRobotPositiveDOWN() {
+		robot.setOrientation(Orientation.DOWN);
+		Mockito.doReturn(robot).when(er).getRobot();
+		
+		robotCoords.put("X", 2);
+		robotCoords.put("Y", 3);
+		assertEquals(robotCoords,er.getCoordinatesInFrontOfRobot());
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.ElementRepository#getCoordinatesInFrontOfRobot()}.
+	 */
+	@Test
+	public void testERGetCoordinatesInFrontOfRobotPositiveLEFT() {
+		robot.setOrientation(Orientation.LEFT);
+		Mockito.doReturn(robot).when(er).getRobot();
+		
+		robotCoords.put("X", 1);
+		robotCoords.put("Y", 2);
+		assertEquals(robotCoords,er.getCoordinatesInFrontOfRobot());
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.ElementRepository#getCoordinatesInFrontOfRobot()}.
+	 */
+	@Test
+	public void testERGetCoordinatesInFrontOfRobotPositiveRIGHT() {
+		robot.setOrientation(Orientation.RIGHT);
+		Mockito.doReturn(robot).when(er).getRobot();
+		
+		robotCoords.put("X", 3);
+		robotCoords.put("Y", 2);
+		assertEquals(robotCoords,er.getCoordinatesInFrontOfRobot());
+	}
 }
