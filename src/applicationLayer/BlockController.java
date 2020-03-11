@@ -1,6 +1,8 @@
 package applicationLayer;
 
 import java.util.*;
+
+import domainLayer.blocks.BlockIDGenerator;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.BlockType;
 import events.BlockAddedEvent;
@@ -36,7 +38,7 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	private void fireBlockAdded() {
-		String blockId = programBlockRepository.getLastAddedBlockId();
+		String blockId = BlockIDGenerator.getInstance().getLastGeneratedBlockId();
 		BlockAddedEvent event = new BlockAddedEvent(blockId);
 		
 		for(GUIListener listener:guiListeners) {
@@ -97,6 +99,15 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * 			Is thrown when a connectedBlockId is given that is not present in the domain.
 	 * @throws	MaxNbOfBlocksReachedException
 	 * 			The maximum number of blocks in the domain is reached, no extra blocks can be added.
+	 * @event	AddBlockEvent
+	 * 			Fires an AddBlockEvent if the execution was successful.
+	 * @event	UpdateGameStateEvent
+	 * 			Fires an UpdateGameStateEvent if the execution was successful.
+	 * @event	ResetExecutionEvent
+	 * 			Fires a ResetExecutionEvent if the execution was successful.
+	 * @event	PanelChangeEvent
+	 * 			Fires a PanelChangeEvent if the maximum number of block has been reached after adding a block.
+	 * 
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		if(programBlockRepository.checkIfMaxNbOfBlocksReached()) {

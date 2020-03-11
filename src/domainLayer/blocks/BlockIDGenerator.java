@@ -1,5 +1,12 @@
 package domainLayer.blocks;
 
+
+/**
+ * The BlockIDGenerator creates unique identifiers for blocks.
+ * 
+ * @version 0.1
+ * @author group17
+ */
 public class BlockIDGenerator {
 
 	private static BlockIDGenerator generator;
@@ -9,11 +16,30 @@ public class BlockIDGenerator {
 		this.id = -1;
 	}
 
-	public String getBlockID() {
+	/**
+	 * Retrieve the last generated blockID
+	 * @return the last generated blockID
+	 */
+	public String getLastGeneratedBlockId() {
+		return id.toString();
+	}
+	
+	
+	/**
+	 * Generate a new BlockID and return it
+	 * @return A unique newly generated BlockID
+	 */
+	public String generateBlockID() {
 		this.id+=1;
 		return id.toString();
 	}
 
+	
+	/**
+	 * Retrieve the instantiation of BlockIDGenerator.
+	 * 
+	 * @return	The instantiation of BlockIDGenerator.
+	 */
 	public static BlockIDGenerator getInstance() {
 		if(generator==null) {
 			generator = new BlockIDGenerator();

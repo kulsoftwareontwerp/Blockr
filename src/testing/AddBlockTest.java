@@ -722,7 +722,7 @@ public class AddBlockTest {
 	 */
 	@Test
 	public void testBFAddBlockPositive() {
-		when(mockBlockIDGenerator.getBlockID()).thenReturn("newBlock");
+		when(mockBlockIDGenerator.generateBlockID()).thenReturn("newBlock");
 		Block block;
 		block = blockFactory.createBlock(BlockType.If);
 		assertEquals(IfBlock.class, block.getClass());
@@ -752,27 +752,27 @@ public class AddBlockTest {
 		assertEquals(TurnRightBlock.class, block.getClass());
 		assertEquals("newBlock", block.getBlockId());
 
-		verify(mockBlockIDGenerator, times(7)).getBlockID();
+		verify(mockBlockIDGenerator, times(7)).generateBlockID();
 	}
 
 	private BlockIDGenerator idGenerator;
 
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockIDGenerator#getBlockID()}.
+	 * Test method for {@link domainLayer.blocks.BlockIDGenerator#generateBlockID()}.
 	 */
 	@Test
 	public void testBIDAddBlockGPositive() {
 		idGenerator = BlockIDGenerator.getInstance();
 
-		String id1 = idGenerator.getBlockID();
+		String id1 = idGenerator.generateBlockID();
 
-		String id2 = idGenerator.getBlockID();
+		String id2 = idGenerator.generateBlockID();
 
 		idGenerator = BlockIDGenerator.getInstance();
 
-		String id3 = idGenerator.getBlockID();
+		String id3 = idGenerator.generateBlockID();
 
-		String id4 = idGenerator.getBlockID();
+		String id4 = idGenerator.generateBlockID();
 
 		assertNotEquals(id1, id2);
 		assertNotEquals(id1, id3);

@@ -1,18 +1,24 @@
 package domainLayer.blocks;
 
+/**
+ * The abstract class for the concept of an assessable block.
+ * 
+ * @version 0.1
+ * @author group17
+ */
 public abstract class AssessableBlock extends Block {
 
+
 	/**
-	 * 
-	 * @param blockId
+	 * Create an Assessable Block
+	 * @param 	blockId
+	 * 			The ID for the block.
 	 */
 	public AssessableBlock(String blockId) {
 		super(blockId);
 	}
 
-	public boolean assess() {
-		// TODO - implement AssassebleBlock.assess
-		throw new UnsupportedOperationException();
-	}
+	//TODO: write documentation for this method.
+	abstract public boolean assess();
 
 }

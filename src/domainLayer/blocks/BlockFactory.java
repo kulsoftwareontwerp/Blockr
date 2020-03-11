@@ -1,5 +1,12 @@
 package domainLayer.blocks;
 
+
+/**
+ * The BlockFactory is responsible for the creation of blocks.
+ * 
+ * @version 0.1
+ * @author group17
+ */
 public class BlockFactory {
 
 	private BlockIDGenerator blockIDGenerator;
@@ -9,11 +16,12 @@ public class BlockFactory {
 	}
 
 	/**
-	 * 
-	 * @param type
+	 * Create a block of a certain BlockType.
+	 * @param 	type
+	 * 			The BlockType of which a block must be added.
 	 */
 	public Block createBlock(BlockType type) {
-		String blockId = blockIDGenerator.getBlockID();
+		String blockId = blockIDGenerator.generateBlockID();
 		switch (type) {
 		case If:
 			return new IfBlock(blockId);

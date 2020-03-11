@@ -58,9 +58,9 @@ public class DomainController {
 	 * @throws	MaxNbOfBlocksReachedException
 	 * 			The maximum number of blocks in the domain is reached, no extra blocks can be added.
 	 * @event	AddBlockEvent
-	 * 			Fires AddBlockEvent if the execution was succesful.
-	 * @event	BlockChangedEvent
-	 * 			Fires AddBlockEvent if the execution was succesful.
+	 * 			Fires an AddBlockEvent if the execution was successful.
+	 * @event	PanelChangeEvent
+	 * 			Fires a PanelChangeEvent if the maximum number of block has been reached after adding a block.
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		if(blockType == null) {

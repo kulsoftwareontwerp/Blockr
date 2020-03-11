@@ -3,7 +3,6 @@ package domainLayer.blocks;
 import java.util.*;
 import applicationLayer.*;
 import exceptions.InvalidBlockConnectionException;
-import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
 
 
@@ -18,7 +17,6 @@ public class BlockRepository {
 	private BlockFactory blockFactory;
 	private Collection<Block> headBlocks;
 	private HashMap<String, Block> allBlocks;
-	private String lastAddedBlockId;
 	private final int maxNbOfBlocks = 20;
 	private static BlockRepository instance;
 
@@ -28,9 +26,6 @@ public class BlockRepository {
 		blockFactory = new BlockFactory();
 	}
 
-	public String getLastAddedBlockId() {
-		return lastAddedBlockId;
-	}
 
 	/**
 	 * Add a block of the given blockType to the domain and connect it with the given connectedBlockId on the given connection
@@ -53,7 +48,6 @@ public class BlockRepository {
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		Block newBlock = blockFactory.createBlock(blockType);
-		this.lastAddedBlockId = newBlock.getBlockId();
 		Block connectedBlock = getBlockByID(connectedBlockId);
 
 		switch (connection) {
@@ -126,11 +120,13 @@ public class BlockRepository {
 	}
 
 	/**
-	 * 
-	 * @param id
+	 * Retrieve a block by its ID
+	 * @param ID
+	 * @return 	The block corresponding with the given ID. 
+	 * 			If there is no block for the given ID, null is returned.
 	 */
-	public Block getBlockByID(String id) {
-		return allBlocks.get(id);
+	public Block getBlockByID(String ID) {
+		return allBlocks.get(ID);
 	}
 
 	/**
@@ -166,34 +162,22 @@ public class BlockRepository {
 		throw new UnsupportedOperationException();
 	}
 
-	/**
-	 * 
-	 * @param block
-	 */
+
 	private void addBlockToHeadBlocks(Block block) {
 		this.headBlocks.add(block);
 	}
 
-	/**
-	 * 
-	 * @param block
-	 */
+
 	private void addBlockToAllBlocks(Block block) {
 		this.allBlocks.put(block.getBlockId(), block);
 	}
 
-	/**
-	 * 
-	 * @param block
-	 */
+
 	private void removeBlockFromHeadBlocks(Block block) {
 		this.headBlocks.remove(block);
 	}
 
-	/**
-	 * 
-	 * @param block
-	 */
+
 	private void removeBlockFromAllBlocks(Block block) {
 		this.allBlocks.remove(block.getBlockId());
 	}
@@ -201,7 +185,7 @@ public class BlockRepository {
 	/**
 	 * Checks if the maximum number of blocks has been reached.
 	 * 
-	 * @return totalNumberOfBlocks >= getMaxNbOfBlocks()
+	 * @return getMaxNbOfBlocks() <= totalNumberOfBlocks
 	 */
 	public boolean checkIfMaxNbOfBlocksReached() {
 		return this.getMaxNbOfBlocks() <= this.allBlocks.size();
@@ -209,6 +193,7 @@ public class BlockRepository {
 
 	/**
 	 * Retrieve the instantiation of BlockRepository.
+	 * 
 	 * @return	The instantiation of BlockRepository.
 	 */
 	public static BlockRepository getInstance() {
@@ -217,7 +202,11 @@ public class BlockRepository {
 		}
 		return instance;
 	}
-
+	
+	/**
+	 * Retrieve the maximum number of blocks.
+	 * @return the maximum number of blocks.
+	 */
 	public int getMaxNbOfBlocks() {
 		return maxNbOfBlocks;
 	}

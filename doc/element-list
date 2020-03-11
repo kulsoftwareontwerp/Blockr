@@ -5,5 +5,3 @@ domainLayer.gamestates
 events
 exceptions
 guiLayer
-startup
-testing

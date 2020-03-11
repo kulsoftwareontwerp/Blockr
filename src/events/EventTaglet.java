@@ -11,7 +11,12 @@ import com.sun.source.doctree.DocTree;
 
 import jdk.javadoc.doclet.Taglet;
 
-
+/**
+ * EventTaglet is used to create the event tags in the javadoc.
+ * 
+ * @version 0.1
+ * @author group17
+ */
 public class EventTaglet implements Taglet {
 
 	 private static final String NAME = "event";
@@ -38,7 +43,10 @@ public class EventTaglet implements Taglet {
 	        return false;
 	    }
 	   
-
+	    /**
+	     * Retrieve the allowed Locations to show the taglet.
+	     * @return A set with all the locations.
+	     */
 		@Override
 		public Set<Location> getAllowedLocations() {
 			Set<Location> l = new HashSet<Taglet.Location>();

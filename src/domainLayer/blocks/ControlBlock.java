@@ -1,22 +1,26 @@
 package domainLayer.blocks;
 
+/**
+ * The abstract class for the concept of a control block.
+ * 
+ * @version 0.1
+ * @author group17
+ */
 public abstract class ControlBlock extends ExecutableBlock {
 
 	private ExecutableBlock firstBlockOfBody;
 	private AssessableBlock condition;
 
 	/**
-	 * 
-	 * @param blockId
+	 * Create a Control Block
+	 * @param 	blockId
+	 * 			The ID for the block.
 	 */
 	public ControlBlock(String blockId) {
 		super(blockId);
 	}
 
-	/**
-	 * 
-	 * @param block
-	 */
+	@Override
 	public void setFirstBlockOfBody(ExecutableBlock block) {
 		this.firstBlockOfBody = block;
 	}
@@ -28,10 +32,7 @@ public abstract class ControlBlock extends ExecutableBlock {
 		return this.firstBlockOfBody;
 	}
 
-	/**
-	 * 
-	 * @param block
-	 */
+	@Override
 	public void setConditionBlock(AssessableBlock block) {
 		this.condition=block;
 	}
