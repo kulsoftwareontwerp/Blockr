@@ -16,6 +16,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -24,7 +25,7 @@ import domainLayer.blocks.*;
 import domainLayer.gamestates.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ExecuteBlockTest {
+public class ExecuteBlockTest extends GameController {
 	
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();	
@@ -32,9 +33,13 @@ public class ExecuteBlockTest {
 	private ValidProgramState validProgramState;
 	
 	private ActionBlock actionBlock;
+	private ActionBlock actionBlock2;
+	private ActionBlock actionBlock3;
 	private ControlBlock controlBlock;
 	private ControlBlock whileBlock;
-	private AssessableBlock condition;
+	private ControlBlock ifBlock;
+	private WallInFrontBlock condition;
+
 	
 	private InExecutionState ies;
 	private ValidProgramState vps;
@@ -52,8 +57,11 @@ public class ExecuteBlockTest {
 		validProgramState = spy(new ValidProgramState(mockGameController));
 		
 		actionBlock = spy(new MoveForwardBlock("actionBlock"));
+		actionBlock2 = spy(new TurnLeftBlock("actionBlock2"));
+		actionBlock3 = spy(new TurnRightBlock("actionBlock3"));
 		controlBlock = spy(new WhileBlock("controlBlock"));
 		whileBlock = spy(new WhileBlock("whileBlock"));
+		ifBlock = spy(new IfBlock("ifBlock"));
 		condition = spy(new WallInFrontBlock("wallInFrontBlock"));
 		
 		ies = spy(new InExecutionState(mockGameController, actionBlock));
@@ -148,27 +156,93 @@ public class ExecuteBlockTest {
 		assertEquals(gc.findNextActionBlockToBeExecuted(actionBlock),actionBlock);
 	}
 	
-//	@Mock(name="elementRepository")
-//	private ElementRepository mockElementRepository;
-//	
-//	/**
-//	 * Test method for
-//	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
-//	 */
-//	@Test
-//	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockWhileBlockAssessTrue() {
-//		when(actionBlock.getNextBlock()).thenReturn(whileBlock);
-//		when(whileBlock.getConditionBlock()).thenReturn(condition);
-//		when(condition.assess(mockElementRepository)).thenReturn(true);
-//		when(whileBlock.getFirstBlockOfBody()).thenReturn(actionBlock);
-//		
-//		gc.findNextActionBlockToBeExecuted(actionBlock);
-//		
-//		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(actionBlock);
-//		
-//				
-//	}
+	@Mock(name="elementRepository")
+	private ElementRepository mockElementRepository;
 	
+	/**
+	 * Test method for
+	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+	 */
+	@Test
+	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockWhileBlockAssessTrue() {
+		when(actionBlock.getNextBlock()).thenReturn(whileBlock);
+		when(whileBlock.getConditionBlock()).thenReturn(condition);
+		Mockito.doReturn(true).when(condition).assess(mockElementRepository);
+		Mockito.doReturn(actionBlock2).when(whileBlock).getFirstBlockOfBody();
+		
+		gc.findNextActionBlockToBeExecuted(actionBlock);
+		
+		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(actionBlock2);				
+	}
+	
+	/**
+	 * Test method for
+	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+	 */
+	@Test
+	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockWhileBlockAssessFalse() {
+		when(actionBlock.getNextBlock()).thenReturn(whileBlock);
+		when(whileBlock.getConditionBlock()).thenReturn(condition);
+		Mockito.doReturn(false).when(condition).assess(mockElementRepository);
+		Mockito.doReturn(actionBlock2).when(whileBlock).getNextBlock();
+		
+		gc.findNextActionBlockToBeExecuted(actionBlock);
+		
+		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(actionBlock2);				
+	}
+	
+	/**
+	 * Test method for
+	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+	 */
+	@Test
+	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockIfBlockAssessFalse() {
+		when(actionBlock.getNextBlock()).thenReturn(ifBlock);
+		when(ifBlock.getConditionBlock()).thenReturn(condition);
+		Mockito.doReturn(false).when(condition).assess(mockElementRepository);
+		Mockito.doReturn(actionBlock2).when(ifBlock).getNextBlock();
+		
+		gc.findNextActionBlockToBeExecuted(actionBlock);
+		
+		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(actionBlock2);				
+	}
+	
+	/**
+	 * Test method for
+	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+	 */
+	@Test
+	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockIfBlockAssessTrueIsReachedFromEndOfBodyTrue() {
+		when(actionBlock.getNextBlock()).thenReturn(ifBlock);
+		when(ifBlock.getConditionBlock()).thenReturn(condition);
+		Mockito.doReturn(true).when(condition).assess(mockElementRepository);
+		Mockito.doReturn(actionBlock).when(ifBlock).getFirstBlockOfBody();
+		//Mockito.doReturn(true).when(gc).isReachedFromEndOfBody("actionBlock", "ifBlock", actionBlock2);
+		Mockito.doReturn(actionBlock2).when(ifBlock).getNextBlock();
+		
+		gc.findNextActionBlockToBeExecuted(actionBlock);
+		
+		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(actionBlock2);				
+	}
+	
+	/**
+	 * Test method for
+	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+	 */
+	@Test
+	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockIfBlockAssessTrueIsReachedFromEndOfBodyFalse() {
+		when(actionBlock.getNextBlock()).thenReturn(ifBlock);
+		when(ifBlock.getConditionBlock()).thenReturn(condition);
+		Mockito.doReturn(true).when(condition).assess(mockElementRepository);
+		Mockito.doReturn(actionBlock2).when(ifBlock).getFirstBlockOfBody();
+		Mockito.doReturn(ifBlock).when(actionBlock2).getNextBlock();
+		//Mockito.doReturn(true).when(gc).isReachedFromEndOfBody("actionBlock", "ifBlock", actionBlock2);
+		Mockito.doReturn(actionBlock3).when(ifBlock).getNextBlock();
+		
+		gc.findNextActionBlockToBeExecuted(actionBlock);
+		
+		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(actionBlock2);				
+	}
 	
 	// TODO: Check if the executionState gets made correctly and if execute gets called on it
 	/**

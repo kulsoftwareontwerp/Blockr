@@ -91,22 +91,28 @@ public class GameController implements DomainListener, GUISubject {
 		if (nextBlock instanceof ActionBlock) {
 			return (ActionBlock) nextBlock;
 		}
+<<<<<<< HEAD
 		else if (nextBlock instanceof WhileBlock) {
 
 			AssessableBlock condition = nextBlock.getConditionBlock();
-			if (condition.assess(gameElementRepository)) {
-				return findNextActionBlockToBeExecuted(nextBlock.getFirstBlockOfBody());
-			} else {
-				return findNextActionBlockToBeExecuted(nextBlock.getNextBlock());
-			}
-		}
-		// nextBlock instanceof IfBlock
+=======
 		else {
-			// Check if this IfBlock is reached because it's beneath another block (so we need to continue with the firstBlockOfBody of this IfBlock)
-			// OR it's reached because we are at the end of executing this IfBlock (so we need to continue with the nextBlock of this IfBlock)
-			if (!isReachedFromEndOfBody(block.getBlockId(),nextBlock.getBlockId(),nextBlock.getFirstBlockOfBody())) {
-				return findNextActionBlockToBeExecuted(nextBlock.getFirstBlockOfBody());
-			} else {
+			// If or while block
+			AssessebleBlock condition = nextBlock.getConditionBlock();
+>>>>>>> Added more tests for executeBlock + fixed minor bugs (2)
+			if (condition.assess(gameElementRepository)) {
+				// If the condition is true, we want to continue with the first block in the body of the controlBlock
+				//	EXCEPT for when we just came out of the body of an ifBlock. Then we continue under it.
+				if (nextBlock instanceof IfBlock &&
+						isReachedFromEndOfBody(block.getBlockId(),nextBlock.getBlockId(),nextBlock.getFirstBlockOfBody())) {
+					return findNextActionBlockToBeExecuted(nextBlock.getNextBlock());
+				}
+				else {
+					return findNextActionBlockToBeExecuted(nextBlock.getFirstBlockOfBody());
+				}
+			} 
+			else {
+				// If the condition is false, we continue with the block under the controlBlock
 				return findNextActionBlockToBeExecuted(nextBlock.getNextBlock());
 			}
 		}
