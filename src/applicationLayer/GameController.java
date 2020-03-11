@@ -140,13 +140,16 @@ public class GameController implements DomainListener, GUISubject {
 	 * @param block
 	 */
 	public void performRobotAction(ActionBlock block) {
-		switch(block.getClass().toString()) {
+		switch(block.getClass().getSimpleName()) {
 			case "TurnLeftBlock":
 				gameElementRepository.turnRobotLeft();
+				break;
 			case "TurnRightBlock":
 				gameElementRepository.turnRobotRight();
+				break;
 			case "MoveForwardBlock":
 				gameElementRepository.moveRobotForward();
+				break;
 		}
 		fireRobotChangeEvent();
 	}
