@@ -11,8 +11,6 @@ public class ValidProgramState extends GameState {
 	 */
 	public ValidProgramState(GameController game) {
 		super(game);
-		// TODO - implement ValidProgramState.ValidProgramState
-		throw new UnsupportedOperationException();
 	}
 
 	public void execute() {

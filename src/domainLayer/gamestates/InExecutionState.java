@@ -14,8 +14,6 @@ public class InExecutionState extends GameState {
 	 */
 	public InExecutionState(GameController game, ActionBlock nextBlock) {
 		super(game);
-		// TODO - implement InExecutionState.InExecutionState
-		throw new UnsupportedOperationException();
 	}
 
 	public void reset() {
