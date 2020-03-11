@@ -17,8 +17,8 @@ public class ElementRepository {
 
 	
 	public void removeRobot() {
-		// TODO - implement ElementRepository.removeRobot
-		throw new UnsupportedOperationException();
+		Robot robot = getRobot();
+		elements.remove(robot);
 	}
 
 	/**

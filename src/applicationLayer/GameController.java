@@ -39,8 +39,10 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	public void resetGameExecution() {
-		// TODO - implement GameController.resetGameExecution
-		throw new UnsupportedOperationException();
+		GameState currentState = getCurrentState();
+		currentState.reset();
+		fireUpdateHighlightingEvent(null);
+		fireRobotChangeEvent();
 	}
 
 	public GameState getCurrentState() {
@@ -60,8 +62,9 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	public void resetRobot() {
-		// TODO - implement GameController.resetRobot
-		throw new UnsupportedOperationException();
+		gameElementRepository.removeRobot();
+		gameElementRepository.initializeRobot();
+		fireRobotChangeEvent();
 	}
 
 	public void executeBlock() {
