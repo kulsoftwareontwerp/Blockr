@@ -59,7 +59,6 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	public void updateState() {
-		GameState currentState = getCurrentState();
 		currentState.update();
 	}
 
@@ -133,7 +132,7 @@ public class GameController implements DomainListener, GUISubject {
 
 	@Override
 	public void onUpdateGameStateEvent(UpdateGameStateEvent event) {
-		// TODO Auto-generated method stub
+		updateState();
 		
 	}
 
