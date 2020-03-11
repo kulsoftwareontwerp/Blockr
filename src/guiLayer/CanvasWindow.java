@@ -1,6 +1,15 @@
 package guiLayer;
 
 import applicationLayer.*;
+import events.BlockAddedEvent;
+import events.BlockChangeEvent;
+import events.BlockRemovedEvent;
+import events.ElementAddedEvent;
+import events.GUIListener;
+import events.PanelChangeEvent;
+import events.RobotAddedEvent;
+import events.RobotChangeEvent;
+import events.UpdateHighlightingEvent;
 
 public class CanvasWindow implements GUIListener {
 
