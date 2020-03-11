@@ -91,15 +91,9 @@ public class GameController implements DomainListener, GUISubject {
 		if (nextBlock instanceof ActionBlock) {
 			return (ActionBlock) nextBlock;
 		}
-<<<<<<< HEAD
-		else if (nextBlock instanceof WhileBlock) {
 
-			AssessableBlock condition = nextBlock.getConditionBlock();
-=======
-		else {
 			// If or while block
-			AssessebleBlock condition = nextBlock.getConditionBlock();
->>>>>>> Added more tests for executeBlock + fixed minor bugs (2)
+			AssessableBlock condition = nextBlock.getConditionBlock();
 			if (condition.assess(gameElementRepository)) {
 				// If the condition is true, we want to continue with the first block in the body of the controlBlock
 				//	EXCEPT for when we just came out of the body of an ifBlock. Then we continue under it.
@@ -116,7 +110,7 @@ public class GameController implements DomainListener, GUISubject {
 				return findNextActionBlockToBeExecuted(nextBlock.getNextBlock());
 			}
 		}
-	}
+	
 	
 	// TODO: WRITE EXPLANATION
 	private boolean isReachedFromEndOfBody(String endOfBodyBlockId, String ifBlockId, ExecutableBlock nextBlockToCheck) {
@@ -140,17 +134,7 @@ public class GameController implements DomainListener, GUISubject {
 	 * @param block
 	 */
 	public void performRobotAction(ActionBlock block) {
-		switch(block.getClass().getSimpleName()) {
-			case "TurnLeftBlock":
-				gameElementRepository.turnRobotLeft();
-				break;
-			case "TurnRightBlock":
-				gameElementRepository.turnRobotRight();
-				break;
-			case "MoveForwardBlock":
-				gameElementRepository.moveRobotForward();
-				break;
-		}
+		block.execute(gameElementRepository);
 		fireRobotChangeEvent();
 	}
 	

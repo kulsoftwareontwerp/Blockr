@@ -67,20 +67,6 @@ public class ElementRepository {
 		robot.setYCoordinate(yCo);
 	}
 
-	public void turnRobotLeft() {
-		Robot robot = getRobot();
-		Orientation currentOrientation = robot.getOrientation();
-		Orientation newOrientation = currentOrientation.getLeft();
-		robot.setOrientation(newOrientation);
-	}
-
-	public void turnRobotRight() {
-		Robot robot = getRobot();
-		Orientation currentOrientation = robot.getOrientation();
-		Orientation newOrientation = currentOrientation.getRight();
-		robot.setOrientation(newOrientation);
-	}
-
 
 	public static ElementRepository getInstance() {
 		if(instance==null) {
@@ -93,32 +79,6 @@ public class ElementRepository {
 	public void addElement(ElementType type, int xCoordinate, int yCoordinate) {
 		Element el = factory.createElement(type, xCoordinate, yCoordinate);
 		elements.add(el);
-	}
-
-
-	public void moveRobotForward() {
-		HashMap<String, Integer> coordsInFrontOfRobot = getCoordinatesInFrontOfRobot();
-		int newXCo = coordsInFrontOfRobot.get("X");
-		int newYCo = coordsInFrontOfRobot.get("Y");
-		HashSet<Element> elements = getElements(newXCo, newYCo);
-		
-		// Check if the robot stays within the boundries of the Game Area
-		if(newXCo < 0 || newXCo > gameAreaWidth-1 || newYCo < 0 || newYCo > gameAreaHeight-1) {
-			return;
-		}
-		
-		Iterator<Element> iterator = elements.iterator();
-		while(iterator.hasNext()) {
-			Element element = iterator.next();
-			// If another solid element is already in the new spot of the robot, the position of the robot stays the same.
-			if(element instanceof SolidElement) {
-				return;
-			}
-		}
-		
-		// If no solid objects are found on the new position, we move the robot into that position.
-		updateRobotPosition(newXCo,newYCo);
-		
 	}
 	
 	public HashSet<Element> getElements() {
@@ -153,6 +113,16 @@ public class ElementRepository {
 				break;
 		}
 		return newCoordinates;
+	}
+
+
+	public int getGameAreaHeight() {
+		return gameAreaHeight;
+	}
+
+
+	public int getGameAreaWidth() {
+		return gameAreaWidth;
 	}
 
 }
