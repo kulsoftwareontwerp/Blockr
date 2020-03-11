@@ -169,12 +169,13 @@ public class BlockRepository {
 	 * @param connectionAfterMove
 	 * @return TODO
 	 */
-	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove,
+	public Set<String> moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove,
 		String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+		Set<String> movedBlocks = new HashSet<String>();
 		Block movedBlock = getBlockByID(movedBlockId);
 		Block bfm = getBlockByID(connectedBeforeMoveBlockId);
 		Block afm = getBlockByID(connectedAfterMoveBlockId);
-		
+		movedBlocks.add(movedBlockId);
 		if (connectionBeforeMove == ConnectionType.NOCONNECTION) {
 			// indien no connection dan is er hier geen nood aan verandering
 			if (connectionAfterMove == ConnectionType.DOWN) {
@@ -189,11 +190,12 @@ public class BlockRepository {
 			
 			else if (connectionAfterMove == ConnectionType.UP) {
 				if (movedBlock.getNextBlock() != null) {
-					Block nextBlockInCHain = movedBlock;
-					while (nextBlockInCHain.getNextBlock() != null) {
-						nextBlockInCHain = nextBlockInCHain.getNextBlock();
+					Block nextBlockInChain = movedBlock;
+					while (nextBlockInChain.getNextBlock() != null) {
+						nextBlockInChain = nextBlockInChain.getNextBlock();
+						movedBlocks.add(nextBlockInChain.getBlockId());
 					}
-					nextBlockInCHain.setNextBlock((ExecutableBlock) afm);
+					nextBlockInChain.setNextBlock((ExecutableBlock) afm);
 				} else {
 					movedBlock.setNextBlock((ExecutableBlock) afm);
 				}
@@ -245,11 +247,12 @@ public class BlockRepository {
 				addBlockToHeadBlocks(movedBlock);// connection up is broken so there is no upper block
 				if (movedBlock.getNextBlock() != null) // block is Head block of a blockChain
 				{
-					Block nextBlockInCHain = movedBlock;
-					while (nextBlockInCHain.getNextBlock() != null) {
-						nextBlockInCHain = nextBlockInCHain.getNextBlock();
+					Block nextBlockInChain = movedBlock;
+					while (nextBlockInChain.getNextBlock() != null) {
+						nextBlockInChain = nextBlockInChain.getNextBlock();
+						movedBlocks.add(nextBlockInChain.getBlockId());
 					}
-					nextBlockInCHain.setNextBlock((ExecutableBlock) afm);
+					nextBlockInChain.setNextBlock((ExecutableBlock) afm);
 				} else {
 					movedBlock.setNextBlock((ExecutableBlock) afm);
 				}
@@ -317,11 +320,12 @@ public class BlockRepository {
 			
 			else if (connectionAfterMove == ConnectionType.UP) {
 				if (movedBlock.getNextBlock() != null) {
-					Block nextBlockInCHain = movedBlock;
-					while (nextBlockInCHain.getNextBlock() != null) {
-						nextBlockInCHain = nextBlockInCHain.getNextBlock();
+					Block nextBlockInChain = movedBlock;
+					while (nextBlockInChain.getNextBlock() != null) {
+						nextBlockInChain = nextBlockInChain.getNextBlock();
+						movedBlocks.add(nextBlockInChain.getBlockId());
 					}
-					nextBlockInCHain.setNextBlock((ExecutableBlock) afm);
+					nextBlockInChain.setNextBlock((ExecutableBlock) afm);
 				} else {
 					movedBlock.setNextBlock((ExecutableBlock) afm);
 				}
@@ -338,6 +342,7 @@ public class BlockRepository {
 				afm.setFirstBlockOfBody((ExecutableBlock) movedBlock);
 			}
 		}
+		return movedBlocks;
 	}
 
 	public boolean checkIfValidProgram() {
@@ -398,11 +403,11 @@ public class BlockRepository {
 		return maxNbOfBlocks;
 	}
 	
-	public HashMap<String, Block> getAllBlocksUnderneath(String blockID){
-		HashMap<String,Block> blocksUnderneath = new HashMap<String,Block>();
+	public Set<String> getAllBlocksUnderneath(String blockID){
+		Set<String> blocksUnderneath = new HashSet<String>();
 		Block nextBlock = getBlockByID(blockID);
 		while(nextBlock.getNextBlock() != null) {
-			blocksUnderneath.put(nextBlock.getNextBlock().getBlockId(), nextBlock.getNextBlock());
+			blocksUnderneath.add(nextBlock.getNextBlock().getBlockId());
 			nextBlock = nextBlock.getNextBlock();
 		}
 		return blocksUnderneath;

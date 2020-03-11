@@ -119,13 +119,22 @@ public class DomainController {
 	 * @param connectedAfterMoveBlockId
 	 * @param connectionAfterMove
 	 */
-	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove,
-			String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-		// TODO - implement DomainController.moveBlock
-		blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove,
-				connectedAfterMoveBlockId, connectionAfterMove);
-		// gameController.updateState(); Testen eens merged met UpdateState branch
-
+	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+		if(movedBlockId == null || movedBlockId.equals("")) {
+			throw new IllegalArgumentException("No movedBlockID given");
+		}
+		else if(connectionBeforeMove == null || connectionAfterMove == null) {
+			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
+		}
+		else if(connectedBeforeMoveBlockId.equals("")  && !(connectionBeforeMove == ConnectionType.NOCONNECTION)) {
+			throw new IllegalArgumentException("No blockId given for connectedBeforeMovedBlockID");
+			}
+		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
+			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
+		}
+			else {
+			blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+		}
 	}
 
 	/**

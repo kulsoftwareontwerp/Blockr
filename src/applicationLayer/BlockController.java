@@ -5,14 +5,7 @@ import java.util.*;
 import domainLayer.blocks.BlockIDGenerator;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.BlockType;
-import events.BlockAddedEvent;
-import events.DomainListener;
-import events.DomainSubject;
-import events.GUIListener;
-import events.GUISubject;
-import events.PanelChangeEvent;
-import events.ResetExecutionEvent;
-import events.UpdateGameStateEvent;
+import events.*;
 import exceptions.MaxNbOfBlocksReachedException;
 
 /**
@@ -50,9 +43,12 @@ public class BlockController implements GUISubject, DomainSubject {
 		throw new UnsupportedOperationException();
 	}
 
-	private void fireBlockChanged() {
-		// TODO - implement BlockController.fireBlockChanged
-		throw new UnsupportedOperationException();
+	private void fireBlockChanged(String changedBlockId, String changedLinkedBlockId, ConnectionType connectionType) {
+		BlockChangeEvent event = new BlockChangeEvent( changedBlockId, changedLinkedBlockId, connectionType);
+		
+		for(GUIListener listener:guiListeners) {
+			listener.onBlockChangeEvent(event);
+		}
 	}
 
 	private void firePanelChangedEvent() {
@@ -68,7 +64,6 @@ public class BlockController implements GUISubject, DomainSubject {
 		for(DomainListener listener:domainListeners) {
 			listener.onUpdateGameStateEvent(event);
 		}
-		
 	}
 
 	private void fireResetExecutionEvent() {
@@ -149,9 +144,12 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @param connectionAfterMove
 	 */
 	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-		// TODO - implement BlockController.moveBlock
-		programBlockRepository.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
-		fireBlockChanged();
+		Set<String> movedBlocks = programBlockRepository.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+		fireUpdateGameState();
+		fireResetExecutionEvent();
+		for(String blockID : movedBlocks) {
+			fireBlockChanged(movedBlockId,connectedAfterMoveBlockId,connectionAfterMove);
+		}
 	}
 
 	/**

@@ -36,16 +36,13 @@ public class MoveBlockTest {
 
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();
-	
-	@Mock
-	private BlockRepository mockBlockReprository;
-
-	@Mock
-	private DomainController mockDomainController;
 
 	private ArrayList<String> blockIdsInRepository = new ArrayList<String>();
 
+	@Spy
 	private BlockRepository blockRepository;
+	
+	@Spy
 	private BlockRepository blockRepositoryValidBeforeMove;
 
 	private ActionBlock connectedActionBlockA;
@@ -105,8 +102,6 @@ public class MoveBlockTest {
 	public void setUp() throws Exception {
 
 		// Mulptiple head block reprository
-		blockRepository = spy(BlockRepository.getInstance());
-
 		movedActionBlock = spy(new MoveForwardBlock("1"));
 		connectedMoveForwardBlockA = spy(new MoveForwardBlock("2"));
 		connectedMoveForwardBlockB = spy(new MoveForwardBlock("3"));
@@ -137,9 +132,19 @@ public class MoveBlockTest {
 
 	@Mock
 	private BlockController mockBlockController;
+	
+	@Mock
+	private BlockRepository mockBlockReprository;
+
+	
+	
 	@Spy
 	@InjectMocks
 	private DomainController dc;
+	
+	@Spy
+	@InjectMocks
+	private BlockController bc;
 
 	@Test
 	public void testMoveBlockRepository() {
@@ -148,14 +153,29 @@ public class MoveBlockTest {
 	}
 
 	// POSITIVE TESTS
+	
+	@Test
+	public void testPositiveMoveBlock() {
+		
+		dc.moveBlock("1", null, ConnectionType.NOCONNECTION, null, ConnectionType.NOCONNECTION);
+		verify(mockBlockController).moveBlock("1", null, ConnectionType.NOCONNECTION, null, ConnectionType.NOCONNECTION);
+		
+		bc.moveBlock("1", null, ConnectionType.NOCONNECTION, null, ConnectionType.NOCONNECTION);
+		verify(mockBlockReprository).moveBlock("1", null, ConnectionType.NOCONNECTION, null, ConnectionType.NOCONNECTION);
+		
+		
+		
+		
+	}
+	
+	
 	// TESTS CONNECTIONTYPE.NOCONNECTION
 	@Test
 	public void testMoveBlockActionBlockWithValidConnectionNOCONNECTION() {
 
 		// TESTS CONNECTIONTYPE.NOCONNECTION - NOCONNECTION
-		assertEquals(blockRepository.checkIfValidProgram(), true);
 		blockRepository.moveBlock("1", null, ConnectionType.NOCONNECTION, null, ConnectionType.NOCONNECTION);
-		assertEquals(blockRepository.checkIfValidProgram(), true);
+		
 
 		// TESTS CONNECTIONTYPE.NOCONNECTION - DOWN
 		blockRepository.moveBlock("1", null, ConnectionType.NOCONNECTION, "2", ConnectionType.DOWN);
@@ -299,7 +319,6 @@ public class MoveBlockTest {
 		// Program is invalid
 
 		// ValidBeforeMove Repository
-		blockRepositoryValidBeforeMove = spy(BlockRepository.getInstance());
 
 		ActionBlock movedActionBlock = spy(new MoveForwardBlock("1"));
 		ActionBlock connectedMoveForwardBlock = spy(new MoveForwardBlock("2"));
@@ -358,9 +377,6 @@ public class MoveBlockTest {
 	@Test
 	public void testMoveBlocInvalidConnection() {
 		
-		connectedMoveForwardBlockA.setNextBlock(movedActionBlock);
-		blockRepository.moveBlock("1", "2", ConnectionType.DOWN, "", ConnectionType.BODY);
-		exceptionRule.expect(NoSuchConnectedBlockException.class);
 	}
 	
 	
