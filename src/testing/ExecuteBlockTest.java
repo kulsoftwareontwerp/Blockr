@@ -2,8 +2,6 @@ package testing;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-
-
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -16,8 +14,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
-import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -54,7 +50,9 @@ public class ExecuteBlockTest extends GameController {
 	private InExecutionState ies;
 	private ValidProgramState vps;
 	
+
 	private Robot robot;
+	private Robot robotSpy;
 	private HashMap<String, Integer> robotCoords;
 
 	@BeforeClass
@@ -88,7 +86,9 @@ public class ExecuteBlockTest extends GameController {
 		ies = spy(new InExecutionState(mockGameController, moveForwardBlock));
 		vps = spy(new ValidProgramState(mockGameController));
 		
+
 		robot = new Robot(2, 2, Orientation.UP);
+		robotSpy = spy(new Robot(2, 2, Orientation.UP));
 		robotCoords = new HashMap<String, Integer>();
 	}
 
@@ -268,19 +268,19 @@ public class ExecuteBlockTest extends GameController {
 		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(turnLeftBlock);				
 	}
 	
-//	/**
-//	 * Test method for
-//	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
-//	 */
-//	@Test
-//	public void testGCperformRobotActionTurnLeftBlockPositive() {
-//		Mockito.doReturn(robot).when(mockElementRepository).getRobot();
-//		
-//		gc.performRobotAction(turnLeftBlock);
-//		
-//		verify(mockElementRepository,atLeastOnce()).turnRobotLeft();	
-//		verify(gc,atLeastOnce()).fireRobotChangeEvent();	
-//	}
+	/**
+	 * Test method for
+	 * {@link applicationLayer.GameController#performRobotAction(ActionBlock)}.
+	 */
+	@Test
+	public void testGCperformRobotActionPositive() {
+		Mockito.doReturn(robot).when(mockElementRepository).getRobot();
+		
+		gc.performRobotAction(turnLeftBlock);
+		
+		verify(turnLeftBlock,atLeastOnce()).execute(mockElementRepository);		
+		verify(gc,atLeastOnce()).fireRobotChangeEvent();	
+	}
 	
 	
 	/**
@@ -394,6 +394,167 @@ public class ExecuteBlockTest extends GameController {
 	}
 	
 	
+	/**
+	 * Test method for
+	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 */
+	@Test
+	public void testMFBExecutePositive_WithinBoundries_NoSolidElements() {
+		Mockito.doReturn(inFrontOfRobotCoords).when(mockElementRepository).getCoordinatesInFrontOfRobot();
+		Mockito.doReturn(elementsWithoutWall).when(mockElementRepository).getElements(1,1);
+		Mockito.doReturn(2).when(mockElementRepository).getGameAreaWidth();
+		Mockito.doReturn(2).when(mockElementRepository).getGameAreaHeight();
+		
+		moveForwardBlock.execute(mockElementRepository);
+		
+		verify(mockElementRepository,atLeastOnce()).updateRobotPosition(1, 1);
+	}
+	
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 */
+	@Test
+	public void testMFBExecutePositive_WithinBoundries_SolidElements() {
+		Mockito.doReturn(inFrontOfRobotCoords).when(mockElementRepository).getCoordinatesInFrontOfRobot();
+		Mockito.doReturn(elementsWithWall).when(mockElementRepository).getElements(1,1);
+		Mockito.doReturn(2).when(mockElementRepository).getGameAreaWidth();
+		Mockito.doReturn(2).when(mockElementRepository).getGameAreaHeight();
+		
+		moveForwardBlock.execute(mockElementRepository);
+		
+		verify(mockElementRepository,never()).updateRobotPosition(1, 1);
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 */
+	@Test
+	public void testMFBExecutePositive_OutOfBoundries_NoSolidElements() {
+		Mockito.doReturn(inFrontOfRobotCoords).when(mockElementRepository).getCoordinatesInFrontOfRobot();
+		Mockito.doReturn(elementsWithWall).when(mockElementRepository).getElements(1,1);
+		Mockito.doReturn(1).when(mockElementRepository).getGameAreaWidth();
+		//Mockito.doReturn(5).when(mockElementRepository).getGameAreaHeight();
+		
+		moveForwardBlock.execute(mockElementRepository);
+		
+		verify(mockElementRepository,never()).updateRobotPosition(1, 1);
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 */
+	@Test
+	public void testTLBExecutePositive_RobotUp() {
+		robotSpy.setOrientation(Orientation.UP);
+		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
+		
+		turnLeftBlock.execute(mockElementRepository);
+		
+		verify(robotSpy,atLeastOnce()).setOrientation(Orientation.LEFT);
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 */
+	@Test
+	public void testTLBExecutePositive_RobotRight() {
+		robotSpy.setOrientation(Orientation.RIGHT);
+		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
+		
+		turnLeftBlock.execute(mockElementRepository);
+		
+		verify(robotSpy,atLeastOnce()).setOrientation(Orientation.UP);
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 */
+	@Test
+	public void testTLBExecutePositive_RobotDown() {
+		robotSpy.setOrientation(Orientation.DOWN);
+		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
+		
+		turnLeftBlock.execute(mockElementRepository);
+		
+		verify(robotSpy,atLeastOnce()).setOrientation(Orientation.RIGHT);
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 */
+	@Test
+	public void testTLBExecutePositive_RobotLeft() {
+		robotSpy.setOrientation(Orientation.LEFT);
+		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
+		
+		turnLeftBlock.execute(mockElementRepository);
+		
+		verify(robotSpy,atLeastOnce()).setOrientation(Orientation.DOWN);
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 */
+	@Test
+	public void testTRBExecutePositive_RobotUp() {
+		robotSpy.setOrientation(Orientation.UP);
+		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
+		
+		turnRightBlock.execute(mockElementRepository);
+		
+		verify(robotSpy,atLeastOnce()).setOrientation(Orientation.RIGHT);
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 */
+	@Test
+	public void testTRBExecutePositive_RobotRight() {
+		robotSpy.setOrientation(Orientation.RIGHT);
+		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
+		
+		turnRightBlock.execute(mockElementRepository);
+		
+		verify(robotSpy,atLeastOnce()).setOrientation(Orientation.DOWN);
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 */
+	@Test
+	public void testTRBExecutePositive_RobotDown() {
+		robotSpy.setOrientation(Orientation.DOWN);
+		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
+		
+		turnRightBlock.execute(mockElementRepository);
+		
+		verify(robotSpy,atLeastOnce()).setOrientation(Orientation.LEFT);
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 */
+	@Test
+	public void testTRBExecutePositive_RobotLeft() {
+		robotSpy.setOrientation(Orientation.LEFT);
+		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
+		
+		turnRightBlock.execute(mockElementRepository);
+		
+		verify(robotSpy,atLeastOnce()).setOrientation(Orientation.UP);
+	}
+	
 	@Spy @InjectMocks
 	private ElementRepository er;
 	
@@ -451,4 +612,19 @@ public class ExecuteBlockTest extends GameController {
 		robotCoords.put("Y", 2);
 		assertEquals(robotCoords,er.getCoordinatesInFrontOfRobot());
 	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.ElementRepository#getCoordinatesInFrontOfRobot()}.
+	 */
+	@Test
+	public void testERUpdateRobotPositionPositive() {
+		Mockito.doReturn(robotSpy).when(er).getRobot();
+
+		er.updateRobotPosition(1, 2);
+		
+		verify(robotSpy,atLeastOnce()).setXCoordinate(1);
+		verify(robotSpy,atLeastOnce()).setYCoordinate(2);
+	}
+	
 }
