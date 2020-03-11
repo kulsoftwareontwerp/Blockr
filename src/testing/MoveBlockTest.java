@@ -25,12 +25,18 @@ import org.mockito.junit.MockitoJUnitRunner;
 import applicationLayer.BlockController;
 import applicationLayer.ConnectionType;
 import applicationLayer.DomainController;
+
 import domainLayer.blocks.*;
+
+import exceptions.NoSuchConnectedBlockException;
 
 
 @RunWith(MockitoJUnitRunner.class)
 public class MoveBlockTest {
 
+	@Rule
+	public ExpectedException exceptionRule = ExpectedException.none();
+	
 	@Mock
 	private BlockRepository mockBlockReprository;
 
@@ -60,11 +66,11 @@ public class MoveBlockTest {
 
 	private IfBlock connectedIfBlockA;
 	private IfBlock connectedIfBlockB;
-	private IfBlock movednewIfBlock;
+	private IfBlock movedIfBlock;
 
 	private NotBlock connectedNotBlockA;
 	private NotBlock connectedNotBlockB;
-	private NotBlock movednewNotBlock;
+	private NotBlock movedNotBlock;
 
 	private MoveForwardBlock connectedMoveForwardBlockA;
 	private MoveForwardBlock connectedMoveForwardBlockB;
@@ -78,9 +84,9 @@ public class MoveBlockTest {
 	private TurnRightBlock TurnRightBlocB;
 	private TurnRightBlock movedTurnRightBloc;
 
-	private WallInFrontBlock newWallInFrontBlockA;
-	private WallInFrontBlock newWallInFrontBlockB;
-	private WallInFrontBlock movedWallInFrontBlockActionBlock;
+	private WallInFrontBlock WallInFrontBlockA;
+	private WallInFrontBlock WallInFrontBlockB;
+	private WallInFrontBlock movedWallInFrontBlock;
 
 	private WhileBlock connectedWhileBlockA;
 	private WhileBlock connectedWhileBlockB;
@@ -104,9 +110,20 @@ public class MoveBlockTest {
 		movedActionBlock = spy(new MoveForwardBlock("1"));
 		connectedMoveForwardBlockA = spy(new MoveForwardBlock("2"));
 		connectedMoveForwardBlockB = spy(new MoveForwardBlock("3"));
+		
+		
 		connectedIfBlockA = spy(new IfBlock("4"));
 		connectedIfBlockB = spy(new IfBlock("5"));
-
+		movedIfBlock = spy(new IfBlock("7"));
+		
+		connectedWhileBlockA = spy(new WhileBlock("8"));
+		connectedWhileBlockB = spy(new WhileBlock("9"));
+		movedWhileBlock = spy(new WhileBlock("10"));
+		
+		WallInFrontBlockA = spy(new WallInFrontBlock("11"));
+		WallInFrontBlockB = spy(new WallInFrontBlock("12"));
+		movedWallInFrontBlock = spy(new WallInFrontBlock("13"));
+		
 		when(blockRepository.getBlockByID("1")).thenReturn(movedActionBlock);
 		when(blockRepository.getBlockByID("2")).thenReturn(connectedMoveForwardBlockA);
 		when(blockRepository.getBlockByID("3")).thenReturn(connectedMoveForwardBlockB);
@@ -246,7 +263,31 @@ public class MoveBlockTest {
 
 	@Test
 	public void testMoveActionBlockWithValidConnectionCondition() {
+		//Initialize environment
+		when(blockRepository.getBlockByID("4")).thenReturn(connectedIfBlockA);
+		when(blockRepository.getBlockByID("5")).thenReturn(connectedIfBlockB);
+		when(blockRepository.getBlockByID("8")).thenReturn(connectedWhileBlockA);
+		when(blockRepository.getBlockByID("13")).thenReturn(movedWallInFrontBlock);
+		
+		
+		
+		
 		//TESTS CONNECTIONTYPE.CONDITION - NOCONNECTION (See testCase testMoveBlockWithValidReprositoryBeforeMove)
+		
+		//TEST CONENCTIONTYPE.CONDITION - CONDITION TO IFBLOCK
+		connectedIfBlockA.setConditionBlock(movedWallInFrontBlock);//Initial State
+		assertEquals(connectedIfBlockA.getConditionBlock(), movedWallInFrontBlock);
+		blockRepository.moveBlock("13", "4", ConnectionType.CONDITION, "5", ConnectionType.CONDITION);
+		assertEquals(connectedIfBlockA.getConditionBlock(), null);
+		assertEquals(connectedIfBlockB.getConditionBlock(), movedWallInFrontBlock);
+		
+		
+		//TEST CONENCTIONTYPE.CONDITION - CONDITION TO WHILEBLOCK
+		connectedIfBlockA.setConditionBlock(movedWallInFrontBlock);//Initial State
+		assertEquals(connectedIfBlockA.getConditionBlock(), movedWallInFrontBlock);
+		blockRepository.moveBlock("13", "4", ConnectionType.CONDITION, "8", ConnectionType.CONDITION);
+		assertEquals(connectedIfBlockA.getConditionBlock(), null);
+		assertEquals(connectedWhileBlockA.getConditionBlock(), movedWallInFrontBlock);
 	}
 
 	@Test
@@ -293,8 +334,8 @@ public class MoveBlockTest {
 	}
 
 	@Test
-	public void testMoveAssesmentBlockWitchValidConnectionCondition() {
-
+	public void testMoveAssesmentBlockWitchValidConnectionOperand() {
+		
 	}
 	@Test
 	public void testMoveBlockWithChainOfBlock() {
@@ -313,4 +354,14 @@ public class MoveBlockTest {
 	}
 
 	// NEGATIVE TESTS
+	
+	@Test
+	public void testMoveBlocInvalidConnection() {
+		
+		connectedMoveForwardBlockA.setNextBlock(movedActionBlock);
+		blockRepository.moveBlock("1", "2", ConnectionType.DOWN, "", ConnectionType.BODY);
+		exceptionRule.expect(NoSuchConnectedBlockException.class);
+	}
+	
+	
 }
