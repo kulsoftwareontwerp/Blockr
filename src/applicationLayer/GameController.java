@@ -24,6 +24,7 @@ public class GameController implements DomainListener, GUISubject {
 
 	}
 
+
 	public void fireRobotChangeEvent() {
 		Robot robot = gameElementRepository.getRobot();
 		RobotChangeEvent robotChangeEvent = new RobotChangeEvent(robot.getXCoordinate(), robot.getYCoordinate(),
@@ -141,11 +142,13 @@ public class GameController implements DomainListener, GUISubject {
 	 * 
 	 * @param highlightedBlockId
 	 */
-	public void fireUpdateHighlightingEvent(String highlightedBlockId) {
+public void fireUpdateHighlightingEvent(String highlightedBlockId) {
+	
 		UpdateHighlightingEvent updateHighlightingEvent = new UpdateHighlightingEvent(highlightedBlockId);
 		for (GUIListener listener : guiListeners) {
 			listener.onUpdateHighlightingEvent(updateHighlightingEvent);
 		}
+
 	}
 
 	private HashMap<String, Integer> findNextPosition() {
