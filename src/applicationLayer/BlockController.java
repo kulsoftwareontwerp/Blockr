@@ -6,7 +6,7 @@ import domainLayer.blocks.BlockIDGenerator;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.BlockType;
 import events.*;
-import exceptions.MaxNbOfBlocksReachedException;
+import exceptions.*;
 
 /**
  * The BlockController orchestrates Create, Update, Delete and Retrieve operations for Blocks.
@@ -156,9 +156,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * 
 	 * @param blockId
 	 */
-	public Collection<String> getAllBlockIDsUnderneath(String blockId) {
-		// TODO - implement BlockController.getAllBlockIDsUnderneath
-		throw new UnsupportedOperationException();
+	public Set<String> getAllBlockIDsUnderneath(String blockID) {
+		return programBlockRepository.getAllBlockIDsUnderneath(blockID);
 	}
 
 

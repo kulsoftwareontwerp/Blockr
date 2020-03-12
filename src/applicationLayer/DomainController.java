@@ -164,9 +164,8 @@ public class DomainController {
 	 * 
 	 * @param blockId
 	 */
-	public Collection<String> getAllBlockIDsUnderneath(String blockId) {
-		// TODO - implement DomainController.getAllBlockIDsUnderneath
-		throw new UnsupportedOperationException();
+	public Set<String> getAllBlockIDsUnderneath(String blockId) {
+		return blockController.getAllBlockIDsUnderneath(blockId);
 	}
 
 }
