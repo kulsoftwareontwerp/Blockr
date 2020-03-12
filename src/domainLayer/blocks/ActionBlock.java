@@ -1,5 +1,7 @@
 package domainLayer.blocks;
 
+import domainLayer.elements.ElementRepository;
+
 /**
  * The abstract class for the concept of an action block.
  * 
@@ -17,4 +19,5 @@ public abstract class ActionBlock extends ExecutableBlock {
 		super(blockId);
 	}
 
+	public abstract void execute(ElementRepository elementsRepo);
 }

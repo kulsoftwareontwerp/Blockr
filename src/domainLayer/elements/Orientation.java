@@ -5,15 +5,29 @@ public enum Orientation {
 	LEFT,
 	DOWN,
 	RIGHT;
+	
+	private Orientation left;
+	private Orientation right;
+
+	// https://stackoverflow.com/questions/18883646/java-enum-methods
+    static {
+        UP.left = LEFT;
+        LEFT.left = DOWN;
+        DOWN.left = RIGHT;
+        RIGHT.left = UP;
+        
+        UP.right = RIGHT;
+        LEFT.right = UP;
+        DOWN.right = LEFT;
+        RIGHT.right = DOWN;
+    }
 
 	public Orientation getLeft() {
-		// TODO - implement Orientation.getLeft
-		throw new UnsupportedOperationException();
+		return left;
 	}
 
 	public Orientation getRight() {
-		// TODO - implement Orientation.getRight
-		throw new UnsupportedOperationException();
+		return right;
 	}
 
 }
