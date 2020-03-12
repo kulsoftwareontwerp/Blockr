@@ -7,6 +7,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -69,7 +72,7 @@ public class AddBlockTest {
 
 	private ArrayList<BlockType> executableBlockTypes = new ArrayList<BlockType>();
 	private ArrayList<BlockType> assessableBlockTypes = new ArrayList<BlockType>();
-	private ArrayList<Block> allBlocks = new ArrayList<Block>();
+	private ArrayList<Block> allBlocksInTest = new ArrayList<Block>();
 
 	private ArrayList<String> blockIdsInRepository = new ArrayList<String>();
 
@@ -94,6 +97,11 @@ public class AddBlockTest {
 	private WallInFrontBlock newWallInFrontBlock;
 
 	private WhileBlock newWhileBlock;
+	
+	@Spy
+	private HashSet<Block> headBlocks;
+	@Spy
+	private HashMap<String, Block> allBlocks;
 
 	/**
 	 * @throws java.lang.Exception
@@ -144,17 +152,23 @@ public class AddBlockTest {
 		newWallInFrontBlock = spy(new WallInFrontBlock("newBlock"));
 		newWhileBlock = spy(new WhileBlock("newBlock"));
 
-		allBlocks.add(connectedActionBlock);
-		allBlocks.add(connectedControlBlock);
-		allBlocks.add(connectedOperatorBlock);
-		allBlocks.add(connectedConditionBlock);
-		allBlocks.add(newIfBlock);
-		allBlocks.add(newNotBlock);
-		allBlocks.add(newTurnLeftBlock);
-		allBlocks.add(newTurnRightBlock);
-		allBlocks.add(newWallInFrontBlock);
-		allBlocks.add(newWhileBlock);
+		allBlocksInTest.add(connectedActionBlock);
+		allBlocksInTest.add(connectedControlBlock);
+		allBlocksInTest.add(connectedOperatorBlock);
+		allBlocksInTest.add(connectedConditionBlock);
+		allBlocksInTest.add(newIfBlock);
+		allBlocksInTest.add(newNotBlock);
+		allBlocksInTest.add(newTurnLeftBlock);
+		allBlocksInTest.add(newTurnRightBlock);
+		allBlocksInTest.add(newWallInFrontBlock);
+		allBlocksInTest.add(newWhileBlock);
+		
 
+		lenient().doCallRealMethod().when(headBlocks).add((Block)notNull());
+		lenient().doCallRealMethod().when(allBlocks).put(anyString(), (Block)notNull());
+		
+		lenient().doCallRealMethod().when(headBlocks).clear();
+		lenient().doCallRealMethod().when(allBlocks).clear();
 	}
 
 	/**
@@ -264,6 +278,7 @@ public class AddBlockTest {
 
 		ArgumentCaptor<BlockType> blockType = ArgumentCaptor.forClass(BlockType.class);
 		ArgumentCaptor<ConnectionType> connectionType = ArgumentCaptor.forClass(ConnectionType.class);
+		
 		for (BlockType b : BlockType.values()) {
 			dc.addBlock(b, "", ConnectionType.NOCONNECTION);
 			verify(mockBlockController, atLeastOnce()).addBlock(blockType.capture(), anyString(),
@@ -407,17 +422,18 @@ public class AddBlockTest {
 		when(mockBlockFactory.createBlock(BlockType.WallInFront)).thenReturn(newWallInFrontBlock);
 		lenient().when(mockBlockFactory.createBlock(BlockType.While)).thenReturn(newWhileBlock);
 
-		when(blockRepo.getBlockByID("conditionBlock")).thenReturn(connectedConditionBlock);
+		lenient().when(blockRepo.getBlockByID("conditionBlock")).thenReturn(connectedConditionBlock);
 		lenient().when(blockRepo.getBlockByID("operatorBlock")).thenReturn(connectedOperatorBlock);
 		when(blockRepo.getBlockByID("controlBlock")).thenReturn(connectedControlBlock);
 		when(blockRepo.getBlockByID("actionBlock")).thenReturn(connectedActionBlock);
 		when(blockRepo.getBlockByID("noBlock")).thenReturn(null);
-		when(blockRepo.getBlockByID("newBlock")).thenCallRealMethod();
+		lenient().when(blockRepo.getBlockByID("newBlock")).thenCallRealMethod();
 
 	}
 
+	@SuppressWarnings("unchecked")
 	private void resetBlocks() {
-		for (Block block : allBlocks) {
+		for (Block block : allBlocksInTest) {
 			if (block.getConditionBlock() != null)
 				block.setConditionBlock(null);
 			if (block.getFirstBlockOfBody() != null)
@@ -428,8 +444,10 @@ public class AddBlockTest {
 				block.setOperand(null);
 			reset(block);
 		}
-		// TODO: Vind een manier om headBlocks en allblocks te legen zonder remove
-		// functies op te roepen.
+		allBlocks.clear();
+		headBlocks.clear();
+		reset(allBlocks);
+		reset(headBlocks);
 		reset(mockBlockFactory);
 		testAddBlockBRMain();
 
@@ -445,17 +463,21 @@ public class AddBlockTest {
 		}
 		assertTrue("addBlock failed in the blockRepository for combination: BlockType=" + bt.toString()
 				+ " ConnectedBlockId=" + cb + " ConnectionType=" + ct.toString(), pass);
+		verify(headBlocks,never()).add((Block)notNull());
+		verify(allBlocks,never()).put(anyString(), (Block)notNull());		
+
 	}
 
-	// TODO: Vind een manier om headBlocks en allblocks te controleren.
+
 	/**
 	 * Test method for
 	 * {@link domainLayer.blocks.BlockRepository#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockPositive() {
-
 		ArgumentCaptor<BlockType> blockType = ArgumentCaptor.forClass(BlockType.class);
+		ArgumentCaptor<Block> block = ArgumentCaptor.forClass(Block.class);
+		ArgumentCaptor<String> id = ArgumentCaptor.forClass(String.class);
 		testAddBlockBRMain();
 
 		for (BlockType b : executableBlockTypes) {
@@ -465,6 +487,10 @@ public class AddBlockTest {
 			assertEquals(b, blockType.getValue());
 			assertEquals("controlBlock", mockBlockFactory.createBlock(b).getNextBlock().getBlockId());
 			assertEquals(blockRepo.getBlockByID("newBlock"), mockBlockFactory.createBlock(b));
+			verify(headBlocks,never()).add((Block)notNull());
+			verify(allBlocks,atLeastOnce()).put(id.capture(), block.capture());		
+			assertEquals("newBlock", block.getValue().getBlockId());
+			assertEquals("newBlock", id.getValue());
 			resetBlocks();
 
 			blockRepo.addBlock(b, "controlBlock", ConnectionType.DOWN);
@@ -472,6 +498,10 @@ public class AddBlockTest {
 			assertEquals(b, blockType.getValue());
 			assertEquals("newBlock", blockRepo.getBlockByID("controlBlock").getNextBlock().getBlockId());
 			assertEquals(blockRepo.getBlockByID("newBlock"), mockBlockFactory.createBlock(b));
+			verify(headBlocks,never()).add((Block)notNull());
+			verify(allBlocks,atLeastOnce()).put(id.capture(), block.capture());		
+			assertEquals("newBlock", block.getValue().getBlockId());
+			assertEquals("newBlock", id.getValue());
 			resetBlocks();
 
 			blockRepo.addBlock(b, "controlBlock", ConnectionType.BODY);
@@ -479,13 +509,23 @@ public class AddBlockTest {
 			assertEquals(b, blockType.getValue());
 			assertEquals("newBlock", blockRepo.getBlockByID("controlBlock").getFirstBlockOfBody().getBlockId());
 			assertEquals(blockRepo.getBlockByID("newBlock"), mockBlockFactory.createBlock(b));
+			verify(headBlocks,never()).add((Block)notNull());
+			verify(allBlocks,atLeastOnce()).put(id.capture(), block.capture());		
+			assertEquals("newBlock", block.getValue().getBlockId());
+			assertEquals("newBlock", id.getValue());
 			resetBlocks();
 
+			
+			headBlocks.add(blockRepo.getBlockByID("actionBlock"));
 			blockRepo.addBlock(b, "actionBlock", ConnectionType.UP);
 			verify(mockBlockFactory).createBlock(blockType.capture());
 			assertEquals(b, blockType.getValue());
 			assertEquals("actionBlock", mockBlockFactory.createBlock(b).getNextBlock().getBlockId());
 			assertEquals(blockRepo.getBlockByID("newBlock"), mockBlockFactory.createBlock(b));
+			verify(headBlocks,atMostOnce()).add((Block)notNull());
+			verify(allBlocks,atLeastOnce()).put(id.capture(), block.capture());		
+			assertEquals("newBlock", block.getValue().getBlockId());
+			assertEquals("newBlock", id.getValue());
 			resetBlocks();
 
 			blockRepo.addBlock(b, "actionBlock", ConnectionType.DOWN);
@@ -493,15 +533,23 @@ public class AddBlockTest {
 			assertEquals(b, blockType.getValue());
 			assertEquals("newBlock", blockRepo.getBlockByID("actionBlock").getNextBlock().getBlockId());
 			assertEquals(blockRepo.getBlockByID("newBlock"), mockBlockFactory.createBlock(b));
+			verify(headBlocks,never()).add((Block)notNull());
+			verify(allBlocks,atLeastOnce()).put(id.capture(), block.capture());		
+			assertEquals("newBlock", block.getValue().getBlockId());
+			assertEquals("newBlock", id.getValue());
 			resetBlocks();
 		}
 		for (BlockType b : assessableBlockTypes) {
 
-			blockRepo.addBlock(b, "operatorBlock", ConnectionType.RIGHT);
+			blockRepo.addBlock(b, "operatorBlock", ConnectionType.OPERAND);
 			verify(mockBlockFactory).createBlock(blockType.capture());
 			assertEquals(b, blockType.getValue());
 			assertEquals("newBlock", blockRepo.getBlockByID("operatorBlock").getOperand().getBlockId());
 			assertEquals(blockRepo.getBlockByID("newBlock"), mockBlockFactory.createBlock(b));
+			verify(headBlocks,never()).add((Block)notNull());
+			verify(allBlocks,atLeastOnce()).put(id.capture(), block.capture());		
+			assertEquals("newBlock", block.getValue().getBlockId());
+			assertEquals("newBlock", id.getValue());
 			resetBlocks();
 
 			blockRepo.addBlock(b, "controlBlock", ConnectionType.CONDITION);
@@ -509,13 +557,46 @@ public class AddBlockTest {
 			assertEquals(b, blockType.getValue());
 			assertEquals("newBlock", blockRepo.getBlockByID("controlBlock").getConditionBlock().getBlockId());
 			assertEquals(blockRepo.getBlockByID("newBlock"), mockBlockFactory.createBlock(b));
+			verify(headBlocks,never()).add((Block)notNull());
+			verify(allBlocks,atLeastOnce()).put(id.capture(), block.capture());		
+			assertEquals("newBlock", block.getValue().getBlockId());
+			assertEquals("newBlock", id.getValue());
 			resetBlocks();
 		}
+
+		
+		blockRepo.addBlock(BlockType.If, "operatorBlock", ConnectionType.LEFT);
+		verify(mockBlockFactory).createBlock(blockType.capture());
+		assertEquals(BlockType.If, blockType.getValue());
+		assertEquals("operatorBlock", mockBlockFactory.createBlock(BlockType.If).getConditionBlock().getBlockId());
+		assertEquals(blockRepo.getBlockByID("newBlock"), mockBlockFactory.createBlock(BlockType.If));
+		verify(headBlocks,never()).add((Block)notNull());
+		verify(allBlocks,atLeastOnce()).put(id.capture(), block.capture());		
+		assertEquals("newBlock", block.getValue().getBlockId());
+		assertEquals("newBlock", id.getValue());
+		resetBlocks();
+
+		blockRepo.addBlock(BlockType.Not, "conditionBlock", ConnectionType.LEFT);
+		verify(mockBlockFactory).createBlock(blockType.capture());
+		assertEquals(BlockType.Not, blockType.getValue());
+		assertEquals("conditionBlock", mockBlockFactory.createBlock(BlockType.Not).getOperand().getBlockId());
+		assertEquals(blockRepo.getBlockByID("newBlock"), mockBlockFactory.createBlock(BlockType.Not));
+		verify(headBlocks,never()).add((Block)notNull());
+		verify(allBlocks,atLeastOnce()).put(id.capture(), block.capture());		
+		assertEquals("newBlock", block.getValue().getBlockId());
+		assertEquals("newBlock", id.getValue());
+		resetBlocks();
+
 		for (BlockType b : BlockType.values()) {
 			blockRepo.addBlock(b, null, ConnectionType.NOCONNECTION);
 			verify(mockBlockFactory).createBlock(blockType.capture());
 			assertEquals(b, blockType.getValue());
 			assertEquals(blockRepo.getBlockByID("newBlock"), mockBlockFactory.createBlock(b));
+			verify(headBlocks,atLeastOnce()).add(block.capture());
+			assertEquals("newBlock", block.getValue().getBlockId());
+			verify(allBlocks,atLeastOnce()).put(id.capture(), block.capture());		
+			assertEquals("newBlock", block.getValue().getBlockId());
+			assertEquals("newBlock", id.getValue());
 			resetBlocks();
 		}
 	}
@@ -534,7 +615,7 @@ public class AddBlockTest {
 		for (BlockType b : executableBlockTypes) {
 			blockRepo.addBlock(b, "controlBlock", ConnectionType.CONDITION);
 			assertExceptionBRInvalidBlockConnection(b, "controlBlock", ConnectionType.CONDITION, excMessage);
-			blockRepo.addBlock(b, "operatorBlock", ConnectionType.RIGHT);
+			blockRepo.addBlock(b, "operatorBlock", ConnectionType.OPERAND);
 			assertExceptionBRInvalidBlockConnection(b, "operatorBlock", ConnectionType.CONDITION, excMessage);
 			verifyNoInteractions(mockBlockFactory);
 		}
@@ -556,62 +637,47 @@ public class AddBlockTest {
 				resetBlocks();
 
 				for (ConnectionType ct : ConnectionType.values()) {
-					if (connectedBlock instanceof ConditionBlock) {
-						if (ct != ConnectionType.NOCONNECTION && ct != ConnectionType.UP) {
-							if (ct == ConnectionType.CONDITION || ct == ConnectionType.RIGHT) {
-								if (newBlock instanceof AssessableBlock) {
-									assertExceptionBRInvalidBlockConnection(nb, "conditionBlock", ct, excMessage);
-								}
-							} else {
-								if (newBlock instanceof ExecutableBlock) {
-									assertExceptionBRInvalidBlockConnection(nb, "conditionBlock", ct, excMessage);
-								}
-							}
-						}
+					if (connectedBlock instanceof ConditionBlock && newBlock instanceof ExecutableBlock
+							&& ct == ConnectionType.BODY) {
+						assertExceptionBRInvalidBlockConnection(nb, "conditionBlock", ct, excMessage);
 					}
 					if (connectedBlock instanceof OperatorBlock) {
-						if (ct != ConnectionType.RIGHT && ct != ConnectionType.NOCONNECTION
-								&& ct != ConnectionType.UP) {
-							if (ct == ConnectionType.CONDITION) {
-								if (newBlock instanceof AssessableBlock) {
-									assertExceptionBRInvalidBlockConnection(nb, "operatorBlock", ct, excMessage);
-								}
-							} else {
-								if (newBlock instanceof ExecutableBlock) {
-									assertExceptionBRInvalidBlockConnection(nb, "operatorBlock", ct, excMessage);
+						if (ct != ConnectionType.OPERAND && ct != ConnectionType.NOCONNECTION && ct != ConnectionType.UP
+								&& ct != ConnectionType.LEFT && ct != ConnectionType.CONDITION
+								&& newBlock instanceof ExecutableBlock) {
+							assertExceptionBRInvalidBlockConnection(nb, "operatorBlock", ct, excMessage);
+						}
+						if (connectedBlock instanceof ActionBlock) {
+							if (ct != ConnectionType.UP && ct != ConnectionType.LEFT && ct != ConnectionType.DOWN
+									&& ct != ConnectionType.NOCONNECTION) {
+								if ((ct == ConnectionType.OPERAND || ct == ConnectionType.CONDITION)) {
+									if (newBlock instanceof AssessableBlock) {
+										assertExceptionBRInvalidBlockConnection(nb, "actionBlock", ct, excMessage);
+									}
+								} else {
+									if (newBlock instanceof ExecutableBlock) {
+										assertExceptionBRInvalidBlockConnection(nb, "actionBlock", ct, excMessage);
+									}
 								}
 							}
 						}
-					}
-					if (connectedBlock instanceof ActionBlock) {
-						if (ct != ConnectionType.UP && ct != ConnectionType.DOWN && ct != ConnectionType.NOCONNECTION) {
-							if ((ct == ConnectionType.RIGHT || ct == ConnectionType.CONDITION)) {
-								if (newBlock instanceof AssessableBlock) {
-									assertExceptionBRInvalidBlockConnection(nb, "actionBlock", ct, excMessage);
-								}
-							} else {
-								if (newBlock instanceof ExecutableBlock) {
-									assertExceptionBRInvalidBlockConnection(nb, "actionBlock", ct, excMessage);
-								}
+
+						if (ct == ConnectionType.UP) {
+							if (!(newBlock instanceof ExecutableBlock)) {
+								assertExceptionBRInvalidBlockConnection(nb, "actionBlock", ct, excMessage);
 							}
 						}
-					}
-					if (connectedBlock instanceof ControlBlock) {
-						if (ct == ConnectionType.RIGHT && newBlock instanceof AssessableBlock)
-							assertExceptionBRInvalidBlockConnection(nb, "controlBlock", ct, excMessage);
-					}
 
-					if (ct == ConnectionType.UP) {
-						if (!(newBlock instanceof ExecutableBlock)) {
-							assertExceptionBRInvalidBlockConnection(nb, "actionBlock", ct, excMessage);
+						if (ct == ConnectionType.LEFT) {
+							if (!(newBlock instanceof ControlBlock) && !(newBlock instanceof OperatorBlock)) {
+								assertExceptionBRInvalidBlockConnection(nb, "conditionBlock", ct, excMessage);
+							}
 						}
 
+						assertEquals(null, blockRepo.getBlockByID("newBlock"));
 					}
-
-					assertEquals(null, blockRepo.getBlockByID("newBlock"));
 				}
 			}
-
 		}
 	}
 
@@ -632,6 +698,8 @@ public class AddBlockTest {
 						blockRepo.addBlock(nb, "noBlock", ct);
 					} catch (NoSuchConnectedBlockException e) {
 						pass = e.getMessage().equals(excMessage);
+						verify(headBlocks,never()).add((Block)notNull());
+						verify(allBlocks,never()).put(anyString(), (Block)notNull());	
 					}
 					assertTrue("addBlock failed in the blockRepository for combination: BlockType=" + nb.toString()
 							+ " ConnectedBlockId= noBlock ConnectionType=" + ct.toString(), pass);
@@ -646,46 +714,53 @@ public class AddBlockTest {
 	 * Test method for
 	 * {@link domainLayer.blocks.BlockRepository#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testBRAddBlockNegativeAddBlockConnectionAlreadyOccupied() {
 		String excMessage = "Connection at connectedBlock is already occupied.";
 		testAddBlockBRMain();
-		
-		doReturn(connectedOperatorBlock).when(connectedControlBlock).getConditionBlock();
-		doReturn(connectedConditionBlock).when(connectedOperatorBlock).getOperand();
-		doReturn(connectedActionBlock).when(connectedControlBlock).getFirstBlockOfBody();
-		doReturn(connectedActionBlock).when(connectedActionBlock).getNextBlock();
 
-		
+		lenient().doReturn(connectedOperatorBlock).when(connectedControlBlock).getConditionBlock();
+		lenient().doReturn(connectedConditionBlock).when(connectedOperatorBlock).getOperand();
+		lenient().doReturn(connectedActionBlock).when(connectedControlBlock).getFirstBlockOfBody();
+		lenient().doReturn(connectedActionBlock).when(connectedActionBlock).getNextBlock();
+
 		lenient().when(blockRepo.getBlockByID("operatorBlock")).thenReturn(connectedOperatorBlock);
-		when(blockRepo.getBlockByID("controlBlock")).thenReturn(connectedControlBlock);
-		when(blockRepo.getBlockByID("actionBlock")).thenReturn(connectedActionBlock);
-		
-		boolean pass = false;
+		lenient().when(blockRepo.getBlockByID("controlBlock")).thenReturn(connectedControlBlock);
+		lenient().when(blockRepo.getBlockByID("actionBlock")).thenReturn(connectedActionBlock);
+
 		for (String c : blockIdsInRepository) {
-			
-			if (c != "noBlock" && c!="conditionBlock") {
+
+			if (c != "noBlock" && c != "conditionBlock") {
 				for (BlockType bt : BlockType.values()) {
+					boolean pass = false;
 					for (ConnectionType ct : ConnectionType.values()) {
-						if (ct != ConnectionType.NOCONNECTION && ct!=ConnectionType.UP) {
+						if (ct != ConnectionType.NOCONNECTION) {
+							if (ct != ConnectionType.UP && ct!=ConnectionType.LEFT) {
 
-							try {
-								blockRepo.addBlock(bt, c, ct);
-							} catch (InvalidBlockConnectionException e) {
-								if(pass==false) {
-								pass = e.getMessage().equals(excMessage);
+								try {
+									blockRepo.addBlock(bt, c, ct);
+								} catch (InvalidBlockConnectionException e) {
+									if (pass == false) {
+										pass = e.getMessage().equals(excMessage);
+									}
+									verify(allBlocks,never()).put(anyString(), (Block)notNull());	
+								} catch (Exception e) {
+									// Not the purpose of this test.
 								}
-							} catch (Exception e) {
-								// Not the purpose of this test.
-							}
 
+							}
+							else {
+								pass = true;
+							}
 						}
 					}
+					assertTrue("addBlock failed in the blockRepository for alreadyOccupied", pass);
+					reset(allBlocks);
 				}
 			}
-			
+
 		}
-		assertTrue("addBlock failed in the blockRepository for alreadyOccupied", pass);
 
 	}
 
@@ -758,7 +833,8 @@ public class AddBlockTest {
 	private BlockIDGenerator idGenerator;
 
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockIDGenerator#generateBlockID()}.
+	 * Test method for
+	 * {@link domainLayer.blocks.BlockIDGenerator#generateBlockID()}.
 	 */
 	@Test
 	public void testBIDAddBlockGPositive() {

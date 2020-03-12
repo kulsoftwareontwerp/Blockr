@@ -37,9 +37,8 @@ public class BlockController implements GUISubject, DomainSubject {
 		
 	}
 
-	private void fireBlockAdded() {
-		String blockId = BlockIDGenerator.getInstance().getLastGeneratedBlockId();
-		BlockAddedEvent event = new BlockAddedEvent(blockId);
+	private void fireBlockAdded(String newBlockId) {
+		BlockAddedEvent event = new BlockAddedEvent(newBlockId);
 		
 		for(GUIListener listener:guiListeners) {
 			listener.onBlockAdded(event);
@@ -113,7 +112,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		if(programBlockRepository.checkIfMaxNbOfBlocksReached()) {
 			throw new MaxNbOfBlocksReachedException("The maximum number of blocks has already been reached.");
 		}
-		programBlockRepository.addBlock(blockType, connectedBlockId, connection);
+		String newBlockId= programBlockRepository.addBlock(blockType, connectedBlockId, connection);
 		
 		
 		fireUpdateGameState();
@@ -121,7 +120,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		if(programBlockRepository.checkIfMaxNbOfBlocksReached()) {
 			firePanelChangedEvent();
 		}
-		fireBlockAdded();
+		fireBlockAdded(newBlockId);
 	}
 
 	/**
