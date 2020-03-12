@@ -19,12 +19,11 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import applicationLayer.GameController;
-import domainLayer.BlockRepository;
-import domainLayer.GameState;
-import domainLayer.InExecutionState;
-import domainLayer.InValidProgramState;
-import domainLayer.ResettingState;
-import domainLayer.ValidProgramState;
+import domainLayer.blocks.*;
+import domainLayer.gamestates.*;
+import domainLayer.elements.*;
+
+
 
 
 @RunWith(MockitoJUnitRunner.class)
