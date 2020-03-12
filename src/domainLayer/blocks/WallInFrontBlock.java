@@ -1,5 +1,10 @@
 package domainLayer.blocks;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+
+import domainLayer.elements.*;
 /**
  * The concrete class for the concept of a WallInFront block.
  * 
@@ -17,9 +22,22 @@ public class WallInFrontBlock extends ConditionBlock {
 		super(blockId);
 	}
 
-	public boolean assess() {
-		// TODO - implement WallInFrontBlock.assess
-		throw new UnsupportedOperationException();
+	
+	@Override
+	public boolean assess(ElementRepository elementsRepo) {		
+		HashMap<String, Integer> newCoordinates = elementsRepo.getCoordinatesInFrontOfRobot();
+		HashSet<Element> elements = elementsRepo.getElements(newCoordinates.get("X"),newCoordinates.get("Y"));
+		
+		Iterator<Element> iterator = elements.iterator();
+		while(iterator.hasNext()) {
+			Element element = iterator.next();
+			if (element instanceof Wall) {
+				return true;
+			}
+		}
+		return false;
 	}
+	
+
 
 }
