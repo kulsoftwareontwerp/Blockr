@@ -7,17 +7,9 @@ import domainLayer.blocks.BlockIDGenerator;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.BlockType;
 import domainLayer.blocks.ControlBlock;
-import events.BlockAddedEvent;
-import events.DomainListener;
-import events.DomainSubject;
-import events.GUIListener;
-import events.GUISubject;
-import events.PanelChangeEvent;
-import events.ResetExecutionEvent;
-import events.UpdateGameStateEvent;
-import exceptions.InvalidBlockTypeException;
-import exceptions.MaxNbOfBlocksReachedException;
-import exceptions.NoSuchConnectedBlockException;
+import events.*;
+import exceptions.*;
+
 
 /**
  * The BlockController orchestrates Create, Update, Delete and Retrieve operations for Blocks.
@@ -54,9 +46,12 @@ public class BlockController implements GUISubject, DomainSubject {
 		throw new UnsupportedOperationException();
 	}
 
-	private void fireBlockChanged() {
-		// TODO - implement BlockController.fireBlockChanged
-		throw new UnsupportedOperationException();
+	private void fireBlockChanged(String changedBlockId, String changedLinkedBlockId, ConnectionType connectionType) {
+		BlockChangeEvent event = new BlockChangeEvent( changedBlockId, changedLinkedBlockId, connectionType);
+		
+		for(GUIListener listener:guiListeners) {
+			listener.onBlockChangeEvent(event);
+		}
 	}
 
 	private void firePanelChangedEvent() {
@@ -72,7 +67,6 @@ public class BlockController implements GUISubject, DomainSubject {
 		for(DomainListener listener:domainListeners) {
 			listener.onUpdateGameStateEvent(event);
 		}
-		
 	}
 
 	private void fireResetExecutionEvent() {
@@ -152,10 +146,13 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @param connectedAfterMoveBlockId
 	 * @param connectionAfterMove
 	 */
-	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove,
-			String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-		// TODO - implement BlockController.moveBlock
-		throw new UnsupportedOperationException();
+	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+		Set<String> movedBlocks = programBlockRepository.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+		fireUpdateGameState();
+		fireResetExecutionEvent();
+		for(String blockID : movedBlocks) {
+			fireBlockChanged(movedBlockId,connectedAfterMoveBlockId,connectionAfterMove);
+		}
 	}
 
 	/**

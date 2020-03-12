@@ -25,8 +25,7 @@ public abstract class GameState {
 	}
 
 	public void update() {
-		// TODO - implement GameState.update
-		throw new UnsupportedOperationException();
+		
 	}
 
 }

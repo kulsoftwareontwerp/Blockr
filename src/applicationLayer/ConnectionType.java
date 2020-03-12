@@ -1,4 +1,6 @@
 package applicationLayer;
+
+
 /**
  * The types of possible connections in the domain.
  * 
