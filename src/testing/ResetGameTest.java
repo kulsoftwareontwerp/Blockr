@@ -36,6 +36,8 @@ public class ResetGameTest {
 	
 	private ActionBlock moveForwardBlock;
 	
+	private Robot robot;
+	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 	}
@@ -49,6 +51,7 @@ public class ResetGameTest {
 		moveForwardBlock = spy(new MoveForwardBlock("moveForwardBlock"));
 		inExecutionState = spy(new InExecutionState(mockGameController, moveForwardBlock));
 		resettingState = new ResettingState(mockGameController);
+		robot = new Robot(2, 2, Orientation.UP);
 	}
 
 	@After
@@ -86,6 +89,23 @@ public class ResetGameTest {
 		verify(gc,atLeastOnce()).fireRobotChangeEvent();
 	}
 	
+	@Mock(name="elementRepository")
+	private ElementRepository mockElementRepository;
+	
+	/**
+	 * Test method for
+	 * {@link applicationLayer.GameController#resetRobot()}.
+	 */
+	@Test
+	public void testGameController_ResetRobot_Positive() {
+		gc.resetRobot();
+		
+		verify(mockElementRepository,atLeastOnce()).removeRobot();
+		verify(mockElementRepository,atLeastOnce()).initializeRobot();
+		verify(gc,atLeastOnce()).fireRobotChangeEvent();
+	}
+	
+	// TODO (!)
 //	/**
 //	 * Test method for
 //	 * {@link domainLayer.ResettingState#reset()}.
@@ -96,6 +116,23 @@ public class ResetGameTest {
 //		resettingState.reset();
 //		
 //		verify(mockGameController,atLeastOnce()).resetRobot();
-//		verify(mockGameController,atLeastOnce()).toState(any(ValidProgramState.class));
+//		//verify(mockGameController,atLeastOnce()).toState(any(ValidProgramState.class));
 //	}
+	
+	@Spy @InjectMocks
+	private ElementRepository er;
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.ElementRepository#removeRobot()}.
+	 */
+	@Test
+	public void testElementRepository_RemoveRobot_Positive() {
+		Mockito.doReturn(robot).when(er).getRobot();
+		
+		er.removeRobot();
+		
+		verify(er,atLeastOnce()).getRobot();
+	}
+	
 }
