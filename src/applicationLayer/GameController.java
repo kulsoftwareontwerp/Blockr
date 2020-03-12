@@ -15,19 +15,20 @@ public class GameController implements DomainListener, GUISubject {
 	private ElementRepository gameElementRepository;
 
 	public GameController() {
-		programBlockRepository=BlockRepository.getInstance();
-		gameElementRepository=gameElementRepository.getInstance();
-		
-		guiListeners=new HashSet<GUIListener>();
-		
+		programBlockRepository = BlockRepository.getInstance();
+		gameElementRepository = gameElementRepository.getInstance();
+
+		guiListeners = new HashSet<GUIListener>();
+
 		toState(new InValidProgramState(this));
-		
+
 	}
 
 	public void fireRobotChangeEvent() {
 		Robot robot = gameElementRepository.getRobot();
-		RobotChangeEvent robotChangeEvent = new RobotChangeEvent(robot.getXCoordinate(), robot.getYCoordinate(), robot.getOrientation());
-		for(GUIListener listener: guiListeners) {
+		RobotChangeEvent robotChangeEvent = new RobotChangeEvent(robot.getXCoordinate(), robot.getYCoordinate(),
+				robot.getOrientation());
+		for (GUIListener listener : guiListeners) {
 			listener.onRobotChangeEvent(robotChangeEvent);
 		}
 	}
@@ -41,7 +42,6 @@ public class GameController implements DomainListener, GUISubject {
 		// TODO - implement GameController.resetGameExecution
 		throw new UnsupportedOperationException();
 	}
-
 
 	public GameState getCurrentState() {
 		return this.currentState;
@@ -72,7 +72,7 @@ public class GameController implements DomainListener, GUISubject {
 
 	public ActionBlock findFirstBlockToBeExecuted() {
 		ExecutableBlock firstExecutableBlock = programBlockRepository.findFirstBlockToBeExecuted();
-		if(!(firstExecutableBlock instanceof ActionBlock)) {
+		if (!(firstExecutableBlock instanceof ActionBlock)) {
 			ActionBlock firstActionBlock = findNextActionBlockToBeExecuted(firstExecutableBlock);
 			return firstActionBlock;
 		}
@@ -90,47 +90,37 @@ public class GameController implements DomainListener, GUISubject {
 		}
 		if (nextBlock instanceof ActionBlock) {
 			return (ActionBlock) nextBlock;
-		}
-<<<<<<< HEAD
-
-=======
-		else {
->>>>>>> Some code clean up before pull request
+		} else {
 			// If or while block
 			AssessableBlock condition = nextBlock.getConditionBlock();
 			if (condition.assess(gameElementRepository)) {
-				// If the condition is true, we want to continue with the first block in the body of the controlBlock
-				//	except for when we just came out of the body of an ifBlock. Then we continue under it.
-				if (nextBlock instanceof IfBlock &&
-						isReachedFromEndOfBody(block.getBlockId(),nextBlock.getBlockId(),nextBlock.getFirstBlockOfBody())) {
+				// If the condition is true, we want to continue with the first block in the
+				// body of the controlBlock
+				// except for when we just came out of the body of an ifBlock. Then we continue
+				// under it.
+				if (nextBlock instanceof IfBlock && isReachedFromEndOfBody(block.getBlockId(), nextBlock.getBlockId(),
+						nextBlock.getFirstBlockOfBody())) {
 					return findNextActionBlockToBeExecuted(nextBlock.getNextBlock());
-				}
-				else {
+				} else {
 					return findNextActionBlockToBeExecuted(nextBlock.getFirstBlockOfBody());
 				}
-			} 
-			else {
+			} else {
 				// If the condition is false, we continue with the block under the controlBlock
 				return findNextActionBlockToBeExecuted(nextBlock.getNextBlock());
 			}
 		}
-	
-	
-	private boolean isReachedFromEndOfBody(String endOfBodyBlockId, String ifBlockId, ExecutableBlock nextBlockToCheck) {
-		if (nextBlockToCheck.getBlockId().equals(endOfBodyBlockId))	{
+	}
+
+	private boolean isReachedFromEndOfBody(String endOfBodyBlockId, String ifBlockId,
+			ExecutableBlock nextBlockToCheck) {
+		if (nextBlockToCheck.getBlockId().equals(endOfBodyBlockId)) {
 			return true;
-		}
-		else if (nextBlockToCheck.getBlockId().equals(ifBlockId)) {
+		} else if (nextBlockToCheck.getBlockId().equals(ifBlockId)) {
 			return false;
-		}
-		else {
+		} else {
 			return isReachedFromEndOfBody(endOfBodyBlockId, ifBlockId, nextBlockToCheck.getNextBlock());
 		}
 	}
-	
-
-
-
 
 	/**
 	 * 
@@ -140,7 +130,7 @@ public class GameController implements DomainListener, GUISubject {
 		block.execute(gameElementRepository);
 		fireRobotChangeEvent();
 	}
-	
+
 	public boolean checkIfValidProgram() {
 		// TODO - implement GameController.checkIfValidProgram
 		throw new UnsupportedOperationException();
@@ -152,7 +142,7 @@ public class GameController implements DomainListener, GUISubject {
 	 */
 	public void fireUpdateHighlightingEvent(String highlightedBlockId) {
 		UpdateHighlightingEvent updateHighlightingEvent = new UpdateHighlightingEvent(highlightedBlockId);
-		for(GUIListener listener: guiListeners) {
+		for (GUIListener listener : guiListeners) {
 			listener.onUpdateHighlightingEvent(updateHighlightingEvent);
 		}
 	}
@@ -170,19 +160,19 @@ public class GameController implements DomainListener, GUISubject {
 	@Override
 	public void addListener(GUIListener listener) {
 		this.guiListeners.add(listener);
-		
+
 	}
 
 	@Override
 	public void onResetExecutionEvent(ResetExecutionEvent event) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onUpdateGameStateEvent(UpdateGameStateEvent event) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
