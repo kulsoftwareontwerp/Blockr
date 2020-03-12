@@ -132,7 +132,9 @@ public class DomainController {
 		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
 			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
 		}
-			else {
+		else if(movedBlockId.equals(connectedBeforeMoveBlockId) || movedBlockId.equals(connectedAfterMoveBlockId))
+			throw new IllegalArgumentException("You can't connect a block to itself.");
+		else {
 			blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
 		}
 	}

@@ -7,6 +7,8 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -22,6 +24,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.internal.invocation.mockref.MockReference;
+import org.mockito.internal.verification.NoInteractions;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import applicationLayer.BlockController;
@@ -31,23 +34,19 @@ import domainLayer.blocks.*;
 import events.*;
 import exceptions.*;
 
+
 @RunWith(MockitoJUnitRunner.class)
 public class MoveBlockTest {
 
 	private ArrayList<ConnectionType> connectionTypes = new ArrayList<ConnectionType>();
 	private ArrayList<BlockType> executableBlockTypes = new ArrayList<BlockType>();
 	private ArrayList<BlockType> assessableBlockTypes = new ArrayList<BlockType>();
-	private ArrayList<Block> allBlocks = new ArrayList<Block>();
-	private ArrayList<String> blockIdsInRepository = new ArrayList<String>();
+	private Set<String> blockIdsInRepository = new HashSet<String>();
 	
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();
 
-	@Spy
-	private BlockRepository blockRepository;
-	
-	@Spy
-	private BlockRepository blockRepositoryValidBeforeMove;
+
 
 	
 	@Mock(name = "blockController")
@@ -69,10 +68,19 @@ public class MoveBlockTest {
 	@InjectMocks
 	private BlockController bc;
 	
-	
+	@Mock
+	private Set<Block> headBlocks;
 	@Spy
 	@InjectMocks
-	private BlockRepository br;
+	private BlockRepository blockRepository;
+	
+	@Spy
+	private BlockRepository blockRepositoryValidBeforeMove;
+	
+	
+	
+	@Spy
+	private Set<Block> allBlocks;
 	
 	
 	
@@ -135,16 +143,18 @@ public class MoveBlockTest {
 
 	@Before
 	public void setUp() throws Exception {
-		bc.addDomainListener(mockDomainListener);
 		
-		executableBlockTypes.add(BlockType.MoveForward);
+		bc.addDomainListener(mockDomainListener);
+		bc.addListener(mockGUIListener);
+		
+		/*executableBlockTypes.add(BlockType.MoveForward);
 		executableBlockTypes.add(BlockType.TurnLeft);
 		executableBlockTypes.add(BlockType.TurnRight);
 		executableBlockTypes.add(BlockType.While);
 		executableBlockTypes.add(BlockType.If);
 
 		assessableBlockTypes.add(BlockType.Not);
-		assessableBlockTypes.add(BlockType.WallInFront);
+		assessableBlockTypes.add(BlockType.WallInFront);*/
 		
 		connectionTypes.add(ConnectionType.BODY);
 		connectionTypes.add(ConnectionType.CONDITION);
@@ -173,8 +183,10 @@ public class MoveBlockTest {
 		WallInFrontBlockB = spy(new WallInFrontBlock("12"));
 		movedWallInFrontBlock = spy(new WallInFrontBlock("13"));
 		
-		//when(blockRepository.getBlockByID("1")).thenReturn(movedActionBlock);
-		//when(blockRepository.getBlockByID("2")).thenReturn(connectedMoveForwardBlockA);
+		connectedOperatorBlockA = spy(new NotBlock("14"));
+		
+		when(blockRepository.getBlockByID("1")).thenReturn(movedActionBlock);
+		when(blockRepository.getBlockByID("2")).thenReturn(connectedMoveForwardBlockA);
 		//when(blockRepository.getBlockByID("3")).thenReturn(connectedMoveForwardBlockB);
 		//when(blockRepository.getBlockByID("4")).thenReturn(connectedIfBlockA);
 
@@ -186,7 +198,6 @@ public class MoveBlockTest {
 	
 	
 	
-
 	@Test
 	public void testMoveBlockRepository() {
 		// verify(mockBlockController).moveBlock("1", null , ConnectionType.NOCONNECTION
@@ -215,59 +226,60 @@ public class MoveBlockTest {
 
 	}
 	
-	
-	@Test
-	public void testDCMoveBlockPositive() {
+	public void testDCMovePositive() {
 		
-			exceptionRule.expect(IllegalArgumentException.class);
+		dc.moveBlock("1", "",ConnectionType.NOCONNECTION, "",ConnectionType.NOCONNECTION);
+		verify(mockBlockController).moveBlock("1", "", ConnectionType.NOCONNECTION, "", ConnectionType.NOCONNECTION);
 		
-			for(ConnectionType connectionType: connectionTypes ) {
-				dc.moveBlock("", "", connectionType, "",connectionType);
-				verifyNoInteractions(mockBlockController);
-				
-				dc.moveBlock("1", "", connectionType, "",connectionType);
-				if(connectionType == ConnectionType.NOCONNECTION) {
-					verify(mockBlockController).moveBlock("1", "", connectionType, "", connectionType);
-				}
-				else
-				{
-					verifyNoInteractions(mockBlockController);
-				}
-				
-				dc.moveBlock("1", "2", connectionType, "3", connectionType);
-				if(connectionType == ConnectionType.NOCONNECTION) {
-					verifyNoInteractions(mockBlockController);
-				}
-				else
-				{
-					verify(mockBlockController).moveBlock("1", "2", connectionType, "3", connectionType);
-				}
-				
-				
-				
-				dc.moveBlock("1", "2", connectionType, "", connectionType);
-				verify(mockBlockController).moveBlock("1", "2", connectionType, "", connectionType);
-				if(connectionType == ConnectionType.NOCONNECTION) {
-					verify(mockBlockController).moveBlock("1", "", connectionType, "3", connectionType);
-				}
-				else
-				{
-					verifyNoInteractions(mockBlockController);
-				}
-				
-				dc.moveBlock("1", "", connectionType, "3", connectionType);
-				if(connectionType == ConnectionType.NOCONNECTION) {
-					verify(mockBlockController).moveBlock("1", "", connectionType, "3", connectionType);
-				}
-				else
-				{
-					verifyNoInteractions(mockBlockController);
-				}
-				
-			}
+		for(ConnectionType connectionType: connectionTypes ) {
 		
+		dc.moveBlock("1", "2", connectionType, "",ConnectionType.NOCONNECTION);
+		verify(mockBlockController).moveBlock("1", "2", connectionType, "", ConnectionType.NOCONNECTION);
+		
+		dc.moveBlock("1", "",ConnectionType.NOCONNECTION, "3",connectionType);
+		verify(mockBlockController).moveBlock("1", "",ConnectionType.NOCONNECTION, "3",connectionType);
+		
+		
+		dc.moveBlock("1", "2", connectionType, "3", connectionType);
+		verify(mockBlockController).moveBlock("1", "2", connectionType, "3", connectionType);
 		
 		}
+		
+	}
+	
+	
+	public void assertExceptionDCMoveBlock(String movedBlockId, String connectedBeforeMoveBlockId,
+			ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove,String excMessage) {
+		boolean pass = false;
+		
+		try {
+			dc.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove,connectedAfterMoveBlockId,connectionAfterMove );
+		} catch (IllegalArgumentException e) {
+			pass = e.getMessage().equals(excMessage);
+		}
+		assertTrue("moveBlock failed in the domainController for combination="+movedBlockId+" "+connectedBeforeMoveBlockId+" "+connectionBeforeMove+" "+connectedAfterMoveBlockId+" "+connectionAfterMove,true);
+	}
+	
+	@Test
+	public void testDCMoveBlockNegative() {
+			connectionTypes.remove(ConnectionType.NOCONNECTION);
+			for(ConnectionType connectionType: connectionTypes ) {
+					assertExceptionDCMoveBlock("","",connectionType,"",connectionType,"No movedBlockID given");
+					verifyNoInteractions(mockBlockController);
+
+					assertExceptionDCMoveBlock("1","",connectionType,"",connectionType,"Null given as connection, use ConnectionType.NOCONNECTION.");
+					verifyNoInteractions(mockBlockController);
+					
+					assertExceptionDCMoveBlock("1","2",connectionType,"",connectionType,"No blockId given for connectedAfterMovedBlockID");
+					verifyNoInteractions(mockBlockController);	
+					
+					assertExceptionDCMoveBlock("1","",connectionType,"3",connectionType,"No blockId given for connectedBeforeMovedBlockID");
+					verifyNoInteractions(mockBlockController);
+					
+					assertExceptionDCMoveBlock("1","1",connectionType,"1",connectionType,"You can't connect a block to itself.");
+					verifyNoInteractions(mockBlockController);
+		}
+	}
 	
 	
 	
@@ -283,7 +295,28 @@ public class MoveBlockTest {
 	
 	@Test
 	public void testBCMoveBlockNegativeConnectionTypeNull() {
+		exceptionRule.expect(IllegalArgumentException.class);
 		
+		InOrder updateResetOrder = inOrder(mockDomainListener);
+		dc.moveBlock("", "", null, "",null);
+		verifyNoInteractions(mockDomainListener);
+		verifyNoInteractions(mockGUIListener);
+		
+		dc.moveBlock("1", "", null, "",null);
+		verifyNoInteractions(mockDomainListener);
+		verifyNoInteractions(mockGUIListener);
+		
+		dc.moveBlock("1", "2", null, "",null);
+		verifyNoInteractions(mockDomainListener);
+		verifyNoInteractions(mockGUIListener);
+		
+		dc.moveBlock("1", "", null, "2",null);
+		verifyNoInteractions(mockDomainListener);
+		verifyNoInteractions(mockGUIListener);
+		
+		dc.moveBlock("1", "2", null, "3",null);
+		verifyNoInteractions(mockDomainListener);
+		verifyNoInteractions(mockGUIListener);
 	}
 	
 	@Test
@@ -294,64 +327,118 @@ public class MoveBlockTest {
 	@Test
 	public void testBCMoveBlockPositive() {
 		//mockDomainListeners.add(mockDomainListener);
+		InOrder updateResetOrder = inOrder(mockDomainListener);
+		blockIdsInRepository.add("1");
+		blockIdsInRepository.add("2");
+		blockIdsInRepository.add("3");
+		
+		when(mockBlockReprository.moveBlock("1","", ConnectionType.NOCONNECTION,"",ConnectionType.NOCONNECTION)).thenReturn(blockIdsInRepository);
 		
 		bc.moveBlock("1", "", ConnectionType.NOCONNECTION, "", ConnectionType.NOCONNECTION);
 		verify(mockBlockReprository).moveBlock("1", "", ConnectionType.NOCONNECTION, "", ConnectionType.NOCONNECTION);
+		updateResetOrder.verify(mockDomainListener, atLeastOnce()).onUpdateGameStateEvent(any(UpdateGameStateEvent.class));
+		updateResetOrder.verify(mockDomainListener, atLeastOnce()).onResetExecutionEvent(any(ResetExecutionEvent.class));
 		
-		InOrder updateResetOrder = inOrder(mockDomainListener);
-		updateResetOrder.verify(mockDomainListener, atLeastOnce())
-				.onUpdateGameStateEvent(any(UpdateGameStateEvent.class));
-		updateResetOrder.verify(mockDomainListener, atLeastOnce())
-				.onResetExecutionEvent(any(ResetExecutionEvent.class));
+		connectionTypes.remove(ConnectionType.NOCONNECTION); //case filtred by domaincontroller
+		for(ConnectionType connectionType: connectionTypes) {
+			
+			when(mockBlockReprository.moveBlock("1","2",connectionType,"",ConnectionType.NOCONNECTION)).thenReturn(blockIdsInRepository);
+			when(mockBlockReprository.moveBlock("1","",ConnectionType.NOCONNECTION,"3",connectionType)).thenReturn(blockIdsInRepository);
+			when(mockBlockReprository.moveBlock("1","2",connectionType,"3",connectionType)).thenReturn(blockIdsInRepository);
+			
+			bc.moveBlock("1", "2", connectionType, "", ConnectionType.NOCONNECTION);
+			verify(mockBlockReprository).moveBlock("1", "2", connectionType, "", ConnectionType.NOCONNECTION);
+			updateResetOrder.verify(mockDomainListener, atLeastOnce()).onUpdateGameStateEvent(any(UpdateGameStateEvent.class));
+			updateResetOrder.verify(mockDomainListener, atLeastOnce()).onResetExecutionEvent(any(ResetExecutionEvent.class));
+			verify(mockGUIListener,atLeastOnce()).onBlockChangeEvent(any(BlockChangeEvent.class));
+			
+			bc.moveBlock("1", "", ConnectionType.NOCONNECTION, "3", connectionType);
+			verify(mockBlockReprository).moveBlock("1", "", ConnectionType.NOCONNECTION, "3", connectionType);
+			updateResetOrder.verify(mockDomainListener, atLeastOnce()).onUpdateGameStateEvent(any(UpdateGameStateEvent.class));
+			updateResetOrder.verify(mockDomainListener, atLeastOnce()).onResetExecutionEvent(any(ResetExecutionEvent.class));
+			verify(mockGUIListener,atLeastOnce()).onBlockChangeEvent(any(BlockChangeEvent.class));
+			
+			bc.moveBlock("1", "2", connectionType, "3", connectionType);
+			verify(mockBlockReprository).moveBlock("1", "2", connectionType, "3", connectionType);
+			updateResetOrder.verify(mockDomainListener, atLeastOnce()).onUpdateGameStateEvent(any(UpdateGameStateEvent.class));
+			updateResetOrder.verify(mockDomainListener, atLeastOnce()).onResetExecutionEvent(any(ResetExecutionEvent.class));
+			verify(mockGUIListener,atLeastOnce()).onBlockChangeEvent(any(BlockChangeEvent.class));
+		}
+	}
+	
+	public void assertExceptionBRMoveBlock(String movedBlockId, String connectedBeforeMoveBlockId,
+			ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove,String excMessage) {
+		boolean pass = false;
+		
+		try {
+			blockRepository.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove,connectedAfterMoveBlockId,connectionAfterMove );
+		} catch (NoSuchConnectedBlockException e) {
+			pass = e.getMessage().equals(excMessage);
+		}
+		catch (InvalidBlockConnectionException e)
+		{
+			pass = e.getMessage().equals(excMessage);
+		}
+		assertTrue("moveBlock failed in the domainController for combination="+movedBlockId+" "+connectedBeforeMoveBlockId+" "+connectionBeforeMove+" "+connectedAfterMoveBlockId+" "+connectionAfterMove,pass);
+	}
 	
 	
+	@Test
+	public void testBRMoveBlockNegativeBlocksNotInDomain() {//Specifieker volgens case, forloop dus niet gebruiken
+		String excMessage = "The requested block doens't exist in the domain";
+		connectionTypes.remove(ConnectionType.NOCONNECTION);
+		connectionTypes.remove(ConnectionType.UP);
+		
+		//to Avoid other exceptions that are tested in ohter test case
+		connectedMoveForwardBlockA.setNextBlock(movedActionBlock);
+		connectedIfBlockA.setConditionBlock(movedOperatorBlock);
+		connectedOperatorBlockA.setOperand(movedWallInFrontBlock);
+		connectedIfBlockA.setFirstBlockOfBody(movedActionBlock);
+		
+		
+		for(ConnectionType connectionTypeA: connectionTypes) {
+			for(ConnectionType connectionTypeB: connectionTypes) {
+				assertExceptionBRMoveBlock("40", "", connectionTypeA, "",connectionTypeB,excMessage );
+				
+				assertExceptionBRMoveBlock("1", "200", connectionTypeA, "",connectionTypeB,excMessage );
+				
+				assertExceptionBRMoveBlock("1", "", connectionTypeA, "2",connectionTypeB,excMessage );
+
+				if(connectionTypeA == ConnectionType.UP || connectionTypeA == ConnectionType.DOWN )
+					assertExceptionBRMoveBlock("1", "2", connectionTypeA, "3000",connectionTypeB,excMessage );
+				else if(connectionTypeA == ConnectionType.OPERAND || connectionTypeA == ConnectionType.LEFT )
+					assertExceptionBRMoveBlock("1", "14", connectionTypeA, "3000",connectionTypeB,excMessage );
+				else
+					assertExceptionBRMoveBlock("1", "4", connectionTypeA, "3000",connectionTypeB,excMessage );
+				
+			}
+		}
 	}
 	
 	@Test
-	public void testBRMoveBlockNegativeBlocksNotInDomain() {
+	public void testBRMoveBlockNegativeConnectionNotPossible() {
 		
 	}
-	
-	@Test
-	public void testBRMoveBlockNegativeNotValidConnection() {
-		ArgumentCaptor<String> movedBlock = ArgumentCaptor.forClass(String.class);
-		ArgumentCaptor<ConnectionType> connectionTypeBeforeMove = ArgumentCaptor.forClass(ConnectionType.class);
-		ArgumentCaptor<ConnectionType> connectionTypeAfterMove = ArgumentCaptor.forClass(ConnectionType.class);
-		ArgumentCaptor<String> connectedBlockBeforeMove = ArgumentCaptor.forClass(String.class);
-		ArgumentCaptor<String> connectedBlockAfterMove = ArgumentCaptor.forClass(String.class);
-	}
-	
-	@Test
-	public void testBRMoveBlockPositive() {
-		
-		
-		
-		exceptionRule.expect(NoSuchConnectedBlockException.class);
-		exceptionRule.expect(InvalidBlockConnectionException.class);
-		
-		
-		
-		
-		
-	}
-	
-	
+//-------------------------------------------------------------------------------------------------------------
 	
 	// TESTS CONNECTIONTYPE.NOCONNECTION
-	
+	@Test
 	public void testBRMoveBlockPositiveWithNOCONNETION() {
-
+		headBlocks.add(connectedIfBlockA);
+		headBlocks.add(connectedMoveForwardBlockB);
+		
+		when(headBlocks.contains(connectedMoveForwardBlockB)).thenReturn(true);
+		
 		// TESTS CONNECTIONTYPE.NOCONNECTION - NOCONNECTION
 		blockRepository.moveBlock("1", null, ConnectionType.NOCONNECTION, null, ConnectionType.NOCONNECTION);
-		
 
 		// TESTS CONNECTIONTYPE.NOCONNECTION - DOWN
 		blockRepository.moveBlock("1", null, ConnectionType.NOCONNECTION, "2", ConnectionType.DOWN);
 		assertEquals(connectedMoveForwardBlockA.getNextBlock(), movedActionBlock);
-
+		
 		// TESTS CONNECTIONTYPE.NOCONNECTION - UP
-		blockRepository.moveBlock("1", null, ConnectionType.NOCONNECTION, "2", ConnectionType.UP);
-		assertEquals(movedActionBlock.getNextBlock(), connectedMoveForwardBlockA);
+		blockRepository.moveBlock("1", null, ConnectionType.NOCONNECTION, "3", ConnectionType.UP);
+		assertEquals(movedActionBlock.getNextBlock(), connectedMoveForwardBlockB);
 
 		// TESTS CONNECTIONTYPE.NOCONNECTION - BODY
 		blockRepository.moveBlock("1", null, ConnectionType.NOCONNECTION, "4", ConnectionType.BODY);
@@ -362,7 +449,7 @@ public class MoveBlockTest {
 	}
 
 	// TESTS CONNECTIONTYPE.DOWN
-	
+	@Test
 	public void testBRMoveBlockPositiveWithDOWN() {
 
 
@@ -399,7 +486,7 @@ public class MoveBlockTest {
 	}
 
 	// TESTS CONNECTIONTYPE.UP
-	
+	@Test
 	public void testBRMoveBlockPositiveWithUP() {
 		// We here imagine we want to move the headBlock of a chain of blocks.
 		// By design we have chosen that if a HeadBlock is moved all blocks below will
@@ -416,7 +503,7 @@ public class MoveBlockTest {
 		blockRepository.moveBlock("1", null, ConnectionType.NOCONNECTION, null, ConnectionType.NOCONNECTION);
 	}
 
-	
+	@Test
 	public void testBRMoveBlockPositiveWithBODY() {
 		when(blockRepository.getBlockByID("5")).thenReturn(connectedIfBlockB);
 
@@ -449,7 +536,7 @@ public class MoveBlockTest {
 		//TESTS CONNECTIONTYPE.BODY - CONDITION ( SEE NEGATIVE TEST CASES)
 	}
 
-	
+	@Test
 	public void testBRMoveBlockPositiveWithCONDITION() {
 		//Initialize environment
 		when(blockRepository.getBlockByID("4")).thenReturn(connectedIfBlockA);
@@ -478,7 +565,7 @@ public class MoveBlockTest {
 		assertEquals(connectedWhileBlockA.getConditionBlock(), movedWallInFrontBlock);
 	}
 
-	
+	@Test
 	public void testMoveBlockWithValidReprositoryBeforeMove() {
 
 		// MovedActionBlock should have no
@@ -524,7 +611,7 @@ public class MoveBlockTest {
 	public void testMoveAssesmentBlockWitchValidConnectionOperand() {
 		
 	}
-	
+	@Test
 	public void testMoveBlockWithChainOfBlock() {
 
 		// Test with a nextBlock for the MovedActionBlock
