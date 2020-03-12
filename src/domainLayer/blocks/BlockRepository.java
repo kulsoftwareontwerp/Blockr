@@ -40,7 +40,6 @@ public class BlockRepository {
 	 *                         new block must be connected. If no connectedBlockId
 	 *                         was given, this parameter must be set to
 	 *                         "ConnectionType.NOCONNECTION".
-	 * @return TODO
 	 * @throws InvalidBlockConnectionException The given combination of the
 	 *                                         blockType,connectedBlockId and
 	 *                                         connection is impossible. - an
@@ -171,12 +170,59 @@ public class BlockRepository {
 
 	/**
 	 * 
-	 * @param movedBlockId
-	 * @param connectedBeforeMoveBlockId
-	 * @param connectionBeforeMove
-	 * @param connectedAfterMoveBlockId
-	 * @param connectionAfterMove
-	 * @return TODO
+	 * Move a block given by it's ID in the domain, 
+	 * disconnecting it from an eventual connected block to connect it to another block.
+	 * 
+	 * 
+	 * 
+	 * @param movedBlockId					The Id of block to be moved, this parameter is required.
+	 * 
+	 * @param connectedBeforeMoveBlockId	The Id which is connected to our block before moving the block, 
+	 * 										this parameter is required. If there's no block connected to the 
+	 * 										block you wish to move then use an empty String "".
+	 * 
+	 * @param connectionBeforeMove			The connection of the block which is connected to our block before moving the block, 
+	 * 										this parameter is required. If there's no block connected to the 
+	 * 										block you wish to move then use an ConnectionType.NOCONNECTION.
+	 * 										For the ConnectionTypes, those are related to the block that is 
+	 * 										connected to the block you wish to move e.g. 
+	 * 										ConnectionType.DOWN means that the block you wish 
+	 * 										to move is underneath the connected block.
+	 * 
+	 * @param connectedAfterMoveBlockId		The Id of the block you wish to connect the block you are moving to. This parameter is Required.
+	 * 										If there's no connected block after the move please use an empty String, "".
+	 * @param connectionAfterMove			The connection of the block you wish to connect the block you are moving to. This parameter is Required.
+	 * 										If there's no connected block after the move please use ConnectionType.NOCONNECTION.
+	 * 
+	 * @throws NoSuchConnectedBlockException	If This Exception is thrown all modifications will not occur.
+	 * 											By this principle if you wished to move a block, consider this block still being
+	 * 											at it's "old" place/connection.
+	 * 
+	 * 											This exception will be thrown in following cases;
+	 * 											- If the Id of the moved block does not exist in the domain.
+	 * 											- If one of the connected block id's is not existing in the domain.
+	 * 											
+	 * @throws InvalidBlockConnectionException  If this Exception is thrown all modifications will not occur.
+	 * 											By this principle if you wished to move a block, consider this block still being
+	 * 											at it's "old" place/connection.
+	 * 
+	 * 											This exception will be thrown in following cases;
+	 * 											For simplicity we will use the examples of BlockA and BlockB.
+	 * 											- If you wish to disconnect BlockA of BlockB by moving BlockA but BlockB has no connection with BlockA.
+	 * 											- If you wish to disconnect BlockA of BlockB given an certain ConnectionType, but BlockB has no connection with BlockA 
+	 * 												on this particular ConnectionType.
+	 * 										    - If a BlockA is dropped on the ConnectionType UP of BlockB but the socket of BlockB is not aviable.
+	 * 
+	 * @return 	This method will return an Set of Strings that corresponds to the block that have been modified while moving a block.
+	 * 			If you move a block that has no connected block underneath the only block being modified is the block you've moved.
+	 * 			In this case you'll receive a set with only the Id of the block you've moved.
+	 * 			Otherwise if the block you are moving has blocks underneath and thus forms a chain of block. 
+	 * 			Moving this chain of block upon on other block will have as result that the last block of the chain will be connected to 
+	 * 			the block you wished to connect your chain of blocks to.
+	 * 			This method will then return a set with the head of the chain, the actual block you selected to move, and the last block 
+	 * 			of the chain, due to modification towards the block underneath it. 
+	 * 
+	 * 
 	 */
 	public Set<String> moveBlock(String movedBlockId, String connectedBeforeMoveBlockId,
 		ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
@@ -423,7 +469,8 @@ public class BlockRepository {
 	}
 
 	public boolean checkIfValidProgram() {
-		return headBlocks.size() == 1;
+		return true;
+		//Not implemented yet.
 	}
 
 	public ExecutableBlock findFirstBlockToBeExecuted() {
@@ -433,7 +480,11 @@ public class BlockRepository {
 		ExecutableBlock firstExecutableBlock = (ExecutableBlock) iter.next();
 		return firstExecutableBlock;
 	}
-
+	
+	/**
+	 * 
+	 * @param block
+	 */
 	private void addBlockToHeadBlocks(Block block) {
 		this.headBlocks.add(block);
 	}
