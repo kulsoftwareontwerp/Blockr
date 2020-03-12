@@ -32,14 +32,13 @@ public class ExecuteBlockTest extends GameController {
 	public ExpectedException exceptionRule = ExpectedException.none();	
 	
 	private ValidProgramState validProgramState;
+	private InExecutionState inExecutionState;
 	
 	private ActionBlock moveForwardBlock;
 	private ActionBlock turnLeftBlock;
 	private ActionBlock turnRightBlock;
-	private ControlBlock controlBlock;
 	private ControlBlock whileBlock;
 	private ControlBlock ifBlock;
-	private WallInFrontBlock condition;
 
 	private WallInFrontBlock wallInFrontBlock;
 	
@@ -47,12 +46,9 @@ public class ExecuteBlockTest extends GameController {
 	private HashSet<Element> elementsWithWall;
 	private HashSet<Element> elementsWithoutWall;
 	
-	private InExecutionState ies;
-	private ValidProgramState vps;
-	
-
 	private Robot robot;
 	private Robot robotSpy;
+
 	private HashMap<String, Integer> robotCoords;
 
 	@BeforeClass
@@ -66,14 +62,13 @@ public class ExecuteBlockTest extends GameController {
 	@Before
 	public void setUp() throws Exception {
 		validProgramState = spy(new ValidProgramState(mockGameController));
+		inExecutionState = spy(new InExecutionState(mockGameController, moveForwardBlock));
 		
 		moveForwardBlock = spy(new MoveForwardBlock("moveForwardBlock"));
 		turnLeftBlock = spy(new TurnLeftBlock("turnLeftBlock"));
 		turnRightBlock = spy(new TurnRightBlock("turnRightBlock"));
-		controlBlock = spy(new WhileBlock("controlBlock"));
 		whileBlock = spy(new WhileBlock("whileBlock"));
 		ifBlock = spy(new IfBlock("ifBlock"));
-		condition = spy(new WallInFrontBlock("condition"));
 		wallInFrontBlock = spy(new WallInFrontBlock("wallInFrontBlock"));
 		
 		inFrontOfRobotCoords = new HashMap<String, Integer>();
@@ -83,12 +78,10 @@ public class ExecuteBlockTest extends GameController {
 		elementsWithWall.add(new Wall(1, 1));
 		elementsWithoutWall = new HashSet<Element>();
 		
-		ies = spy(new InExecutionState(mockGameController, moveForwardBlock));
-		vps = spy(new ValidProgramState(mockGameController));
-		
 
 		robot = new Robot(2, 2, Orientation.UP);
 		robotSpy = spy(new Robot(2, 2, Orientation.UP));
+
 		robotCoords = new HashMap<String, Integer>();
 	}
 
@@ -106,7 +99,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link applicationLayer.DomainController#executeBlock()}.
 	 */
 	@Test
-	public void testDCExecuteBlockPositive() {
+	public void testDomainController_ExecuteBlock_Positive() {
 		dc.executeBlock();
 		verify(mockGameController,atLeastOnce()).executeBlock();
 	}
@@ -114,14 +107,13 @@ public class ExecuteBlockTest extends GameController {
 	@Spy @InjectMocks
 	private GameController gc;
 	
-	// Geeft hier fail error: 'Actually, there were zero interactions with this mock.'
-	// Klopt ook wel, want hij doet alleen iets in de concrete klassen. Heb echter geen idee hoe ik dit anders zou testen.
+	
 	/**
 	 * Test method for
 	 * {@link applicationLayer.GameController#executeBlock()}.
 	 */
 	@Test
-	public void testGCExecuteBlockPositive() {
+	public void testGameController_ExecuteBlock_Positive() {
 		when(gc.getCurrentState()).thenReturn(validProgramState);
 	
 		gc.executeBlock();
@@ -137,7 +129,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link applicationLayer.GameController#findFirstBlockToBeExecuted()}.
 	 */
 	@Test
-	public void testGCFindFirstBlockToBeExecutedPositiveActionBlock() {
+	public void testGameController_FindFirstBlockToBeExecuted_ActionBlock_Positive() {
 		when(mockBlockRepository.findFirstBlockToBeExecuted()).thenReturn(moveForwardBlock);
 		
 		assertEquals(gc.findFirstBlockToBeExecuted(), moveForwardBlock);
@@ -149,13 +141,13 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link applicationLayer.GameController#findFirstBlockToBeExecuted()}.
 	 */
 	@Test
-	public void testGCFindFirstBlockToBeExecutedPositiveNoActionBlock() {
-		when(mockBlockRepository.findFirstBlockToBeExecuted()).thenReturn(controlBlock);
-		when(gc.findNextActionBlockToBeExecuted(controlBlock)).thenReturn(moveForwardBlock);
+	public void testGameController_FindFirstBlockToBeExecuted_NoActionBlock_Positive() {
+		when(mockBlockRepository.findFirstBlockToBeExecuted()).thenReturn(whileBlock);
+		when(gc.findNextActionBlockToBeExecuted(whileBlock)).thenReturn(moveForwardBlock);
 		
 		assertEquals(gc.findFirstBlockToBeExecuted(), moveForwardBlock);
 		verify(mockBlockRepository,atLeastOnce()).findFirstBlockToBeExecuted();
-		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(controlBlock);
+		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(whileBlock);
 	}
 	
 	/**
@@ -163,7 +155,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
 	 */
 	@Test
-	public void testGCFindNextActionBlockToBeExecutedPositiveNoNextBlock() {
+	public void testGameController_FindNextActionBlockToBeExecuted_NoNextBlock_Positive() {
 		when(moveForwardBlock.getNextBlock()).thenReturn(null);
 		
 		assertEquals(gc.findNextActionBlockToBeExecuted(moveForwardBlock),null);
@@ -174,7 +166,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
 	 */
 	@Test
-	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockActionBlock() {
+	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockActionBlock_Positive() {
 		when(moveForwardBlock.getNextBlock()).thenReturn(moveForwardBlock);
 		
 		assertEquals(gc.findNextActionBlockToBeExecuted(moveForwardBlock),moveForwardBlock);
@@ -188,10 +180,10 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
 	 */
 	@Test
-	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockWhileBlockAssessTrue() {
+	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockWhileBlockAssessTrue_Positive() {
 		when(moveForwardBlock.getNextBlock()).thenReturn(whileBlock);
-		when(whileBlock.getConditionBlock()).thenReturn(condition);
-		Mockito.doReturn(true).when(condition).assess(mockElementRepository);
+		when(whileBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
+		Mockito.doReturn(true).when(wallInFrontBlock).assess(mockElementRepository);
 		Mockito.doReturn(turnLeftBlock).when(whileBlock).getFirstBlockOfBody();
 		
 		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
@@ -204,10 +196,10 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
 	 */
 	@Test
-	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockWhileBlockAssessFalse() {
+	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockWhileBlockAssessFalse_Positive() {
 		when(moveForwardBlock.getNextBlock()).thenReturn(whileBlock);
-		when(whileBlock.getConditionBlock()).thenReturn(condition);
-		Mockito.doReturn(false).when(condition).assess(mockElementRepository);
+		when(whileBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
+		Mockito.doReturn(false).when(wallInFrontBlock).assess(mockElementRepository);
 		Mockito.doReturn(turnLeftBlock).when(whileBlock).getNextBlock();
 		
 		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
@@ -220,10 +212,10 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
 	 */
 	@Test
-	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockIfBlockAssessFalse() {
+	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockIfBlockAssessFalse_Positive() {
 		when(moveForwardBlock.getNextBlock()).thenReturn(ifBlock);
-		when(ifBlock.getConditionBlock()).thenReturn(condition);
-		Mockito.doReturn(false).when(condition).assess(mockElementRepository);
+		when(ifBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
+		Mockito.doReturn(false).when(wallInFrontBlock).assess(mockElementRepository);
 		Mockito.doReturn(turnLeftBlock).when(ifBlock).getNextBlock();
 		
 		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
@@ -236,10 +228,10 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
 	 */
 	@Test
-	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockIfBlockAssessTrueIsReachedFromEndOfBodyTrue() {
+	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockIfBlockAssessTrueIsReachedFromEndOfBodyTrue_Positive() {
 		when(moveForwardBlock.getNextBlock()).thenReturn(ifBlock);
-		when(ifBlock.getConditionBlock()).thenReturn(condition);
-		Mockito.doReturn(true).when(condition).assess(mockElementRepository);
+		when(ifBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
+		Mockito.doReturn(true).when(wallInFrontBlock).assess(mockElementRepository);
 		Mockito.doReturn(moveForwardBlock).when(ifBlock).getFirstBlockOfBody();
 		//Mockito.doReturn(true).when(gc).isReachedFromEndOfBody("moveForwardBlock", "ifBlock", turnLeftBlock);
 		Mockito.doReturn(turnLeftBlock).when(ifBlock).getNextBlock();
@@ -254,10 +246,10 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
 	 */
 	@Test
-	public void testGCFindNextActionBlockToBeExecutedPositiveNextBlockIfBlockAssessTrueIsReachedFromEndOfBodyFalse() {
+	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockIfBlockAssessTrueIsReachedFromEndOfBodyFalse_Positive() {
 		when(moveForwardBlock.getNextBlock()).thenReturn(ifBlock);
-		when(ifBlock.getConditionBlock()).thenReturn(condition);
-		Mockito.doReturn(true).when(condition).assess(mockElementRepository);
+		when(ifBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
+		Mockito.doReturn(true).when(wallInFrontBlock).assess(mockElementRepository);
 		Mockito.doReturn(turnLeftBlock).when(ifBlock).getFirstBlockOfBody();
 		Mockito.doReturn(ifBlock).when(turnLeftBlock).getNextBlock();
 		//Mockito.doReturn(true).when(gc).isReachedFromEndOfBody("moveForwardBlock", "ifBlock", turnLeftBlock);
@@ -273,7 +265,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link applicationLayer.GameController#performRobotAction(ActionBlock)}.
 	 */
 	@Test
-	public void testGCperformRobotActionPositive() {
+	public void testGameController_PerformRobotAction_Positive() {
 		Mockito.doReturn(robot).when(mockElementRepository).getRobot();
 		
 		gc.performRobotAction(turnLeftBlock);
@@ -288,7 +280,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.GameState#execute()}.
 	 */
 	@Test
-	public void testGSExecutePositive() {
+	public void testGameState_Execute_Positive() {
 		GameState gameState = Mockito.mock(
 				GameState.class, 
 				Mockito.CALLS_REAL_METHODS);
@@ -303,10 +295,10 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.ValidProgramState#execute()}.
 	 */
 	@Test
-	public void testVPSExecutePositive() {
+	public void testValidProgramState_Execute_Positive() {
 		when(mockGameController.findFirstBlockToBeExecuted()).thenReturn(moveForwardBlock);
 		
-		vps.execute();
+		validProgramState.execute();
 		verify(mockGameController,atLeastOnce()).findFirstBlockToBeExecuted();
 		verify(mockGameController,atLeastOnce()).toState(any(InExecutionState.class));
 	}
@@ -317,9 +309,9 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.InExecutionState#execute()}.
 	 */
 	@Test
-	public void testIESExecutePositiveNoNextActionBlockToBeExecuted() {
-		when(ies.getNextActionBlockToBeExecuted()).thenReturn(null);
-		ies.execute();
+	public void testInExecutionState_Execute_NoNextActionBlockToBeExecuted_Positive() {
+		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(null);
+		inExecutionState.execute();
 		verifyNoInteractions(mockGameController);
 	}
 	
@@ -328,13 +320,13 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.InExecutionState#execute()}.
 	 */
 	@Test
-	public void testIESExecutePositiveNoNewNextActionBlockToBeExecuted() {
-		when(ies.getNextActionBlockToBeExecuted()).thenReturn(moveForwardBlock);
+	public void testInExecutionState_Execute_NoNewNextActionBlockToBeExecuted_Positive() {
+		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(moveForwardBlock);
 		when(mockGameController.findNextActionBlockToBeExecuted(moveForwardBlock)).thenReturn(null);
 		
-		ies.execute();
+		inExecutionState.execute();
 		verify(mockGameController,atLeastOnce()).performRobotAction(moveForwardBlock);
-		verify(ies,atLeastOnce()).setNextActionBlockToBeExecuted(null);
+		verify(inExecutionState,atLeastOnce()).setNextActionBlockToBeExecuted(null);
 		verify(mockGameController,atLeastOnce()).fireUpdateHighlightingEvent(null);
 	}
 	
@@ -343,13 +335,13 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.InExecutionState#execute()}.
 	 */
 	@Test
-	public void testIESExecutePositive() {
-		when(ies.getNextActionBlockToBeExecuted()).thenReturn(moveForwardBlock);
+	public void testInExecutionState_Execute_Positive() {
+		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(moveForwardBlock);
 		when(mockGameController.findNextActionBlockToBeExecuted(moveForwardBlock)).thenReturn(moveForwardBlock);
 		
-		ies.execute();
+		inExecutionState.execute();
 		verify(mockGameController,atLeastOnce()).performRobotAction(moveForwardBlock);
-		verify(ies,atLeastOnce()).setNextActionBlockToBeExecuted(moveForwardBlock);
+		verify(inExecutionState,atLeastOnce()).setNextActionBlockToBeExecuted(moveForwardBlock);
 		verify(mockGameController,atLeastOnce()).fireUpdateHighlightingEvent(moveForwardBlock.getBlockId());
 	}
 	
@@ -362,10 +354,9 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.BlockRepository#findFirstBlockToBeExecuted()}.
 	 */
 	@Test
-	public void testBRfindFirstBlockToBeExecutedPositive() {
+	public void testBlockRepository_FindFirstBlockToBeExecuted_Positive() {
 		// br.findFirstBlockToBeExecuted();
-		// TODO: Deze methode kan enkel worden opgeroepen als er exact 1 element in de headBlocks set zit (valid state)
-		//		Maar hoe hou je daar rekening mee + hoe test je dat als er geen manier is om hier die headBlocks set aan te passen...
+		// How does one mock private attributes like collections of blocks?
 	}
 	
 	
@@ -374,7 +365,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.WallInFrontBlock#assess(ElementRepository)}.
 	 */
 	@Test
-	public void testWIFAssessPositiveWithWallTrue() {
+	public void testWallInFrontBlock_Assess_WithWallTrue_Positive() {
 		Mockito.doReturn(inFrontOfRobotCoords).when(mockElementRepository).getCoordinatesInFrontOfRobot();
 		Mockito.doReturn(elementsWithWall).when(mockElementRepository).getElements(1,1);
 		
@@ -386,7 +377,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.WallInFrontBlock#assess(ElementRepository)}.
 	 */
 	@Test
-	public void testWIFAssessPositiveWithoutWallFalse() {
+	public void testWallInFrontBlock_Assess_WithWallFalse_Positive() {
 		Mockito.doReturn(inFrontOfRobotCoords).when(mockElementRepository).getCoordinatesInFrontOfRobot();
 		Mockito.doReturn(elementsWithoutWall).when(mockElementRepository).getElements(1,1);
 		
@@ -399,7 +390,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
 	 */
 	@Test
-	public void testMFBExecutePositive_WithinBoundries_NoSolidElements() {
+	public void testMoveForwardBlock_Execute_WithinBoundriesNoSolidElements_Positive() {
 		Mockito.doReturn(inFrontOfRobotCoords).when(mockElementRepository).getCoordinatesInFrontOfRobot();
 		Mockito.doReturn(elementsWithoutWall).when(mockElementRepository).getElements(1,1);
 		Mockito.doReturn(2).when(mockElementRepository).getGameAreaWidth();
@@ -416,7 +407,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
 	 */
 	@Test
-	public void testMFBExecutePositive_WithinBoundries_SolidElements() {
+	public void testMoveForwardBlock_Execute_WithinBoundriesSolidElements_Positive() {
 		Mockito.doReturn(inFrontOfRobotCoords).when(mockElementRepository).getCoordinatesInFrontOfRobot();
 		Mockito.doReturn(elementsWithWall).when(mockElementRepository).getElements(1,1);
 		Mockito.doReturn(2).when(mockElementRepository).getGameAreaWidth();
@@ -432,7 +423,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
 	 */
 	@Test
-	public void testMFBExecutePositive_OutOfBoundries_NoSolidElements() {
+	public void testMoveForwardBlock_Execute_OutOfBoundriesNoSolidElements_Positive() {
 		Mockito.doReturn(inFrontOfRobotCoords).when(mockElementRepository).getCoordinatesInFrontOfRobot();
 		Mockito.doReturn(elementsWithWall).when(mockElementRepository).getElements(1,1);
 		Mockito.doReturn(1).when(mockElementRepository).getGameAreaWidth();
@@ -445,10 +436,10 @@ public class ExecuteBlockTest extends GameController {
 	
 	/**
 	 * Test method for
-	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 * {@link domainLayer.TurnLeftBlock#execute(ElementRepository)}.
 	 */
 	@Test
-	public void testTLBExecutePositive_RobotUp() {
+	public void testTurnLeftBlock_Execute_RobotUp_Positive() {
 		robotSpy.setOrientation(Orientation.UP);
 		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
 		
@@ -459,10 +450,10 @@ public class ExecuteBlockTest extends GameController {
 	
 	/**
 	 * Test method for
-	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 * {@link domainLayer.TurnLeftBlock#execute(ElementRepository)}.
 	 */
 	@Test
-	public void testTLBExecutePositive_RobotRight() {
+	public void testTurnLeftBlock_Execute_RobotRight_Positive() {
 		robotSpy.setOrientation(Orientation.RIGHT);
 		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
 		
@@ -473,10 +464,10 @@ public class ExecuteBlockTest extends GameController {
 	
 	/**
 	 * Test method for
-	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 * {@link domainLayer.TurnLeftBlock#execute(ElementRepository)}.
 	 */
 	@Test
-	public void testTLBExecutePositive_RobotDown() {
+	public void testTurnLeftBlock_Execute_RobotDown_Positive() {
 		robotSpy.setOrientation(Orientation.DOWN);
 		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
 		
@@ -487,10 +478,10 @@ public class ExecuteBlockTest extends GameController {
 	
 	/**
 	 * Test method for
-	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 * {@link domainLayer.TurnLeftBlock#execute(ElementRepository)}.
 	 */
 	@Test
-	public void testTLBExecutePositive_RobotLeft() {
+	public void testTurnLeftBlock_Execute_RobotLeft_Positive() {
 		robotSpy.setOrientation(Orientation.LEFT);
 		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
 		
@@ -501,10 +492,10 @@ public class ExecuteBlockTest extends GameController {
 	
 	/**
 	 * Test method for
-	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 * {@link domainLayer.TurnRightBlock#execute(ElementRepository)}.
 	 */
 	@Test
-	public void testTRBExecutePositive_RobotUp() {
+	public void testTurnRightBlock_Execute_RobotUp_Positive() {
 		robotSpy.setOrientation(Orientation.UP);
 		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
 		
@@ -515,10 +506,10 @@ public class ExecuteBlockTest extends GameController {
 	
 	/**
 	 * Test method for
-	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 * {@link domainLayer.TurnRightBlock#execute(ElementRepository)}.
 	 */
 	@Test
-	public void testTRBExecutePositive_RobotRight() {
+	public void testTurnRightBlock_Execute_RobotRight_Positive() {
 		robotSpy.setOrientation(Orientation.RIGHT);
 		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
 		
@@ -529,10 +520,10 @@ public class ExecuteBlockTest extends GameController {
 	
 	/**
 	 * Test method for
-	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 * {@link domainLayer.TurnRightBlock#execute(ElementRepository)}.
 	 */
 	@Test
-	public void testTRBExecutePositive_RobotDown() {
+	public void testTurnRightBlock_Execute_RobotDown_Positive() {
 		robotSpy.setOrientation(Orientation.DOWN);
 		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
 		
@@ -543,10 +534,10 @@ public class ExecuteBlockTest extends GameController {
 	
 	/**
 	 * Test method for
-	 * {@link domainLayer.MoveForwardBlock#execute(ElementRepository)}.
+	 * {@link domainLayer.TurnRightBlock#execute(ElementRepository)}.
 	 */
 	@Test
-	public void testTRBExecutePositive_RobotLeft() {
+	public void testTurnRightBlock_Execute_RobotLeft_Positive() {
 		robotSpy.setOrientation(Orientation.LEFT);
 		Mockito.doReturn(robotSpy).when(mockElementRepository).getRobot();
 		
@@ -563,7 +554,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.ElementRepository#getCoordinatesInFrontOfRobot()}.
 	 */
 	@Test
-	public void testERGetCoordinatesInFrontOfRobotPositiveUP() {
+	public void testElementRepository_GetCoordinatesInFrontOfRobot_OrientationUp_Positive() {
 		Mockito.doReturn(robot).when(er).getRobot();
 		robotCoords.put("X", 2);
 		robotCoords.put("Y", 1);
@@ -576,7 +567,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.ElementRepository#getCoordinatesInFrontOfRobot()}.
 	 */
 	@Test
-	public void testERGetCoordinatesInFrontOfRobotPositiveDOWN() {
+	public void testElementRepository_GetCoordinatesInFrontOfRobot_OrientationDown_Positive() {
 		robot.setOrientation(Orientation.DOWN);
 		Mockito.doReturn(robot).when(er).getRobot();
 		
@@ -590,7 +581,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.ElementRepository#getCoordinatesInFrontOfRobot()}.
 	 */
 	@Test
-	public void testERGetCoordinatesInFrontOfRobotPositiveLEFT() {
+	public void testElementRepository_GetCoordinatesInFrontOfRobot_OrientationLeft_Positive() {
 		robot.setOrientation(Orientation.LEFT);
 		Mockito.doReturn(robot).when(er).getRobot();
 		
@@ -604,7 +595,7 @@ public class ExecuteBlockTest extends GameController {
 	 * {@link domainLayer.ElementRepository#getCoordinatesInFrontOfRobot()}.
 	 */
 	@Test
-	public void testERGetCoordinatesInFrontOfRobotPositiveRIGHT() {
+	public void testElementRepository_GetCoordinatesInFrontOfRobot_OrientationRight_Positive() {
 		robot.setOrientation(Orientation.RIGHT);
 		Mockito.doReturn(robot).when(er).getRobot();
 		
@@ -615,10 +606,10 @@ public class ExecuteBlockTest extends GameController {
 	
 	/**
 	 * Test method for
-	 * {@link domainLayer.ElementRepository#getCoordinatesInFrontOfRobot()}.
+	 * {@link domainLayer.ElementRepository#updateRobotPosition(int, int)}.
 	 */
 	@Test
-	public void testERUpdateRobotPositionPositive() {
+	public void testElementRepository_UpdateRobotPosition_Positive() {
 		Mockito.doReturn(robotSpy).when(er).getRobot();
 
 		er.updateRobotPosition(1, 2);
