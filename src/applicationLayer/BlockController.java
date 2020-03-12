@@ -4,7 +4,6 @@ import java.util.*;
 
 import domainLayer.blocks.BlockIDGenerator;
 import domainLayer.blocks.BlockRepository;
-import domainLayer.blocks.BlockType;
 import events.BlockAddedEvent;
 import events.DomainListener;
 import events.DomainSubject;
@@ -14,6 +13,8 @@ import events.PanelChangeEvent;
 import events.ResetExecutionEvent;
 import events.UpdateGameStateEvent;
 import exceptions.MaxNbOfBlocksReachedException;
+import types.BlockType;
+import types.ConnectionType;
 
 /**
  * The BlockController orchestrates Create, Update, Delete and Retrieve operations for Blocks.

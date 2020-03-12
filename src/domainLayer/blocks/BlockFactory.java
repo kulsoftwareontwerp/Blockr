@@ -1,5 +1,6 @@
 package domainLayer.blocks;
 
+import types.BlockType;
 
 /**
  * The BlockFactory is responsible for the creation of blocks.

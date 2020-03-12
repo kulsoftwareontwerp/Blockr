@@ -4,6 +4,8 @@ import java.util.*;
 import applicationLayer.*;
 import exceptions.InvalidBlockConnectionException;
 import exceptions.NoSuchConnectedBlockException;
+import types.BlockType;
+import types.ConnectionType;
 
 
 /**

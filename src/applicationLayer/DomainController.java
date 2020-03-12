@@ -3,8 +3,9 @@ package applicationLayer;
 import java.util.Collection;
 import java.util.Set;
 
-import domainLayer.blocks.BlockType;
 import events.GUIListener;
+import types.BlockType;
+import types.ConnectionType;
 /**
  * The DomainController performs initial checks on the parameters and forwards the requests to the relevant controller.
  * 

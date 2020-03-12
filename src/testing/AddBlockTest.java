@@ -33,7 +33,6 @@ import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockFactory;
 import domainLayer.blocks.BlockIDGenerator;
 import domainLayer.blocks.BlockRepository;
-import domainLayer.blocks.BlockType;
 import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.ExecutableBlock;
@@ -54,6 +53,8 @@ import events.UpdateGameStateEvent;
 import exceptions.InvalidBlockConnectionException;
 import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
+import types.BlockType;
+import types.ConnectionType;
 
 /**
  * 
@@ -198,7 +199,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testDCAddBlockNegativeNoBlockType() {
@@ -216,7 +217,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testDCAddBlockNegativeConnectedBlockNoConnection() {
@@ -235,7 +236,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testDCAddBlockNegativeConnectionTypeNull() {
@@ -249,7 +250,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testDCAddBlockNegativeConnectionNoConnectedBlock() {
@@ -271,7 +272,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testDCAddBlockPositiveNoConnectedBlock() {
@@ -297,7 +298,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.BlockController#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link applicationLayer.BlockController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBCAddBlockPositiveMaxNbOfBlocksReached() {
@@ -338,7 +339,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.BlockController#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link applicationLayer.BlockController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBCAddBlockPositiveMaxNbOfBlocksNotReached() {
@@ -376,7 +377,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.BlockController#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link applicationLayer.BlockController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBCAddBlockNegativeMaxNbOfBlocksAlreadyReached() {
@@ -471,7 +472,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link domainLayer.blocks.BlockRepository#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockPositive() {
@@ -603,7 +604,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link domainLayer.blocks.BlockRepository#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockNegativeAddExecutableBlockAsCondition() {
@@ -623,7 +624,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link domainLayer.blocks.BlockRepository#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockNegativeAddBlockConnectedBlockNoCompatibleCavity() {
@@ -683,7 +684,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link domainLayer.blocks.BlockRepository#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockNegativeAddBlockNoSuchConnectedBlock() {
@@ -712,7 +713,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link domainLayer.blocks.BlockRepository#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@SuppressWarnings("unchecked")
 	@Test
@@ -766,7 +767,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link domainLayer.blocks.BlockRepository#addBlock(domainLayer.blocks.BlockType, java.lang.String, applicationLayer.ConnectionType)}.
+	 * {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockNegativeAddAssessableBlockNoCompatible() {
@@ -793,7 +794,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link domainLayer.blocks.BlockFactory#addBlock(domainLayer.blocks.BlockType)}.
+	 * {@link domainLayer.blocks.BlockFactory#addBlock(types.BlockType)}.
 	 */
 	@Test
 	public void testBFAddBlockPositive() {

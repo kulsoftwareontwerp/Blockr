@@ -1,6 +1,6 @@
 package events;
 
-import applicationLayer.ConnectionType;
+import types.ConnectionType;
 
 /**
  * The event thrown when a block has been changed in the domain.
