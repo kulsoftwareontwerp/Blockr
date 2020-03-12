@@ -2,9 +2,11 @@ package applicationLayer;
 
 import java.util.*;
 
+import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockIDGenerator;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.BlockType;
+import domainLayer.blocks.ControlBlock;
 import events.BlockAddedEvent;
 import events.DomainListener;
 import events.DomainSubject;
@@ -13,7 +15,9 @@ import events.GUISubject;
 import events.PanelChangeEvent;
 import events.ResetExecutionEvent;
 import events.UpdateGameStateEvent;
+import exceptions.InvalidBlockTypeException;
 import exceptions.MaxNbOfBlocksReachedException;
+import exceptions.NoSuchConnectedBlockException;
 
 /**
  * The BlockController orchestrates Create, Update, Delete and Retrieve operations for Blocks.
@@ -148,43 +152,89 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @param connectedAfterMoveBlockId
 	 * @param connectionAfterMove
 	 */
-	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove,
+			String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
 		// TODO - implement BlockController.moveBlock
 		throw new UnsupportedOperationException();
 	}
 
 	/**
+	 * Returns all the BlockID's underneath a certain block
 	 * 
-	 * @param blockId
+	 * @param blockID The blockID of the Block of which you want to retrieve all
+	 *                Blocks underneath.
+	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
+	 *                                       is not present in the domain.
+	 * @return A set containing the blockID's of  all connected Conditions and every
+	 *         kind of block in the body of the given block or under the given
+	 *         block. The ID of the block itself is also given.
 	 */
-	public Collection<String> getAllBlockIDsUnderneath(String blockId) {
-		// TODO - implement BlockController.getAllBlockIDsUnderneath
-		throw new UnsupportedOperationException();
+	public Set<String> getAllBlockIDsUnderneath(String blockID) {
+		Block block = programBlockRepository.getBlockByID(blockID);
+		Set<String> blockIDsUnderNeath = new HashSet<String>();
+
+		if (block == null) {
+			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
+		} else {
+			blockIDsUnderNeath = programBlockRepository.getAllBlockIDsUnderneath(block);
+		}
+
+		return blockIDsUnderNeath;
+	}
+	
+	
+
+	/**
+	 * Returns all the blockID's in the body of a given ControlBlock
+	 * 
+	 * @param blockID The blockID of the controlBlock of which you want to retrieve
+	 *                all Blocks in the body.
+	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
+	 *                                       is not present in the domain.
+	 * @throws InvalidBlockTypeException     Is thrown when given blockID isn't the
+	 *                                       ID of a ControlBlock.
+	 * @return A set containing the blockID of the blocks in the body of the given
+	 *         ControlBlock.
+	 */
+	public Set<String> getAllBlockIDsInBody(String blockID) {
+		Block block = programBlockRepository.getBlockByID(blockID);
+		Set<String> blockIDsInBody = new HashSet<String>();
+
+		if (block == null) {
+			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
+		} else if(!(block instanceof ControlBlock)) {
+			throw new InvalidBlockTypeException(ControlBlock.class, block.getClass());
+		}else {
+			blockIDsInBody = programBlockRepository.getAllBlockIDsInBody((ControlBlock)block);
+		}
+
+		return blockIDsInBody;
 	}
 
+	
 
 	@Override
 	public void addDomainListener(DomainListener listener) {
 		domainListeners.add(listener);
-		
+
 	}
 
 	@Override
 	public void removeDomainListener(DomainListener listener) {
 		domainListeners.remove(listener);
-		
+
 	}
 
 	@Override
 	public void removeListener(GUIListener listener) {
 		guiListeners.remove(listener);
-		
+
 	}
 
 	@Override
 	public void addListener(GUIListener listener) {
 		guiListeners.add(listener);
-		
+
 	}
 
 }
