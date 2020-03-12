@@ -25,7 +25,6 @@ import domainLayer.elements.*;
 
 
 
-
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateStateTest {
 	
