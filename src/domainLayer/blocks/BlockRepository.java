@@ -1,6 +1,9 @@
 package domainLayer.blocks;
 
 import java.util.*;
+
+import org.mockito.internal.matchers.InstanceOf;
+
 import applicationLayer.*;
 import domainLayer.blocks.ExecutableBlock;
 import exceptions.InvalidBlockConnectionException;
@@ -16,7 +19,7 @@ import exceptions.NoSuchConnectedBlockException;
 public class BlockRepository {
 
 	private BlockFactory blockFactory;
-	private Collection<Block> headBlocks;
+	private HashSet<Block> headBlocks;
 	private HashMap<String, Block> allBlocks;
 	private final int maxNbOfBlocks = 20;
 	private static BlockRepository instance;
@@ -183,8 +186,39 @@ public class BlockRepository {
 	}
 
 	public boolean checkIfValidProgram() {
-		// TODO - implement BlockRepository.checkIfValidProgram
-		throw new UnsupportedOperationException();
+		if(headBlocks.size() != 1)
+			return false;
+		Block headBlock = null;
+		for(Block block: headBlocks) {
+			headBlock = allBlocks.get(block.getBlockId());
+		}
+		Block nextBlockInChain = headBlock;
+		while(nextBlockInChain != null) {
+			if(nextBlockInChain instanceof ControlBlock)
+				if(!checkIfValidControlBlock((ControlBlock) nextBlockInChain))
+					return false;
+			nextBlockInChain = nextBlockInChain.getNextBlock();
+		}
+		return true;
+		
+	}
+	
+	public boolean checkIfValidControlBlock(ControlBlock block) {
+		if(block.getConditionBlock() == null)
+			return false;
+		if(block.getConditionBlock() instanceof OperatorBlock) {
+			checkIfValidStatement(block.getConditionBlock());
+		}
+		return true;
+	}
+	
+	public boolean checkIfValidStatement(Block block) {
+		if(block != null) {
+			if(block.getOperand() instanceof ConditionBlock)
+				return true;
+			checkIfValidStatement(block.getOperand());
+		}
+		return false;
 	}
 
 	public ExecutableBlock findFirstBlockToBeExecuted() {
