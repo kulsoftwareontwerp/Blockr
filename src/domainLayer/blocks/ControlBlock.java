@@ -9,7 +9,8 @@ package domainLayer.blocks;
 public abstract class ControlBlock extends ExecutableBlock {
 
 	private ExecutableBlock firstBlockOfBody;
-	private AssessableBlock condition;
+	private AssessableBlock conditionBlock;
+
 
 	/**
 	 * Create a Control Block
@@ -34,14 +35,13 @@ public abstract class ControlBlock extends ExecutableBlock {
 
 	@Override
 	public void setConditionBlock(AssessableBlock block) {
-		this.condition=block;
+		this.conditionBlock=block;
 	}
 
 	@Override
 	public AssessableBlock getConditionBlock() {
-		return this.condition;
+		return this.conditionBlock;
 	}
-	
-	
+
 
 }

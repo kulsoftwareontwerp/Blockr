@@ -138,8 +138,7 @@ public class DomainController {
 	}
 
 	public void executeBlock() {
-		// TODO - implement DomainController.executeBlock
-		throw new UnsupportedOperationException();
+		gameController.executeBlock();
 	}
 
 	/**

@@ -20,8 +20,8 @@ public abstract class GameState {
 	}
 
 	public void execute() {
-		// TODO - implement GameState.execute
-		throw new UnsupportedOperationException();
+		// Nothing should happen in the default implementation of execute. 
+		// (while trying to execute in inValidState or resettingState)
 	}
 
 	public void update() {
