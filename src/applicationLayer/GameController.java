@@ -56,8 +56,7 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	public void updateState() {
-		// TODO - implement GameController.updateState
-		throw new UnsupportedOperationException();
+		currentState.update();
 	}
 
 	public void resetRobot() {
@@ -132,8 +131,7 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	public boolean checkIfValidProgram() {
-		// TODO - implement GameController.checkIfValidProgram
-		throw new UnsupportedOperationException();
+		return programBlockRepository.checkIfValidProgram();
 	}
 
 	/**
@@ -171,8 +169,7 @@ public class GameController implements DomainListener, GUISubject {
 
 	@Override
 	public void onUpdateGameStateEvent(UpdateGameStateEvent event) {
-		// TODO Auto-generated method stub
-
+		updateState();
 	}
 
 }

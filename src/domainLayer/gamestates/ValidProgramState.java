@@ -21,8 +21,11 @@ public class ValidProgramState extends GameState {
 	}
 
 	public void update() {
-		// TODO - implement ValidProgramState.update
-		throw new UnsupportedOperationException();
+		boolean currentState = gameController.checkIfValidProgram();
+		if(!currentState) {
+			GameState newState = new InValidProgramState(gameController);
+			gameController.toState(newState);
+		}
 	}
 
 }
