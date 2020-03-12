@@ -16,15 +16,7 @@ public class BlockIDGenerator {
 		this.id = -1;
 	}
 
-	/**
-	 * Retrieve the last generated blockID
-	 * @return the last generated blockID
-	 */
-	public String getLastGeneratedBlockId() {
-		return id.toString();
-	}
-	
-	
+
 	/**
 	 * Generate a new BlockID and return it
 	 * @return A unique newly generated BlockID

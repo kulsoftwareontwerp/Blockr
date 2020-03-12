@@ -1,6 +1,7 @@
 package applicationLayer;
 
 import java.util.Collection;
+import java.util.Set;
 
 import domainLayer.blocks.BlockType;
 import events.GUIListener;
@@ -93,6 +94,17 @@ public class DomainController {
 		// TODO - implement DomainController.resetGameExecution
 		throw new UnsupportedOperationException();
 	}
+	
+	
+	
+	
+	public Set<String> getAllBlockIdsInBody(String blockId){
+		
+		
+		return null;
+	}
+
+
 
 	/**
 	 * 

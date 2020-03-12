@@ -37,6 +37,7 @@ public class BlockRepository {
 	 * @param 	connection
 	 * 			The connection of the connected block on which the new block must be connected.
 	 * 			If no connectedBlockId was given, this parameter must be set to "ConnectionType.NOCONNECTION".
+	 * @return TODO
 	 * @throws	InvalidBlockConnectionException
 	 * 			The given combination of the blockType,connectedBlockId and connection is impossible.
 	 * 			- an ExecutableBlock added to an AssessableBlock or ControlBlock as condition
@@ -45,34 +46,35 @@ public class BlockRepository {
 	 * 			- a block added to a connection of a connected block to which there is already a block connected.
 	 * @throws	NoSuchConnectedBlockException
 	 * 			Is thrown when a connectedBlockId is given that is not present in the domain.
+	 * @return	The ID of the block that has been added.
 	 */
-	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
+	public String addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		Block newBlock = blockFactory.createBlock(blockType);
 		Block connectedBlock = getBlockByID(connectedBlockId);
 
+			validateConnection(connectedBlock, connection, newBlock);			
 		switch (connection) {
 		case NOCONNECTION:
 			addBlockToHeadBlocks(newBlock);
 			break;
 		case UP:
-			validateConnectedBlock(connectedBlock, connection);
 			newBlock.setNextBlock(connectedBlock);
 			break;
 		case DOWN:
-			validateConnectedBlock(connectedBlock, connection);
 			connectedBlock.setNextBlock(newBlock);
 			break;
 		case BODY:
-			validateConnectedBlock(connectedBlock, connection);
 			connectedBlock.setFirstBlockOfBody(newBlock);
 			break;
 		case CONDITION:
-			validateConnectedBlock(connectedBlock, connection);
 			connectedBlock.setConditionBlock(newBlock);
 			break;
-		case RIGHT:
-			validateConnectedBlock(connectedBlock, connection);
+		case OPERAND:
 			connectedBlock.setOperand(newBlock);
+			break;
+		case LEFT:
+			// In Block the right method for adding a condition to an operator/controlBlock will be called.
+			newBlock.setConditionBlock(connectedBlock);
 			break;
 
 		default:
@@ -81,30 +83,40 @@ public class BlockRepository {
 		}
 
 		addBlockToAllBlocks(newBlock);
+		return newBlock.getBlockId();
+	
+		
+		
 
 	}
 
-	private void validateConnectedBlock(Block connectedBlock, ConnectionType connection) {
-		if(connectedBlock==null) {
-			throw new NoSuchConnectedBlockException("The requested connectedBlockId does not exist in the domain.");
-		}
+	private void validateConnection(Block connectedBlock, ConnectionType connection, Block block) {
 		boolean connectionOccupied=false;
 		switch (connection) {
 		case NOCONNECTION:
-
 			break;
 		case UP:
+			validateConnectedBlockIsInDomain(connectedBlock);
+			connectionOccupied = block.getNextBlock()!=null  && !headBlocks.contains(connectedBlock) ; 
+			break;
+		case LEFT:
+			validateConnectedBlockIsInDomain(connectedBlock);
+			connectionOccupied = (block.getOperand()!=null || block.getConditionBlock()!=null) && !headBlocks.contains(connectedBlock); 
 			break;
 		case DOWN:
+			validateConnectedBlockIsInDomain(connectedBlock);
 			connectionOccupied = connectedBlock.getNextBlock()!=null;
 			break;
 		case BODY:
+			validateConnectedBlockIsInDomain(connectedBlock);
 			connectionOccupied = connectedBlock.getFirstBlockOfBody()!=null;
 			break;
 		case CONDITION:
+			validateConnectedBlockIsInDomain(connectedBlock);
 			connectionOccupied = connectedBlock.getConditionBlock()!=null;
 			break;
-		case RIGHT:
+		case OPERAND:
+			validateConnectedBlockIsInDomain(connectedBlock);
 			connectionOccupied = connectedBlock.getOperand()!=null;
 			break;
 
@@ -119,6 +131,13 @@ public class BlockRepository {
 		
 	}
 
+
+	private void validateConnectedBlockIsInDomain(Block connectedBlock) {
+		if(connectedBlock==null) {
+			throw new NoSuchConnectedBlockException("The requested connectedBlockId does not exist in the domain.");
+		}
+	}
+
 	/**
 	 * Retrieve a block by its ID
 	 * @param ID
@@ -130,10 +149,12 @@ public class BlockRepository {
 	}
 
 	/**
-	 * 
-	 * @param blockId
+	 * Remove a block by its ID
+	 * @param 	block
+	 * 			The ID of the block to be removed.
+	 * @return 	All the id's
 	 */
-	public void removeBlock(String blockId) {
+	public Set<String> removeBlock(String blockId) {
 		// TODO - implement BlockRepository.removeBlock
 		throw new UnsupportedOperationException();
 	}
@@ -145,8 +166,9 @@ public class BlockRepository {
 	 * @param connectionBeforeMove
 	 * @param connectedAfterMoveBlockId
 	 * @param connectionAfterMove
+	 * @return TODO
 	 */
-	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove,
+	public Set<String> moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove,
 			String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
 		// TODO - implement BlockRepository.moveBlock
 		throw new UnsupportedOperationException();

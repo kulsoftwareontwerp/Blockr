@@ -35,13 +35,7 @@ public abstract class Block {
 	 *                                         connection is not provided.
 	 */
 	public final void setOperand(Block block) {
-		if (!(block instanceof AssessableBlock)) {
-			throw new InvalidBlockConnectionException("This block is no AssessableBlock.");
-		} else {
-
-			this.setOperand((AssessableBlock) block);
-
-		}
+		parseToValidOperation(block);
 	}
 
 	/**
@@ -101,14 +95,28 @@ public abstract class Block {
 	 *                                         block of which the required
 	 *                                         connection is not provided.
 	 */
-	public final void setConditionBlock(Block block) {
+	public final void setConditionBlock(Block block) {		
+		parseToValidOperation(block);
+
+	}
+
+	private void parseToValidOperation(Block block) {
 		if (!(block instanceof AssessableBlock)) {
 			throw new InvalidBlockConnectionException("This block is no AssessableBlock.");
 		} else {
-			this.setConditionBlock((AssessableBlock) block);
+			if(this instanceof ControlBlock) {
+				this.setConditionBlock((AssessableBlock) block);
+			}
+			else if(this instanceof OperatorBlock) {				
+				this.setOperand((AssessableBlock) block);
+			}
+			else {
+				throw new InvalidBlockConnectionException("The connected block doesn't have the requested connection.");
+			}
 		}
-
 	}
+	
+	
 
 	/**
 	 * Set the operand connection to the given block.
