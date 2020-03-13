@@ -8,7 +8,9 @@ public class ElementRepository {
 	private ElementFactory factory;
 	private final int gameAreaHeight=4;
 	private final int gameAreaWidth=5;
+	private Robot initialRobot;
 	private static ElementRepository instance;
+	
 
 	private ElementRepository() {
 		factory=new ElementFactory();
@@ -41,7 +43,7 @@ public class ElementRepository {
 	}
 
 	public void initializeRobot() {
-		Element robot = factory.createElement(ElementType.ROBOT, 2, 3);
+		Element robot = factory.createElement(ElementType.ROBOT, initialRobot.getXCoordinate(), initialRobot.getYCoordinate());
 		elements.add(robot);
 	}
 
@@ -79,6 +81,9 @@ public class ElementRepository {
 	public void addElement(ElementType type, int xCoordinate, int yCoordinate) {
 		Element el = factory.createElement(type, xCoordinate, yCoordinate);
 		elements.add(el);
+		if(type==ElementType.ROBOT && initialRobot == null) {
+			initialRobot=(Robot)el;
+		}
 	}
 	
 	public HashSet<Element> getElements() {
