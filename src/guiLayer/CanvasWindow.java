@@ -1006,12 +1006,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 			
 			if (keyCode == 116 ) {
 				//F5-Key
-				//domainController.executeBlock();
+				domainController.executeBlock();
 			}
 			
 			if (keyCode == 27 ) {
 				//ESC-Key
-				//domainController.resetGameExecution();
+				domainController.resetGameExecution();
 			}
 			
 		}
