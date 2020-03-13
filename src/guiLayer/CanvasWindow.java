@@ -31,7 +31,6 @@ import types.ConnectionType;
 
 public class CanvasWindow extends CanvasResource implements GUIListener {
 
-	private int counter = 1;
 
 	// Hard-Coded Parameters that are checked frequently:
 	public final static int HEIGHT_GAME_AREA = 4;
@@ -486,10 +485,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 				for (Shape shape : shapesInMovement) {
 					
 					if(shape != currentShape) {
+						shape.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.remove(e));
 						shape.setX_coord(shape.getX_coord() + diffX);
 						shape.setY_coord(shape.getY_coord() + diffy);
 						shape.updateConnectionTypesToShapeBasedOnType();
 						this.highlightedShape = determineHighlightShape();
+						shape.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.add(e));
 					}
 				}
 				}
@@ -533,10 +534,18 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 					if (getTempDynamicShape().getId() == "PALETTE") {
 
 						if(getTempStaticShape() != null) {
+							try {
 						 domainController.addBlock(getTempDynamicShape().getType(), getTempStaticShape().getId(),getTempDynamicShape().getConnectedVia());
+							}catch (Exception e) {
+								// TODO: handle exception
+							}
 						}
 						else {
+							try {
 							domainController.addBlock(getTempDynamicShape().getType(),"",ConnectionType.NOCONNECTION);
+							}catch (Exception e) {
+								// TODO: handle exception
+							}
 						}
 						/*if (getTempDynamicShape().getType() == BlockType.If) {
 							this.onBlockAdded(new BlockAddedEvent("IF"));
@@ -549,14 +558,21 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 
 					} else {
 						if (getTempStaticShape() != null && getTempDynamicShape() != null) {
-							
-							domainController.moveBlock(getTempDynamicShape().getId(), getTempStaticShape().getId(), getTempDynamicShape().getConnectedVia());
+							try {
+							domainController.moveBlock(getTempDynamicShape().getId(), getTempStaticShape().getId(), getTempDynamicShape().getConnectedVia());}
+							catch (Exception e) {
+								// TODO: handle exception
+							}
 							//domainController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
 							/*this.onBlockChangeEvent(new BlockChangeEvent(getTempDynamicShape().getId(),
 									getTempDynamicShape().getId(), getTempStaticShape().getConnectedVia()));*/
 						} else 
 						if(getTempDynamicShape() != null){
+							try {
 							domainController.moveBlock(getTempDynamicShape().getId(), "", ConnectionType.NOCONNECTION);
+							}catch (Exception e) {
+								// TODO: handle exception
+							}
 							/*this.onBlockChangeEvent(new BlockChangeEvent(getTempDynamicShape().getId(),
 									getTempDynamicShape().getId(), ConnectionType.NOCONNECTION));*/
 						}
@@ -578,10 +594,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 				}
 
 				setCurrentShape(null);
+				x_offsetCurrentShape = 0;
+				y_offsetCurrentShape = 0;
 				setX_offsetCurrentShape(0);
 				setY_offsetCurrentShape(0);
 				this.currentShapeCoord = null;
 				this.shapesInMovement = new HashSet<Shape>();
+				blocksUnderneath = new HashSet<String>();
 				//this.setHandleEvent(false);
 
 			}
@@ -632,7 +651,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 					}
 				}
 			}
-
 			repaint();
 		} else {
 			// Consume event;
