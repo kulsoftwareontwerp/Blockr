@@ -468,24 +468,33 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 			}
 
 			if ((id == MouseEvent.MOUSE_DRAGGED || id == MouseEvent.MOUSE_PRESSED) && currentShape != null) {
+				
+
+				int offsetX = x - x_offsetCurrentShape;
+				int offsetY = y - y_offsetCurrentShape;
+				//Oud : System.out.println(currentShape.getX_coord());
+				//Nieuw : System.out.println(offsetX);
+				int diffX = offsetX - currentShape.getX_coord();
+				int diffy = offsetY - currentShape.getY_coord();
+				
 				currentShape.setX_coord(x - x_offsetCurrentShape);
 				currentShape.setY_coord(y - y_offsetCurrentShape);
 				currentShape.updateConnectionTypesToShapeBasedOnType();
 				this.highlightedShape = determineHighlightShape();
 				
-				/*if (!shapesInMovement.isEmpty()) {
-					System.out.println("beep");*/
+				if (!shapesInMovement.isEmpty()) {
+					System.out.println("beep");
 				
-				/*for (Shape shape : shapesInMovement) {
-					if(shape != currentShape) {
-
+				for (Shape shape : shapesInMovement) {
 					
-					shape.setX_coord(x - ( - x_offsetCurrentShape));
-					shape.setY_coord(shape.getY_coord() + (y - y_offsetCurrentShape));
-					shape.updateConnectionTypesToShapeBasedOnType();
+					if(shape != currentShape) {
+						shape.setX_coord(shape.getX_coord() + diffX);
+						shape.setY_coord(shape.getY_coord() + diffy);
+						shape.updateConnectionTypesToShapeBasedOnType();
+						this.highlightedShape = determineHighlightShape();
 					}
 				}
-				}*/
+				}
 				
 				
 			}
@@ -568,6 +577,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 				setX_offsetCurrentShape(0);
 				setY_offsetCurrentShape(0);
 				this.currentShapeCoord = null;
+				this.shapesInMovement = new HashSet<Shape>();
 				//this.setHandleEvent(false);
 
 			}
@@ -581,11 +591,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 					
 					
 									
-					/*
-					//blocksUnderneath = domainController.getAllBlockIDsUnderneath(tempDynamicShape.getId());
-					blocksUnderneath = new HashSet<String>();
-					blocksUnderneath.add("1");
-					blocksUnderneath.add("2");
+					//blocksUnderneath = new HashSet<String>()
+					blocksUnderneath = domainController.getAllBlockIDsUnderneath(shape.getId());
+					
+//					blocksUnderneath = new HashSet<String>();
+//					blocksUnderneath.add("0");
+//					blocksUnderneath.add("1");
 					
 					
 						for (String shapeId : blocksUnderneath) {
@@ -594,7 +605,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 							}catch (Exception e2) {
 								e2.printStackTrace();
 							}
-						}*/
+						}
 						
 					
 					
@@ -1136,9 +1147,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 		this.setTempStaticShape(null);
 		this.setHighlightedShape(null);
 		super.repaint();
-
-
-		
 		
 	}
 

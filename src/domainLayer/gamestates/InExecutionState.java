@@ -14,6 +14,7 @@ public class InExecutionState extends GameState {
 	 */
 	public InExecutionState(GameController game, ActionBlock nextBlock) {
 		super(game);
+		setNextActionBlockToBeExecuted(nextBlock);
 	}
 
 	public void reset() {
