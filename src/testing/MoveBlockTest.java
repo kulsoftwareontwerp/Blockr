@@ -28,7 +28,8 @@ import org.mockito.internal.verification.NoInteractions;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import applicationLayer.BlockController;
-import applicationLayer.ConnectionType;
+import types.BlockType;
+import types.ConnectionType;
 import applicationLayer.DomainController;
 import domainLayer.blocks.*;
 import events.*;
