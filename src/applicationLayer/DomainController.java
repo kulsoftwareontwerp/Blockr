@@ -95,22 +95,61 @@ public class DomainController {
 	}
 
 	/**
+	 * Removes a block with the given blockID from the domain.
 	 * 
-	 * @param blockId
+	 * @param 	blockID
+	 * 			The blockID of the block to be removed.
+	 * @throws 	IllegalArgumentException
+	 * 			If the given BlockID is null or an empty String
+	 * @throws	NoSuchConnectedBlockException
+	 * 			If the given BlockID doesn't result in a block in the domain.	
+	 * @event 	RemoveBlockEvent 	
+	 * 			Fires an RemoveBlockEvent if the execution was successful.
+	 * @event 	UpdateGameStateEvent 
+	 * 			Fires an UpdateGameStateEvent if the execution was successful.
+	 * @event 	ResetExecutionEvent
+	 * 			Fires a ResetExecutionEvent if the execution was successful.
+	 * @event 	PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
+	 *        	block was reached before removing the block.
 	 */
-	public void removeBlock(String blockId) {
-		// TODO - implement DomainController.removeBlock
-		throw new UnsupportedOperationException();
+	public void removeBlock(String blockID) {
+		if (blockID == "" || blockID==null) {
+			throw new IllegalArgumentException("No blockType given.");
+		}
+		else {
+			blockController.removeBlock(blockID);
+		}
+			
 	}
 
 	public void resetGameExecution() {
-		// TODO - implement DomainController.resetGameExecution
-		throw new UnsupportedOperationException();
+		gameController.resetGameExecution();
 	}
 
-	public Set<String> getAllBlockIdsInBody(String blockId) {
-
-		return null;
+	
+	
+	
+	/**
+	 * Returns all the blockID's in the body of a given ControlBlock
+	 * @param 	blockID
+	 * 			The blockID of the controlBlock of which you want to retrieve all Blocks in the body.
+	 * @throws 	IllegalArgumentException 
+	 * 			Is thrown when the given blockID is empty or null.
+	 * @throws	NoSuchConnectedBlockException
+	 * 			Is thrown when a blockID is given that is not present in the domain.
+	 * @throws 	InvalidBlockTypeException 
+	 * 			Is thrown when given blockID isn't the ID of a ControlBlock.
+	 * @return	A set containing the blockID of the blocks in the body of the given ControlBlock.
+	 * 
+	 */
+	public Set<String> getAllBlockIDsInBody(String blockID){
+		if(blockID == null || blockID == "") {
+			throw new IllegalArgumentException("No blockID given.");
+		}
+		
+		 return blockController.getAllBlockIDsInBody(blockID);
+		
+		
 	}
 
 	/**
@@ -197,21 +236,33 @@ public class DomainController {
 //		}
 //	}
 	/**
-	 * 
-	 * @param listener
+	 * Adds a GUI listener for Game, this listener will be notified about all changes for the GUI.
+	 * If the given listener is already a listener for Game it will not be added another time.
+	 * @param 	listener
+	 * 			The listener to be added.
+	 * @throws 	IllegalArgumentException 
+	 * 			Is thrown when the given listener is null.
 	 */
 	public void addGameListener(GUIListener listener) {
-		// TODO - implement DomainController.addGameListener
-		throw new UnsupportedOperationException();
+		if(listener == null) {
+			throw new IllegalArgumentException("No listener given.");
+		}
+		gameController.addListener(listener);
 	}
 
 	/**
-	 * 
-	 * @param listener
+	 * Removes a GUI listener for Game, this listener will no longer be notified about any changes for the GUI.
+	 * If the GUI listener is no listener Game it also won't be removed.
+	 * @param 	listener
+	 * 			The listener to be added.
+	 * @throws 	IllegalArgumentException 
+	 * 			Is thrown when the given listener is null.
 	 */
 	public void removeGameListener(GUIListener listener) {
-		// TODO - implement DomainController.removeGameListener
-		throw new UnsupportedOperationException();
+		if(listener == null) {
+			throw new IllegalArgumentException("No listener given.");
+		}
+		gameController.removeListener(listener);
 	}
 
 	public void executeBlock() {
@@ -219,11 +270,25 @@ public class DomainController {
 	}
 
 	/**
+	 * Returns all the BlockID's underneath a certain block
 	 * 
-	 * @param blockId
+	 * @param blockID The blockID of the Block of which you want to retrieve all
+	 *                Blocks underneath.
+	 * @throws 	IllegalArgumentException 
+	 * 			Is thrown when the given blockID is empty or null.
+	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
+	 *                                       is not present in the domain.
+	 * @return A set containing the blockID's of  all connected Conditions and every
+	 *         kind of block in the body of the given block or under the given
+	 *         block. The ID of the block itself is also given.
 	 */
-	public Set<String> getAllBlockIDsUnderneath(String blockId) {
-		return blockController.getAllBlockIDsUnderneath(blockId);
+
+	public Set<String> getAllBlockIDsUnderneath(String blockID) {
+		if(blockID == null || blockID == "") {
+			throw new IllegalArgumentException("No blockID given.");
+		}
+		
+		 return blockController.getAllBlockIDsUnderneath(blockID);
 	}
 
 }

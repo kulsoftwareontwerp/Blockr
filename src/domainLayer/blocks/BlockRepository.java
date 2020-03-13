@@ -4,12 +4,11 @@ import java.security.DrbgParameters.NextBytes;
 import java.util.*;
 import java.util.Map.Entry;
 
-import org.mockito.internal.matchers.InstanceOf;
 
 import applicationLayer.*;
-import domainLayer.blocks.*;
 
-import exceptions.InvalidBlockConnectionException;
+import exceptions.*;
+import exceptions.InvalidBlockTypeException;
 import exceptions.NoSuchConnectedBlockException;
 
 /**
@@ -146,7 +145,7 @@ public class BlockRepository {
 
 	private void validateConnectedBlockIsInDomain(Block connectedBlock) {
 		if (connectedBlock == null) {
-			throw new NoSuchConnectedBlockException("The requested connectedBlockId does not exist in the domain.");
+			throw new NoSuchConnectedBlockException("The requested blockId does not exist in the domain.");
 		}
 	}
 
@@ -154,6 +153,7 @@ public class BlockRepository {
 	 * Retrieve a block by its ID
 	 * 
 	 * @param ID
+	 * 
 	 * @return The block corresponding with the given ID. If there is no block for
 	 *         the given ID, null is returned.
 	 */
@@ -163,13 +163,28 @@ public class BlockRepository {
 
 	/**
 	 * Remove a block by its ID
-	 * 
-	 * @param block The ID of the block to be removed.
-	 * @return All the id's
+	 * @param 	block The ID of the block to be removed.
+	 * @throws	NoSuchConnectedBlockException
+	 * 			If the given BlockID doesn't result in a block in the domain.	
+	 * @return	A set containing the id's of all the blocks that were removed from the domain.
 	 */
 	public Set<String> removeBlock(String blockId) {
-		// TODO - implement BlockRepository.removeBlock
-		throw new UnsupportedOperationException();
+		Block b = getBlockByID(blockId);
+
+		//the given exception may be thrown here.
+		validateConnectedBlockIsInDomain(b);
+		
+		Set<Block> blocksToBeRemoved = getAllBlocksConnectedToAndAfterACertainBlock(b);
+		Set<String> blockIdsToBeRemoved = new HashSet<String>();
+		
+		//If the given block was in HeadBlocks, none of the blocks connected to that block are in headBlocks
+		removeBlockFromHeadBlocks(b);
+		
+		for(Block blockToBeRemoved :blocksToBeRemoved) {
+			removeBlockFromAllBlocks(blockToBeRemoved);
+			blockIdsToBeRemoved.add(blockToBeRemoved.getBlockId());
+		}
+		return blockIdsToBeRemoved;
 	}
 
 	/**
@@ -854,6 +869,59 @@ public class BlockRepository {
 		}
 		return instance;
 	}
+
+
+	/**
+	 * Returns all the BlockID's underneath a certain block
+	 * 
+	 * @param block The blockID of the Block of which you want to retrieve all
+	 *              Blocks underneath.
+	 * @return A set containing the blockID's of  all connected Conditions and every
+	 *         kind of block in the body of the given block or under the given
+	 *         block. The ID of the block itself is also given.
+	 */
+	public Set<String> getAllBlockIDsUnderneath(Block block) {
+		Set<String> blockIDsUnderNeath = new HashSet<String>();
+		getAllBlocksConnectedToAndAfterACertainBlock(block).stream().map(s->s.getBlockId()).forEach(s->blockIDsUnderNeath.add(s));
+		return blockIDsUnderNeath;
+	}	
+	
+	
+	
+	
+	
+	private Set<Block> getAllBlocksConnectedToAndAfterACertainBlock(Block block){
+		Set<Block> allBlocksInBody = new HashSet<Block>();
+		
+		if(block!=null) {
+			allBlocksInBody.add(block);
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getNextBlock()));
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getOperand()));
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getFirstBlockOfBody()));
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getConditionBlock()));
+		}
+		
+		return allBlocksInBody;
+	}
+	
+
+	/**
+	 * Returns all the blockID's in the body of a given ControlBlock
+	 * 
+	 * @param controlBlock The controlBlock of which you want to retrieve all Blocks
+	 *                     in the body.
+	 * @return A set containing the blockID of the blocks in the body of the given
+	 *         ControlBlock, there won't be any ID's of assessable blocks.
+	 */
+	public Set<String> getAllBlockIDsInBody(ControlBlock controlBlock) {
+		Set<String> blockIDsInBody = new HashSet<String>();
+		
+		getAllBlocksConnectedToAndAfterACertainBlock(controlBlock.getFirstBlockOfBody()).stream().filter(s->!(s instanceof AssessableBlock)).
+		map(s->s.getBlockId()).forEach(s-> blockIDsInBody.add(s));
+
+		return blockIDsInBody;
+	}
+
 
 	/**
 	 * Retrieve the maximum number of blocks.
