@@ -712,4 +712,35 @@ public class BlockRepository {
 		return blocksUnderneath;
 	}
 
+	public ControlBlock getEnclosingControlBlock(ExecutableBlock block) {
+		ExecutableBlock headBlock = findFirstBlockToBeExecuted();
+		Set<Block> chain = getAllBlocksConnectedToAndAfterACertainBlock(headBlock);
+		Set<ControlBlock> allControlBlocks = new HashSet<ControlBlock>();
+		chain.stream().filter(s -> s instanceof ControlBlock).forEach(s -> allControlBlocks.add((ControlBlock) s));
+		for (ControlBlock c: allControlBlocks) {
+			if(getAllBlockIDsInBody(c).contains(block.getBlockId())) {
+				return c;
+			}
+		}
+		return null;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
 }
