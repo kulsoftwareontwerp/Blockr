@@ -21,7 +21,8 @@ import events.*;
 import exceptions.*;
 
 /**
- * The BlockController orchestrates Create, Update, Delete and Retrieve operations for Blocks.
+ * The BlockController orchestrates Create, Update, Delete and Retrieve
+ * operations for Blocks.
  * 
  * @version 0.1
  * @author group17
@@ -36,23 +37,29 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * Construct a BlockController and retrieve an instance of it's BlockRepository.
 	 */
 	public BlockController() {
-		guiListeners=new HashSet<GUIListener>();
-		domainListeners=new HashSet<DomainListener>();
-		programBlockRepository=BlockRepository.getInstance();
-		
+		guiListeners = new HashSet<GUIListener>();
+		domainListeners = new HashSet<DomainListener>();
+		programBlockRepository = BlockRepository.getInstance();
+
 	}
 
 	private void fireBlockAdded(String newBlockId) {
 		BlockAddedEvent event = new BlockAddedEvent(newBlockId);
-		
-		for(GUIListener listener:guiListeners) {
+
+		for (GUIListener listener : guiListeners) {
 			listener.onBlockAdded(event);
 		}
 	}
 
-	private void fireBlockRemoved() {
-		// TODO - implement BlockController.fireBlockRemoved
-		throw new UnsupportedOperationException();
+	private void fireBlockRemoved(Set<String> idsToBeRemoved) {
+		for(String id:idsToBeRemoved) {
+			BlockRemovedEvent event = new BlockRemovedEvent(id);
+			
+			for(GUIListener listener : guiListeners) {
+				listener.onBlockRemoved(event);
+			}
+			
+		}
 	}
 
 	private void fireBlockChanged(String changedBlockId, String changedLinkedBlockId, ConnectionType connectionType) {
@@ -63,75 +70,84 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 	}
 
-	private void firePanelChangedEvent() {
-		PanelChangeEvent event = new PanelChangeEvent(false);
-		for(GUIListener listener:guiListeners) {
+	private void firePanelChangedEvent(Boolean show) {
+		PanelChangeEvent event = new PanelChangeEvent(show);
+		for (GUIListener listener : guiListeners) {
 			listener.onPanelChangedEvent(event);
 		}
 	}
 
 	private void fireUpdateGameState() {
 		UpdateGameStateEvent event = new UpdateGameStateEvent();
-		
-		for(DomainListener listener:domainListeners) {
+
+		for (DomainListener listener : domainListeners) {
 			listener.onUpdateGameStateEvent(event);
 		}
 	}
 
 	private void fireResetExecutionEvent() {
 		ResetExecutionEvent event = new ResetExecutionEvent();
-		for(DomainListener listener:domainListeners) {
+		for (DomainListener listener : domainListeners) {
 			listener.onResetExecutionEvent(event);
 		}
 	}
 
 	/**
-	 * Add a block of the given blockType to the domain and connect it with the given connectedBlockId on the given connection
+	 * Add a block of the given blockType to the domain and connect it with the
+	 * given connectedBlockId on the given connection
 	 * 
-	 * @param 	blockType
-	 * 			The type of block to be added, this parameter is required.
-	 * @param 	connectedBlockId
-	 * 			The ID of the block to connect to, can be empty.
-	 * @param 	connection
-	 * 			The connection of the connected block on which the new block must be connected.
-	 * 			If no connectedBlockId was given, this parameter must be set to "ConnectionType.NOCONNECTION".
-	 * @throws	InvalidBlockConnectionException
-	 * 			The given combination of the blockType,connectedBlockId and connection is impossible.
-	 * 			- an ExecutableBlock added to an AssessableBlock or ControlBlock as condition
-	 * 			- an AssessableBlock added to a block as a body or "next block"
-	 * 			- a block added to another block of which the required connection is not provided.
-	 * 			- a block added to a connection of a connected block to which there is already a block connected.
-	 * @throws	NoSuchConnectedBlockException
-	 * 			Is thrown when a connectedBlockId is given that is not present in the domain.
-	 * @throws	MaxNbOfBlocksReachedException
-	 * 			The maximum number of blocks in the domain is reached, no extra blocks can be added.
-	 * @event	AddBlockEvent
-	 * 			Fires an AddBlockEvent if the execution was successful.
-	 * @event	UpdateGameStateEvent
-	 * 			Fires an UpdateGameStateEvent if the execution was successful.
-	 * @event	ResetExecutionEvent
-	 * 			Fires a ResetExecutionEvent if the execution was successful.
-	 * @event	PanelChangeEvent
-	 * 			Fires a PanelChangeEvent if the maximum number of block has been reached after adding a block.
+	 * @param blockType        The type of block to be added, this parameter is
+	 *                         required.
+	 * @param connectedBlockId The ID of the block to connect to, can be empty.
+	 * @param connection       The connection of the connected block on which the
+	 *                         new block must be connected. If no connectedBlockId
+	 *                         was given, this parameter must be set to
+	 *                         "ConnectionType.NOCONNECTION".
+	 * @throws InvalidBlockConnectionException The given combination of the
+	 *                                         blockType,connectedBlockId and
+	 *                                         connection is impossible. - an
+	 *                                         ExecutableBlock added to an
+	 *                                         AssessableBlock or ControlBlock as
+	 *                                         condition - an AssessableBlock added
+	 *                                         to a block as a body or "next block"
+	 *                                         - a block added to another block of
+	 *                                         which the required connection is not
+	 *                                         provided. - a block added to a
+	 *                                         connection of a connected block to
+	 *                                         which there is already a block
+	 *                                         connected.
+	 * @throws NoSuchConnectedBlockException   Is thrown when a connectedBlockId is
+	 *                                         given that is not present in the
+	 *                                         domain.
+	 * @throws MaxNbOfBlocksReachedException   The maximum number of blocks in the
+	 *                                         domain is reached, no extra blocks
+	 *                                         can be added.
+	 * @event AddBlockEvent Fires an AddBlockEvent if the execution was successful.
+	 * @event UpdateGameStateEvent Fires an UpdateGameStateEvent if the execution
+	 *        was successful.
+	 * @event ResetExecutionEvent Fires a ResetExecutionEvent if the execution was
+	 *        successful.
+	 * @event PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
+	 *        block has been reached after adding a block.
 	 * 
 	 */
 	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
-		if(programBlockRepository.checkIfMaxNbOfBlocksReached()) {
+		if (programBlockRepository.checkIfMaxNbOfBlocksReached()) {
 			throw new MaxNbOfBlocksReachedException("The maximum number of blocks has already been reached.");
 		}
-		String newBlockId= programBlockRepository.addBlock(blockType, connectedBlockId, connection);
-		
-		
+		String newBlockId = programBlockRepository.addBlock(blockType, connectedBlockId, connection);
+
 		fireUpdateGameState();
 		fireResetExecutionEvent();
-		if(programBlockRepository.checkIfMaxNbOfBlocksReached()) {
-			firePanelChangedEvent();
+		if (programBlockRepository.checkIfMaxNbOfBlocksReached()) {
+			firePanelChangedEvent(false);
 		}
 		fireBlockAdded(newBlockId);
 	}
 
 	/**
 	 * Retrieve the maximum number of blocks in the domain.
+	 * 
 	 * @return the maximum number of blocks.
 	 */
 	public int getMaxNbOfBlocks() {
@@ -139,30 +155,84 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	/**
+	 * Removes a block with the given blockID from the domain.
 	 * 
-	 * @param blockId
+	 * @param 	blockID
+	 * 			The blockID of the block to be removed.
+	 * @throws	NoSuchConnectedBlockException
+	 * 			If the given BlockID doesn't result in a block in the domain.	
+	 * @event 	RemoveBlockEvent 	
+	 * 			Fires an RemoveBlockEvent if the execution was successful.
+	 * @event 	UpdateGameStateEvent 
+	 * 			Fires an UpdateGameStateEvent if the execution was successful.
+	 * @event 	ResetExecutionEvent
+	 * 			Fires a ResetExecutionEvent if the execution was successful.
+	 * @event 	PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
+	 *        	block was reached before removing the block.
 	 */
-	public void removeBlock(String blockId) {
-		// TODO - implement BlockController.removeBlock
-		throw new UnsupportedOperationException();
+	public void removeBlock(String blockID) {
+		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
+		Set<String> idsToBeRemoved=programBlockRepository.removeBlock(blockID);
+		fireUpdateGameState();
+		fireResetExecutionEvent();
+		if (maxBlocksReachedBeforeRemove) {
+			firePanelChangedEvent(true);
+		}
+		fireBlockRemoved(idsToBeRemoved);
 	}
 
 	/**
+	 * Add a block of the given blockType to the domain and connect it with the
+	 * given connectedBlockId on the given connection
 	 * 
-	 * @param movedBlockId
-	 * @param connectedBeforeMoveBlockId
-	 * @param connectionBeforeMove
-	 * @param connectedAfterMoveBlockId
-	 * @param connectionAfterMove
+	 * @param blockType        The type of block to be added, this parameter is
+	 *                         required.
+	 * @param connectedBlockId 	The ID of the block to connect to, can be empty.
+	 * @param connectionAfterMove The connection of the connected block on which the
+		 *                         new block must be connected. If no connectedBlockId
+		 *                         was given, this parameter must be set to
+		 *                         "ConnectionType.NOCONNECTION".
+	 * @throws InvalidBlockConnectionException The given combination of the
+	 *                                         blockType,connectedBlockId and
+	 *                                         connection is impossible. - an
+	 *                                         ExecutableBlock added to an
+	 *                                         AssessableBlock or ControlBlock as
+	 *                                         condition - an AssessableBlock added
+	 *                                         to a block as a body or "next block"
+	 *                                         - a block added to another block of
+	 *                                         which the required connection is not
+	 *                                         provided. - a block added to a
+	 *                                         connection of a connected block to
+	 *                                         which there is already a block
+	 *                                         connected.
+	 * @throws NoSuchConnectedBlockException   Is thrown when a connectedBlockId is
+	 *                                         given that is not present in the
+	 *                                         domain.
+	 *                                         
+	 * @event	changeBlockEvent
+	 * 			Fires an changeBlockEvent if the execution was successful.
+	 * @event	UpdateGameStateEvent
+	 * 			Fires an UpdateGameStateEvent if the execution was successful.
+	 * @event	ResetExecutionEvent
+	 * 			Fires a ResetExecutionEvent if the execution was successful.
 	 */
-	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-		Set<String> movedBlocks = programBlockRepository.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+	public void moveBlock(String movedBlockId,  String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+		Set<String> movedBlocks = programBlockRepository.moveBlock(movedBlockId,  connectedAfterMoveBlockId, connectionAfterMove);
 		fireUpdateGameState();
 		fireResetExecutionEvent();
 		for(String blockID : movedBlocks) {
 			fireBlockChanged(movedBlockId,connectedAfterMoveBlockId,connectionAfterMove);
 		}
 	}
+	
+//	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+//		Set<String> movedBlocks = programBlockRepository.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+//		fireUpdateGameState();
+//		fireResetExecutionEvent();
+//		for(String blockID : movedBlocks) {
+//			fireBlockChanged(movedBlockId,connectedAfterMoveBlockId,connectionAfterMove);
+//		}
+//	}
 
 	/**
 	 * Returns all the BlockID's underneath a certain block

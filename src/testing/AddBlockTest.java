@@ -688,7 +688,7 @@ public class AddBlockTest {
 	 */
 	@Test
 	public void testBRAddBlockNegativeAddBlockNoSuchConnectedBlock() {
-		String excMessage = "The requested connectedBlockId does not exist in the domain.";
+		String excMessage = "The requested blockId does not exist in the domain.";
 		testAddBlockBRMain();
 		for (BlockType nb : BlockType.values()) {
 
