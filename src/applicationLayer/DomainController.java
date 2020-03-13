@@ -132,12 +132,6 @@ public class DomainController {
 		
 	}
 
-
-	public Set<String> getAllBlockIdsInBody(String blockId) {
-
-		return null;
-	}
-
 	/**
 	 * 
 	 * @param movedBlockId
@@ -214,12 +208,12 @@ public class DomainController {
 	 *         block. The ID of the block itself is also given.
 	 */
 
-	public Collection<String> getAllBlockIDsUnderneath(String blockID) {
+	public Set<String> getAllBlockIDsUnderneath(String blockID) {
 		if(blockID == null || blockID == "") {
 			throw new IllegalArgumentException("No blockID given.");
 		}
 		
-		 return blockController.getAllBlockIDsInBody(blockID);
+		 return blockController.getAllBlockIDsUnderneath(blockID);
 	}
 
 }

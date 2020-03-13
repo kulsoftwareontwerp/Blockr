@@ -518,19 +518,23 @@ public class BlockRepository {
 	 */
 	public Set<String> getAllBlockIDsUnderneath(Block block) {
 		Set<String> blockIDsUnderNeath = new HashSet<String>();
-		getAllBlocksInBody(block).stream().map(s->s.getBlockId()).forEach(s->blockIDsUnderNeath.add(s));
+		getAllBlocksConnectedToAndAfterACertainBlock(block).stream().map(s->s.getBlockId()).forEach(s->blockIDsUnderNeath.add(s));
 		return blockIDsUnderNeath;
 	}	
 	
-	private Set<Block> getAllBlocksInBody(Block block){
+	
+	
+	
+	
+	private Set<Block> getAllBlocksConnectedToAndAfterACertainBlock(Block block){
 		Set<Block> allBlocksInBody = new HashSet<Block>();
 		
 		if(block!=null) {
 			allBlocksInBody.add(block);
-			allBlocksInBody.addAll(getAllBlocksInBody(block.getNextBlock()));
-			allBlocksInBody.addAll(getAllBlocksInBody(block.getOperand()));
-			allBlocksInBody.addAll(getAllBlocksInBody(block.getFirstBlockOfBody()));
-			allBlocksInBody.addAll(getAllBlocksInBody(block.getConditionBlock()));
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getNextBlock()));
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getOperand()));
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getFirstBlockOfBody()));
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getConditionBlock()));
 		}
 		
 		return allBlocksInBody;
@@ -548,7 +552,7 @@ public class BlockRepository {
 	public Set<String> getAllBlockIDsInBody(ControlBlock controlBlock) {
 		Set<String> blockIDsInBody = new HashSet<String>();
 		
-		getAllBlocksInBody(controlBlock.getFirstBlockOfBody()).stream().filter(s->!(s instanceof AssessableBlock)).
+		getAllBlocksConnectedToAndAfterACertainBlock(controlBlock.getFirstBlockOfBody()).stream().filter(s->!(s instanceof AssessableBlock)).
 		map(s->s.getBlockId()).forEach(s-> blockIDsInBody.add(s));
 
 		return blockIDsInBody;
