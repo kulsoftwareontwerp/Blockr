@@ -486,7 +486,7 @@ public class BlockRepository {
 		}
 		return movedBlocks;
 	}
-	
+
 	public ArrayList<String> getConnectedBlockBeforeMoveIfExists(Block movedBlock) {
 		Iterator itAllBlocks = allBlocks.entrySet().iterator();
 		ArrayList<String> connectedBlockInfo = new ArrayList<String>();
@@ -528,7 +528,17 @@ public class BlockRepository {
 		return connectedBlockInfo;
 	}
 
-	
+
+	/**
+	 * Checks whether a the programArea is in a valid state or not.
+	 * 
+	 * @return True if following points are respected;
+	 * 			- All blocks in program area are connected together.
+	 * 			  This means that their is only one "Head Block".
+	 * 			- If all "Control Block"-types are in a valid state,
+	 * 				which implies that they have a condition and at least one block connected to the BODY ConnectionType.
+	 * 			- If a "Control Block" has a operand or chain of operands, this block/chain must be connected with a "Condition Block"
+	 */
 	public boolean checkIfValidProgram() {
 
 		if(headBlocks.size() != 1)
@@ -537,7 +547,12 @@ public class BlockRepository {
 		for(Block block: headBlocks) {
 			headBlock = allBlocks.get(block.getBlockId());
 		}
-		Block nextBlockInChain = headBlock;
+		return CheckIfChainIsValid(headBlock);
+		
+		
+	}
+	
+	public boolean CheckIfChainIsValid(Block nextBlockInChain) {
 		while(nextBlockInChain != null) {
 			if(nextBlockInChain instanceof ControlBlock)
 				if(!checkIfValidControlBlock((ControlBlock) nextBlockInChain))
@@ -545,23 +560,32 @@ public class BlockRepository {
 			nextBlockInChain = nextBlockInChain.getNextBlock();
 		}
 		return true;
-		
 	}
 	
+	/**
+	 * method used to check if ControlBlock is in a valid state
+	 */
 	public boolean checkIfValidControlBlock(ControlBlock block) {
 		if(block.getConditionBlock() == null)
 			return false;
-		if(block.getConditionBlock() instanceof OperatorBlock) {
-			checkIfValidStatement(block.getConditionBlock());
+		if(block.getConditionBlock() instanceof OperatorBlock) 
+			 return checkIfValidStatement(block.getConditionBlock());
+		if(block.getFirstBlockOfBody() != null) {
+			return CheckIfChainIsValid(block.getFirstBlockOfBody());
 		}
 		return true;
 	}
-	
+		
+	/**
+	 * method used to check if a chain of operand finishes with a conditionBlock.
+	 * @param block
+	 * @return
+	 */
 	public boolean checkIfValidStatement(Block block) {
 		if(block != null) {
 			if(block.getOperand() instanceof ConditionBlock)
 				return true;
-			checkIfValidStatement(block.getOperand());
+			return checkIfValidStatement(block.getOperand());
 		}
 		return false;
 
