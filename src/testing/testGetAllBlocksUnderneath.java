@@ -198,7 +198,7 @@ public class testGetAllBlocksUnderneath {
 	public void testGetAllBlockIdsUnderneathBCPositiveStartingControl() {
 		Set<String> ids = blockController.getAllBlockIDsUnderneath("startingControl");
 		
-		ids.containsAll(idsForChainControlBlock);	
+		assertTrue(ids.equals(idsForChainControlBlock));
 	}
 	
 	/**
@@ -209,7 +209,7 @@ public class testGetAllBlocksUnderneath {
 	public void testGetAllBlockIdsUnderneathBCPositiveStartingAction() {
 		Set<String> ids = blockController.getAllBlockIDsUnderneath("startingAction");
 		
-		ids.containsAll(idsForChainActionBlock);	
+		assertTrue(ids.equals(idsForChainActionBlock));	
 	}
 	
 	/**
@@ -220,7 +220,7 @@ public class testGetAllBlocksUnderneath {
 	public void testGetAllBlockIdsUnderneathBCPositiveStartingAssessable() {
 		Set<String> ids = blockController.getAllBlockIDsUnderneath("startingAssessable");
 		
-		ids.containsAll(idsForChainAssessableBlock);	
+		assertTrue( ids.equals(idsForChainAssessableBlock));	
 	}
 
 }

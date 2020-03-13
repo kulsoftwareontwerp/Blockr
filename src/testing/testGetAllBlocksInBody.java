@@ -59,7 +59,7 @@ public class testGetAllBlocksInBody {
 		startingAssessable = new NotBlock("startingAssessable");
 
 		// chain controlBlock
-		idsForChainControlBlock = Set.of("startingControl", "A1", "A2", "A3", "W1", "WA1", "WA2", "WA3");
+		idsForChainControlBlock = Set.of("A1", "A2", "A3", "W1", "WA1", "WA2", "WA3");
 		startingControlBlock.setConditionBlock(new NotBlock("C1") {
 			public AssessableBlock getOperand() {
 				return new NotBlock("C2") {
@@ -109,70 +109,70 @@ public class testGetAllBlocksInBody {
 		});
 		startingControlBlock.setNextBlock(new MoveForwardBlock("A4"));
 
-		
-		//chain actionBlock
-		idsForChainActionBlock = Set.of("startingAction","W2", "A1", "A2", "A3", "W1","WA1", "WA2", "WA3");
-		startingActionBlock.setNextBlock(new WhileBlock("W2") {
-			@Override
-			public AssessableBlock getConditionBlock() {
-				return new NotBlock("C1") {
-					public AssessableBlock getOperand() {
-						return new NotBlock("C2") {
-							public AssessableBlock getOperand() {
-								return new WallInFrontBlock("C3");
-							};
-						};
-					};
-				};
-			};
-			
-			@Override
-			public ExecutableBlock getFirstBlockOfBody() {
-				return new MoveForwardBlock("A1") {
-					public ExecutableBlock getNextBlock() {
-						return new TurnLeftBlock("A2") {
-							public ExecutableBlock getNextBlock() {
-								return new TurnRightBlock("A3") {
-									public ExecutableBlock getNextBlock() {
-										return new WhileBlock("W1") {
-											public AssessableBlock getConditionBlock() {
-												return new NotBlock("WC1") {
-													public AssessableBlock getOperand() {
-														return new NotBlock("WC2") {
-															public AssessableBlock getOperand() {
-																return new WallInFrontBlock("WC3");
-															};
-														};
-													};
-												};
-											};
-
-											@Override
-											public ExecutableBlock getFirstBlockOfBody() {
-												return new MoveForwardBlock("WA1") {
-													public ExecutableBlock getNextBlock() {
-														return new TurnLeftBlock("WA2") {
-															public ExecutableBlock getNextBlock() {
-																return new TurnRightBlock("WA3");
-															};
-														};
-													};
-												};
-											};
-										};
-									};
-								};
-							};
-						};
-					};
-				};
-			}
-			@Override
-			public ExecutableBlock getNextBlock() {
-				return new MoveForwardBlock("A4");
-			}
-			
-		});
+//		
+//		//chain actionBlock
+//		idsForChainActionBlock = Set.of("W2", "A1", "A2", "A3", "W1","WA1", "WA2", "WA3");
+//		startingActionBlock.setNextBlock(new WhileBlock("W2") {
+//			@Override
+//			public AssessableBlock getConditionBlock() {
+//				return new NotBlock("C1") {
+//					public AssessableBlock getOperand() {
+//						return new NotBlock("C2") {
+//							public AssessableBlock getOperand() {
+//								return new WallInFrontBlock("C3");
+//							};
+//						};
+//					};
+//				};
+//			};
+//			
+//			@Override
+//			public ExecutableBlock getFirstBlockOfBody() {
+//				return new MoveForwardBlock("A1") {
+//					public ExecutableBlock getNextBlock() {
+//						return new TurnLeftBlock("A2") {
+//							public ExecutableBlock getNextBlock() {
+//								return new TurnRightBlock("A3") {
+//									public ExecutableBlock getNextBlock() {
+//										return new WhileBlock("W1") {
+//											public AssessableBlock getConditionBlock() {
+//												return new NotBlock("WC1") {
+//													public AssessableBlock getOperand() {
+//														return new NotBlock("WC2") {
+//															public AssessableBlock getOperand() {
+//																return new WallInFrontBlock("WC3");
+//															};
+//														};
+//													};
+//												};
+//											};
+//
+//											@Override
+//											public ExecutableBlock getFirstBlockOfBody() {
+//												return new MoveForwardBlock("WA1") {
+//													public ExecutableBlock getNextBlock() {
+//														return new TurnLeftBlock("WA2") {
+//															public ExecutableBlock getNextBlock() {
+//																return new TurnRightBlock("WA3");
+//															};
+//														};
+//													};
+//												};
+//											};
+//										};
+//									};
+//								};
+//							};
+//						};
+//					};
+//				};
+//			}
+//			@Override
+//			public ExecutableBlock getNextBlock() {
+//				return new MoveForwardBlock("A4");
+//			}
+//			
+//		});
 
 //		idsForChainAssessableBlock = Set.of("startingAssessable","C1","C2","C3");
 //		startingAssessable.setOperand(new NotBlock("C1") {
@@ -204,7 +204,7 @@ public class testGetAllBlocksInBody {
 	public void testGetAllBlockIdsInBodyBCPositive() {
 		Set<String> ids = blockController.getAllBlockIDsInBody("startingControl");
 		
-		ids.containsAll(idsForChainControlBlock);	
+		assertTrue(ids.equals(idsForChainControlBlock));	
 	}
 	
 
