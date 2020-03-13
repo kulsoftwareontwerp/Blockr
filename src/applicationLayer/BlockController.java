@@ -149,6 +149,7 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * Removes a block with the given blockID from the domain.
 	 * 
 	 * @param 	blockID
+	 * 			The blockID of the block to be removed.
 	 * @throws	NoSuchConnectedBlockException
 	 * 			If the given BlockID doesn't result in a block in the domain.	
 	 * @event 	RemoveBlockEvent 	

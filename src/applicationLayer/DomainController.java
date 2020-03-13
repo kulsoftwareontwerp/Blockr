@@ -97,6 +97,7 @@ public class DomainController {
 	 * Removes a block with the given blockID from the domain.
 	 * 
 	 * @param 	blockID
+	 * 			The blockID of the block to be removed.
 	 * @throws 	IllegalArgumentException
 	 * 			If the given BlockID is null or an empty String
 	 * @throws	NoSuchConnectedBlockException
