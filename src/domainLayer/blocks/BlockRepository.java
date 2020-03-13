@@ -2,14 +2,11 @@ package domainLayer.blocks;
 
 import java.security.DrbgParameters.NextBytes;
 import java.util.*;
-import java.util.stream.Collector;
 
-import org.mockito.internal.matchers.InstanceOf;
 
 import applicationLayer.*;
-import domainLayer.blocks.*;
 
-import exceptions.InvalidBlockConnectionException;
+import exceptions.*;
 import exceptions.InvalidBlockTypeException;
 import exceptions.NoSuchConnectedBlockException;
 

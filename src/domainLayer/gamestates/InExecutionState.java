@@ -17,8 +17,9 @@ public class InExecutionState extends GameState {
 	}
 
 	public void reset() {
-		// TODO - implement InExecutionState.reset
-		throw new UnsupportedOperationException();
+		ResettingState resettingState = new ResettingState(gameController);
+		gameController.toState(resettingState);
+		resettingState.reset();
 	}
 
 	public void execute() {

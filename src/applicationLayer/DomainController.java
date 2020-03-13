@@ -122,8 +122,7 @@ public class DomainController {
 	}
 
 	public void resetGameExecution() {
-		// TODO - implement DomainController.resetGameExecution
-		throw new UnsupportedOperationException();
+		gameController.resetGameExecution();
 	}
 
 	
