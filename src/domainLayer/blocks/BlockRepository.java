@@ -495,36 +495,39 @@ public class BlockRepository {
 	public ArrayList<String> getConnectedBlockBeforeMoveIfExists(Block movedBlock) {
 		Iterator itAllBlocks = allBlocks.entrySet().iterator();
 		ArrayList<String> connectedBlockInfo = new ArrayList<String>();
-		while(itAllBlocks.hasNext()) {
+		while (itAllBlocks.hasNext()) {
 			Map.Entry element = (Entry) itAllBlocks.next();
 			Block block = (Block) element.getValue();
-			if(block instanceof ActionBlock) {
-				block.getNextBlock().equals(movedBlock);
-				connectedBlockInfo.add("DOWN");
-				connectedBlockInfo.add(block.getBlockId());
+			if (block instanceof ActionBlock) {
+				if (block.getNextBlock() != null) {
+					if (block.getNextBlock().equals(movedBlock)) {
+						connectedBlockInfo.add("DOWN");
+						connectedBlockInfo.add(block.getBlockId());
+					}
+				}
+			} else if (block instanceof ControlBlock) {
+				if (block.getNextBlock() != null) {
+					if (block.getNextBlock().equals(movedBlock)) {
+						connectedBlockInfo.add("DOWN");
+						connectedBlockInfo.add(block.getBlockId());
+					} else if (block.getConditionBlock().equals(movedBlock)) {
+						connectedBlockInfo.add("CONDITION");
+						connectedBlockInfo.add(block.getBlockId());
+					} else if (block.getFirstBlockOfBody().equals(movedBlock)) {
+						connectedBlockInfo.add("BODY");
+						connectedBlockInfo.add(block.getBlockId());
+					}
+				}
 			}
-			else if(block instanceof ControlBlock) {
-				if(block.getNextBlock().equals(movedBlock)) {
-					connectedBlockInfo.add("DOWN");
-					connectedBlockInfo.add(block.getBlockId());
-				}
-				else if(block.getConditionBlock().equals(movedBlock)) {
-					connectedBlockInfo.add("CONDITION");
-					connectedBlockInfo.add(block.getBlockId());
-				}
-				else if(block.getFirstBlockOfBody().equals(movedBlock)) {
-					connectedBlockInfo.add("BODY");
-					connectedBlockInfo.add(block.getBlockId());
-				}
-			}
-			else if(block instanceof OperatorBlock) {
-				if(block.getOperand().equals(movedBlock)) {
-					connectedBlockInfo.add("OPERAND");
-					connectedBlockInfo.add(block.getBlockId());
+			else if (block instanceof OperatorBlock) {
+				if (block.getNextBlock() != null) {
+					if (block.getOperand().equals(movedBlock)) {
+						connectedBlockInfo.add("OPERAND");
+						connectedBlockInfo.add(block.getBlockId());
+					}
 				}
 			}
 		}
-			
 		return connectedBlockInfo;
 	}
 

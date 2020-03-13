@@ -28,7 +28,6 @@ import applicationLayer.DomainController;
 import domainLayer.blocks.AssessableBlock;
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
-import domainLayer.blocks.BlockType;
 import domainLayer.blocks.ExecutableBlock;
 import domainLayer.blocks.MoveForwardBlock;
 import domainLayer.blocks.NotBlock;

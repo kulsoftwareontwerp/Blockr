@@ -221,7 +221,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		fireUpdateGameState();
 		fireResetExecutionEvent();
 		for(String blockID : movedBlocks) {
-			fireBlockChanged(movedBlockId,connectedAfterMoveBlockId,connectionAfterMove);
+			fireBlockChanged(blockID,connectedAfterMoveBlockId,connectionAfterMove);
 		}
 	}
 	
