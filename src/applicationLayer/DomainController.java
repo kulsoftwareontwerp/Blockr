@@ -121,17 +121,6 @@ public class DomainController {
 	 * 
 	 * @param movedBlockId					The Id of block to be moved, this parameter is required.
 	 * 
-	 * @param connectedBeforeMoveBlockId	The Id which is connected to our block before moving the block, 
-	 * 										this parameter is required. If there's no block connected to the 
-	 * 										block you wish to move then use an empty String "".
-	 * 
-	 * @param connectionBeforeMove			The connection of the block which is connected to our block before moving the block, 
-	 * 										this parameter is required. If there's no block connected to the 
-	 * 										block you wish to move then use an ConnectionType.NOCONNECTION.
-	 * 										For the ConnectionTypes, those are related to the block that is 
-	 * 										connected to the block you wish to move e.g. 
-	 * 										ConnectionType.DOWN means that the block you wish 
-	 * 										to move is underneath the connected block.
 	 * 
 	 * @param connectedAfterMoveBlockId		The Id of the block you wish to connect the block you are moving to. This parameter is Required.
 	 * 										If there's no connected block after the move please use an empty String, "".
@@ -172,26 +161,41 @@ public class DomainController {
 	 * 			Fires a ResetExecutionEvent if the execution was successful.
 	 * 
 	 */
-	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+	public void moveBlock(String movedBlockId,  String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
 		if(movedBlockId == null || movedBlockId.equals("")) {
 			throw new IllegalArgumentException("No movedBlockID given");
 		}
-		else if(connectionBeforeMove == null || connectionAfterMove == null) {
+		else if(connectionAfterMove == null) {
 			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
 		}
-		else if(connectedBeforeMoveBlockId.equals("")  && !(connectionBeforeMove == ConnectionType.NOCONNECTION)) {
-			throw new IllegalArgumentException("No blockId given for connectedBeforeMovedBlockID");
-			}
 		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
 			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
 		}
-		else if(movedBlockId.equals(connectedBeforeMoveBlockId) || movedBlockId.equals(connectedAfterMoveBlockId))
-			throw new IllegalArgumentException("You can't connect a block to itself.");
 		else {
-			blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+			blockController.moveBlock(movedBlockId,  connectedAfterMoveBlockId, connectionAfterMove);
 		}
 	}
 
+	
+//	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+//		if(movedBlockId == null || movedBlockId.equals("")) {
+//			throw new IllegalArgumentException("No movedBlockID given");
+//		}
+//		else if(connectionBeforeMove == null || connectionAfterMove == null) {
+//			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
+//		}
+//		else if(connectedBeforeMoveBlockId.equals("")  && !(connectionBeforeMove == ConnectionType.NOCONNECTION)) {
+//			throw new IllegalArgumentException("No blockId given for connectedBeforeMovedBlockID");
+//			}
+//		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
+//			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
+//		}
+//		else if(movedBlockId.equals(connectedBeforeMoveBlockId) || movedBlockId.equals(connectedAfterMoveBlockId))
+//			throw new IllegalArgumentException("You can't connect a block to itself.");
+//		else {
+//			blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+//		}
+//	}
 	/**
 	 * 
 	 * @param listener
