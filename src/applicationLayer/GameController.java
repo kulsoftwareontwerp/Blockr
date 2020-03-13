@@ -76,7 +76,7 @@ public class GameController implements DomainListener, GUISubject {
 	public ActionBlock findFirstBlockToBeExecuted() {
 		ExecutableBlock firstExecutableBlock = programBlockRepository.findFirstBlockToBeExecuted();
 		if (!(firstExecutableBlock instanceof ActionBlock)) {
-			ActionBlock firstActionBlock = findNextActionBlockToBeExecuted(firstExecutableBlock);
+			ActionBlock firstActionBlock = findNextActionBlockToBeExecuted(null, firstExecutableBlock);
 			return firstActionBlock;
 		}
 		return (ActionBlock) firstExecutableBlock;
@@ -86,16 +86,16 @@ public class GameController implements DomainListener, GUISubject {
 	 * 
 	 * @param block
 	 */
-	public ActionBlock findNextActionBlockToBeExecuted(ExecutableBlock currentBlock) {
+	public ActionBlock findNextActionBlockToBeExecuted(ExecutableBlock previousBlock, ExecutableBlock currentBlock) {
 		// ExecutableBlock nextBlock = block.getNextBlock();
 		if (currentBlock == null) {
-			ControlBlock cb = programBlockRepository.getEnclosingControlBlock(currentBlock);
+			ControlBlock cb = programBlockRepository.getEnclosingControlBlock(previousBlock);
 			if (cb == null) {
 				return null;
 			} else if (cb instanceof IfBlock) {
-				return findNextActionBlockToBeExecuted(cb.getNextBlock());
+				return findNextActionBlockToBeExecuted(cb, cb.getNextBlock());
 			} else {
-				return findNextActionBlockToBeExecuted(cb);
+				return findNextActionBlockToBeExecuted(currentBlock, cb);
 			}
 		}
 		else if (currentBlock instanceof ActionBlock) {
@@ -104,9 +104,9 @@ public class GameController implements DomainListener, GUISubject {
 			// If or while block
 			AssessableBlock condition = currentBlock.getConditionBlock();
 			if (condition.assess(gameElementRepository)) {
-				return findNextActionBlockToBeExecuted(currentBlock.getFirstBlockOfBody());
+				return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getFirstBlockOfBody());
 			} else {
-				return findNextActionBlockToBeExecuted(currentBlock.getNextBlock());
+				return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getNextBlock());
 			}
 		}
 	}
