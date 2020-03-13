@@ -9,6 +9,7 @@ import applicationLayer.*;
 import domainLayer.blocks.*;
 
 import exceptions.InvalidBlockConnectionException;
+import exceptions.InvalidBlockTypeException;
 import exceptions.NoSuchConnectedBlockException;
 
 /**
