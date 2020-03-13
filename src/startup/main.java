@@ -10,6 +10,7 @@ public class main {
 
 //		Hier wordt ook de UI aangemaakt.
 		
+		//Test push voor de UI-branch
 		java.awt.EventQueue.invokeLater(() -> {
 	         new CanvasWindow("Blockr", dc).show();
 	  });

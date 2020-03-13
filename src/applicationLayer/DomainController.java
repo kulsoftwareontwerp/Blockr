@@ -1,6 +1,7 @@
 package applicationLayer;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import events.GUIListener;
@@ -99,10 +100,22 @@ public class DomainController {
 	
 	
 	
-	public Set<String> getAllBlockIdsInBody(String blockId){
-		
-		
-		return null;
+	public HashSet<String> getAllBlockIdsInBody(String blockId){
+		HashSet<String> set = new HashSet<String>();
+		if(blockId == "WHILE"){
+			set.add("1");
+			set.add("2");
+			set.add("IF");
+		}
+		if(blockId == "IF"){
+			set.add("1");
+			set.add("2");
+			set.add("3");
+			set.add("4");
+			set.add("5");
+			set.add("WHILE");
+		}
+		return set;
 	}
 
 

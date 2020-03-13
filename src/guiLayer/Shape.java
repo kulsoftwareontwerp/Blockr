@@ -218,7 +218,7 @@ public class Shape {
 
 		case Not:
 			connectionMap.put(ConnectionType.LEFT, new Pair<Integer, Integer>(this.getX_coord(), this.getY_coord()+5));
-			connectionMap.put(ConnectionType.CONDITION, new Pair<Integer, Integer>(this.getX_coord()+80, this.getY_coord()+5));
+			connectionMap.put(ConnectionType.OPERAND, new Pair<Integer, Integer>(this.getX_coord()+80, this.getY_coord()+5));
 			break;
 
 		case WallInFront:
@@ -268,6 +268,7 @@ public class Shape {
 	
 	public void determineTotalHeight(HashSet<Shape> internals) {
 		int total = 90;
+		int total_y = 90;
 		BlockType blockType;
 		for (Shape shape : internals) {
 			blockType = shape.getType();
@@ -277,11 +278,13 @@ public class Shape {
 				if(internals != null && !(internals.isEmpty())) {
 					determineTotalHeight(shape.internals);
 					total += shape.getHeight();
+					total_y += 10;
 				}
 				
 			}
 		}
 		setHeight(total);
+		setWidth(total_y);
 		updateConnectionTypesToShapeBasedOnType();
 		setCoordinatesShape(createCoordinatePairs(getX_coord(), getY_coord()));
 	}
