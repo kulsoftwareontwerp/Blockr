@@ -1,6 +1,7 @@
 package domainLayer.gamestates;
 
 import applicationLayer.*;
+import domainLayer.blocks.ActionBlock;
 
 public class ValidProgramState extends GameState {
 
@@ -10,18 +11,21 @@ public class ValidProgramState extends GameState {
 	 */
 	public ValidProgramState(GameController game) {
 		super(game);
-		// TODO - implement ValidProgramState.ValidProgramState
-		throw new UnsupportedOperationException();
 	}
 
 	public void execute() {
-		// TODO - implement ValidProgramState.execute
-		throw new UnsupportedOperationException();
+		ActionBlock firstActionBlockToBeExecuted = gameController.findFirstBlockToBeExecuted();
+		InExecutionState inExecutionState = new InExecutionState(gameController, firstActionBlockToBeExecuted);
+		gameController.toState(inExecutionState);
+		inExecutionState.execute();
 	}
 
 	public void update() {
-		// TODO - implement ValidProgramState.update
-		throw new UnsupportedOperationException();
+		boolean currentState = gameController.checkIfValidProgram();
+		if(!currentState) {
+			GameState newState = new InValidProgramState(gameController);
+			gameController.toState(newState);
+		}
 	}
 
 }

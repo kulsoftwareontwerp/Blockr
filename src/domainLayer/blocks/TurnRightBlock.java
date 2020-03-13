@@ -1,5 +1,6 @@
 package domainLayer.blocks;
 
+import domainLayer.elements.*;
 
 /**
  * The abstract class for the concept of a turn right block.
@@ -16,6 +17,14 @@ public class TurnRightBlock extends ActionBlock {
 	 */
 	public TurnRightBlock(String blockId) {
 		super(blockId);
+	}
+	
+	@Override
+	public void execute(ElementRepository elementsRepo) {
+		Robot robot = elementsRepo.getRobot();
+		Orientation currentOrientation = robot.getOrientation();
+		Orientation newOrientation = currentOrientation.getRight();
+		robot.setOrientation(newOrientation);
 	}
 
 }

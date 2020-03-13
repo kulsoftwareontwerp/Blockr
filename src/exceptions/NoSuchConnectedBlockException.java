@@ -1,7 +1,7 @@
 package exceptions;
 
 /**
- * This exception is thrown when an operation needs a connectedBlockID when the given BlockId isn't preset in the domain.
+ * This exception is thrown when an operation needs a block and the given BlockId isn't preset in the domain.
  * 
  * @version 0.1
  * @author group17
@@ -21,3 +21,4 @@ public class NoSuchConnectedBlockException extends RuntimeException {
 	
 
 }
+

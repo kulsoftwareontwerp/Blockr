@@ -552,7 +552,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 						alreadyFilledInCoordinates.remove(pair);
 					}
 					for (Shape shape2 : controlBlockAreas) {
-						if (domainController.getAllBlockIdsInBody(shape2.getId()).contains(shape.getId())) {
+						if (domainController.getAllBlockIDsInBody(shape2.getId()).contains(shape.getId())) {
 							shape.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.remove(e));
 							shape2.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.remove(e));
 							shape2.getInternals().remove(shape);
@@ -980,7 +980,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 		}
 
 		for (Shape shape : controlBlockAreas) {
-			if (domainController.getAllBlockIdsInBody(shape.getId()).contains(toAdd.getId())) {
+			if (domainController.getAllBlockIDsInBody(shape.getId()).contains(toAdd.getId())) {
 				shape.getInternals().add(toAdd);
 			}
 		}
@@ -1017,7 +1017,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 				currentShape.getY_coord());
 
 		for (Shape shape : controlBlockAreas) {
-			if (domainController.getAllBlockIdsInBody(shape.getId()).contains(toRemove.getId())) {
+			if (domainController.getAllBlockIDsInBody(shape.getId()).contains(toRemove.getId())) {
 				shape.getInternals().remove(toRemove);
 			}
 		}
@@ -1044,6 +1044,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 	@Override
 	public void onBlockChangeEvent(BlockChangeEvent event) {
 
+
 		this.setHandleEvent(true);
 		Shape toAdd = new Shape(event.getChangedBlockId(), getTempDynamicShape().getType(),
 				getTempDynamicShape().getX_coord(), getTempDynamicShape().getY_coord());
@@ -1053,7 +1054,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 		}
 
 		for (Shape shape : controlBlockAreas) {
-			if (domainController.getAllBlockIdsInBody(shape.getId()).contains(toAdd.getId())) {
+			if (domainController.getAllBlockIDsInBody(shape.getId()).contains(toAdd.getId())) {
 				shape.getInternals().add(toAdd);
 			}
 		}
@@ -1075,6 +1076,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 		this.setHighlightedShape(null);
 		super.repaint();
 
+
+		
+		
 	}
 
 	@Override

@@ -14,27 +14,44 @@ public class InExecutionState extends GameState {
 	 */
 	public InExecutionState(GameController game, ActionBlock nextBlock) {
 		super(game);
-		// TODO - implement InExecutionState.InExecutionState
-		throw new UnsupportedOperationException();
 	}
 
 	public void reset() {
-		// TODO - implement InExecutionState.reset
-		throw new UnsupportedOperationException();
+		ResettingState resettingState = new ResettingState(gameController);
+		gameController.toState(resettingState);
+		resettingState.reset();
 	}
 
 	public void execute() {
-		// TODO - implement InExecutionState.execute
-		throw new UnsupportedOperationException();
+		ActionBlock currentActionBlockToBeExecuted = getNextActionBlockToBeExecuted();
+		
+		// If there is no next actionBlock to be executed, the program has finished and the user needs to reset
+		if (currentActionBlockToBeExecuted != null) {
+			gameController.performRobotAction(currentActionBlockToBeExecuted);
+			
+			ActionBlock newNextActionBlockToBeExecuted = gameController.findNextActionBlockToBeExecuted(currentActionBlockToBeExecuted);
+			setNextActionBlockToBeExecuted(newNextActionBlockToBeExecuted);
+			
+			if (newNextActionBlockToBeExecuted != null)
+				gameController.fireUpdateHighlightingEvent(getNextActionBlockToBeExecuted().getBlockId());
+			else
+				gameController.fireUpdateHighlightingEvent(null);
+		}
 	}
 
 	public void update() {
-		// TODO - implement InExecutionState.update
-		throw new UnsupportedOperationException();
+			GameState ResettingStateFollowingUpdate = new ResettingState(gameController);
+			ResettingStateFollowingUpdate.update();
+			gameController.toState(ResettingStateFollowingUpdate);
+			
 	}
 
 	public ActionBlock getNextActionBlockToBeExecuted() {
 		return this.nextActionBlockToBeExecuted;
+	}
+	
+	public void setNextActionBlockToBeExecuted(ActionBlock nextActionBlockToBeExecuted) {
+		this.nextActionBlockToBeExecuted = nextActionBlockToBeExecuted;
 	}
 
 }
