@@ -459,11 +459,11 @@ public class BlockRepository {
 	public boolean checkIfValidControlBlock(ControlBlock block) {
 		if(block.getConditionBlock() == null)
 			return false;
-		if(block.getConditionBlock() instanceof OperatorBlock) {
-			checkIfValidStatement(block.getConditionBlock());
-		}
+		if(block.getConditionBlock() instanceof OperatorBlock) 
+			 return checkIfValidStatement(block.getConditionBlock());
 		return true;
 	}
+		
 	/**
 	 * method used to check if a chain of operand finishes with a conditionBlock.
 	 * @param block
@@ -473,7 +473,7 @@ public class BlockRepository {
 		if(block != null) {
 			if(block.getOperand() instanceof ConditionBlock)
 				return true;
-			checkIfValidStatement(block.getOperand());
+			return checkIfValidStatement(block.getOperand());
 		}
 		return false;
 	}

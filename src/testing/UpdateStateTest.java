@@ -210,5 +210,242 @@ public class UpdateStateTest {
 			assertFalse(true);
 		}
 	}
+	
+	
+	@Test
+	public void testUpdateStatePositiveBRCheckIfValidProgram() {
+		try {
+			ActionBlock actionBlockA = spy(new MoveForwardBlock("1"));
+			ActionBlock actionBlockB = spy(new MoveForwardBlock("2"));
+			ControlBlock ifBlockA = spy(new IfBlock("3"));
+			OperatorBlock operandBlock = spy(new NotBlock("4"));
+			ConditionBlock conditionBlock = spy(new WallInFrontBlock("5"));
+			
+			actionBlockA.setNextBlock(ifBlockA);
+			
+			ifBlockA.setFirstBlockOfBody(actionBlockB);
+			ifBlockA.setConditionBlock(operandBlock);
+			ifBlockA.setNextBlock(null);
+			
+			operandBlock.setOperand(conditionBlock);
+			
+			HashMap<String,Block>  allBlocks = new HashMap<String,Block>();
+			allBlocks.put("1", actionBlockA);
+			allBlocks.put("2", actionBlockB);
+			allBlocks.put("3", ifBlockA);
+			allBlocks.put("4", operandBlock);
+			allBlocks.put("5", conditionBlock);
+			
+			
+			HashSet<Block> headBlocks = new HashSet<Block>();
+			headBlocks.add(actionBlockA);
+			
+			FieldSetter.setField(blockRepository, BlockRepository.class.getDeclaredField("headBlocks") , headBlocks);
+			FieldSetter.setField(blockRepository, BlockRepository.class.getDeclaredField("allBlocks") , allBlocks);
+			assertEquals(true,blockRepository.checkIfValidProgram());
+			
+			
+		}catch (NoSuchFieldException | SecurityException e) {
+			assertFalse(true);
+		}
+		
+	}
+	
+	
+	@Test
+	public void testUpdateStatePNegativeBRCheckIfValidProgram() {
+		try {
+			ActionBlock actionBlockA = spy(new MoveForwardBlock("1"));
+			ActionBlock actionBlockB = spy(new MoveForwardBlock("2"));
+			ControlBlock ifBlockA = spy(new IfBlock("3"));
+			ConditionBlock conditionBlock = spy(new WallInFrontBlock("4"));
+			
+			OperatorBlock operandBlockA = spy(new NotBlock("5"));
+			OperatorBlock operandBlockB = spy(new NotBlock("6"));
+			OperatorBlock operandBlockC = spy(new NotBlock("7"));
+			OperatorBlock operandBlockD = spy(new NotBlock("8"));
+			
+			actionBlockA.setNextBlock(ifBlockA);
+			
+			ifBlockA.setFirstBlockOfBody(actionBlockB);
+			ifBlockA.setConditionBlock(operandBlockA);
+			ifBlockA.setNextBlock(null);
+			
+			
+			operandBlockA.setOperand(operandBlockB);
+			operandBlockB.setOperand(operandBlockC);
+			operandBlockC.setOperand(operandBlockD);
+			operandBlockD.setOperand(null);
+			
+			HashMap<String,Block>  allBlocks = new HashMap<String,Block>();
+			allBlocks.put("1", actionBlockA);
+			allBlocks.put("2", actionBlockB);
+			allBlocks.put("3", ifBlockA);
+			allBlocks.put("4", conditionBlock);
+			allBlocks.put("5", operandBlockA);
+			allBlocks.put("6", operandBlockB);
+			allBlocks.put("7", operandBlockC);
+			allBlocks.put("8", operandBlockD);
+			
+			
+			HashSet<Block> headBlocks = new HashSet<Block>();
+			headBlocks.add(actionBlockA);
+			
+			FieldSetter.setField(blockRepository, BlockRepository.class.getDeclaredField("headBlocks") , headBlocks);
+			FieldSetter.setField(blockRepository, BlockRepository.class.getDeclaredField("allBlocks") , allBlocks);
+			assertEquals(false,blockRepository.checkIfValidProgram());
+			
+			
+		}catch (NoSuchFieldException | SecurityException e) {
+			assertFalse(true);
+		}
+		
+	}
+	
+	
+	
+	@Test
+	public void testUpdateStatePositiveBRCheckIfValidProgramChainOfOperand() {
+		try {
+			ActionBlock actionBlockA = spy(new MoveForwardBlock("1"));
+			ActionBlock actionBlockB = spy(new MoveForwardBlock("2"));
+			ControlBlock ifBlockA = spy(new IfBlock("3"));
+			ConditionBlock conditionBlock = spy(new WallInFrontBlock("4"));
+			
+			OperatorBlock operandBlockA = spy(new NotBlock("5"));
+			OperatorBlock operandBlockB = spy(new NotBlock("6"));
+			OperatorBlock operandBlockC = spy(new NotBlock("7"));
+			OperatorBlock operandBlockD = spy(new NotBlock("8"));
+			
+			actionBlockA.setNextBlock(ifBlockA);
+			
+			ifBlockA.setFirstBlockOfBody(actionBlockB);
+			ifBlockA.setConditionBlock(operandBlockA);
+			ifBlockA.setNextBlock(null);
+			
+			
+			operandBlockA.setOperand(operandBlockB);
+			operandBlockB.setOperand(operandBlockC);
+			operandBlockC.setOperand(operandBlockD);
+			operandBlockD.setOperand(conditionBlock);
+			
+			HashMap<String,Block>  allBlocks = new HashMap<String,Block>();
+			allBlocks.put("1", actionBlockA);
+			allBlocks.put("2", actionBlockB);
+			allBlocks.put("3", ifBlockA);
+			allBlocks.put("4", conditionBlock);
+			allBlocks.put("5", operandBlockA);
+			allBlocks.put("6", operandBlockB);
+			allBlocks.put("7", operandBlockC);
+			allBlocks.put("8", operandBlockD);
+			
+			
+			HashSet<Block> headBlocks = new HashSet<Block>();
+			headBlocks.add(actionBlockA);
+			
+			FieldSetter.setField(blockRepository, BlockRepository.class.getDeclaredField("headBlocks") , headBlocks);
+			FieldSetter.setField(blockRepository, BlockRepository.class.getDeclaredField("allBlocks") , allBlocks);
+			assertEquals(true,blockRepository.checkIfValidProgram());
+			
+			
+		}catch (NoSuchFieldException | SecurityException e) {
+			assertFalse(true);
+		}
+		
+	}
+	
+	
+	@Test
+	public void testUpdateStatePositiveBRCheckIfValidProgramMultiControlBlock() {
+		try {
+			ActionBlock actionBlockA = spy(new MoveForwardBlock("1"));
+			ActionBlock actionBlockB = spy(new MoveForwardBlock("2"));
+			ActionBlock actionBlockC = spy(new MoveForwardBlock("3"));
+			ActionBlock actionBlockD = spy(new MoveForwardBlock("4"));
+			ActionBlock actionBlockE = spy(new MoveForwardBlock("5"));
+			
+			
+			ControlBlock ifBlockA = spy(new IfBlock("6"));
+			ControlBlock ifBlockB = spy(new IfBlock("7"));
+			ControlBlock whileBlockA = spy(new WhileBlock("8"));
+			ControlBlock whileBlockB= spy(new WhileBlock("9"));
+			
+			ConditionBlock conditionBlockA = spy(new WallInFrontBlock("10"));
+			ConditionBlock conditionBlockB = spy(new WallInFrontBlock("11"));
+			ConditionBlock conditionBlockC = spy(new WallInFrontBlock("12"));
+			ConditionBlock conditionBlockD = spy(new WallInFrontBlock("13"));
+			
+			
+			OperatorBlock operandBlockA = spy(new NotBlock("14"));
+			OperatorBlock operandBlockB = spy(new NotBlock("15"));
+			OperatorBlock operandBlockC = spy(new NotBlock("16"));
+			OperatorBlock operandBlockD = spy(new NotBlock("17"));
+			
+			actionBlockA.setNextBlock(ifBlockA);
+			
+			ifBlockA.setConditionBlock(conditionBlockC);
+			ifBlockA.setFirstBlockOfBody(whileBlockA);
+			ifBlockA.setNextBlock(actionBlockC);
+			
+			whileBlockA.setConditionBlock(operandBlockA);
+			whileBlockA.setFirstBlockOfBody(actionBlockB);
+
+			actionBlockC.setNextBlock(whileBlockB);
+			
+			whileBlockB.setConditionBlock(conditionBlockD);
+			whileBlockB.setFirstBlockOfBody(ifBlockB);
+			whileBlockB.setNextBlock(null);
+			
+			ifBlockB.setConditionBlock(operandBlockC);
+			ifBlockB.setFirstBlockOfBody(actionBlockD);
+			ifBlockB.setNextBlock(actionBlockE);
+			
+			
+			operandBlockA.setOperand(operandBlockB);
+			operandBlockB.setOperand(conditionBlockA);
+			
+			operandBlockC.setOperand(operandBlockD);
+			operandBlockD.setOperand(conditionBlockB);
+			
+			HashMap<String,Block>  allBlocks = new HashMap<String,Block>();
+			allBlocks.put("1", actionBlockA);
+			allBlocks.put("2", actionBlockB);
+			allBlocks.put("3", actionBlockC);
+			allBlocks.put("4", actionBlockD);
+			allBlocks.put("5", actionBlockE);
+			
+			allBlocks.put("6", ifBlockA);
+			allBlocks.put("7", ifBlockB);
+			allBlocks.put("8", whileBlockA);
+			allBlocks.put("9", whileBlockB);
+			
+			allBlocks.put("10", conditionBlockA);
+			allBlocks.put("11", conditionBlockB);
+			allBlocks.put("12", conditionBlockC);
+			allBlocks.put("13", conditionBlockD);
+			
+			allBlocks.put("14", operandBlockA);
+			allBlocks.put("15", operandBlockB);
+			allBlocks.put("16", operandBlockC);
+			allBlocks.put("17", operandBlockD);
+			
+			
+			HashSet<Block> headBlocks = new HashSet<Block>();
+			headBlocks.add(actionBlockA);
+			
+			FieldSetter.setField(blockRepository, BlockRepository.class.getDeclaredField("headBlocks") , headBlocks);
+			FieldSetter.setField(blockRepository, BlockRepository.class.getDeclaredField("allBlocks") , allBlocks);
+			assertEquals(true,blockRepository.checkIfValidProgram());
+			
+			
+		}catch (NoSuchFieldException | SecurityException e) {
+			assertFalse(true);
+		}
+		
+	}
+	
+	
+	
+	
 
 }
