@@ -243,9 +243,6 @@ public class BlockRepository {
 		ArrayList<String> beforeMove = new ArrayList<String>();
 		Block bfm = null;
 		
-		
-		
-		
 		if(movedBlock == null)
 			throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 		
@@ -526,6 +523,7 @@ public class BlockRepository {
 						connectedBlockInfo.add(block.getBlockId());
 					}
 				}
+
 			}
 		}
 		return connectedBlockInfo;
@@ -714,5 +712,36 @@ public class BlockRepository {
 		}
 		return blocksUnderneath;
 	}
+
+	public ControlBlock getEnclosingControlBlock(ExecutableBlock block) {
+		ExecutableBlock headBlock = findFirstBlockToBeExecuted();
+		Set<Block> chain = getAllBlocksConnectedToAndAfterACertainBlock(headBlock);
+		Set<ControlBlock> allControlBlocks = new HashSet<ControlBlock>();
+		chain.stream().filter(s -> s instanceof ControlBlock).forEach(s -> allControlBlocks.add((ControlBlock) s));
+		for (ControlBlock c: allControlBlocks) {
+			if(getAllBlockIDsInBody(c).contains(block.getBlockId())) {
+				return c;
+			}
+		}
+		return null;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 }

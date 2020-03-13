@@ -3,6 +3,9 @@ package applicationLayer;
 import java.util.Collection;
 import java.util.Set;
 
+
+import domainLayer.elements.ElementType;
+
 import events.GUIListener;
 
 import types.BlockType;
@@ -253,8 +256,10 @@ public class DomainController {
 			throw new IllegalArgumentException("No listener given.");
 		}
 		gameController.addListener(listener);
+
 		blockController.addListener(listener);
 		elementController.addListener(listener);
+
 	}
 
 	/**
@@ -270,6 +275,8 @@ public class DomainController {
 			throw new IllegalArgumentException("No listener given.");
 		}
 		gameController.removeListener(listener);
+		elementController.removeListener(listener);
+		blockController.removeListener(listener);
 	}
 
 	public void executeBlock() {
@@ -296,6 +303,31 @@ public class DomainController {
 		}
 		
 		 return blockController.getAllBlockIDsUnderneath(blockID);
+	}
+
+
+	/**
+	 * Add an element to the domain.
+	 * @param 	element
+	 * 			The type of element.
+	 * @param 	X
+	 * 			The X coordinate
+	 * @param 	Y
+	 * 			The Y coordinate
+	 * @throws  IllegalArgumentException
+	 * 			Is thrown when element is null.
+	 * @event 	ElementAddedEvent
+	 * 			When the operation is successful the ElementAddedEvent will be thrown to all the listeners.
+	 * @event 	RobotAddedEvent
+	 * 			When the operation is successful and elementType is robot the RobotAddedEvent with an Orientation of UP will be thrown to all the listeners.
+	 */
+	public void addElement(ElementType element, int x, int y) {
+		if(element==null) {
+			throw new IllegalArgumentException("No elementType given.");
+		}
+		else {
+			elementController.addElement(element,x, y);
+		}
 	}
 
 }
