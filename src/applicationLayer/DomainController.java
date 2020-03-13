@@ -89,6 +89,7 @@ public class DomainController {
 				&& connection == ConnectionType.NOCONNECTION) {
 			throw new IllegalArgumentException("No connection given for connected block.");
 		} else {
+			System.out.println("DomainController");
 			blockController.addBlock(blockType, connectedBlockId, connection);
 		}
 	}
@@ -173,6 +174,8 @@ public class DomainController {
 			throw new IllegalArgumentException("No listener given.");
 		}
 		gameController.addListener(listener);
+		blockController.addListener(listener);
+		elementController.addListener(listener);
 	}
 
 	/**

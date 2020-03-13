@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import applicationLayer.*;
 import domainLayer.elements.ElementType;
@@ -67,9 +68,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 
 	private DomainController domainController;
 	private boolean isHandleEvent = true;
+	private HashSet<Shape> shapesInMovement;
 
 	private HashSet<Pair<Integer, Integer>> alreadyFilledInCoordinates;
 	private HashSet<Shape> controlBlockAreas;
+	private Set<String> blocksUnderneath;
 
 	private boolean isGameAreaUpdated = true; // to initialise, it has to be true
 	private boolean isPaletteShown = true;
@@ -168,6 +171,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 	public CanvasWindow(String title, DomainController dc) {
 		this(title);
 		this.domainController = dc;
+		this.domainController.addGameListener(this);
 	}
 
 	public CanvasWindow(String title) {
@@ -177,7 +181,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 		shapesInProgramArea = new ArrayList<Shape>();
 		alreadyFilledInCoordinates = new HashSet<Pair<Integer, Integer>>();
 		controlBlockAreas = new HashSet<Shape>();
-	}
+		this.blocksUnderneath = new HashSet<String>() ;
+		this.shapesInMovement = new HashSet<Shape>();
+				}
 
 	@Override
 	protected void paint(Graphics g) {
@@ -226,6 +232,16 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 		if (highlightedForExecution != null) {
 			drawHighlightedBLUE(g, highlightedForExecution);
 		}
+		
+		
+		if(this.shapesInMovement != null){
+						
+			shapesInMovement.forEach(e-> drawShape(g, e));
+			
+		}
+		
+		
+		
 
 	}
 
@@ -456,6 +472,22 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 				currentShape.setY_coord(y - y_offsetCurrentShape);
 				currentShape.updateConnectionTypesToShapeBasedOnType();
 				this.highlightedShape = determineHighlightShape();
+				
+				/*if (!shapesInMovement.isEmpty()) {
+					System.out.println("beep");*/
+				
+				/*for (Shape shape : shapesInMovement) {
+					if(shape != currentShape) {
+
+					
+					shape.setX_coord(x - ( - x_offsetCurrentShape));
+					shape.setY_coord(shape.getY_coord() + (y - y_offsetCurrentShape));
+					shape.updateConnectionTypesToShapeBasedOnType();
+					}
+				}
+				}*/
+				
+				
 			}
 
 			if (id == MouseEvent.MOUSE_RELEASED && currentShape != null && x > PALETTE_START_X + PALETTE_OFFSET_BLOCKS
@@ -490,26 +522,28 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 
 				if (placeable) {
 					if (getTempDynamicShape().getId() == "PALETTE") {
-						// tijdelijk opslaan van tempStaticShape en tempDynamicShape
 
-						// domainController.addBlock(getTempDynamicShape().getType(), "",
-						// ConnectionType.NOCONNECTION);
-
-						if (getTempDynamicShape().getType() == BlockType.If) {
+						if(getTempStaticShape() != null) {
+						 domainController.addBlock(getTempDynamicShape().getType(), getTempStaticShape().getId(),getTempDynamicShape().getConnectedVia());
+						}
+						else {
+							domainController.addBlock(getTempDynamicShape().getType(),"",ConnectionType.NOCONNECTION);
+						}
+						/*if (getTempDynamicShape().getType() == BlockType.If) {
 							this.onBlockAdded(new BlockAddedEvent("IF"));
 						} else if (getTempDynamicShape().getType() == BlockType.While) {
 							this.onBlockAdded(new BlockAddedEvent("WHILE"));
 						} else {
 							this.onBlockAdded(new BlockAddedEvent("" + counter));
 							counter++;
-						}
+						}*/
 
 					} else {
 						if (getTempStaticShape() != null) {
+							
+							//domainController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
 							this.onBlockChangeEvent(new BlockChangeEvent(getTempDynamicShape().getId(),
 									getTempDynamicShape().getId(), getTempStaticShape().getConnectedVia()));
-							// this.onBlockChangeEvent(new BlockChangeEvent(getTempDynamicShape().getId(),
-							// getTempDynamicShape().getId(), getTempStaticShape().getConnectedVia()));
 						} else {
 							this.onBlockChangeEvent(new BlockChangeEvent(getTempDynamicShape().getId(),
 									getTempDynamicShape().getId(), ConnectionType.NOCONNECTION));
@@ -539,14 +573,39 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 			}
 
 			if (id == MouseEvent.MOUSE_PRESSED && x > PROGRAM_START_X && x < PROGRAM_END_X) {
+				
+				
 				Shape shape = getShapeFromCoordinateFromProgramArea(x, y);
 
 				if (shape != null) {
+					
+					
+									
+					/*
+					//blocksUnderneath = domainController.getAllBlockIDsUnderneath(tempDynamicShape.getId());
+					blocksUnderneath = new HashSet<String>();
+					blocksUnderneath.add("1");
+					blocksUnderneath.add("2");
+					
+					
+						for (String shapeId : blocksUnderneath) {
+							try {
+							shapesInMovement.add(this.getShapesInProgramArea().stream().filter(e-> e.getId().equals(shapeId)).findFirst().get());
+							}catch (Exception e2) {
+								e2.printStackTrace();
+							}
+						}*/
+						
+					
+					
+					
+					
+					
 					this.currentShapeCoord = new Pair<Integer, Integer>(shape.getX_coord(), shape.getY_coord());
 					this.currentShape = shape;
-					var temp = calculateOffsetMouse(x, y, currentShape.getX_coord(), currentShape.getY_coord());
-					this.x_offsetCurrentShape = temp[0];
-					this.y_offsetCurrentShape = temp[1];
+					var mouseOffset = calculateOffsetMouse(x, y, currentShape.getX_coord(), currentShape.getY_coord());
+					this.x_offsetCurrentShape = mouseOffset[0];
+					this.y_offsetCurrentShape = mouseOffset[1];
 					shapesInProgramArea.remove(shape);
 					for (Pair<Integer, Integer> pair : shape.getCoordinatesShape()) {
 						alreadyFilledInCoordinates.remove(pair);
@@ -962,7 +1021,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 
 	@Override
 	public void onBlockAdded(BlockAddedEvent event) {
-		
+		System.out.println("Beep");
 		this.setHandleEvent(true);
 		
 		// normaal is ID van event, en geen random DateTime
@@ -979,7 +1038,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 			clipOn(getTempStaticShape(), getTempDynamicShape().getConnectedVia(), toAdd);
 		}
 
+		
 		for (Shape shape : controlBlockAreas) {
+			var temp = domainController.getAllBlockIDsInBody(shape.getId());
 			if (domainController.getAllBlockIDsInBody(shape.getId()).contains(toAdd.getId())) {
 				shape.getInternals().add(toAdd);
 			}
