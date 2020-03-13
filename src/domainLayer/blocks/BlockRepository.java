@@ -424,7 +424,16 @@ public class BlockRepository {
 		}
 		return movedBlocks;
 	}
-
+	/**
+	 * Checks wether a the programArea is in a valid state or not.
+	 * 
+	 * @return True if following points are respected;
+	 * 			- All blocks in program area are connected together.
+	 * 			  This means that their is only one "Head Block".
+	 * 			- If all "Control Block"-types are in a valid state,
+	 * 				which implies that they have a condition and at least one block connected to the BODY ConnectionType.
+	 * 			- If a "Control Block" has a operand or chain of operands, this block/chain must be connected with a "Condition Block"
+	 */
 	public boolean checkIfValidProgram() {
 		if(headBlocks.size() != 1)
 			return false;
@@ -443,6 +452,10 @@ public class BlockRepository {
 		
 	}
 	
+	
+	/**
+	 * method used to check if ControlBlock is in a valid state
+	 */
 	public boolean checkIfValidControlBlock(ControlBlock block) {
 		if(block.getConditionBlock() == null)
 			return false;
@@ -451,7 +464,11 @@ public class BlockRepository {
 		}
 		return true;
 	}
-	
+	/**
+	 * method used to check if a chain of operand finishes with a conditionBlock.
+	 * @param block
+	 * @return
+	 */
 	public boolean checkIfValidStatement(Block block) {
 		if(block != null) {
 			if(block.getOperand() instanceof ConditionBlock)
