@@ -23,6 +23,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import applicationLayer.*;
 import domainLayer.blocks.*;
+import domainLayer.elements.*;
 import domainLayer.gamestates.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -73,6 +74,8 @@ public class ResetGameTest {
 		verify(mockGameController,atLeastOnce()).resetGameExecution();
 	}
 	
+	@Mock(name="gameElementRepository")
+	private ElementRepository ger;
 	@Spy @InjectMocks
 	private GameController gc;
 	
@@ -83,14 +86,14 @@ public class ResetGameTest {
 	@Test
 	public void testGameController_ExecuteBlock_Positive() {
 		when(gc.getCurrentState()).thenReturn(inExecutionState);
+		when(ger.getRobot()).thenReturn(robot);
 	
 		gc.resetGameExecution();
 		verify(inExecutionState,atLeastOnce()).reset();
 		verify(gc,atLeastOnce()).fireRobotChangeEvent();
 	}
 	
-	@Mock(name="elementRepository")
-	private ElementRepository mockElementRepository;
+
 	
 	/**
 	 * Test method for
@@ -98,10 +101,12 @@ public class ResetGameTest {
 	 */
 	@Test
 	public void testGameController_ResetRobot_Positive() {
+		when(ger.getRobot()).thenReturn(robot);
+		
 		gc.resetRobot();
 		
-		verify(mockElementRepository,atLeastOnce()).removeRobot();
-		verify(mockElementRepository,atLeastOnce()).initializeRobot();
+		verify(ger,atLeastOnce()).removeRobot();
+		verify(ger,atLeastOnce()).initializeRobot();
 		verify(gc,atLeastOnce()).fireRobotChangeEvent();
 	}
 	

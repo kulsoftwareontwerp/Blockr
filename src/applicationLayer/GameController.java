@@ -16,7 +16,7 @@ public class GameController implements DomainListener, GUISubject {
 
 	public GameController() {
 		programBlockRepository = BlockRepository.getInstance();
-		gameElementRepository = gameElementRepository.getInstance();
+		gameElementRepository = ElementRepository.getInstance();
 
 		guiListeners = new HashSet<GUIListener>();
 
