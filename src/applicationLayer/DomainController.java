@@ -5,6 +5,7 @@ import java.util.Set;
 
 import domainLayer.blocks.BlockType;
 import events.GUIListener;
+import exceptions.NoSuchConnectedBlockException;
 
 /**
  * The DomainController performs initial checks on the parameters and forwards
@@ -93,12 +94,31 @@ public class DomainController {
 	}
 
 	/**
+	 * Removes a block with the given blockID from the domain.
 	 * 
-	 * @param blockId
+	 * @param 	blockID
+	 * 			The blockID of the block to be removed.
+	 * @throws 	IllegalArgumentException
+	 * 			If the given BlockID is null or an empty String
+	 * @throws	NoSuchConnectedBlockException
+	 * 			If the given BlockID doesn't result in a block in the domain.	
+	 * @event 	RemoveBlockEvent 	
+	 * 			Fires an RemoveBlockEvent if the execution was successful.
+	 * @event 	UpdateGameStateEvent 
+	 * 			Fires an UpdateGameStateEvent if the execution was successful.
+	 * @event 	ResetExecutionEvent
+	 * 			Fires a ResetExecutionEvent if the execution was successful.
+	 * @event 	PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
+	 *        	block was reached before removing the block.
 	 */
-	public void removeBlock(String blockId) {
-		// TODO - implement DomainController.removeBlock
-		throw new UnsupportedOperationException();
+	public void removeBlock(String blockID) {
+		if (blockID == "" || blockID==null) {
+			throw new IllegalArgumentException("No blockType given.");
+		}
+		else {
+			blockController.removeBlock(blockID);
+		}
+			
 	}
 
 	public void resetGameExecution() {

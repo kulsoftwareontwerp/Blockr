@@ -2,10 +2,12 @@ package domainLayer.blocks;
 
 import java.security.DrbgParameters.NextBytes;
 import java.util.*;
-import applicationLayer.*;
-import domainLayer.blocks.*;
 
-import exceptions.InvalidBlockConnectionException;
+
+import applicationLayer.*;
+
+import exceptions.*;
+import exceptions.InvalidBlockTypeException;
 import exceptions.NoSuchConnectedBlockException;
 
 /**
@@ -143,7 +145,7 @@ public class BlockRepository {
 
 	private void validateConnectedBlockIsInDomain(Block connectedBlock) {
 		if (connectedBlock == null) {
-			throw new NoSuchConnectedBlockException("The requested connectedBlockId does not exist in the domain.");
+			throw new NoSuchConnectedBlockException("The requested blockId does not exist in the domain.");
 		}
 	}
 
@@ -151,6 +153,7 @@ public class BlockRepository {
 	 * Retrieve a block by its ID
 	 * 
 	 * @param ID
+	 * 
 	 * @return The block corresponding with the given ID. If there is no block for
 	 *         the given ID, null is returned.
 	 */
@@ -160,13 +163,28 @@ public class BlockRepository {
 
 	/**
 	 * Remove a block by its ID
-	 * 
-	 * @param block The ID of the block to be removed.
-	 * @return All the id's
+	 * @param 	block The ID of the block to be removed.
+	 * @throws	NoSuchConnectedBlockException
+	 * 			If the given BlockID doesn't result in a block in the domain.	
+	 * @return	A set containing the id's of all the blocks that were removed from the domain.
 	 */
 	public Set<String> removeBlock(String blockId) {
-		// TODO - implement BlockRepository.removeBlock
-		throw new UnsupportedOperationException();
+		Block b = getBlockByID(blockId);
+
+		//the given exception may be thrown here.
+		validateConnectedBlockIsInDomain(b);
+		
+		Set<Block> blocksToBeRemoved = getAllBlocksConnectedToAndAfterACertainBlock(b);
+		Set<String> blockIdsToBeRemoved = new HashSet<String>();
+		
+		//If the given block was in HeadBlocks, none of the blocks connected to that block are in headBlocks
+		removeBlockFromHeadBlocks(b);
+		
+		for(Block blockToBeRemoved :blocksToBeRemoved) {
+			removeBlockFromAllBlocks(blockToBeRemoved);
+			blockIdsToBeRemoved.add(blockToBeRemoved.getBlockId());
+		}
+		return blockIdsToBeRemoved;
 	}
 
 	/**
