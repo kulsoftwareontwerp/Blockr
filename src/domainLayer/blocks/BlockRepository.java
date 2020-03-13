@@ -441,7 +441,12 @@ public class BlockRepository {
 		for(Block block: headBlocks) {
 			headBlock = allBlocks.get(block.getBlockId());
 		}
-		Block nextBlockInChain = headBlock;
+		return CheckIfChainIsValid(headBlock);
+		
+		
+	}
+	
+	public boolean CheckIfChainIsValid(Block nextBlockInChain) {
 		while(nextBlockInChain != null) {
 			if(nextBlockInChain instanceof ControlBlock)
 				if(!checkIfValidControlBlock((ControlBlock) nextBlockInChain))
@@ -449,9 +454,7 @@ public class BlockRepository {
 			nextBlockInChain = nextBlockInChain.getNextBlock();
 		}
 		return true;
-		
 	}
-	
 	
 	/**
 	 * method used to check if ControlBlock is in a valid state
@@ -461,6 +464,9 @@ public class BlockRepository {
 			return false;
 		if(block.getConditionBlock() instanceof OperatorBlock) 
 			 return checkIfValidStatement(block.getConditionBlock());
+		if(block.getFirstBlockOfBody() != null) {
+			return CheckIfChainIsValid(block.getFirstBlockOfBody());
+		}
 		return true;
 	}
 		
