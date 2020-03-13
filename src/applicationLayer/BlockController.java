@@ -42,9 +42,15 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 	}
 
-	private void fireBlockRemoved() {
-		// TODO - implement BlockController.fireBlockRemoved
-		throw new UnsupportedOperationException();
+	private void fireBlockRemoved(Set<String> idsToBeRemoved) {
+		for(String id:idsToBeRemoved) {
+			BlockRemovedEvent event = new BlockRemovedEvent(id);
+			
+			for(GUIListener listener : guiListeners) {
+				listener.onBlockRemoved(event);
+			}
+			
+		}
 	}
 
 	private void fireBlockChanged(String changedBlockId, String changedLinkedBlockId, ConnectionType connectionType) {
@@ -55,8 +61,8 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 	}
 
-	private void firePanelChangedEvent() {
-		PanelChangeEvent event = new PanelChangeEvent(false);
+	private void firePanelChangedEvent(Boolean show) {
+		PanelChangeEvent event = new PanelChangeEvent(show);
 		for (GUIListener listener : guiListeners) {
 			listener.onPanelChangedEvent(event);
 		}
@@ -125,7 +131,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		fireUpdateGameState();
 		fireResetExecutionEvent();
 		if (programBlockRepository.checkIfMaxNbOfBlocksReached()) {
-			firePanelChangedEvent();
+			firePanelChangedEvent(false);
 		}
 		fireBlockAdded(newBlockId);
 	}
@@ -140,12 +146,29 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	/**
+	 * Removes a block with the given blockID from the domain.
 	 * 
-	 * @param blockId
+	 * @param 	blockID
+	 * @throws	NoSuchConnectedBlockException
+	 * 			If the given BlockID doesn't result in a block in the domain.	
+	 * @event 	RemoveBlockEvent 	
+	 * 			Fires an RemoveBlockEvent if the execution was successful.
+	 * @event 	UpdateGameStateEvent 
+	 * 			Fires an UpdateGameStateEvent if the execution was successful.
+	 * @event 	ResetExecutionEvent
+	 * 			Fires a ResetExecutionEvent if the execution was successful.
+	 * @event 	PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
+	 *        	block was reached before removing the block.
 	 */
-	public void removeBlock(String blockId) {
-		// TODO - implement BlockController.removeBlock
-		throw new UnsupportedOperationException();
+	public void removeBlock(String blockID) {
+		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
+		Set<String> idsToBeRemoved=programBlockRepository.removeBlock(blockID);
+		fireUpdateGameState();
+		fireResetExecutionEvent();
+		if (maxBlocksReachedBeforeRemove) {
+			firePanelChangedEvent(true);
+		}
+		fireBlockRemoved(idsToBeRemoved);
 	}
 
 	/**
