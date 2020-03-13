@@ -5,6 +5,8 @@ import java.util.Set;
 
 import domainLayer.blocks.BlockType;
 import events.GUIListener;
+import exceptions.InvalidBlockConnectionException;
+import exceptions.NoSuchConnectedBlockException;
 
 /**
  * The DomainController performs initial checks on the parameters and forwards
@@ -93,17 +95,35 @@ public class DomainController {
 	}
 
 	/**
+	 * Removes a block with the given blockID from the domain.
 	 * 
-	 * @param blockId
+	 * @param 	blockID
+	 * 			The blockID of the block to be removed.
+	 * @throws 	IllegalArgumentException
+	 * 			If the given BlockID is null or an empty String
+	 * @throws	NoSuchConnectedBlockException
+	 * 			If the given BlockID doesn't result in a block in the domain.	
+	 * @event 	RemoveBlockEvent 	
+	 * 			Fires an RemoveBlockEvent if the execution was successful.
+	 * @event 	UpdateGameStateEvent 
+	 * 			Fires an UpdateGameStateEvent if the execution was successful.
+	 * @event 	ResetExecutionEvent
+	 * 			Fires a ResetExecutionEvent if the execution was successful.
+	 * @event 	PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
+	 *        	block was reached before removing the block.
 	 */
-	public void removeBlock(String blockId) {
-		// TODO - implement DomainController.removeBlock
-		throw new UnsupportedOperationException();
+	public void removeBlock(String blockID) {
+		if (blockID == "" || blockID==null) {
+			throw new IllegalArgumentException("No blockType given.");
+		}
+		else {
+			blockController.removeBlock(blockID);
+		}
+			
 	}
 
 	public void resetGameExecution() {
-		// TODO - implement DomainController.resetGameExecution
-		throw new UnsupportedOperationException();
+		gameController.resetGameExecution();
 	}
 
 	
@@ -133,33 +153,88 @@ public class DomainController {
 	}
 
 	/**
+	 * Move a block that has been added in the domain to change the program you are constructing.
+	 * If you're program is in a Execution state this action will, if successful, reset your game state.
 	 * 
-	 * @param movedBlockId
-	 * @param connectedBeforeMoveBlockId
-	 * @param connectionBeforeMove
-	 * @param connectedAfterMoveBlockId
-	 * @param connectionAfterMove
+	 * 
+	 * 
+	 * @param movedBlockId					The Id of block to be moved, this parameter is required.
+	 * 
+	 * 
+	 * @param connectedAfterMoveBlockId		The Id of the block you wish to connect the block you are moving to. This parameter is Required.
+	 * 										If there's no connected block after the move please use an empty String, "".
+	 * @param connectionAfterMove			The connection of the block you wish to connect the block you are moving to. This parameter is Required.
+	 * 										If there's no connected block after the move please use ConnectionType.NOCONNECTION.
+	 * 
+	 * @throws IllegalArgumentException		This Exception when thrown will result in a non execution of the expected changes.
+	 * 										This means that the block you wish to move will not be modified.
+	 * 										This exception is thrown when;
+	 * 										- The Id of the "moved block" is null or an empty String.
+	 * 										- One of the ConnectionTypes is null or if it does not exist.
+	 * 										- If a "connected block"-id is either a null or a empty String and the ConnectionType is not NOCONNECTION.
+	 * 
+	 * 
+	 *@throws InvalidBlockConnectionException The given combination of the
+	 *                                         blockType,connectedBlockId and
+	 *                                         connection is impossible. - an
+	 *                                         ExecutableBlock added to an
+	 *                                         AssessableBlock or ControlBlock as
+	 *                                         condition - an AssessableBlock added
+	 *                                         to a block as a body or "next block"
+	 *                                         - a block added to another block of
+	 *                                         which the required connection is not
+	 *                                         provided. - a block added to a
+	 *                                         connection of a connected block to
+	 *                                         which there is already a block
+	 *                                         connected.
+	 * @throws NoSuchConnectedBlockException   Is thrown when a connectedBlockId is
+	 *                                         given that is not present in the
+	 *                                         domain.
+	 *                                         
+	 *                                         
+	 * @event	changeBlockEvent
+	 * 			Fires an changeBlockEvent if the execution was successful.
+	 * @event	UpdateGameStateEvent
+	 * 			Fires an UpdateGameStateEvent if the execution was successful.
+	 * @event	ResetExecutionEvent
+	 * 			Fires a ResetExecutionEvent if the execution was successful.
+	 * 
 	 */
-	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+	public void moveBlock(String movedBlockId,  String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
 		if(movedBlockId == null || movedBlockId.equals("")) {
 			throw new IllegalArgumentException("No movedBlockID given");
 		}
-		else if(connectionBeforeMove == null || connectionAfterMove == null) {
+		else if(connectionAfterMove == null) {
 			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
 		}
-		else if(connectedBeforeMoveBlockId.equals("")  && !(connectionBeforeMove == ConnectionType.NOCONNECTION)) {
-			throw new IllegalArgumentException("No blockId given for connectedBeforeMovedBlockID");
-			}
 		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
 			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
 		}
-		else if(movedBlockId.equals(connectedBeforeMoveBlockId) || movedBlockId.equals(connectedAfterMoveBlockId))
-			throw new IllegalArgumentException("You can't connect a block to itself.");
 		else {
-			blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+			blockController.moveBlock(movedBlockId,  connectedAfterMoveBlockId, connectionAfterMove);
 		}
 	}
 
+	
+//	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+//		if(movedBlockId == null || movedBlockId.equals("")) {
+//			throw new IllegalArgumentException("No movedBlockID given");
+//		}
+//		else if(connectionBeforeMove == null || connectionAfterMove == null) {
+//			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
+//		}
+//		else if(connectedBeforeMoveBlockId.equals("")  && !(connectionBeforeMove == ConnectionType.NOCONNECTION)) {
+//			throw new IllegalArgumentException("No blockId given for connectedBeforeMovedBlockID");
+//			}
+//		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
+//			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
+//		}
+//		else if(movedBlockId.equals(connectedBeforeMoveBlockId) || movedBlockId.equals(connectedAfterMoveBlockId))
+//			throw new IllegalArgumentException("You can't connect a block to itself.");
+//		else {
+//			blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+//		}
+//	}
 	/**
 	 * Adds a GUI listener for Game, this listener will be notified about all changes for the GUI.
 	 * If the given listener is already a listener for Game it will not be added another time.

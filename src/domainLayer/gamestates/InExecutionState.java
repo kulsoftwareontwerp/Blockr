@@ -17,8 +17,9 @@ public class InExecutionState extends GameState {
 	}
 
 	public void reset() {
-		// TODO - implement InExecutionState.reset
-		throw new UnsupportedOperationException();
+		ResettingState resettingState = new ResettingState(gameController);
+		gameController.toState(resettingState);
+		resettingState.reset();
 	}
 
 	public void execute() {
@@ -38,6 +39,11 @@ public class InExecutionState extends GameState {
 		}
 	}
 
+	/**
+	 * The update method of the InExecutionState will put the game in a ResettingState.
+	 * The ResettingState will then evaluate in which state the program Area is after triggering of this method.
+	 * The results of this method are then either a ValidProgramState or an InValidProgramState.
+	 */
 	public void update() {
 			GameState ResettingStateFollowingUpdate = new ResettingState(gameController);
 			ResettingStateFollowingUpdate.update();

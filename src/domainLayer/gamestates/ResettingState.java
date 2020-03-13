@@ -4,18 +4,25 @@ import applicationLayer.*;
 
 public class ResettingState extends GameState {
 
-	private Class nextState;
+	private Class<? extends GameState> nextState;
 
 	/**
 	 * 
 	 * @param game
 	 */
-	public ResettingState(GameController game) {
-		super(game);
+	public ResettingState(GameController gameController) {
+		super(gameController);
 	}
 	
 
-
+	/**
+	 * Update of the "Game State" after the "In Execution State".
+	 * 
+	 * @Result This update method of the ResettingState will, once called, check either the program is in a valid state or not.
+	 * 			If the program is in a valid state the gameState will be changed to a "ValidProgramState".
+	 * 			If not the program will be in a InvalidProgramState. This means that the execution of the program will not be possible.
+	 * 			
+	 */
 	public void update() {
 		boolean currentState = gameController.checkIfValidProgram();
 		if(!currentState) {
@@ -28,15 +35,26 @@ public class ResettingState extends GameState {
 
 
 	public void reset() {
-		// TODO - implement ResettingState.reset
-		throw new UnsupportedOperationException();
+		gameController.resetRobot();
+		try {
+			GameState newState = getNextState().getDeclaredConstructor().newInstance(gameController);
+			gameController.toState(newState);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
-	
-	private void setNextState(Class state) {
+
+
+	/**
+	 * 
+	 * @param state
+	 */
+	private void setNextState(Class<? extends GameState> state) {
 		this.nextState = state;
 	}
 
-	private Class getNextState() {
+	private Class<? extends GameState> getNextState() {
 		return this.nextState;
 	}
 

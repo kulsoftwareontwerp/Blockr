@@ -15,8 +15,8 @@ public abstract class GameState {
 	}
 
 	public void reset() {
-		// TODO - implement GameState.reset
-		throw new UnsupportedOperationException();
+		// Nothing should happen in the default implementation of reset. 
+		// (while trying to reset in InValidState or ValidState)
 	}
 
 	public void execute() {

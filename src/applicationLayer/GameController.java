@@ -16,13 +16,14 @@ public class GameController implements DomainListener, GUISubject {
 
 	public GameController() {
 		programBlockRepository = BlockRepository.getInstance();
-		gameElementRepository = gameElementRepository.getInstance();
+		gameElementRepository = ElementRepository.getInstance();
 
 		guiListeners = new HashSet<GUIListener>();
 
 		toState(new InValidProgramState(this));
 
 	}
+
 
 	public void fireRobotChangeEvent() {
 		Robot robot = gameElementRepository.getRobot();
@@ -39,8 +40,10 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	public void resetGameExecution() {
-		// TODO - implement GameController.resetGameExecution
-		throw new UnsupportedOperationException();
+		GameState currentState = getCurrentState();
+		currentState.reset();
+		fireUpdateHighlightingEvent(null);
+		fireRobotChangeEvent();
 	}
 
 	public GameState getCurrentState() {
@@ -60,8 +63,9 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	public void resetRobot() {
-		// TODO - implement GameController.resetRobot
-		throw new UnsupportedOperationException();
+		gameElementRepository.removeRobot();
+		gameElementRepository.initializeRobot();
+		fireRobotChangeEvent();
 	}
 
 	public void executeBlock() {
@@ -124,11 +128,13 @@ public class GameController implements DomainListener, GUISubject {
 	 * 
 	 * @param highlightedBlockId
 	 */
-	public void fireUpdateHighlightingEvent(String highlightedBlockId) {
+public void fireUpdateHighlightingEvent(String highlightedBlockId) {
+	
 		UpdateHighlightingEvent updateHighlightingEvent = new UpdateHighlightingEvent(highlightedBlockId);
 		for (GUIListener listener : guiListeners) {
 			listener.onUpdateHighlightingEvent(updateHighlightingEvent);
 		}
+
 	}
 
 	private HashMap<String, Integer> findNextPosition() {
