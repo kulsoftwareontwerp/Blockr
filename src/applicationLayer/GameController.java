@@ -82,42 +82,28 @@ public class GameController implements DomainListener, GUISubject {
 	 * 
 	 * @param block
 	 */
-	public ActionBlock findNextActionBlockToBeExecuted(ExecutableBlock block) {
-		ExecutableBlock nextBlock = block.getNextBlock();
-		if (nextBlock == null) {
-			return null;
-		}
-		if (nextBlock instanceof ActionBlock) {
-			return (ActionBlock) nextBlock;
-		} else {
-			// If or while block
-			AssessableBlock condition = nextBlock.getConditionBlock();
-			if (condition.assess(gameElementRepository)) {
-				// If the condition is true, we want to continue with the first block in the
-				// body of the controlBlock
-				// except for when we just came out of the body of an ifBlock. Then we continue
-				// under it.
-				if (nextBlock instanceof IfBlock && isReachedFromEndOfBody(block.getBlockId(), nextBlock.getBlockId(),
-						nextBlock.getFirstBlockOfBody())) {
-					return findNextActionBlockToBeExecuted(nextBlock.getNextBlock());
-				} else {
-					return findNextActionBlockToBeExecuted(nextBlock.getFirstBlockOfBody());
-				}
+	public ActionBlock findNextActionBlockToBeExecuted(ExecutableBlock currentBlock) {
+		// ExecutableBlock nextBlock = block.getNextBlock();
+		if (currentBlock == null) {
+			ControlBlock cb = programBlockRepository.getEnclosingControlBlock(currentBlock);
+			if (cb == null) {
+				return null;
+			} else if (cb instanceof IfBlock) {
+				return findNextActionBlockToBeExecuted(cb.getNextBlock());
 			} else {
-				// If the condition is false, we continue with the block under the controlBlock
-				return findNextActionBlockToBeExecuted(nextBlock.getNextBlock());
+				return findNextActionBlockToBeExecuted(cb);
 			}
 		}
-	}
-
-	private boolean isReachedFromEndOfBody(String endOfBodyBlockId, String ifBlockId,
-			ExecutableBlock nextBlockToCheck) {
-		if (nextBlockToCheck.getBlockId().equals(endOfBodyBlockId)) {
-			return true;
-		} else if (nextBlockToCheck.getBlockId().equals(ifBlockId)) {
-			return false;
+		else if (currentBlock instanceof ActionBlock) {
+			return (ActionBlock) currentBlock;
 		} else {
-			return isReachedFromEndOfBody(endOfBodyBlockId, ifBlockId, nextBlockToCheck.getNextBlock());
+			// If or while block
+			AssessableBlock condition = currentBlock.getConditionBlock();
+			if (condition.assess(gameElementRepository)) {
+				return findNextActionBlockToBeExecuted(currentBlock.getFirstBlockOfBody());
+			} else {
+				return findNextActionBlockToBeExecuted(currentBlock.getNextBlock());
+			}
 		}
 	}
 
