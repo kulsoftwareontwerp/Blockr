@@ -173,21 +173,57 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	/**
+	 * Add a block of the given blockType to the domain and connect it with the
+	 * given connectedBlockId on the given connection
 	 * 
-	 * @param movedBlockId
-	 * @param connectedBeforeMoveBlockId
-	 * @param connectionBeforeMove
-	 * @param connectedAfterMoveBlockId
-	 * @param connectionAfterMove
+	 * @param blockType        The type of block to be added, this parameter is
+	 *                         required.
+	 * @param connectedBlockId 	The ID of the block to connect to, can be empty.
+	 * @param connectionAfterMove The connection of the connected block on which the
+		 *                         new block must be connected. If no connectedBlockId
+		 *                         was given, this parameter must be set to
+		 *                         "ConnectionType.NOCONNECTION".
+	 * @throws InvalidBlockConnectionException The given combination of the
+	 *                                         blockType,connectedBlockId and
+	 *                                         connection is impossible. - an
+	 *                                         ExecutableBlock added to an
+	 *                                         AssessableBlock or ControlBlock as
+	 *                                         condition - an AssessableBlock added
+	 *                                         to a block as a body or "next block"
+	 *                                         - a block added to another block of
+	 *                                         which the required connection is not
+	 *                                         provided. - a block added to a
+	 *                                         connection of a connected block to
+	 *                                         which there is already a block
+	 *                                         connected.
+	 * @throws NoSuchConnectedBlockException   Is thrown when a connectedBlockId is
+	 *                                         given that is not present in the
+	 *                                         domain.
+	 *                                         
+	 * @event	changeBlockEvent
+	 * 			Fires an changeBlockEvent if the execution was successful.
+	 * @event	UpdateGameStateEvent
+	 * 			Fires an UpdateGameStateEvent if the execution was successful.
+	 * @event	ResetExecutionEvent
+	 * 			Fires a ResetExecutionEvent if the execution was successful.
 	 */
-	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-		Set<String> movedBlocks = programBlockRepository.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+	public void moveBlock(String movedBlockId,  String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+		Set<String> movedBlocks = programBlockRepository.moveBlock(movedBlockId,  connectedAfterMoveBlockId, connectionAfterMove);
 		fireUpdateGameState();
 		fireResetExecutionEvent();
 		for(String blockID : movedBlocks) {
 			fireBlockChanged(movedBlockId,connectedAfterMoveBlockId,connectionAfterMove);
 		}
 	}
+	
+//	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+//		Set<String> movedBlocks = programBlockRepository.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+//		fireUpdateGameState();
+//		fireResetExecutionEvent();
+//		for(String blockID : movedBlocks) {
+//			fireBlockChanged(movedBlockId,connectedAfterMoveBlockId,connectionAfterMove);
+//		}
+//	}
 
 	/**
 	 * Returns all the BlockID's underneath a certain block
