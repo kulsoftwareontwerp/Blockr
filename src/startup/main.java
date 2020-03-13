@@ -1,6 +1,8 @@
 package startup;
 
 import applicationLayer.DomainController;
+import domainLayer.elements.Element;
+import domainLayer.elements.ElementType;
 
 public class main {
 
@@ -8,6 +10,19 @@ public class main {
 		DomainController dc = new DomainController();
 
 //		Hier wordt ook de UI aangemaakt.
+		
+		
+		initializeElements(dc);
+	}
+	
+	private static void initializeElements(DomainController dc) {
+		dc.addElement(ElementType.ROBOT, 2, 3);
+		dc.addElement(ElementType.WALL,0,0);
+		dc.addElement(ElementType.WALL,4,0);
+		dc.addElement(ElementType.WALL,1,2);
+		dc.addElement(ElementType.WALL,2,2);
+		dc.addElement(ElementType.WALL,3,2);
+		dc.addElement(ElementType.GOAL,2,1);
 	}
 
 }
