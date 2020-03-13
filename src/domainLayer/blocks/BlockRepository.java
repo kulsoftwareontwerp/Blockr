@@ -506,6 +506,59 @@ public class BlockRepository {
 		return instance;
 	}
 
+
+	/**
+	 * Returns all the BlockID's underneath a certain block
+	 * 
+	 * @param block The blockID of the Block of which you want to retrieve all
+	 *              Blocks underneath.
+	 * @return A set containing the blockID's of  all connected Conditions and every
+	 *         kind of block in the body of the given block or under the given
+	 *         block. The ID of the block itself is also given.
+	 */
+	public Set<String> getAllBlockIDsUnderneath(Block block) {
+		Set<String> blockIDsUnderNeath = new HashSet<String>();
+		getAllBlocksConnectedToAndAfterACertainBlock(block).stream().map(s->s.getBlockId()).forEach(s->blockIDsUnderNeath.add(s));
+		return blockIDsUnderNeath;
+	}	
+	
+	
+	
+	
+	
+	private Set<Block> getAllBlocksConnectedToAndAfterACertainBlock(Block block){
+		Set<Block> allBlocksInBody = new HashSet<Block>();
+		
+		if(block!=null) {
+			allBlocksInBody.add(block);
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getNextBlock()));
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getOperand()));
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getFirstBlockOfBody()));
+			allBlocksInBody.addAll(getAllBlocksConnectedToAndAfterACertainBlock(block.getConditionBlock()));
+		}
+		
+		return allBlocksInBody;
+	}
+	
+
+	/**
+	 * Returns all the blockID's in the body of a given ControlBlock
+	 * 
+	 * @param controlBlock The controlBlock of which you want to retrieve all Blocks
+	 *                     in the body.
+	 * @return A set containing the blockID of the blocks in the body of the given
+	 *         ControlBlock, there won't be any ID's of assessable blocks.
+	 */
+	public Set<String> getAllBlockIDsInBody(ControlBlock controlBlock) {
+		Set<String> blockIDsInBody = new HashSet<String>();
+		
+		getAllBlocksConnectedToAndAfterACertainBlock(controlBlock.getFirstBlockOfBody()).stream().filter(s->!(s instanceof AssessableBlock)).
+		map(s->s.getBlockId()).forEach(s-> blockIDsInBody.add(s));
+
+		return blockIDsInBody;
+	}
+
+
 	/**
 	 * Retrieve the maximum number of blocks.
 	 * 
