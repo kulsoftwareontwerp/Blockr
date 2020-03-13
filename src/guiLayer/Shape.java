@@ -268,8 +268,9 @@ public class Shape {
 	
 	public void determineTotalHeight(HashSet<Shape> internals) {
 		int total = 90;
-		int total_y = 90;
+		int total_x = 90;
 		BlockType blockType;
+		boolean flag = true;
 		for (Shape shape : internals) {
 			blockType = shape.getType();
 			if(blockType == BlockType.MoveForward || blockType == BlockType.TurnLeft || blockType == BlockType.TurnRight)
@@ -278,13 +279,16 @@ public class Shape {
 				if(internals != null && !(internals.isEmpty())) {
 					determineTotalHeight(shape.internals);
 					total += shape.getHeight();
-					total_y += 10;
+					if(flag) {
+					total_x += 10;
+					flag = false;
+					}
 				}
 				
 			}
 		}
 		setHeight(total);
-		setWidth(total_y);
+		setWidth(total_x);
 		updateConnectionTypesToShapeBasedOnType();
 		setCoordinatesShape(createCoordinatePairs(getX_coord(), getY_coord()));
 	}

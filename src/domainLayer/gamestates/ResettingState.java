@@ -1,5 +1,7 @@
 package domainLayer.gamestates;
 
+import java.lang.reflect.Constructor;
+
 import applicationLayer.*;
 
 public class ResettingState extends GameState {
@@ -12,6 +14,7 @@ public class ResettingState extends GameState {
 	 */
 	public ResettingState(GameController gameController) {
 		super(gameController);
+		setNextState(ValidProgramState.class);
 	}
 	
 
@@ -30,7 +33,9 @@ public class ResettingState extends GameState {
 	public void reset() {
 		gameController.resetRobot();
 		try {
-			GameState newState = getNextState().getDeclaredConstructor().newInstance(gameController);
+			//GameState newState = getNextState().getDeclaredConstructor().newInstance(gameController);
+			Constructor<? extends GameState> constructor = getNextState().getConstructor(GameController.class);
+			GameState newState = (GameState) constructor.newInstance(gameController);
 			gameController.toState(newState);
 		} catch (Exception e) {
 			e.printStackTrace();
