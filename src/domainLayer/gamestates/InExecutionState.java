@@ -30,7 +30,7 @@ public class InExecutionState extends GameState {
 		if (currentActionBlockToBeExecuted != null) {
 			gameController.performRobotAction(currentActionBlockToBeExecuted);
 			
-			ActionBlock newNextActionBlockToBeExecuted = gameController.findNextActionBlockToBeExecuted(currentActionBlockToBeExecuted);
+			ActionBlock newNextActionBlockToBeExecuted = gameController.findNextActionBlockToBeExecuted(currentActionBlockToBeExecuted, currentActionBlockToBeExecuted.getNextBlock());
 			setNextActionBlockToBeExecuted(newNextActionBlockToBeExecuted);
 			
 			if (newNextActionBlockToBeExecuted != null)

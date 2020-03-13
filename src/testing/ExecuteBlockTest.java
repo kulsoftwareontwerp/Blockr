@@ -136,129 +136,129 @@ public class ExecuteBlockTest extends GameController {
 		verify(mockBlockRepository,atLeastOnce()).findFirstBlockToBeExecuted();
 	}
 	
-	/**
-	 * Test method for
-	 * {@link applicationLayer.GameController#findFirstBlockToBeExecuted()}.
-	 */
-	@Test
-	public void testGameController_FindFirstBlockToBeExecuted_NoActionBlock_Positive() {
-		when(mockBlockRepository.findFirstBlockToBeExecuted()).thenReturn(whileBlock);
-		when(gc.findNextActionBlockToBeExecuted(whileBlock)).thenReturn(moveForwardBlock);
-		
-		assertEquals(gc.findFirstBlockToBeExecuted(), moveForwardBlock);
-		verify(mockBlockRepository,atLeastOnce()).findFirstBlockToBeExecuted();
-		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(whileBlock);
-	}
-	
-	/**
-	 * Test method for
-	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
-	 */
-	@Test
-	public void testGameController_FindNextActionBlockToBeExecuted_NoNextBlock_Positive() {
-		when(moveForwardBlock.getNextBlock()).thenReturn(null);
-		
-		assertEquals(gc.findNextActionBlockToBeExecuted(moveForwardBlock),null);
-	}
-	
-	/**
-	 * Test method for
-	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
-	 */
-	@Test
-	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockActionBlock_Positive() {
-		when(moveForwardBlock.getNextBlock()).thenReturn(moveForwardBlock);
-		
-		assertEquals(gc.findNextActionBlockToBeExecuted(moveForwardBlock),moveForwardBlock);
-	}
-	
+//	/**
+//	 * Test method for
+//	 * {@link applicationLayer.GameController#findFirstBlockToBeExecuted()}.
+//	 */
+//	@Test
+//	public void testGameController_FindFirstBlockToBeExecuted_NoActionBlock_Positive() {
+//		when(mockBlockRepository.findFirstBlockToBeExecuted()).thenReturn(whileBlock);
+//		when(gc.findNextActionBlockToBeExecuted(whileBlock)).thenReturn(moveForwardBlock);
+//		
+//		assertEquals(gc.findFirstBlockToBeExecuted(), moveForwardBlock);
+//		verify(mockBlockRepository,atLeastOnce()).findFirstBlockToBeExecuted();
+//		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(whileBlock);
+//	}
+//	
+//	/**
+//	 * Test method for
+//	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+//	 */
+//	@Test
+//	public void testGameController_FindNextActionBlockToBeExecuted_NoNextBlock_Positive() {
+//		when(moveForwardBlock.getNextBlock()).thenReturn(null);
+//		
+//		assertEquals(gc.findNextActionBlockToBeExecuted(moveForwardBlock),null);
+//	}
+//	
+//	/**
+//	 * Test method for
+//	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+//	 */
+//	@Test
+//	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockActionBlock_Positive() {
+//		when(moveForwardBlock.getNextBlock()).thenReturn(moveForwardBlock);
+//		
+//		assertEquals(gc.findNextActionBlockToBeExecuted(moveForwardBlock),moveForwardBlock);
+//	}
+//	
 	@Mock(name="elementRepository")
 	private ElementRepository mockElementRepository;
-	
-	/**
-	 * Test method for
-	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
-	 */
-	@Test
-	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockWhileBlockAssessTrue_Positive() {
-		when(moveForwardBlock.getNextBlock()).thenReturn(whileBlock);
-		when(whileBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
-		Mockito.doReturn(true).when(wallInFrontBlock).assess(mockElementRepository);
-		Mockito.doReturn(turnLeftBlock).when(whileBlock).getFirstBlockOfBody();
-		
-		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
-		
-		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(turnLeftBlock);				
-	}
-	
-	/**
-	 * Test method for
-	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
-	 */
-	@Test
-	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockWhileBlockAssessFalse_Positive() {
-		when(moveForwardBlock.getNextBlock()).thenReturn(whileBlock);
-		when(whileBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
-		Mockito.doReturn(false).when(wallInFrontBlock).assess(mockElementRepository);
-		Mockito.doReturn(turnLeftBlock).when(whileBlock).getNextBlock();
-		
-		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
-		
-		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(turnLeftBlock);				
-	}
-	
-	/**
-	 * Test method for
-	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
-	 */
-	@Test
-	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockIfBlockAssessFalse_Positive() {
-		when(moveForwardBlock.getNextBlock()).thenReturn(ifBlock);
-		when(ifBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
-		Mockito.doReturn(false).when(wallInFrontBlock).assess(mockElementRepository);
-		Mockito.doReturn(turnLeftBlock).when(ifBlock).getNextBlock();
-		
-		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
-		
-		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(turnLeftBlock);				
-	}
-	
-	/**
-	 * Test method for
-	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
-	 */
-	@Test
-	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockIfBlockAssessTrueIsReachedFromEndOfBodyTrue_Positive() {
-		when(moveForwardBlock.getNextBlock()).thenReturn(ifBlock);
-		when(ifBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
-		Mockito.doReturn(true).when(wallInFrontBlock).assess(mockElementRepository);
-		Mockito.doReturn(moveForwardBlock).when(ifBlock).getFirstBlockOfBody();
-		//Mockito.doReturn(true).when(gc).isReachedFromEndOfBody("moveForwardBlock", "ifBlock", turnLeftBlock);
-		Mockito.doReturn(turnLeftBlock).when(ifBlock).getNextBlock();
-		
-		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
-		
-		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(turnLeftBlock);				
-	}
-	
-	/**
-	 * Test method for
-	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
-	 */
-	@Test
-	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockIfBlockAssessTrueIsReachedFromEndOfBodyFalse_Positive() {
-		when(moveForwardBlock.getNextBlock()).thenReturn(ifBlock);
-		when(ifBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
-		Mockito.doReturn(true).when(wallInFrontBlock).assess(mockElementRepository);
-		Mockito.doReturn(turnLeftBlock).when(ifBlock).getFirstBlockOfBody();
-		Mockito.doReturn(ifBlock).when(turnLeftBlock).getNextBlock();
-		//Mockito.doReturn(true).when(gc).isReachedFromEndOfBody("moveForwardBlock", "ifBlock", turnLeftBlock);
-		Mockito.doReturn(turnRightBlock).when(ifBlock).getNextBlock();
-		
-		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
-		
-		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(turnLeftBlock);				
-	}
+//	
+//	/**
+//	 * Test method for
+//	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+//	 */
+//	@Test
+//	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockWhileBlockAssessTrue_Positive() {
+//		when(moveForwardBlock.getNextBlock()).thenReturn(whileBlock);
+//		when(whileBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
+//		Mockito.doReturn(true).when(wallInFrontBlock).assess(mockElementRepository);
+//		Mockito.doReturn(turnLeftBlock).when(whileBlock).getFirstBlockOfBody();
+//		
+//		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
+//		
+//		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(turnLeftBlock);				
+//	}
+//	
+//	/**
+//	 * Test method for
+//	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+//	 */
+//	@Test
+//	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockWhileBlockAssessFalse_Positive() {
+//		when(moveForwardBlock.getNextBlock()).thenReturn(whileBlock);
+//		when(whileBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
+//		Mockito.doReturn(false).when(wallInFrontBlock).assess(mockElementRepository);
+//		Mockito.doReturn(turnLeftBlock).when(whileBlock).getNextBlock();
+//		
+//		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
+//		
+//		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(turnLeftBlock);				
+//	}
+//	
+//	/**
+//	 * Test method for
+//	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+//	 */
+//	@Test
+//	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockIfBlockAssessFalse_Positive() {
+//		when(moveForwardBlock.getNextBlock()).thenReturn(ifBlock);
+//		when(ifBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
+//		Mockito.doReturn(false).when(wallInFrontBlock).assess(mockElementRepository);
+//		Mockito.doReturn(turnLeftBlock).when(ifBlock).getNextBlock();
+//		
+//		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
+//		
+//		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(turnLeftBlock);				
+//	}
+//	
+//	/**
+//	 * Test method for
+//	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+//	 */
+//	@Test
+//	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockIfBlockAssessTrueIsReachedFromEndOfBodyTrue_Positive() {
+//		when(moveForwardBlock.getNextBlock()).thenReturn(ifBlock);
+//		when(ifBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
+//		Mockito.doReturn(true).when(wallInFrontBlock).assess(mockElementRepository);
+//		Mockito.doReturn(moveForwardBlock).when(ifBlock).getFirstBlockOfBody();
+//		//Mockito.doReturn(true).when(gc).isReachedFromEndOfBody("moveForwardBlock", "ifBlock", turnLeftBlock);
+//		Mockito.doReturn(turnLeftBlock).when(ifBlock).getNextBlock();
+//		
+//		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
+//		
+//		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(turnLeftBlock);				
+//	}
+//	
+//	/**
+//	 * Test method for
+//	 * {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(ExecutableBlock)}.
+//	 */
+//	@Test
+//	public void testGameController_FindNextActionBlockToBeExecuted_NextBlockIfBlockAssessTrueIsReachedFromEndOfBodyFalse_Positive() {
+//		when(moveForwardBlock.getNextBlock()).thenReturn(ifBlock);
+//		when(ifBlock.getConditionBlock()).thenReturn(wallInFrontBlock);
+//		Mockito.doReturn(true).when(wallInFrontBlock).assess(mockElementRepository);
+//		Mockito.doReturn(turnLeftBlock).when(ifBlock).getFirstBlockOfBody();
+//		Mockito.doReturn(ifBlock).when(turnLeftBlock).getNextBlock();
+//		//Mockito.doReturn(true).when(gc).isReachedFromEndOfBody("moveForwardBlock", "ifBlock", turnLeftBlock);
+//		Mockito.doReturn(turnRightBlock).when(ifBlock).getNextBlock();
+//		
+//		gc.findNextActionBlockToBeExecuted(moveForwardBlock);
+//		
+//		verify(gc,atLeastOnce()).findNextActionBlockToBeExecuted(turnLeftBlock);				
+//	}
 	
 	/**
 	 * Test method for
@@ -315,35 +315,35 @@ public class ExecuteBlockTest extends GameController {
 		verifyNoInteractions(mockGameController);
 	}
 	
-	/**
-	 * Test method for
-	 * {@link domainLayer.InExecutionState#execute()}.
-	 */
-	@Test
-	public void testInExecutionState_Execute_NoNewNextActionBlockToBeExecuted_Positive() {
-		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(moveForwardBlock);
-		when(mockGameController.findNextActionBlockToBeExecuted(moveForwardBlock)).thenReturn(null);
-		
-		inExecutionState.execute();
-		verify(mockGameController,atLeastOnce()).performRobotAction(moveForwardBlock);
-		verify(inExecutionState,atLeastOnce()).setNextActionBlockToBeExecuted(null);
-		verify(mockGameController,atLeastOnce()).fireUpdateHighlightingEvent(null);
-	}
-	
-	/**
-	 * Test method for
-	 * {@link domainLayer.InExecutionState#execute()}.
-	 */
-	@Test
-	public void testInExecutionState_Execute_Positive() {
-		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(moveForwardBlock);
-		when(mockGameController.findNextActionBlockToBeExecuted(moveForwardBlock)).thenReturn(moveForwardBlock);
-		
-		inExecutionState.execute();
-		verify(mockGameController,atLeastOnce()).performRobotAction(moveForwardBlock);
-		verify(inExecutionState,atLeastOnce()).setNextActionBlockToBeExecuted(moveForwardBlock);
-		verify(mockGameController,atLeastOnce()).fireUpdateHighlightingEvent(moveForwardBlock.getBlockId());
-	}
+//	/**
+//	 * Test method for
+//	 * {@link domainLayer.InExecutionState#execute()}.
+//	 */
+//	@Test
+//	public void testInExecutionState_Execute_NoNewNextActionBlockToBeExecuted_Positive() {
+//		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(moveForwardBlock);
+//		when(mockGameController.findNextActionBlockToBeExecuted(moveForwardBlock)).thenReturn(null);
+//		
+//		inExecutionState.execute();
+//		verify(mockGameController,atLeastOnce()).performRobotAction(moveForwardBlock);
+//		verify(inExecutionState,atLeastOnce()).setNextActionBlockToBeExecuted(null);
+//		verify(mockGameController,atLeastOnce()).fireUpdateHighlightingEvent(null);
+//	}
+//	
+//	/**
+//	 * Test method for
+//	 * {@link domainLayer.InExecutionState#execute()}.
+//	 */
+//	@Test
+//	public void testInExecutionState_Execute_Positive() {
+//		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(moveForwardBlock);
+//		when(mockGameController.findNextActionBlockToBeExecuted(moveForwardBlock)).thenReturn(moveForwardBlock);
+//		
+//		inExecutionState.execute();
+//		verify(mockGameController,atLeastOnce()).performRobotAction(moveForwardBlock);
+//		verify(inExecutionState,atLeastOnce()).setNextActionBlockToBeExecuted(moveForwardBlock);
+//		verify(mockGameController,atLeastOnce()).fireUpdateHighlightingEvent(moveForwardBlock.getBlockId());
+//	}
 	
 	
 	@Spy @InjectMocks
