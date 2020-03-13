@@ -241,9 +241,6 @@ public class BlockRepository {
 		ArrayList<String> beforeMove = new ArrayList<String>();
 		Block bfm = null;
 		
-		
-		
-		
 		if(movedBlock == null)
 			throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 		
@@ -493,296 +490,45 @@ public class BlockRepository {
 	public ArrayList<String> getConnectedBlockBeforeMoveIfExists(Block movedBlock) {
 		Iterator itAllBlocks = allBlocks.entrySet().iterator();
 		ArrayList<String> connectedBlockInfo = new ArrayList<String>();
-		while(itAllBlocks.hasNext()) {
+		while (itAllBlocks.hasNext()) {
 			Map.Entry element = (Entry) itAllBlocks.next();
 			Block block = (Block) element.getValue();
-			if(block instanceof ActionBlock) {
-				block.getNextBlock().equals(movedBlock);
-				connectedBlockInfo.add("DOWN");
-				connectedBlockInfo.add(block.getBlockId());
+			if (block instanceof ActionBlock) {
+				if (block.getNextBlock() != null) {
+					if (block.getNextBlock().equals(movedBlock)) {
+						connectedBlockInfo.add("DOWN");
+						connectedBlockInfo.add(block.getBlockId());
+					}
+				}
+			} else if (block instanceof ControlBlock) {
+				if (block.getNextBlock() != null) {
+					if (block.getNextBlock().equals(movedBlock)) {
+						connectedBlockInfo.add("DOWN");
+						connectedBlockInfo.add(block.getBlockId());
+					} else if (block.getConditionBlock().equals(movedBlock)) {
+						connectedBlockInfo.add("CONDITION");
+						connectedBlockInfo.add(block.getBlockId());
+					} else if (block.getFirstBlockOfBody().equals(movedBlock)) {
+						connectedBlockInfo.add("BODY");
+						connectedBlockInfo.add(block.getBlockId());
+					}
+				}
 			}
-			else if(block instanceof ControlBlock) {
-				if(block.getNextBlock().equals(movedBlock)) {
-					connectedBlockInfo.add("DOWN");
-					connectedBlockInfo.add(block.getBlockId());
+			else if (block instanceof OperatorBlock) {
+				if (block.getNextBlock() != null) {
+					if (block.getOperand().equals(movedBlock)) {
+						connectedBlockInfo.add("OPERAND");
+						connectedBlockInfo.add(block.getBlockId());
+					}
 				}
-				else if(block.getConditionBlock().equals(movedBlock)) {
-					connectedBlockInfo.add("CONDITION");
-					connectedBlockInfo.add(block.getBlockId());
-				}
-				else if(block.getFirstBlockOfBody().equals(movedBlock)) {
-					connectedBlockInfo.add("BODY");
-					connectedBlockInfo.add(block.getBlockId());
-				}
-			}
-			else if(block instanceof OperatorBlock) {
-				if(block.getOperand().equals(movedBlock)) {
-					connectedBlockInfo.add("OPERAND");
-					connectedBlockInfo.add(block.getBlockId());
-				}
+
 			}
 		}
 			
 		return connectedBlockInfo;
 	}
 
-	/*
-	 * @param connectedBeforeMoveBlockId	The Id which is connected to our block before moving the block, 
-	 * 										this parameter is required. If there's no block connected to the 
-	 * 										block you wish to move then use an empty String "".
-	 * 
-	 * @param connectionBeforeMove			The connection of the block which is connected to our block before moving the block, 
-	 * 										this parameter is required. If there's no block connected to the 
-	 * 										block you wish to move then use an ConnectionType.NOCONNECTION.
-	 * 										For the ConnectionTypes, those are related to the block that is 
-	 * 										connected to the block you wish to move e.g. 
-	 * 										ConnectionType.DOWN means that the block you wish 
-	 * 										to move is underneath the connected block.
-	 */
-//public Set<String> moveBlock(String movedBlockId, String connectedBeforeMoveBlockId,
-//			ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-//			Set<String> movedBlocks = new HashSet<String>();
-//			Block movedBlock = getBlockByID(movedBlockId);
-//			Block bfm = getBlockByID(connectedBeforeMoveBlockId);
-//			Block afm = getBlockByID(connectedAfterMoveBlockId);
-//			
-//			if(movedBlock == null)
-//				throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//			
-//			movedBlocks.add(movedBlockId);
-//
-//			if (connectionBeforeMove == ConnectionType.NOCONNECTION) {
-//				// indien no connection dan is er hier geen nood aan verandering
-//				if (connectionAfterMove == ConnectionType.DOWN) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					if (afm.getNextBlock() != null)
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//
-//					removeBlockFromHeadBlocks(movedBlock);
-//					afm.setNextBlock( movedBlock);
-//				}
-//
-//				else if (connectionAfterMove == ConnectionType.UP) {
-//					if (!headBlocks.contains(afm))
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//					if (movedBlock.getNextBlock() != null) {
-//						Block nextBlockInChain = movedBlock;
-//						while (nextBlockInChain.getNextBlock() != null) {
-//							nextBlockInChain = nextBlockInChain.getNextBlock();
-//						}
-//						nextBlockInChain.setNextBlock(afm);
-//						movedBlocks.add(nextBlockInChain.getBlockId());
-//					} else {
-//						movedBlock.setNextBlock(afm);
-//					}
-//				}
-//
-//				else if (connectionAfterMove == ConnectionType.BODY) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					if (afm.getFirstBlockOfBody() != null)
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//					removeBlockFromHeadBlocks(movedBlock);
-//					afm.setFirstBlockOfBody(movedBlock);
-//				}
-//
-//				else if (connectionAfterMove == ConnectionType.CONDITION) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					if (afm.getConditionBlock() != null)
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//					headBlocks.remove(movedBlock);
-//					afm.setConditionBlock(movedBlock);
-//				} else if (connectionAfterMove == ConnectionType.LEFT) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					if (!headBlocks.contains(afm))
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//					headBlocks.add(movedBlock);
-//					if (movedBlock.getOperand() != null) {
-//						Block nextChainBlock = movedBlock;
-//						while (nextChainBlock.getOperand() != null) {
-//							nextChainBlock = nextChainBlock.getOperand();
-//						}
-//						nextChainBlock.setOperand(afm);
-//						movedBlocks.add(nextChainBlock.getBlockId());
-//					} else {
-//						movedBlock.setOperand(afm);
-//					}
-//
-//				} else if (connectionAfterMove == ConnectionType.OPERAND) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					if (afm.getOperand() != null)
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//					afm.setOperand( movedBlock);
-//				}
-//
-//			} else if (connectionBeforeMove == ConnectionType.DOWN) {
-//				if (bfm == null)
-//					throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//				if(bfm.getNextBlock() != null && !bfm.getNextBlock().equals(movedBlock))
-//					throw new InvalidBlockConnectionException("The moved block is not connected to this block or socket");
-//				
-//				if (connectionAfterMove == ConnectionType.NOCONNECTION) {
-//					bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
-//					addBlockToHeadBlocks(movedBlock);
-//				}
-//
-//				else if (connectionAfterMove == ConnectionType.DOWN) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					if (afm.getNextBlock() != null)
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//					bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
-//					afm.setNextBlock(movedBlock);
-//				}
-//
-//				else if (connectionAfterMove == ConnectionType.UP) {
-//					if (!headBlocks.contains(afm))
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//					bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
-//					addBlockToHeadBlocks(movedBlock);// connection up is broken so there is no upper block
-//					if (movedBlock.getNextBlock() != null) // block is Head block of a blockChain
-//					{
-//						Block nextBlockInChain = movedBlock;
-//						while (nextBlockInChain.getNextBlock() != null) {
-//							nextBlockInChain = nextBlockInChain.getNextBlock();
-//						}
-//						nextBlockInChain.setNextBlock(afm);
-//						movedBlocks.add(nextBlockInChain.getBlockId());
-//					} else {
-//						movedBlock.setNextBlock( afm);
-//					}
-//
-//				} else if (connectionAfterMove == ConnectionType.BODY) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					if (afm.getFirstBlockOfBody() != null)
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//
-//					bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
-//					afm.setFirstBlockOfBody(movedBlock);
-//				}
-//				// conditionBlock is hier niet mogelijk aangezien we met een UP connectie zaten.
-//			}
-//
-//			// ConnectionBeforeMove == connectionType.UP neemt nooit plaats wanneer een
-//			// block ge-moved wordt.
-//			else if (connectionBeforeMove == ConnectionType.CONDITION) {
-//				if (bfm == null)
-//					throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//				if(bfm.getConditionBlock() != null && !bfm.getConditionBlock().equals(movedBlock))
-//					throw new InvalidBlockConnectionException("The moved block is not connected to this block or socket");
-//
-//				if (connectionAfterMove == ConnectionType.NOCONNECTION) {
-//					bfm.setConditionBlock(null);
-//					addBlockToHeadBlocks(movedBlock);
-//				} else if (connectionAfterMove == ConnectionType.CONDITION) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					if (afm.getConditionBlock() != null)
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//					bfm.setConditionBlock(null);
-//					afm.setConditionBlock(movedBlock);
-//				} else if (connectionAfterMove == ConnectionType.LEFT) {
-//					if (!headBlocks.contains(afm))
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//
-//					if (movedBlock.getOperand() != null) {
-//						Block nextChainBlock = movedBlock;
-//						while (nextChainBlock.getOperand() != null) {
-//							nextChainBlock = nextChainBlock.getOperand();
-//						}
-//						nextChainBlock.setOperand(afm);
-//						movedBlocks.add(nextChainBlock.getBlockId());
-//					} else {
-//						movedBlock.setOperand(afm);
-//					}
-//				}
-//
-//				// Connectie rechts van andere conditie
-//			} else if (connectionBeforeMove == ConnectionType.OPERAND) {
-//				if (bfm == null)
-//					throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//				if(bfm.getOperand() != null && !bfm.getOperand().equals(movedBlock))
-//					throw new InvalidBlockConnectionException("The moved block is not connected to this block or socket");
-//				
-//				if (connectionAfterMove == ConnectionType.NOCONNECTION) {
-//					bfm.setOperand(null);
-//					headBlocks.add(movedBlock);
-//				} else if (connectionAfterMove == ConnectionType.CONDITION) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					bfm.setOperand(null);
-//					afm.setConditionBlock(movedBlock);
-//				} else if (connectionAfterMove == ConnectionType.LEFT) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					if (!headBlocks.contains(afm))
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//					headBlocks.add(movedBlock);
-//					if (movedBlock.getNextBlock() != null) {
-//						Block nextBlockInChain = movedBlock;
-//						while (nextBlockInChain.getOperand() != null) {
-//							nextBlockInChain = nextBlockInChain.getOperand();
-//						}
-//						nextBlockInChain.setOperand( afm);
-//						movedBlocks.add(nextBlockInChain.getBlockId());
-//					} else {
-//						movedBlock.setOperand(afm);
-//					}
-//				}
-//			} else if (connectionBeforeMove == ConnectionType.BODY) {
-//				if (bfm == null)
-//					throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//				if(bfm.getFirstBlockOfBody() != null && !bfm.getFirstBlockOfBody().equals(movedBlock))
-//					throw new InvalidBlockConnectionException("The moved block is not connected to this block or socket");
-//
-//				if (connectionAfterMove == ConnectionType.NOCONNECTION) {
-//					bfm.setFirstBlockOfBody(null);
-//					addBlockToHeadBlocks(movedBlock);
-//				}
-//
-//				else if (connectionAfterMove == ConnectionType.DOWN) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					if (afm.getNextBlock() != null)
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//
-//					bfm.setFirstBlockOfBody(null);
-//					afm.setNextBlock( movedBlock);
-//				}
-//
-//				else if (connectionAfterMove == ConnectionType.UP) {
-//					if (!headBlocks.contains(afm))
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//					if (movedBlock.getNextBlock() != null) {
-//						Block nextBlockInChain = movedBlock;
-//						while (nextBlockInChain.getNextBlock() != null) {
-//							nextBlockInChain = nextBlockInChain.getNextBlock();
-//						}
-//						nextBlockInChain.setNextBlock(afm);
-//						movedBlocks.add(nextBlockInChain.getBlockId());
-//					} else {
-//						movedBlock.setNextBlock( afm);
-//					}
-//				}
-//
-//				else if (connectionAfterMove == ConnectionType.BODY) {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
-//					if (afm.getFirstBlockOfBody() != null)
-//						throw new InvalidBlockConnectionException("This socket is not free");
-//
-//					bfm.setFirstBlockOfBody(null);
-//					afm.setFirstBlockOfBody( movedBlock);
-//				}
-//			}
-//			return movedBlocks;
-//		}
-
+	
 	public boolean checkIfValidProgram() {
 
 		if(headBlocks.size() != 1)
