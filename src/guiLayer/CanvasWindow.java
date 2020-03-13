@@ -68,10 +68,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 	private DomainController domainController;
 	private boolean isHandleEvent = true;
 
-	public boolean isHandleEvent() {
-		return isHandleEvent;
-	}
-
 	private HashSet<Pair<Integer, Integer>> alreadyFilledInCoordinates;
 	private HashSet<Shape> controlBlockAreas;
 
@@ -468,11 +464,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 				this.onBlockRemoved(new BlockRemovedEvent(currentShape.getId()));
 			}
 
-			if (id == MouseEvent.MOUSE_RELEASED && x > PROGRAM_START_X && x < PROGRAM_END_X && currentShape != null) { // nog
-																														// extra
-																														// offset
-																														// nodig
-
+			if (id == MouseEvent.MOUSE_RELEASED && x > PROGRAM_START_X && x < PROGRAM_END_X && currentShape != null) { 
+				
 				Shape temp = new Shape(getCurrentShape().getId(), getCurrentShape().getType(),
 						getCurrentShape().getX_coord(), getCurrentShape().getY_coord());
 				temp.setConnectedVia(getCurrentShape().getConnectedVia());
@@ -485,8 +478,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 				// Trigger wordt HARDCODED manueel opgeroepen
 				// Check if there isn't already a block at that coordinate
 
-				boolean placeable = !(getTempDynamicShape().getCoordinatesShape().stream()
-						.anyMatch(i -> this.alreadyFilledInCoordinates.contains(i)));
+				boolean placeable = !((getTempDynamicShape().getCoordinatesShape().stream()
+						.anyMatch(i -> this.alreadyFilledInCoordinates.contains(i)))) && currentShape.getX_coord()<PROGRAM_END_X;
 
 				if (getTempDynamicShape().getType() == BlockType.If
 						|| getTempDynamicShape().getType() == BlockType.While) {
@@ -541,14 +534,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 				setX_offsetCurrentShape(0);
 				setY_offsetCurrentShape(0);
 				this.currentShapeCoord = null;
-				//
-				// Voorlopig Hardcoded toevoegen aan shapesInProgramArea
-				/*
-				 * Shape toAdd = new Shape(LocalDateTime.now().toString(), temp.getType(),
-				 * temp.getX_coord(), temp.getY_coord());
-				 * toAdd.setCoordinatesShape(createPairs(toAdd.getType(), temp.getX_coord(),
-				 * temp.getY_coord())); this.shapesInProgramArea.add(toAdd);
-				 */
+				//this.setHandleEvent(false);
+
 			}
 
 			if (id == MouseEvent.MOUSE_PRESSED && x > PROGRAM_START_X && x < PROGRAM_END_X) {
@@ -976,6 +963,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 	@Override
 	public void onBlockAdded(BlockAddedEvent event) {
 		
+		this.setHandleEvent(true);
+		
 		// normaal is ID van event, en geen random DateTime
 
 		Shape toAdd = new Shape(event.getAddedBlockID(), getTempDynamicShape().getType(),
@@ -1022,6 +1011,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 	@Override
 	public void onBlockRemoved(BlockRemovedEvent event) {
 		
+		this.setHandleEvent(true);
+		
 		Shape toRemove = new Shape(event.getRemovedBlockId(), currentShape.getType(), currentShape.getX_coord(),
 				currentShape.getY_coord());
 
@@ -1053,6 +1044,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 	@Override
 	public void onBlockChangeEvent(BlockChangeEvent event) {
 
+		this.setHandleEvent(true);
 		Shape toAdd = new Shape(event.getChangedBlockId(), getTempDynamicShape().getType(),
 				getTempDynamicShape().getX_coord(), getTempDynamicShape().getY_coord());
 
@@ -1225,6 +1217,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener {
 
 	public void setHighlightedShape(Shape highlightedShape) {
 		this.highlightedShape = highlightedShape;
+	}
+	public boolean isHandleEvent() {
+		return isHandleEvent;
+	}
+
+	public void setHandleEvent(boolean isHandleEvent) {
+		this.isHandleEvent = isHandleEvent;
 	}
 
 }
