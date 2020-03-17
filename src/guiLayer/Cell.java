@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-public class Cell {
+public class Cell implements Constants {
 	
 	private int Xcoord;
 	private int Ycoord;
@@ -17,13 +17,6 @@ public class Cell {
 		setXcoord(x);
 		setYcoord(y);
 		setType(type);
-		setResourcePath("images/"+type+".png");
-		try {
-			this.image = ImageIO.read(getClass().getResource(getResourcePath()));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	public int getXcoord() {
@@ -31,7 +24,9 @@ public class Cell {
 	}
 
 	public void setXcoord(int xcoord) {
-		Xcoord = xcoord;
+		
+		int x = GAME_START_X + (xcoord * 50);		
+		Xcoord = x;
 	}
 
 	public int getYcoord() {
@@ -39,7 +34,8 @@ public class Cell {
 	}
 
 	public void setYcoord(int ycoord) {
-		Ycoord = ycoord;
+		int y = (ycoord * 50);
+		Ycoord = y;
 	}
 
 	public String getType() {
@@ -47,7 +43,19 @@ public class Cell {
 	}
 
 	public void setType(String type) {
-		this.type = type;
+		if(type == null) {
+			this.type = "sand";
+		}else {
+			this.type = type;
+		}
+		setResourcePath("images/"+getType()+".png");
+		
+		try {
+			this.image = ImageIO.read(getClass().getResource(getResourcePath()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public String getResourcePath() {

@@ -19,10 +19,11 @@ public class main {
 		//Test push voor de UI-branch
 		java.awt.EventQueue.invokeLater(() -> {
 	         new CanvasWindow("Blockr", dc).show();
+	         initializeElements(dc);
 	  });
 
 		
-		initializeElements(dc);
+		
 	}
 	
 	private static void initializeElements(DomainController dc) {
@@ -33,7 +34,6 @@ public class main {
 		dc.addElement(ElementType.WALL,2,2);
 		dc.addElement(ElementType.WALL,3,2);
 		dc.addElement(ElementType.GOAL,2,1);
-
 	}
 
 }

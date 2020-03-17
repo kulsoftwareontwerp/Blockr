@@ -256,7 +256,6 @@ public class DomainController {
 			throw new IllegalArgumentException("No listener given.");
 		}
 		gameController.addListener(listener);
-
 		blockController.addListener(listener);
 		elementController.addListener(listener);
 
@@ -329,5 +328,24 @@ public class DomainController {
 			elementController.addElement(element,x, y);
 		}
 	}
+	
+	//TO BE DOCUMENTED:
+	public String getEnclosingControlBlock(String id) {
+		return blockController.getEnclosingControlBlock(id);
+	}
+	
+	public Set<String> getAllBlockIDsBelowCertainBlock(String blockID){
+		if(blockID == null || blockID == "") {
+			throw new IllegalArgumentException("No blockID given.");
+		}
+		
+		 return blockController.getAllBlockIDsBelowCertainBlock(blockID);
+	}	
+	
+	public Set<String> getAllHeadControlBlocks(){
+		return blockController.getAllHeadControlBlocks();
+	}
+	
+	
 
 }

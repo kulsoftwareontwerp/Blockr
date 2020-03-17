@@ -1,6 +1,7 @@
 package applicationLayer;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockIDGenerator;
@@ -17,6 +18,7 @@ import exceptions.MaxNbOfBlocksReachedException;
 import types.BlockType;
 import types.ConnectionType;
 import domainLayer.blocks.ControlBlock;
+import domainLayer.blocks.ExecutableBlock;
 import events.*;
 import exceptions.*;
 
@@ -285,6 +287,38 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 
 		return blockIDsInBody;
+	}
+	
+	
+	
+	//TO BE DOCUMENTED:
+	
+	//TODO THROW EXECPTIONS!!!!!
+	
+	public String getEnclosingControlBlock(String id) {
+		
+		ControlBlock block =  programBlockRepository.getEnclosingControlBlock((ExecutableBlock) programBlockRepository.getBlockByID(id));
+		if(block == null)
+			return null;
+		
+		return block.getBlockId();
+	}
+	
+	public Set<String> getAllBlockIDsBelowCertainBlock(String blockID){
+		Block block = programBlockRepository.getBlockByID(blockID);
+		Set<String> blockIDsUnderNeath = new HashSet<String>();
+
+		if (block == null) {
+			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
+		} else {
+			blockIDsUnderNeath = programBlockRepository.getAllBlockIDsBelowCertainBlock(block);
+		}
+
+		return blockIDsUnderNeath;
+	}	
+	
+	public Set<String> getAllHeadControlBlocks(){
+		return programBlockRepository.getAllHeadControlBlocks().stream().map(e-> e.getBlockId()).collect(Collectors.toSet());
 	}
 
 	
