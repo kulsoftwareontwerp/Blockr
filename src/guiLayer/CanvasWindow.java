@@ -171,51 +171,41 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			}
 
-//			if (id == MouseEvent.MOUSE_PRESSED && x > PROGRAM_START_X && x < PROGRAM_END_X) {
-//				this.previousCoordinates = new HashMap<Shape, Pair<Integer, Integer>>();
-//				Shape shape = getShapeFromCoordinateFromProgramArea(x, y);
-//				if (shape != null) {
-//					blocksUnderneath = domainController.getAllBlockIDsUnderneath(shape.getId());
-//
-//					for (String shapeId : blocksUnderneath) {
-//						Shape temp = this.getShapesInProgramArea().stream().filter(e -> e.getId().equals(shapeId))
-//								.findFirst().get();
-//						if (temp != null) {
-//							shapesInMovement.add(temp);
-//							previousCoordinates.put(temp,
-//									new Pair<Integer, Integer>(temp.getX_coord(), temp.getY_coord()));
-//						}
-//
-//					}
-//
+//			if (id == MouseEvent.MOUSE_PRESSED && x > PROGRAM_START_X && x < PROGRAM_END_X) {}//
+//				this.previousCoordinates = new HashMap<Shape, Pair<Integer, Integer>>()
+//				Shape shape = getShapeFromCoordinateFromProgramArea(x, y);;//
+//				if shapee != null) {//
+//					blocksUnderneath = domainController.getAllBlockIDsUnderneathshapee.getId());//
+////
+//					for (String shapeId : blocksUnderneath) {//
+//						Shape temp = this.getShapesInProgramArea().stream().filter(e -> e.getId().equals(shapeId))//
+//								.findFirst().get();//
+//						if (temp != null) {//
+//							shapesInMovement.add(temp);//
+//							previousCoordinates.put(temp,//
+//									new Pair<Integer, Integer>(temp.getX_coord(), temp.getY_coord()));//
+//						}//
+////
+//					}//
 //					setTempDynamicShape(shape);
-//					this.currentShapeCoord = new Pair<Integer, Integer>(shape.getX_coord(), shape.getY_coord());
-//					previousCoordinates.put(shape, new Pair<Integer, Integer>(shape.getX_coord(), shape.getY_coord()));
-//					this.currentShape = shape;
-//					this.previouslyConnectedVia = shape.getConnectedVia();
-//					var mouseOffset = calculateOffsetMouse(x, y, getTempDynamicShape().getX_coord(),
-//							getTempDynamicShape().getY_coord());
-//					setX_offsetCurrentShape(mouseOffset[0]);
-//					setY_offsetCurrentShape(mouseOffset[1]);
-//					
-//					for (Shape shapeIM : shapesInMovement) {
-//						shapesInProgramArea.remove(shapeIM);
-//						for (Pair<Integer, Integer> pair : shapeIM.getCoordinatesShape()) {
-//							alreadyFilledInCoordinates.remove(pair);
-//						}
-//					}
-//
-//					
-//					for (Shape shape2 : controlBlockAreas) {
-//						if (domainController.getAllBlockIDsInBody(shape2.getId()).contains(shape.getId())) {
-//							shape.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.remove(e));
-//							shape2.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.remove(e));
-//							shape2.getInternals().remove(shape);
-//							shape2.determineTotalHeight(shape2.getInternals());
-//							shape2.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.add(e));
-//						}
-//					}
-//				}
+////
+//					this.currentShapeCoord = new Pair<Integer, Integer>shapee.getX_coord(),shapee.getY_coord());//
+//					previousCoordinates.putshapee, new Pair<Integer, Integer>shapee.getX_coord(),shapee.getY_coord()))
+//					this.currentShape = shape;;//
+//					this.previouslyConnectedVia =shapee.getConnectedVia();//
+//					var mouseOffset = calculateOffsetMouse(x, y,getTempDynamicShape()e.getX_coord(),//							getTempDynamicShape()e.getY_coord());//
+//					setX_offsetCurrentShape(mouseOffset[0]);//
+//					setY_offsetCurrentShape(mouseOffset[1]);//
+//					//
+//					for (Shape shapeIM : shapesInMovement) {//
+//						shapesInProgramArea.remove(shapeIM)
+//						for (Pair<Integer, Integer> pair : shapeIM.getCoordinatesShape()) {;//
+//						alreadyFilledInCoordinates.remove(pair);;//
+//					}	//
+//					}//
+////
+//					///					for (Shape shape2 : controlBlockAreas) {///						if (domainController.getAllBlockIDsInBody(shape2.getId()).contains(shape.getId())) {///							shape.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.remove(e));///							shape2.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.remove(e));///							shape2.getInternals().remove(shape);///							shape2.determineTotalHeight(shape2.getInternals());///							shape2.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.add(e));///						}///					}//
+//				}//
 //			}
 
 			if (id == MouseEvent.MOUSE_RELEASED && currentShape != null && paletteArea.checkIfInPalette(x)) {
@@ -231,9 +221,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				HashSet<Pair<Integer, Integer>> currentCoordinates = currentShape
 						.createCoordinatePairs(currentShape.getX_coord(), currentShape.getY_coord());
-
-				// setTempDynamicShape(currentShape);
-				// setTempStaticShape(highlightedShape);
 
 				boolean placeable = programArea.checkIfPlaceable(currentCoordinates, getCurrentShape());
 

@@ -2,7 +2,9 @@ package domainLayer.elements;
 
 import java.util.*;
 
-public class ElementRepository {
+import guiLayer.Constants;
+
+public class ElementRepository implements Constants {
 
 	private Collection<Element> elements;
 	private ElementFactory factory;
@@ -43,7 +45,8 @@ public class ElementRepository {
 	}
 
 	public void initializeRobot() {
-		Element robot = factory.createElement(ElementType.ROBOT, initialRobot.getXCoordinate(), initialRobot.getYCoordinate());
+		//Element robot = factory.createElement(ElementType.ROBOT, initialRobot.getXCoordinate(), initialRobot.getYCoordinate());
+		Element robot = factory.createElement(ElementType.ROBOT, X_COORD_ROBOT_INIT, Y_COORD_ROBOT_INIT);
 		elements.add(robot);
 	}
 

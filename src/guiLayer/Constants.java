@@ -47,5 +47,8 @@ public interface Constants {
 
 	public final static int CONDITION_BLOCK_WALL_UPPER = 555;
 	public final static int CONDITION_BLOCK_WALL_LOWER = 585;
+	
+	public final static int X_COORD_ROBOT_INIT = 2;
+	public final static int Y_COORD_ROBOT_INIT = 3;
 
 }

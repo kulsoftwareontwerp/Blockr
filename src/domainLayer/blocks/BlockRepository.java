@@ -73,6 +73,10 @@ public class BlockRepository {
 			addBlockToHeadBlocks(newBlock);
 			break;
 		case UP:
+			if(headBlocks.stream().map(e-> e.getBlockId()).collect(Collectors.toSet()).contains(connectedBlockId)){
+				removeBlockFromHeadBlocks(connectedBlock);
+				addBlockToHeadBlocks(newBlock);
+			}
 			newBlock.setNextBlock(connectedBlock);
 			break;
 		case DOWN:

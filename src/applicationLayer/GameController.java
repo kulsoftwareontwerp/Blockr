@@ -155,8 +155,7 @@ public void fireUpdateHighlightingEvent(String highlightedBlockId) {
 
 	@Override
 	public void onResetExecutionEvent(ResetExecutionEvent event) {
-		// TODO Auto-generated method stub
-
+		resetGameExecution();
 	}
 
 	@Override
