@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.kuleuven.swop.group17</groupId>
 	<artifactId>blockr</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>blockr</name>
 	<packaging>jar</packaging>
 
