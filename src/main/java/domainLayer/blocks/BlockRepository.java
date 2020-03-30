@@ -271,6 +271,8 @@ public class BlockRepository {
 	 */
 	public Set<String> moveBlock(String movedBlockId, String connectedAfterMoveBlockId,
 			ConnectionType connectionAfterMove) {
+		
+		//TODO: Fix wrong movedblocks, only returns one movedblock while there are supposed to be multiple, which should trigger multiple events.
 		Set<String> movedBlocks = new HashSet<String>();
 		Block movedBlock = getBlockByID(movedBlockId);
 		Block afm = getBlockByID(connectedAfterMoveBlockId);

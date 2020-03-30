@@ -43,7 +43,7 @@ public class ConditionShape extends Shape {
 	}
 
 	@Override
-	public void updateConnectionTypes() {
+	public void defineConnectionTypes() {
 		HashMap<ConnectionType, Pair<Integer, Integer>> connectionMap = new HashMap<ConnectionType, Pair<Integer,Integer>>();
 		connectionMap.put(ConnectionType.LEFT, new Pair<Integer, Integer>(this.getX_coord(), this.getY_coord()+5));
 		this.setCoordinateConnectionMap(connectionMap);

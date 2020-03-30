@@ -45,7 +45,7 @@ public class UnaryOperatorShape extends Shape {
 	}
 
 	@Override
-	public void updateConnectionTypes() {
+	public void defineConnectionTypes() {
 		HashMap<ConnectionType, Pair<Integer, Integer>> connectionMap = new HashMap<ConnectionType, Pair<Integer,Integer>>();
 		connectionMap.put(ConnectionType.LEFT, new Pair<Integer, Integer>(this.getX_coord(), this.getY_coord()+5));
 		connectionMap.put(ConnectionType.OPERAND, new Pair<Integer, Integer>(this.getX_coord()+80, this.getY_coord()+5));

@@ -31,7 +31,7 @@ import types.BlockType;
 import types.ConnectionType;
 
 public class CanvasWindow extends CanvasResource implements GUIListener, Constants {
-	
+
 	private ProgramArea programArea;
 	private GameArea gameArea;
 	private PaletteArea paletteArea;
@@ -41,7 +41,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private boolean isHandleEvent = true;
 	private HashSet<Shape> shapesInMovement;
 	private HashMap<Shape, Pair<Integer, Integer>> previousCoordinates;
-	private ConnectionType previouslyConnectedVia;
 
 	private Set<String> blocksUnderneath;
 
@@ -49,16 +48,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private boolean isPaletteShown = true;
 
 	private Shape currentShape = null;
-	private Pair<Integer, Integer> currentShapeCoord = null;
 
 	private Shape highlightedForExecution = null;
-	private Shape tempStaticShape = null;
-	private Shape tempDynamicShape = null;
 
 	private int x_offsetCurrentShape = 0;
 	private int y_offsetCurrentShape = 0;
-	private ArrayList<Shape> shapesInProgramArea; // shapes with Id == null SHOULDN'T exist!!!!, only if dragged from
-													// Palette, Id == "PALETTE"
 
 	// methods of CanvasResource that need to be overridden:
 
@@ -73,7 +67,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		this.gameArea = new GameArea();
 		this.paletteArea = new PaletteArea(getShapeFactory());
 
-		shapesInProgramArea = new ArrayList<Shape>();
 		this.blocksUnderneath = new HashSet<String>();
 		this.shapesInMovement = new HashSet<Shape>();
 
@@ -89,8 +82,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		gameArea.draw(g);
 
 		// draw all shapes in shapesInProgramArea
-		if (shapesInProgramArea != null && !shapesInProgramArea.isEmpty()) {
-			this.shapesInProgramArea.stream().forEach(((Shape e) -> e.draw(g)));
+		if (programArea.getShapesInProgramArea() != null && !programArea.getShapesInProgramArea().isEmpty()) {
+			programArea.getShapesInProgramArea().stream().forEach(((Shape e) -> e.draw(g)));
 		}
 
 		if (programArea.getHighlightedShape() != null) {
@@ -105,7 +98,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			for (Shape shape : shapesInMovement) {
 				if (shape != currentShape)
-					currentShape.draw(g);
+					shape.draw(g);
 			}
 			// shapesInMovement.forEach(e-> drawShape(g, e));
 
@@ -156,7 +149,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				currentShape.setX_coord(x - x_offsetCurrentShape);
 				currentShape.setY_coord(y - y_offsetCurrentShape);
-				currentShape.updateConnectionTypes();
+				currentShape.defineConnectionTypes();
 				programArea.setHighlightedShape(determineHighlightShape());
 
 				if (!shapesInMovement.isEmpty()) {
@@ -171,95 +164,99 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			}
 
-//			if (id == MouseEvent.MOUSE_PRESSED && x > PROGRAM_START_X && x < PROGRAM_END_X) {}//
-//				this.previousCoordinates = new HashMap<Shape, Pair<Integer, Integer>>()
-//				Shape shape = getShapeFromCoordinateFromProgramArea(x, y);;//
-//				if shapee != null) {//
-//					blocksUnderneath = domainController.getAllBlockIDsUnderneathshapee.getId());//
-////
-//					for (String shapeId : blocksUnderneath) {//
-//						Shape temp = this.getShapesInProgramArea().stream().filter(e -> e.getId().equals(shapeId))//
-//								.findFirst().get();//
-//						if (temp != null) {//
-//							shapesInMovement.add(temp);//
-//							previousCoordinates.put(temp,//
-//									new Pair<Integer, Integer>(temp.getX_coord(), temp.getY_coord()));//
-//						}//
-////
-//					}//
-//					setTempDynamicShape(shape);
-////
-//					this.currentShapeCoord = new Pair<Integer, Integer>shapee.getX_coord(),shapee.getY_coord());//
-//					previousCoordinates.putshapee, new Pair<Integer, Integer>shapee.getX_coord(),shapee.getY_coord()))
-//					this.currentShape = shape;;//
-//					this.previouslyConnectedVia =shapee.getConnectedVia();//
-//					var mouseOffset = calculateOffsetMouse(x, y,getTempDynamicShape()e.getX_coord(),//							getTempDynamicShape()e.getY_coord());//
-//					setX_offsetCurrentShape(mouseOffset[0]);//
-//					setY_offsetCurrentShape(mouseOffset[1]);//
-//					//
-//					for (Shape shapeIM : shapesInMovement) {//
-//						shapesInProgramArea.remove(shapeIM)
-//						for (Pair<Integer, Integer> pair : shapeIM.getCoordinatesShape()) {;//
-//						alreadyFilledInCoordinates.remove(pair);;//
-//					}	//
-//					}//
-////
-//					///					for (Shape shape2 : controlBlockAreas) {///						if (domainController.getAllBlockIDsInBody(shape2.getId()).contains(shape.getId())) {///							shape.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.remove(e));///							shape2.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.remove(e));///							shape2.getInternals().remove(shape);///							shape2.determineTotalHeight(shape2.getInternals());///							shape2.getCoordinatesShape().forEach(e -> this.alreadyFilledInCoordinates.add(e));///						}///					}//
-//				}//
-//			}
+			if (id == MouseEvent.MOUSE_PRESSED && x > PROGRAM_START_X && x < PROGRAM_END_X) {
+				this.previousCoordinates = new HashMap<Shape, Pair<Integer, Integer>>();
+				Shape shape = programArea.getShapeFromCoordinate(x, y);
+				if (shape != null) {
+					blocksUnderneath = domainController.getAllBlockIDsUnderneath(shape.getId());
 
-			if (id == MouseEvent.MOUSE_RELEASED && currentShape != null && paletteArea.checkIfInPalette(x)) {
+					for (String shapeId : blocksUnderneath) {
+						Shape temp = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(shapeId)).findFirst().get();
 
-				if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
-					setCurrentShape(null);
-				} else {
-					domainController.removeBlock(currentShape.getId());
+						if (temp != null) {
+
+							shapesInMovement.add(temp);
+
+							//We choose to only implement movements and adds with sequences of blocks
+							// where the connection happens with the block that was initially clicked.
+							previousCoordinates.put(temp,
+									new Pair<Integer, Integer>(temp.getX_coord(), temp.getY_coord()));
+						}						
+					}
+					
+					setCurrentShape(shape);
+					shape.setConnectedVia(ConnectionType.NOCONNECTION);
+
+					var mouseOffset = calculateOffsetMouse(x, y,getCurrentShape().getX_coord(),
+							getCurrentShape().getY_coord());
+					
+					setX_offsetCurrentShape(mouseOffset[0]);
+					
+					setY_offsetCurrentShape(mouseOffset[1]);
+					for (Shape shapeIM : shapesInMovement) {
+						programArea.removeShapeFromProgramArea(shapeIM);
+					}
+
+				
+				
 				}
 			}
 
-			if (id == MouseEvent.MOUSE_RELEASED && programArea.checkIfInProgramArea(x) && currentShape != null) {
+		if (id == MouseEvent.MOUSE_RELEASED && currentShape != null && paletteArea.checkIfInPalette(x)) {
 
-				HashSet<Pair<Integer, Integer>> currentCoordinates = currentShape
-						.createCoordinatePairs(currentShape.getX_coord(), currentShape.getY_coord());
+			if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
+				setCurrentShape(null);
+			} else {
+				domainController.removeBlock(currentShape.getId());
+			}
+		}
 
-				boolean placeable = programArea.checkIfPlaceable(currentCoordinates, getCurrentShape());
+		if (id == MouseEvent.MOUSE_RELEASED && programArea.checkIfInProgramArea(x) && currentShape != null) {
 
-				if (placeable) {
+			HashSet<Pair<Integer, Integer>> currentCoordinates = currentShape
+					.createCoordinatePairs(currentShape.getX_coord(), currentShape.getY_coord());
 
-					if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
+			boolean placeable = programArea.checkIfPlaceable(currentCoordinates, getCurrentShape());
 
-						if (programArea.getHighlightedShape() != null) {
-							domainController.addBlock(getCurrentShape().getType(),
-									programArea.getHighlightedShape().getId(), getCurrentShape().getConnectedVia());
-						} else {
-							domainController.addBlock(getCurrentShape().getType(), "", ConnectionType.NOCONNECTION);
+			if (placeable) {
+
+				if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
+
+					if (programArea.getHighlightedShape() != null) {
+						domainController.addBlock(getCurrentShape().getType(),
+								programArea.getHighlightedShape().getId(), getCurrentShape().getConnectedVia());
+					} else {
+						domainController.addBlock(getCurrentShape().getType(), "", ConnectionType.NOCONNECTION);
+					}
+				}
+
+				// DOMAIN MOVEMENT, IF THERE IS A CHANGE IN CURRENTSHAPE.GETCONNECTIONVIA,
+				// EXCEPTIONS CATCHEN!!
+					else if(programArea.getHighlightedShape() != null) {
+						
+						if(programArea.getHighlightedShape().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
+							domainController.moveBlock(getCurrentShape().getId(), "", ConnectionType.NOCONNECTION);
+						
+						}else {					
+							domainController.moveBlock(getCurrentShape().getId(), programArea.getHighlightedShape().getId(), getCurrentShape().getConnectedVia());
 						}
 					}
+				//decouple chain of blocks from a block
+					else if(getCurrentShape().getConnectedVia()!= ConnectionType.NOCONNECTION) {
+						domainController.moveBlock(getCurrentShape().getId(), "", ConnectionType.NOCONNECTION);
+					}
+				// ONLY GRAPHICAL MOVEMENT:
+				else {
 
-					// DOMAIN MOVEMENT, IF THERE IS A CHANGE IN CURRENTSHAPE.GETCONNECTIONVIA,
-					// EXCEPTIONS CATCHEN!!
-//					else if(getTempStaticShape() != null && getTempDynamicShape().getConnectedVia() != previouslyConnectedVia) {
-//						
-//						if(getTempDynamicShape().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
-//							domainController.moveBlock(getTempDynamicShape().getId(), "", ConnectionType.NOCONNECTION);
-//						
-//						}else {					
-//							domainController.moveBlock(getTempDynamicShape().getId(), getTempStaticShape().getId(), getTempDynamicShape().getConnectedVia());
-//						}
-//					}
-					// ONLY GRAPHICAL MOVEMENT:
-					else {
+					for (Shape shape : shapesInMovement) {
 
-						for (Shape shape : shapesInMovement) {
-
-							shape.setCoordinatesShape(
-									shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
-							this.shapesInProgramArea.add(shape);
-							programArea.addToAlreadyFilledInCoordinates(shape);
-
-						}
+						shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+						programArea.addShapeToProgramArea(shape);
+						programArea.addToAlreadyFilledInCoordinates(shape);
 
 					}
+
+				}
 
 //					else {
 //						if (getTempStaticShape() != null && getTempDynamicShape() != null) {
@@ -279,35 +276,39 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 //						}
 //					}
 
-					// NOT PLACEABLE =>
-				} else {
-					for (Shape shape : shapesInMovement) {
-						shape.setX_coord(previousCoordinates.get(shape).getLeft());
-						shape.setY_coord(previousCoordinates.get(shape).getRight());
-						shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
-						programArea.addToAlreadyFilledInCoordinates(shape);
-						shape.updateConnectionTypes();
-						shapesInProgramArea.add(shape);
+				// NOT PLACEABLE =>
+			} else {
+				for (Shape shape : shapesInMovement) {
+					shape.setX_coord(previousCoordinates.get(shape).getLeft());
+					shape.setY_coord(previousCoordinates.get(shape).getRight());
+					shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+					programArea.addToAlreadyFilledInCoordinates(shape);
+					shape.defineConnectionTypes();
+					programArea.addShapeToProgramArea(shape);
 
-					}
 				}
-
-				setCurrentShape(null);
-				setX_offsetCurrentShape(0);
-				setY_offsetCurrentShape(0);
-
-				this.currentShapeCoord = null;
-				this.previousCoordinates = null;
-				this.shapesInMovement = new HashSet<Shape>();
-				blocksUnderneath = new HashSet<String>();
-				// this.setHandleEvent(false);
-
+				getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia());
 			}
 
-			repaint();
-		} else {
-			// Consume event;
+			
+			setCurrentShape(null);
+			setX_offsetCurrentShape(0);
+			setY_offsetCurrentShape(0);
+
+
+			this.previousCoordinates = null;
+			this.shapesInMovement = new HashSet<Shape>();
+			blocksUnderneath = new HashSet<String>();
+			// this.setHandleEvent(false);
+
 		}
+
+		repaint();
+	}else
+
+	{
+		// Consume event;
+	}
 	}
 
 	// De relation between shape and shapeToClip is already established in a
@@ -531,12 +532,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					connectionTriggerSetUP.add(new Pair<Integer, Integer>(i, j));
 				}
 			}
-			for (Shape shape : getShapesInProgramArea()) {
+			for (Shape shape : programArea.getShapesInProgramArea()) {
 				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.DOWN)) {
 					shapesInProgramAreaDownMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.DOWN));
 				}
 			}
-			for (Shape shape : getShapesInProgramArea()) {
+			for (Shape shape : programArea.getShapesInProgramArea()) {
 				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.BODY)) {
 					shapesInProgramAreaBodyMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.BODY));
 				}
@@ -552,7 +553,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					connectionTriggerSetDOWN.add(new Pair<Integer, Integer>(i, j));
 				}
 			}
-			for (Shape shape : getShapesInProgramArea()) {
+			for (Shape shape : programArea.getShapesInProgramArea()) {
 				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.UP)) {
 					shapesInProgramAreaUpMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.UP));
 				}
@@ -568,13 +569,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					connectionTriggerSetLEFT.add(new Pair<Integer, Integer>(i, j));
 				}
 			}
-			for (Shape shape : getShapesInProgramArea()) {
+			for (Shape shape : programArea.getShapesInProgramArea()) {
 				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.CONDITION)) {
 					shapesInProgramAreaConditionMap.put(shape,
 							shape.getCoordinateConnectionMap().get(ConnectionType.CONDITION));
 				}
 			}
-			for (Shape shape : getShapesInProgramArea()) {
+			for (Shape shape : programArea.getShapesInProgramArea()) {
 				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.OPERAND)) {
 					shapesInProgramAreaOperandMap.put(shape,
 							shape.getCoordinateConnectionMap().get(ConnectionType.OPERAND));
@@ -591,7 +592,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					connectionTriggerSetCONDITION.add(new Pair<Integer, Integer>(i, j));
 				}
 			}
-			for (Shape shape : getShapesInProgramArea()) {
+			for (Shape shape : programArea.getShapesInProgramArea()) {
 				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.LEFT)) {
 					shapesInProgramAreaLeftMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.LEFT));
 				}
@@ -607,7 +608,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					connectionTriggerSetOPERAND.add(new Pair<Integer, Integer>(i, j));
 				}
 			}
-			for (Shape shape : getShapesInProgramArea()) {
+			for (Shape shape : programArea.getShapesInProgramArea()) {
 				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.LEFT)) {
 					shapesInProgramAreaLeftMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.LEFT));
 				}
@@ -705,7 +706,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		if (programArea.getHighlightedShape() != null) {
 			toAdd.setConnectedVia(currentShape.getConnectedVia());
 			toAdd.clipOn(programArea.getHighlightedShape(), toAdd.getConnectedVia());
-			toAdd.updateConnectionTypes();
+			toAdd.defineConnectionTypes();
 			toAdd.setCoordinatesShape(toAdd.createCoordinatePairs(toAdd.getX_coord(), toAdd.getY_coord()));
 			System.out.println(toAdd.getConnectedVia() + "        " + programArea.getHighlightedShape().getId());
 		}
@@ -715,27 +716,27 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		// IMPORTANT
 		// this.shapesInProgramArea.stream().forEach(e-> e.determineTotalDimensions());
 
-		this.shapesInProgramArea.add(toAdd);
+		programArea.addShapeToProgramArea(toAdd);
 
-		if(!(toAdd instanceof UnaryOperatorShape || toAdd instanceof ConditionShape)) {
-		String enclosingControlShapeId = domainController.getEnclosingControlBlock(toAdd.getId());
-		System.out.println("enclosingControlShapeId: " + enclosingControlShapeId);
-		String pepo = domainController.getEnclosingControlBlock(toAdd.getId());
-		Shape enclosingControlShape = null;
-		try {
-			enclosingControlShape = this.getShapesInProgramArea().stream()
-					.filter(e -> e.getId().equals(enclosingControlShapeId)).findFirst().get();
-		} catch (Exception e) {
-			enclosingControlShape = null;
-		}
-
-		if (enclosingControlShape != null) {
-			enclosingControlShape.addInternal(toAdd);
-			for (Shape shape : enclosingControlShape.getInternals()) {
-				System.out.println("ID ENCLOSING " + enclosingControlShape.getId());
-				System.out.println(shape.getId());
+		if (!(toAdd instanceof UnaryOperatorShape || toAdd instanceof ConditionShape)) {
+			String enclosingControlShapeId = domainController.getEnclosingControlBlock(toAdd.getId());
+			System.out.println("enclosingControlShapeId: " + enclosingControlShapeId);
+			String pepo = domainController.getEnclosingControlBlock(toAdd.getId());
+			Shape enclosingControlShape = null;
+			try {
+				enclosingControlShape = programArea.getShapesInProgramArea().stream()
+						.filter(e -> e.getId().equals(enclosingControlShapeId)).findFirst().get();
+			} catch (Exception e) {
+				enclosingControlShape = null;
 			}
-		}
+
+			if (enclosingControlShape != null) {
+				enclosingControlShape.addInternal(toAdd);
+				for (Shape shape : enclosingControlShape.getInternals()) {
+					System.out.println("ID ENCLOSING " + enclosingControlShape.getId());
+					System.out.println(shape.getId());
+				}
+			}
 		}
 
 //		for (Shape shape : shapesInProgramArea) {
@@ -745,44 +746,46 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 //				programArea.addToAlreadyFilledInCoordinates(shape);
 //		}
 
-		for (Shape shape : getShapesInProgramArea()) {
+		for (Shape shape : programArea.getShapesInProgramArea()) {
 			programArea.removeFromAlreadyFilledInCoordinates(shape);
 		}
 
-		
-		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e-> getShapeByID(e)).collect(Collectors.toSet())) {
-				shape.determineTotalDimensions();
+		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e))
+				.collect(Collectors.toSet())) {
+			shape.determineTotalDimensions();
 		}
-		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e-> getShapeByID(e)).collect(Collectors.toSet())) {
+		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e))
+				.collect(Collectors.toSet())) {
 			for (String id : domainController.getAllBlockIDsBelowCertainBlock(shape.getId())) {
 				if (!id.equals(shape.getId())) {
 					Shape shapeje = null;
 					try {
-						shapeje = getShapesInProgramArea().stream().filter(e -> e.getId().equals(id)).findFirst().get();
-					}catch (Exception e) {
+						shapeje = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id))
+								.findFirst().get();
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 					shapeje.setY_coord(shapeje.getY_coord() + (shape.getHeight() - shape.getPreviousHeight()));
 				}
 			}
-			
+
 		}
-		
-		for (Shape shape : getShapesInProgramArea()) {
+
+		for (Shape shape : programArea.getShapesInProgramArea()) {
 			programArea.addToAlreadyFilledInCoordinates(shape);
 		}
-		
+
 		programArea.addToAlreadyFilledInCoordinates(toAdd);
 		programArea.setHighlightedShape(null);
 		this.setCurrentShape(null);
 		super.repaint();
 	}
-	
+
 	private Shape getShapeByID(String id) {
 		try {
-		return getShapesInProgramArea().stream().filter(e-> e.getId().equals(id)).findFirst().get();
-		
-		}catch (Exception e) {
+			return programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id)).findFirst().get();
+
+		} catch (Exception e) {
 			return null;
 		}
 	}
@@ -795,19 +798,19 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		Shape toRemove = shapeFactory.createShape(event.getRemovedBlockId(), getCurrentShape().getType(),
 				getCurrentShape().getX_coord(), getCurrentShape().getY_coord());
 
-		for (Shape shape : shapesInProgramArea) {
+		for (Shape shape : programArea.getShapesInProgramArea()) {
 			if (domainController.getAllBlockIDsInBody(shape.getId()).contains(toRemove.getId())) {
 				shape.getInternals().remove(toRemove);
 			}
 		}
-		for (Shape shape : shapesInProgramArea) {
+		for (Shape shape : programArea.getShapesInProgramArea()) {
 			programArea.removeFromAlreadyFilledInCoordinates(shape);
 			shape.getHeight(); // if this is a controlShape, it also updates the dimensions based on the
 								// internals
 			programArea.addToAlreadyFilledInCoordinates(shape);
 		}
 
-		this.shapesInProgramArea.remove(toRemove);
+		programArea.removeShapeFromProgramArea(toRemove);
 		programArea.removeFromAlreadyFilledInCoordinates(getCurrentShape());
 
 		this.setCurrentShape(null);
@@ -818,23 +821,35 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	public void onBlockChangeEvent(BlockChangeEvent event) { // TO DO REMOVE FIRST, THEN ADD
 
-		this.setHandleEvent(true);
-		Shape toAdd = shapeFactory.createShape(event.getChangedBlockId(), getCurrentShape().getType(),
-				getCurrentShape().getX_coord(), getCurrentShape().getY_coord());
+		
+		try {
+		Shape changedShape= shapesInMovement.stream().filter(s->s.getId().equals(event.getChangedBlockId())).findFirst().get();
 
+		
+		
+		Shape toAdd = shapeFactory.createShape(event.getChangedBlockId(), changedShape.getType(),
+				changedShape.getX_coord(), changedShape.getY_coord());
+
+		System.out.println("before");
+		System.out.println(toAdd.getId());
+		System.out.println(toAdd.getType());		
+		System.out.println(shapesInMovement.size());
+		shapesInMovement.remove(toAdd);
+		
+		
 		if (programArea.getHighlightedShape() != null) {
-			toAdd.clipOn(programArea.getHighlightedShape(), getCurrentShape().getConnectedVia());
+			toAdd.clipOn(programArea.getHighlightedShape(), toAdd.getConnectedVia());
 		}
 
-		for (Shape shape : shapesInProgramArea) {
-			if (domainController.getAllBlockIDsInBody(shape.getId()).contains(toAdd.getId())) {
+		for (Shape shape : programArea.getShapesInProgramArea()) {
+			if (shape instanceof ControlShape && domainController.getAllBlockIDsInBody(shape.getId()).contains(toAdd.getId())) {
 				shape.getInternals().add(toAdd);
 			}
 		}
 
 		// update all ControlBlockAreas:
 		// set the length of all control block correct
-		for (Shape shape : shapesInProgramArea) {
+		for (Shape shape : programArea.getShapesInProgramArea()) {
 			programArea.removeFromAlreadyFilledInCoordinates(shape);
 			shape.determineTotalDimensions();
 			programArea.addToAlreadyFilledInCoordinates(shape);
@@ -842,12 +857,19 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		//
 
 		toAdd.setCoordinatesShape(toAdd.createCoordinatePairs(toAdd.getX_coord(), toAdd.getY_coord()));
-		this.shapesInProgramArea.add(toAdd);
+		programArea.addShapeToProgramArea(toAdd);
 		programArea.addToAlreadyFilledInCoordinates(toAdd);
 		programArea.setHighlightedShape(null);
 		setCurrentShape(null);
 		super.repaint();
-
+		System.out.println("after");
+		System.out.println(toAdd.getId());
+		System.out.println(toAdd.getType());		
+		System.out.println(shapesInMovement.size());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -859,8 +881,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	public void onUpdateHighlightingEvent(UpdateHighlightingEvent event) {
 		try {
-			highlightedForExecution = shapesInProgramArea.stream().filter(e -> e.getId() == event.getHighlightBlockId())
-					.findFirst().get();
+			highlightedForExecution = programArea.getShapesInProgramArea().stream()
+					.filter(e -> e.getId() == event.getHighlightBlockId()).findFirst().get();
 		} catch (Exception e) {
 			highlightedForExecution = null;
 		} finally {
@@ -871,7 +893,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	public void onRobotChangeEvent(RobotChangeEvent event) {
 		// look for robot, set that cell to SAND
-		gameArea.moveRobot(event.getxCoordinate(), event.getyCoordinate()+OFFSET_GAMEAREA_CELLS, event.getOrientation());
+		gameArea.moveRobot(event.getxCoordinate(), event.getyCoordinate() + OFFSET_GAMEAREA_CELLS,
+				event.getOrientation());
 		super.repaint();
 	}
 
@@ -884,7 +907,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		ElementType type = ElementType.ROBOT;
 
-		gameArea.addCell(new Cell(x_coord, y_coord+OFFSET_GAMEAREA_CELLS, type.toString().toLowerCase() + orientation.toString()));
+		gameArea.addCell(new Cell(x_coord, y_coord + OFFSET_GAMEAREA_CELLS,
+				type.toString().toLowerCase() + orientation.toString()));
 
 		super.repaint();
 	}
@@ -897,9 +921,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		int y_coord = event.getyCoordinate();
 
 		if (type == null) {
-			gameArea.addCell(new Cell(x_coord, y_coord+OFFSET_GAMEAREA_CELLS, "sand"));
+			gameArea.addCell(new Cell(x_coord, y_coord + OFFSET_GAMEAREA_CELLS, "sand"));
 		} else {
-			gameArea.addCell(new Cell(x_coord, y_coord+OFFSET_GAMEAREA_CELLS, type.toString().toLowerCase()));
+			gameArea.addCell(new Cell(x_coord, y_coord + OFFSET_GAMEAREA_CELLS, type.toString().toLowerCase()));
 		}
 
 		super.repaint();
@@ -937,10 +961,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		this.y_offsetCurrentShape = y_offsetCurrentShape;
 	}
 
-	public ArrayList<Shape> getShapesInProgramArea() {
-		return shapesInProgramArea;
-	}
-
 	private void disableEvents() {
 		this.isHandleEvent = false;
 	}
@@ -949,13 +969,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		this.isHandleEvent = true;
 	}
 
-	public Pair<Integer, Integer> getCurrentShapeCoord() {
-		return currentShapeCoord;
-	}
-
-	public void setCurrentShapeCoord(Pair<Integer, Integer> currentShapeCoord) {
-		this.currentShapeCoord = currentShapeCoord;
-	}
 
 	public boolean isHandleEvent() {
 		return isHandleEvent;

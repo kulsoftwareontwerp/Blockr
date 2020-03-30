@@ -28,7 +28,16 @@ public abstract class Shape implements Constants {
 	private HashMap<ConnectionType, Pair<Integer, Integer>> coordinateConnectionMap; //Plugs and Sockets
 
 	private ConnectionType connectedVia; //NOCONNECTION if solo, Connection from connectedBlock
+	private ConnectionType previouslyConnectedVia;
 	
+	public ConnectionType getPreviouslyConnectedVia() {
+		return previouslyConnectedVia;
+	}
+
+	private void setPreviouslyConnectedVia(ConnectionType previouslyConnectedVia) {
+		this.previouslyConnectedVia = previouslyConnectedVia;
+	}
+
 	private int height = 0;
 	private int width = 0;
 
@@ -38,11 +47,13 @@ public abstract class Shape implements Constants {
 		setType(type);
 		setX_coord(x);
 		setY_coord(y);
+		//note: order here is important, don't change if you don't know what you're doing.
 		setConnectedVia(ConnectionType.NOCONNECTION);
+		setPreviouslyConnectedVia(ConnectionType.NOCONNECTION);
 		initDimensions(); //setWidth & setHeight
 		coordinatesShape = createCoordinatePairs(getX_coord(), getY_coord());
 		coordinateConnectionMap= new HashMap<ConnectionType, Pair<Integer,Integer>>();
-		updateConnectionTypes(); //setCoordinateConnectionMap, SOCKETS AND PLUGS
+		defineConnectionTypes(); //setCoordinateConnectionMap, SOCKETS AND PLUGS
 	}
 	
 	//shape = static shape on which it will be clipped
@@ -118,6 +129,7 @@ public abstract class Shape implements Constants {
 		return connectedVia;
 	}
 	public void setConnectedVia(ConnectionType connectedVia) {
+		setPreviouslyConnectedVia(this.getConnectedVia());
 		this.connectedVia = connectedVia;
 	}
 	
@@ -141,7 +153,7 @@ public abstract class Shape implements Constants {
 		this.width = width;
 	}
 	
-	public abstract void updateConnectionTypes();
+	public abstract void defineConnectionTypes();
 	
 	public abstract void initDimensions();
 	
