@@ -4,7 +4,7 @@ import java.util.*;
 
 import guiLayer.Constants;
 
-public class ElementRepository implements Constants {
+public class ElementRepository {
 
 	private Collection<Element> elements;
 	private ElementFactory factory;
@@ -45,8 +45,8 @@ public class ElementRepository implements Constants {
 	}
 
 	public void initializeRobot() {
-		//Element robot = factory.createElement(ElementType.ROBOT, initialRobot.getXCoordinate(), initialRobot.getYCoordinate());
-		Element robot = factory.createElement(ElementType.ROBOT, X_COORD_ROBOT_INIT, Y_COORD_ROBOT_INIT);
+		Element robot = factory.createElement(ElementType.ROBOT, initialRobot.getXCoordinate(), initialRobot.getYCoordinate());
+		//Element robot = factory.createElement(ElementType.ROBOT, X_COORD_ROBOT_INIT, Y_COORD_ROBOT_INIT);
 		elements.add(robot);
 	}
 
@@ -85,7 +85,7 @@ public class ElementRepository implements Constants {
 		Element el = factory.createElement(type, xCoordinate, yCoordinate);
 		elements.add(el);
 		if(type==ElementType.ROBOT && initialRobot == null) {
-			initialRobot=(Robot)el;
+			initialRobot= (Robot) factory.createElement(type, xCoordinate, yCoordinate);
 		}
 	}
 	
