@@ -12,6 +12,8 @@ public class ActionShape extends Shape {
 	public ActionShape(String id, BlockType type, int x, int y) {
 		super(id, type, x, y);
 		// TODO Auto-generated constructor stub
+		switchCavityStatus(ConnectionType.UP);
+		switchCavityStatus(ConnectionType.DOWN);
 	}
 
 	@Override

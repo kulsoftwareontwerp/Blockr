@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,6 +40,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private ShapeFactory shapeFactory;
 	private boolean isHandleEvent = true;
 	private HashSet<Shape> shapesInMovement;
+
+	public HashSet<Shape> getShapesInMovement() {
+		return shapesInMovement;
+	}
+
 	private HashMap<Shape, Pair<Integer, Integer>> previousCoordinates;
 
 	private Set<String> blocksUnderneath;
@@ -136,6 +141,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					var temp = calculateOffsetMouse(x, y, currentShape.getX_coord(), currentShape.getY_coord());
 					this.x_offsetCurrentShape = temp[0];
 					this.y_offsetCurrentShape = temp[1];
+					getShapesInMovement().add(currentShape);
 				}
 			}
 
@@ -171,92 +177,93 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					blocksUnderneath = domainController.getAllBlockIDsUnderneath(shape.getId());
 
 					for (String shapeId : blocksUnderneath) {
-						Shape temp = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(shapeId)).findFirst().get();
+						Shape temp = programArea.getShapesInProgramArea().stream()
+								.filter(e -> e.getId().equals(shapeId)).findFirst().get();
 
 						if (temp != null) {
 
 							shapesInMovement.add(temp);
 
-							//We choose to only implement movements and adds with sequences of blocks
+							// We choose to only implement movements and adds with sequences of blocks
 							// where the connection happens with the block that was initially clicked.
 							previousCoordinates.put(temp,
 									new Pair<Integer, Integer>(temp.getX_coord(), temp.getY_coord()));
-						}						
+						}
 					}
-					
+
 					setCurrentShape(shape);
 					shape.setConnectedVia(ConnectionType.NOCONNECTION);
 
-					var mouseOffset = calculateOffsetMouse(x, y,getCurrentShape().getX_coord(),
+					var mouseOffset = calculateOffsetMouse(x, y, getCurrentShape().getX_coord(),
 							getCurrentShape().getY_coord());
-					
+
 					setX_offsetCurrentShape(mouseOffset[0]);
-					
+
 					setY_offsetCurrentShape(mouseOffset[1]);
 					for (Shape shapeIM : shapesInMovement) {
 						programArea.removeShapeFromProgramArea(shapeIM);
 					}
 
-				
-				
 				}
 			}
 
-		if (id == MouseEvent.MOUSE_RELEASED && currentShape != null && paletteArea.checkIfInPalette(x)) {
+			if (id == MouseEvent.MOUSE_RELEASED && currentShape != null && paletteArea.checkIfInPalette(x)) {
 
-			if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
-				setCurrentShape(null);
-			} else {
-				domainController.removeBlock(currentShape.getId());
-			}
-		}
-
-		if (id == MouseEvent.MOUSE_RELEASED && programArea.checkIfInProgramArea(x) && currentShape != null) {
-
-			HashSet<Pair<Integer, Integer>> currentCoordinates = currentShape
-					.createCoordinatePairs(currentShape.getX_coord(), currentShape.getY_coord());
-
-			boolean placeable = programArea.checkIfPlaceable(currentCoordinates, getCurrentShape());
-
-			if (placeable) {
-
-				if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
-
-					if (programArea.getHighlightedShape() != null) {
-						domainController.addBlock(getCurrentShape().getType(),
-								programArea.getHighlightedShape().getId(), getCurrentShape().getConnectedVia());
-					} else {
-						domainController.addBlock(getCurrentShape().getType(), "", ConnectionType.NOCONNECTION);
-					}
+				if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
+					setCurrentShape(null);
+				} else {
+					domainController.removeBlock(currentShape.getId());
 				}
+			}
 
-				// DOMAIN MOVEMENT, IF THERE IS A CHANGE IN CURRENTSHAPE.GETCONNECTIONVIA,
-				// EXCEPTIONS CATCHEN!!
-					else if(programArea.getHighlightedShape() != null) {
-						
-						if(programArea.getHighlightedShape().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
-							domainController.moveBlock(getCurrentShape().getId(), "", ConnectionType.NOCONNECTION);
-						
-						}else {					
-							domainController.moveBlock(getCurrentShape().getId(), programArea.getHighlightedShape().getId(), getCurrentShape().getConnectedVia());
+			if (id == MouseEvent.MOUSE_RELEASED && programArea.checkIfInProgramArea(x) && currentShape != null) {
+
+				HashSet<Pair<Integer, Integer>> currentCoordinates = currentShape
+						.createCoordinatePairs(currentShape.getX_coord(), currentShape.getY_coord());
+
+				boolean placeable = programArea.checkIfPlaceable(currentCoordinates, getCurrentShape());
+
+				if (placeable) {
+
+					if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
+
+						if (programArea.getHighlightedShape() != null) {
+							domainController.addBlock(getCurrentShape().getType(),
+									programArea.getHighlightedShape().getId(), getCurrentShape().getConnectedVia());
+						} else {
+							domainController.addBlock(getCurrentShape().getType(), "", ConnectionType.NOCONNECTION);
 						}
 					}
-				//decouple chain of blocks from a block
-					else if(getCurrentShape().getConnectedVia()!= ConnectionType.NOCONNECTION) {
+
+					// DOMAIN MOVEMENT, IF THERE IS A CHANGE IN CURRENTSHAPE.GETCONNECTIONVIA,
+					// EXCEPTIONS CATCHEN!!
+					else if (programArea.getHighlightedShape() != null) {
+
+						if (programArea.getHighlightedShape().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
+							domainController.moveBlock(getCurrentShape().getId(), "", ConnectionType.NOCONNECTION);
+
+						} else {
+							domainController.moveBlock(getCurrentShape().getId(),
+									programArea.getHighlightedShape().getId(), getCurrentShape().getConnectedVia());
+						}
+					}
+					// decouple chain of blocks from a block
+					else if (getCurrentShape().getConnectedVia() != ConnectionType.NOCONNECTION) {
 						domainController.moveBlock(getCurrentShape().getId(), "", ConnectionType.NOCONNECTION);
 					}
-				// ONLY GRAPHICAL MOVEMENT:
-				else {
+					// ONLY GRAPHICAL MOVEMENT:
+					else {
 
-					for (Shape shape : shapesInMovement) {
+						for (Shape shape : shapesInMovement) {
 
-						shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
-						programArea.addShapeToProgramArea(shape);
-						programArea.addToAlreadyFilledInCoordinates(shape);
+							shape.setCoordinatesShape(
+									shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+							programArea.addShapeToProgramArea(shape);
+							programArea.addToAlreadyFilledInCoordinates(shape);
+
+						}
 
 					}
-
-				}
 
 //					else {
 //						if (getTempStaticShape() != null && getTempDynamicShape() != null) {
@@ -276,39 +283,37 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 //						}
 //					}
 
-				// NOT PLACEABLE =>
-			} else {
-				for (Shape shape : shapesInMovement) {
-					shape.setX_coord(previousCoordinates.get(shape).getLeft());
-					shape.setY_coord(previousCoordinates.get(shape).getRight());
-					shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
-					programArea.addToAlreadyFilledInCoordinates(shape);
-					shape.defineConnectionTypes();
-					programArea.addShapeToProgramArea(shape);
+					// NOT PLACEABLE =>
+				} else {
+					for (Shape shape : shapesInMovement) {
+						shape.setX_coord(previousCoordinates.get(shape).getLeft());
+						shape.setY_coord(previousCoordinates.get(shape).getRight());
+						shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+						programArea.addToAlreadyFilledInCoordinates(shape);
+						shape.defineConnectionTypes();
+						programArea.addShapeToProgramArea(shape);
 
+					}
+					getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia());
 				}
-				getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia());
+
+				setCurrentShape(null);
+				setX_offsetCurrentShape(0);
+				setY_offsetCurrentShape(0);
+
+				this.previousCoordinates = null;
+				this.shapesInMovement = new HashSet<Shape>();
+				blocksUnderneath = new HashSet<String>();
+				// this.setHandleEvent(false);
+
 			}
 
-			
-			setCurrentShape(null);
-			setX_offsetCurrentShape(0);
-			setY_offsetCurrentShape(0);
+			repaint();
+		} else
 
-
-			this.previousCoordinates = null;
-			this.shapesInMovement = new HashSet<Shape>();
-			blocksUnderneath = new HashSet<String>();
-			// this.setHandleEvent(false);
-
+		{
+			// Consume event;
 		}
-
-		repaint();
-	}else
-
-	{
-		// Consume event;
-	}
 	}
 
 	// De relation between shape and shapeToClip is already established in a
@@ -509,11 +514,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 //	}
 
 	private Shape determineHighlightShape() {
-		HashSet<Pair<Integer, Integer>> connectionTriggerSetUP = new HashSet<Pair<Integer, Integer>>();
-		HashSet<Pair<Integer, Integer>> connectionTriggerSetDOWN = new HashSet<Pair<Integer, Integer>>();
-		HashSet<Pair<Integer, Integer>> connectionTriggerSetLEFT = new HashSet<Pair<Integer, Integer>>();
-		HashSet<Pair<Integer, Integer>> connectionTriggerSetCONDITION = new HashSet<Pair<Integer, Integer>>();
-		HashSet<Pair<Integer, Integer>> connectionTriggerSetOPERAND = new HashSet<Pair<Integer, Integer>>();
 
 		HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaUpMap = new HashMap<Shape, Pair<Integer, Integer>>();
 		HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaDownMap = new HashMap<Shape, Pair<Integer, Integer>>();
@@ -522,152 +522,233 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaOperandMap = new HashMap<Shape, Pair<Integer, Integer>>();
 		HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaLeftMap = new HashMap<Shape, Pair<Integer, Integer>>();
 
-		if (getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.UP) != null) {
+		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(e -> e.checkIfOpen(ConnectionType.DOWN))
+				.collect(Collectors.toSet())) {
+			shapesInProgramAreaDownMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.DOWN));
 
-			int x_current = getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.UP).getLeft();
-			int y_current = getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.UP).getRight();
-
-			for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
-				for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-					connectionTriggerSetUP.add(new Pair<Integer, Integer>(i, j));
-				}
-			}
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.DOWN)) {
-					shapesInProgramAreaDownMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.DOWN));
-				}
-			}
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.BODY)) {
-					shapesInProgramAreaBodyMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.BODY));
-				}
-			}
 		}
-		if (getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.DOWN) != null) {
+		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(e -> e.checkIfOpen(ConnectionType.BODY))
+				.collect(Collectors.toSet())) {
+			shapesInProgramAreaBodyMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.BODY));
 
-			int x_current = getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.DOWN).getLeft();
-			int y_current = getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.DOWN).getRight();
-
-			for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
-				for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-					connectionTriggerSetDOWN.add(new Pair<Integer, Integer>(i, j));
-				}
-			}
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.UP)) {
-					shapesInProgramAreaUpMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.UP));
-				}
-			}
 		}
-		if (getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.LEFT) != null) {
-
-			int x_current = getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.LEFT).getLeft();
-			int y_current = getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.LEFT).getRight();
-
-			for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
-				for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-					connectionTriggerSetLEFT.add(new Pair<Integer, Integer>(i, j));
-				}
-			}
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.CONDITION)) {
-					shapesInProgramAreaConditionMap.put(shape,
-							shape.getCoordinateConnectionMap().get(ConnectionType.CONDITION));
-				}
-			}
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.OPERAND)) {
-					shapesInProgramAreaOperandMap.put(shape,
-							shape.getCoordinateConnectionMap().get(ConnectionType.OPERAND));
-				}
-			}
+		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(e -> e.checkIfOpen(ConnectionType.UP))
+				.collect(Collectors.toSet())) {
+			shapesInProgramAreaUpMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.UP));
 		}
-		if (getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.CONDITION) != null) {
 
-			int x_current = getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.CONDITION).getLeft();
-			int y_current = getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.CONDITION).getRight();
-
-			for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
-				for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-					connectionTriggerSetCONDITION.add(new Pair<Integer, Integer>(i, j));
-				}
-			}
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.LEFT)) {
-					shapesInProgramAreaLeftMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.LEFT));
-				}
-			}
+		for (Shape shape : programArea.getShapesInProgramArea().stream()
+				.filter(e -> e.checkIfOpen(ConnectionType.CONDITION)).collect(Collectors.toSet())) {
+			shapesInProgramAreaConditionMap.put(shape,
+					shape.getCoordinateConnectionMap().get(ConnectionType.CONDITION));
 		}
-		if (getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.OPERAND) != null) {
-
-			int x_current = getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.OPERAND).getLeft();
-			int y_current = getCurrentShape().getCoordinateConnectionMap().get(ConnectionType.OPERAND).getRight();
-
-			for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
-				for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-					connectionTriggerSetOPERAND.add(new Pair<Integer, Integer>(i, j));
-				}
-			}
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				if (shape.getCoordinateConnectionMap().keySet().contains(ConnectionType.LEFT)) {
-					shapesInProgramAreaLeftMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.LEFT));
-				}
-			}
+		for (Shape shape : programArea.getShapesInProgramArea().stream()
+				.filter(e -> e.checkIfOpen(ConnectionType.OPERAND)).collect(Collectors.toSet())) {
+			shapesInProgramAreaOperandMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.OPERAND));
 		}
-		try {
-			Shape shape = shapesInProgramAreaUpMap.entrySet().stream()
-					.filter(e -> connectionTriggerSetDOWN.contains(e.getValue())).findFirst().get().getKey();
-			getCurrentShape().setConnectedVia(ConnectionType.UP);
-			return shape;
-		} catch (NoSuchElementException e) {
-			try {
-				Shape shape = shapesInProgramAreaDownMap.entrySet().stream()
-						.filter(p -> connectionTriggerSetUP.contains(p.getValue())).findFirst().get().getKey();
-				getCurrentShape().setConnectedVia(ConnectionType.DOWN);
-				return shape;
-			} catch (NoSuchElementException e2) {
-				try {
-					Shape shape = shapesInProgramAreaBodyMap.entrySet().stream()
-							.filter(q -> connectionTriggerSetUP.contains(q.getValue())).findFirst().get().getKey();
-					getCurrentShape().setConnectedVia(ConnectionType.BODY);
-					return shape;
-				} catch (NoSuchElementException e3) {
-					try {
-						Shape shape = shapesInProgramAreaConditionMap.entrySet().stream()
-								.filter(q -> connectionTriggerSetLEFT.contains(q.getValue())).findFirst().get()
-								.getKey();
-						getCurrentShape().setConnectedVia(ConnectionType.CONDITION);
-						return shape;
-					} catch (NoSuchElementException e4) {
-						try {
-							Shape shape = shapesInProgramAreaLeftMap.entrySet().stream()
-									.filter(q -> connectionTriggerSetCONDITION.contains(q.getValue())).findFirst().get()
-									.getKey();
-							getCurrentShape().setConnectedVia(ConnectionType.LEFT);
-							return shape;
-						} catch (NoSuchElementException e5) {
-							try {
-								Shape shape = shapesInProgramAreaOperandMap.entrySet().stream()
-										.filter(q -> connectionTriggerSetLEFT.contains(q.getValue())).findFirst().get()
-										.getKey();
-								getCurrentShape().setConnectedVia(ConnectionType.OPERAND);
-								return shape;
-							} catch (NoSuchElementException e6) {
-								try {
-									Shape shape = shapesInProgramAreaLeftMap.entrySet().stream()
-											.filter(q -> connectionTriggerSetOPERAND.contains(q.getValue())).findFirst()
-											.get().getKey();
-									getCurrentShape().setConnectedVia(ConnectionType.LEFT);
-									return shape;
-								} catch (NoSuchElementException e7) {
-									return null;
-								}
-							}
-						}
+		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(e -> e.checkIfOpen(ConnectionType.LEFT))
+				.collect(Collectors.toSet())) {
+			shapesInProgramAreaLeftMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.LEFT));
+		}
+		HashSet<Pair<Integer, Integer>> connectionTriggerSetUP = new HashSet<Pair<Integer, Integer>>();
+		HashSet<Pair<Integer, Integer>> connectionTriggerSetDOWN = new HashSet<Pair<Integer, Integer>>();
+		HashSet<Pair<Integer, Integer>> connectionTriggerSetLEFT = new HashSet<Pair<Integer, Integer>>();
+		HashSet<Pair<Integer, Integer>> connectionTriggerSetCONDITION = new HashSet<Pair<Integer, Integer>>();
+		HashSet<Pair<Integer, Integer>> connectionTriggerSetOPERAND = new HashSet<Pair<Integer, Integer>>();
+
+		for (Shape shapeInMovement : getShapesInMovement()) {
+
+			connectionTriggerSetUP = new HashSet<Pair<Integer, Integer>>();
+			connectionTriggerSetDOWN = new HashSet<Pair<Integer, Integer>>();
+			connectionTriggerSetLEFT = new HashSet<Pair<Integer, Integer>>();
+			connectionTriggerSetCONDITION = new HashSet<Pair<Integer, Integer>>();
+			connectionTriggerSetOPERAND = new HashSet<Pair<Integer, Integer>>();
+
+			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.UP) != null
+					&& shapeInMovement.checkIfOpen(ConnectionType.UP)) {
+
+				int x_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.UP).getLeft();
+				int y_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.UP).getRight();
+
+				for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
+					for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
+						connectionTriggerSetUP.add(new Pair<Integer, Integer>(i, j));
+					}
+				}
+
+			}
+			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.DOWN) != null
+					&& shapeInMovement.checkIfOpen(ConnectionType.DOWN)) {
+
+				int x_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.DOWN).getLeft();
+				int y_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.DOWN).getRight();
+
+				for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
+					for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
+						connectionTriggerSetDOWN.add(new Pair<Integer, Integer>(i, j));
+					}
+				}
+			}
+			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.LEFT) != null
+					&& shapeInMovement.checkIfOpen(ConnectionType.LEFT)) {
+
+				int x_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.LEFT).getLeft();
+				int y_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.LEFT).getRight();
+
+				for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
+					for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
+						connectionTriggerSetLEFT.add(new Pair<Integer, Integer>(i, j));
+					}
+				}
+			}
+			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.CONDITION) != null
+					&& shapeInMovement.checkIfOpen(ConnectionType.CONDITION)) {
+
+				int x_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.CONDITION).getLeft();
+				int y_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.CONDITION).getRight();
+
+				for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
+					for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
+						connectionTriggerSetCONDITION.add(new Pair<Integer, Integer>(i, j));
+					}
+				}
+
+			}
+			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.OPERAND) != null
+					&& shapeInMovement.checkIfOpen(ConnectionType.OPERAND)) {
+
+				int x_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.OPERAND).getLeft();
+				int y_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.OPERAND).getRight();
+
+				for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
+					for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
+						connectionTriggerSetOPERAND.add(new Pair<Integer, Integer>(i, j));
 					}
 				}
 			}
 		}
+
+		for (Shape shapeInMovement : getShapesInMovement()) {
+			if (isConnectionPresent(shapesInProgramAreaUpMap, connectionTriggerSetDOWN)) {
+				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetDOWN;
+				Shape shape = shapesInProgramAreaUpMap.entrySet().stream().filter(e -> trigger.contains(e.getValue()))
+						.findFirst().get().getKey();
+				shapeInMovement.setConnectedVia(ConnectionType.UP);
+				shape.setConnectedVia(ConnectionType.DOWN);
+				return shape;
+			} else if (isConnectionPresent(shapesInProgramAreaDownMap, connectionTriggerSetUP)) {
+				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetUP;
+				Shape shape = shapesInProgramAreaDownMap.entrySet().stream().filter(p -> trigger.contains(p.getValue()))
+						.findFirst().get().getKey();
+				shapeInMovement.setConnectedVia(ConnectionType.DOWN);
+				shape.setConnectedVia(ConnectionType.UP);
+				return shape;
+			} else if (isConnectionPresent(shapesInProgramAreaBodyMap, connectionTriggerSetUP)) {
+				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetUP;
+				Shape shape = shapesInProgramAreaBodyMap.entrySet().stream().filter(q -> trigger.contains(q.getValue()))
+						.findFirst().get().getKey();
+				shapeInMovement.setConnectedVia(ConnectionType.BODY);
+				shape.setConnectedVia(ConnectionType.UP);
+				return shape;
+			} else if (isConnectionPresent(shapesInProgramAreaConditionMap, connectionTriggerSetLEFT)) {
+				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetLEFT;
+				Shape shape = shapesInProgramAreaConditionMap.entrySet().stream()
+						.filter(q -> trigger.contains(q.getValue())).findFirst().get().getKey();
+				shapeInMovement.setConnectedVia(ConnectionType.CONDITION);
+				shape.setConnectedVia(ConnectionType.LEFT);
+				return shape;
+			} else if (isConnectionPresent(shapesInProgramAreaLeftMap, connectionTriggerSetCONDITION)) {
+				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetCONDITION;
+				Shape shape = shapesInProgramAreaLeftMap.entrySet().stream().filter(q -> trigger.contains(q.getValue()))
+						.findFirst().get().getKey();
+				shapeInMovement.setConnectedVia(ConnectionType.LEFT);
+				shape.setConnectedVia(ConnectionType.CONDITION);
+				return shape;
+			} else if (isConnectionPresent(shapesInProgramAreaOperandMap, connectionTriggerSetLEFT)) {
+				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetLEFT;
+				Shape shape = shapesInProgramAreaOperandMap.entrySet().stream()
+						.filter(q -> trigger.contains(q.getValue())).findFirst().get().getKey();
+				shapeInMovement.setConnectedVia(ConnectionType.OPERAND);
+				shape.setConnectedVia(ConnectionType.LEFT);
+				return shape;
+			} else if (isConnectionPresent(shapesInProgramAreaLeftMap, connectionTriggerSetOPERAND)) {
+				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetOPERAND;
+				Shape shape = shapesInProgramAreaLeftMap.entrySet().stream().filter(q -> trigger.contains(q.getValue()))
+						.findFirst().get().getKey();
+				shapeInMovement.setConnectedVia(ConnectionType.LEFT);
+				shape.setConnectedVia(ConnectionType.OPERAND);
+				return shape;
+			} else {
+				return null;
+			}
+		}
+		return null;
+//		try {
+//			Shape shape = shapesInProgramAreaUpMap.entrySet().stream()
+//					.filter(e -> connectionTriggerSetDOWN.contains(e.getValue())).findFirst().get().getKey();
+//			getCurrentShape().setConnectedVia(ConnectionType.UP);
+//			return shape;
+//		} catch (NoSuchElementException e) {
+//			try {
+//				Shape shape = shapesInProgramAreaDownMap.entrySet().stream()
+//						.filter(p -> connectionTriggerSetUP.contains(p.getValue())).findFirst().get().getKey();
+//				getCurrentShape().setConnectedVia(ConnectionType.DOWN);
+//				return shape;
+//			} catch (NoSuchElementException e2) {
+//				try {
+//					Shape shape = shapesInProgramAreaBodyMap.entrySet().stream()
+//							.filter(q -> connectionTriggerSetUP.contains(q.getValue())).findFirst().get().getKey();
+//					getCurrentShape().setConnectedVia(ConnectionType.BODY);
+//					return shape;
+//				} catch (NoSuchElementException e3) {
+//					try {
+//						Shape shape = shapesInProgramAreaConditionMap.entrySet().stream()
+//								.filter(q -> connectionTriggerSetLEFT.contains(q.getValue())).findFirst().get()
+//								.getKey();
+//						getCurrentShape().setConnectedVia(ConnectionType.CONDITION);
+//						return shape;
+//					} catch (NoSuchElementException e4) {
+//						try {
+//							Shape shape = shapesInProgramAreaLeftMap.entrySet().stream()
+//									.filter(q -> connectionTriggerSetCONDITION.contains(q.getValue())).findFirst().get()
+//									.getKey();
+//							getCurrentShape().setConnectedVia(ConnectionType.LEFT);
+//							return shape;
+//						} catch (NoSuchElementException e5) {
+//							try {
+//								Shape shape = shapesInProgramAreaOperandMap.entrySet().stream()
+//										.filter(q -> connectionTriggerSetLEFT.contains(q.getValue())).findFirst().get()
+//										.getKey();
+//								getCurrentShape().setConnectedVia(ConnectionType.OPERAND);
+//								return shape;
+//							} catch (NoSuchElementException e6) {
+//								try {
+//									Shape shape = shapesInProgramAreaLeftMap.entrySet().stream()
+//											.filter(q -> connectionTriggerSetOPERAND.contains(q.getValue())).findFirst()
+//											.get().getKey();
+//									getCurrentShape().setConnectedVia(ConnectionType.LEFT);
+//									return shape;
+//								} catch (NoSuchElementException e7) {
+//									return null;
+//								}
+//							}
+//						}
+//					}
+//				}
+
+//			}
+//		}
+	}
+
+	private boolean isConnectionPresent(HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaUpMap,
+			HashSet<Pair<Integer, Integer>> connectionTriggerSetDOWN) {
+		for (Map.Entry<Shape, Pair<Integer, Integer>> s : shapesInProgramAreaUpMap.entrySet()) {
+			if (connectionTriggerSetDOWN.contains(s.getValue())) {
+				return true;
+			}
+
+		}
+		return false;
 	}
 
 	@Override
@@ -707,6 +788,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			toAdd.setConnectedVia(currentShape.getConnectedVia());
 			toAdd.clipOn(programArea.getHighlightedShape(), toAdd.getConnectedVia());
 			toAdd.defineConnectionTypes();
+			
+			programArea.getHighlightedShape().switchCavityStatus(currentShape.getConnectedVia());
+			toAdd.switchCavityStatus(programArea.getHighlightedShape().getConnectedVia());
+			
 			toAdd.setCoordinatesShape(toAdd.createCoordinatePairs(toAdd.getX_coord(), toAdd.getY_coord()));
 			System.out.println(toAdd.getConnectedVia() + "        " + programArea.getHighlightedShape().getId());
 		}
@@ -821,53 +906,50 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	public void onBlockChangeEvent(BlockChangeEvent event) { // TO DO REMOVE FIRST, THEN ADD
 
-		
 		try {
-		Shape changedShape= shapesInMovement.stream().filter(s->s.getId().equals(event.getChangedBlockId())).findFirst().get();
+			Shape changedShape = shapesInMovement.stream().filter(s -> s.getId().equals(event.getChangedBlockId()))
+					.findFirst().get();
 
-		
-		
-		Shape toAdd = shapeFactory.createShape(event.getChangedBlockId(), changedShape.getType(),
-				changedShape.getX_coord(), changedShape.getY_coord());
+			Shape toAdd = shapeFactory.createShape(event.getChangedBlockId(), changedShape.getType(),
+					changedShape.getX_coord(), changedShape.getY_coord());
 
-		System.out.println("before");
-		System.out.println(toAdd.getId());
-		System.out.println(toAdd.getType());		
-		System.out.println(shapesInMovement.size());
-		shapesInMovement.remove(toAdd);
-		
-		
-		if (programArea.getHighlightedShape() != null) {
-			toAdd.clipOn(programArea.getHighlightedShape(), toAdd.getConnectedVia());
-		}
+			System.out.println("before");
+			System.out.println(toAdd.getId());
+			System.out.println(toAdd.getType());
+			System.out.println(shapesInMovement.size());
+			shapesInMovement.remove(toAdd);
 
-		for (Shape shape : programArea.getShapesInProgramArea()) {
-			if (shape instanceof ControlShape && domainController.getAllBlockIDsInBody(shape.getId()).contains(toAdd.getId())) {
-				shape.getInternals().add(toAdd);
+			if (programArea.getHighlightedShape() != null) {
+				toAdd.clipOn(programArea.getHighlightedShape(), toAdd.getConnectedVia());
 			}
-		}
 
-		// update all ControlBlockAreas:
-		// set the length of all control block correct
-		for (Shape shape : programArea.getShapesInProgramArea()) {
-			programArea.removeFromAlreadyFilledInCoordinates(shape);
-			shape.determineTotalDimensions();
-			programArea.addToAlreadyFilledInCoordinates(shape);
-		}
-		//
+			for (Shape shape : programArea.getShapesInProgramArea()) {
+				if (shape instanceof ControlShape
+						&& domainController.getAllBlockIDsInBody(shape.getId()).contains(toAdd.getId())) {
+					shape.getInternals().add(toAdd);
+				}
+			}
 
-		toAdd.setCoordinatesShape(toAdd.createCoordinatePairs(toAdd.getX_coord(), toAdd.getY_coord()));
-		programArea.addShapeToProgramArea(toAdd);
-		programArea.addToAlreadyFilledInCoordinates(toAdd);
-		programArea.setHighlightedShape(null);
-		setCurrentShape(null);
-		super.repaint();
-		System.out.println("after");
-		System.out.println(toAdd.getId());
-		System.out.println(toAdd.getType());		
-		System.out.println(shapesInMovement.size());
-		}
-		catch (Exception e) {
+			// update all ControlBlockAreas:
+			// set the length of all control block correct
+			for (Shape shape : programArea.getShapesInProgramArea()) {
+				programArea.removeFromAlreadyFilledInCoordinates(shape);
+				shape.determineTotalDimensions();
+				programArea.addToAlreadyFilledInCoordinates(shape);
+			}
+			//
+
+			toAdd.setCoordinatesShape(toAdd.createCoordinatePairs(toAdd.getX_coord(), toAdd.getY_coord()));
+			programArea.addShapeToProgramArea(toAdd);
+			programArea.addToAlreadyFilledInCoordinates(toAdd);
+			programArea.setHighlightedShape(null);
+			setCurrentShape(null);
+			super.repaint();
+			System.out.println("after");
+			System.out.println(toAdd.getId());
+			System.out.println(toAdd.getType());
+			System.out.println(shapesInMovement.size());
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -968,7 +1050,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private void enableEvents() {
 		this.isHandleEvent = true;
 	}
-
 
 	public boolean isHandleEvent() {
 		return isHandleEvent;

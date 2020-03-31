@@ -1,6 +1,7 @@
 package guiLayer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 
@@ -9,6 +10,7 @@ import types.BlockType;
 public class ProgramArea implements Constants {
 
 	private HashSet<Pair<Integer, Integer>> alreadyFilledInCoordinates;
+	private HashMap<Shape, Pair<Integer, Integer>> openConnectionCoordinates;
 	private Shape highlightedShape = null;
 	private ArrayList<Shape> shapesInProgramArea; // shapes with Id == null SHOULDN'T exist!!!!, only if dragged from
 	// Palette, Id == "PALETTE"
@@ -31,7 +33,7 @@ public class ProgramArea implements Constants {
 	public ProgramArea() {
 		alreadyFilledInCoordinates = new HashSet<Pair<Integer, Integer>>();
 		shapesInProgramArea = new ArrayList<Shape>();
-	}
+		openConnectionCoordinates =new  HashMap<Shape, Pair<Integer, Integer>>();	}
 
 	public boolean checkIfInProgramArea(int x) {
 		return x > PROGRAM_START_X && x < PROGRAM_END_X;

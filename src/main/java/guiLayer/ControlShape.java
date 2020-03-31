@@ -13,6 +13,10 @@ public class ControlShape extends Shape implements Constants {
 	public ControlShape(String id, BlockType type, int x, int y) {
 		super(id, type, x, y);
 		internals = new HashSet<Shape>(); //empty on init
+		switchCavityStatus(ConnectionType.UP);
+		switchCavityStatus(ConnectionType.DOWN);
+		switchCavityStatus(ConnectionType.CONDITION);
+		switchCavityStatus(ConnectionType.BODY);
 	}
 
 	@Override

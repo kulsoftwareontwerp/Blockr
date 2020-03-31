@@ -11,8 +11,8 @@ public class UnaryOperatorShape extends Shape {
 
 	public UnaryOperatorShape(String id, BlockType type, int x, int y) {
 		super(id, type, x, y);
-		// TODO Auto-generated constructor stub
-	}
+		switchCavityStatus(ConnectionType.LEFT);
+		switchCavityStatus(ConnectionType.OPERAND);	}
 
 	@Override
 	public void draw(Graphics g) {
