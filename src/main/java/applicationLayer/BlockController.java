@@ -26,8 +26,6 @@ import exceptions.NoSuchConnectedBlockException;
 import types.BlockType;
 import types.ConnectionType;
 
-
-
 /**
  * The BlockController orchestrates Create, Update, Delete and Retrieve
  * operations for Blocks.
@@ -60,20 +58,20 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	private void fireBlockRemoved(Set<String> idsToBeRemoved) {
-		for(String id:idsToBeRemoved) {
+		for (String id : idsToBeRemoved) {
 			BlockRemovedEvent event = new BlockRemovedEvent(id);
-			
-			for(GUIListener listener : guiListeners) {
+
+			for (GUIListener listener : guiListeners) {
 				listener.onBlockRemoved(event);
 			}
-			
+
 		}
 	}
 
 	private void fireBlockChanged(String changedBlockId, String changedLinkedBlockId, ConnectionType connectionType) {
-		BlockChangeEvent event = new BlockChangeEvent( changedBlockId, changedLinkedBlockId, connectionType);
-		
-		for(GUIListener listener:guiListeners) {
+		BlockChangeEvent event = new BlockChangeEvent(changedBlockId, changedLinkedBlockId, connectionType);
+
+		for (GUIListener listener : guiListeners) {
 			listener.onBlockChangeEvent(event);
 		}
 	}
@@ -165,22 +163,21 @@ public class BlockController implements GUISubject, DomainSubject {
 	/**
 	 * Removes a block with the given blockID from the domain.
 	 * 
-	 * @param 	blockID
-	 * 			The blockID of the block to be removed.
-	 * @throws	NoSuchConnectedBlockException
-	 * 			If the given BlockID doesn't result in a block in the domain.	
-	 * @event 	RemoveBlockEvent 	
-	 * 			Fires an RemoveBlockEvent if the execution was successful.
-	 * @event 	UpdateGameStateEvent 
-	 * 			Fires an UpdateGameStateEvent if the execution was successful.
-	 * @event 	ResetExecutionEvent
-	 * 			Fires a ResetExecutionEvent if the execution was successful.
-	 * @event 	PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
-	 *        	block was reached before removing the block.
+	 * @param blockID The blockID of the block to be removed.
+	 * @throws NoSuchConnectedBlockException If the given BlockID doesn't result in
+	 *                                       a block in the domain.
+	 * @event RemoveBlockEvent Fires an RemoveBlockEvent if the execution was
+	 *        successful.
+	 * @event UpdateGameStateEvent Fires an UpdateGameStateEvent if the execution
+	 *        was successful.
+	 * @event ResetExecutionEvent Fires a ResetExecutionEvent if the execution was
+	 *        successful.
+	 * @event PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
+	 *        block was reached before removing the block.
 	 */
 	public void removeBlock(String blockID) {
 		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
-		Set<String> idsToBeRemoved=programBlockRepository.removeBlock(blockID);
+		Set<String> idsToBeRemoved = programBlockRepository.removeBlock(blockID);
 		fireUpdateGameState();
 		fireResetExecutionEvent();
 		if (maxBlocksReachedBeforeRemove) {
@@ -193,13 +190,13 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * Add a block of the given blockType to the domain and connect it with the
 	 * given connectedBlockId on the given connection
 	 * 
-	 * @param blockType        The type of block to be added, this parameter is
-	 *                         required.
-	 * @param connectedBlockId 	The ID of the block to connect to, can be empty.
+	 * @param blockType           The type of block to be added, this parameter is
+	 *                            required.
+	 * @param connectedBlockId    The ID of the block to connect to, can be empty.
 	 * @param connectionAfterMove The connection of the connected block on which the
-		 *                         new block must be connected. If no connectedBlockId
-		 *                         was given, this parameter must be set to
-		 *                         "ConnectionType.NOCONNECTION".
+	 *                            new block must be connected. If no
+	 *                            connectedBlockId was given, this parameter must be
+	 *                            set to "ConnectionType.NOCONNECTION".
 	 * @throws InvalidBlockConnectionException The given combination of the
 	 *                                         blockType,connectedBlockId and
 	 *                                         connection is impossible. - an
@@ -216,23 +213,24 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @throws NoSuchConnectedBlockException   Is thrown when a connectedBlockId is
 	 *                                         given that is not present in the
 	 *                                         domain.
-	 *                                         
-	 * @event	changeBlockEvent
-	 * 			Fires an changeBlockEvent if the execution was successful.
-	 * @event	UpdateGameStateEvent
-	 * 			Fires an UpdateGameStateEvent if the execution was successful.
-	 * @event	ResetExecutionEvent
-	 * 			Fires a ResetExecutionEvent if the execution was successful.
+	 * 
+	 * @event changeBlockEvent Fires an changeBlockEvent if the execution was
+	 *        successful.
+	 * @event UpdateGameStateEvent Fires an UpdateGameStateEvent if the execution
+	 *        was successful.
+	 * @event ResetExecutionEvent Fires a ResetExecutionEvent if the execution was
+	 *        successful.
 	 */
-	public void moveBlock(String movedBlockId,  String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-		Set<String> movedBlocks = programBlockRepository.moveBlock(movedBlockId,  connectedAfterMoveBlockId, connectionAfterMove);
+	public void moveBlock(String movedBlockId, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+		String movedBlockID = programBlockRepository.moveBlock(movedBlockId, connectedAfterMoveBlockId,
+				connectionAfterMove);
 		fireUpdateGameState();
 		fireResetExecutionEvent();
-		for(String blockID : movedBlocks) {
-			fireBlockChanged(blockID,connectedAfterMoveBlockId,connectionAfterMove);
+		if (movedBlockID != null) {
+			fireBlockChanged(movedBlockID, connectedAfterMoveBlockId, connectionAfterMove);
 		}
 	}
-	
+
 //	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
 //		Set<String> movedBlocks = programBlockRepository.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
 //		fireUpdateGameState();
@@ -249,7 +247,7 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *                Blocks underneath.
 	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
 	 *                                       is not present in the domain.
-	 * @return A set containing the blockID's of  all connected Conditions and every
+	 * @return A set containing the blockID's of all connected Conditions and every
 	 *         kind of block in the body of the given block or under the given
 	 *         block. The ID of the block itself is also given.
 	 */
@@ -265,8 +263,6 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		return blockIDsUnderNeath;
 	}
-	
-	
 
 	/**
 	 * Returns all the blockID's in the body of a given ControlBlock
@@ -286,31 +282,30 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		if (block == null) {
 			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
-		} else if(!(block instanceof ControlBlock)) {
+		} else if (!(block instanceof ControlBlock)) {
 			throw new InvalidBlockTypeException(ControlBlock.class, block.getClass());
-		}else {
-			blockIDsInBody = programBlockRepository.getAllBlockIDsInBody((ControlBlock)block);
+		} else {
+			blockIDsInBody = programBlockRepository.getAllBlockIDsInBody((ControlBlock) block);
 		}
 
 		return blockIDsInBody;
 	}
-	
-	
-	
-	//TO BE DOCUMENTED:
-	
-	//TODO THROW EXECPTIONS!!!!!
-	
+
+	// TO BE DOCUMENTED:
+
+	// TODO THROW EXECPTIONS!!!!!
+
 	public String getEnclosingControlBlock(String id) {
-		
-		ControlBlock block =  programBlockRepository.getEnclosingControlBlock((ExecutableBlock) programBlockRepository.getBlockByID(id));
-		if(block == null)
+
+		ControlBlock block = programBlockRepository
+				.getEnclosingControlBlock((ExecutableBlock) programBlockRepository.getBlockByID(id));
+		if (block == null)
 			return null;
-		
+
 		return block.getBlockId();
 	}
-	
-	public Set<String> getAllBlockIDsBelowCertainBlock(String blockID){
+
+	public Set<String> getAllBlockIDsBelowCertainBlock(String blockID) {
 		Block block = programBlockRepository.getBlockByID(blockID);
 		Set<String> blockIDsUnderNeath = new HashSet<String>();
 
@@ -321,13 +316,12 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 
 		return blockIDsUnderNeath;
-	}	
-	
-	public Set<String> getAllHeadControlBlocks(){
-		return programBlockRepository.getAllHeadControlBlocks().stream().map(e-> e.getBlockId()).collect(Collectors.toSet());
 	}
 
-	
+	public Set<String> getAllHeadControlBlocks() {
+		return programBlockRepository.getAllHeadControlBlocks().stream().map(e -> e.getBlockId())
+				.collect(Collectors.toSet());
+	}
 
 	@Override
 	public void addDomainListener(DomainListener listener) {
