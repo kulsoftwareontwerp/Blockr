@@ -105,8 +105,15 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				if (shape != currentShape)
 					shape.draw(g);
 			}
-			// shapesInMovement.forEach(e-> drawShape(g, e));
-
+		}
+		
+		//only for debugging purposes
+		for(Shape shape:programArea.getShapesInProgramArea()) {
+			for(var p : shape.getCoordinateConnectionMap().values()) {
+				int tempx = p.getLeft()-3;
+				int tempy = p.getRight();
+				g.drawOval(tempx, tempy, 6, 6);
+			}
 		}
 
 	}
@@ -218,10 +225,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			if (id == MouseEvent.MOUSE_RELEASED && programArea.checkIfInProgramArea(x) && currentShape != null) {
 
-				HashSet<Pair<Integer, Integer>> currentCoordinates = currentShape
-						.createCoordinatePairs(currentShape.getX_coord(), currentShape.getY_coord());
-
-				boolean placeable = programArea.checkIfPlaceable(currentCoordinates, getCurrentShape());
+				currentShape.clipOn(programArea.getHighlightedShape(), currentShape.getConnectedVia());
+				currentShape.setCoordinatesShape(currentShape.createCoordinatePairs(currentShape.getX_coord(), currentShape.getY_coord()));
+				boolean placeable = programArea.checkIfPlaceable(getCurrentShape().getCoordinatesShape(), getCurrentShape());
 
 				if (placeable) {
 
@@ -910,23 +916,35 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			Shape changedShape = shapesInMovement.stream().filter(s -> s.getId().equals(event.getChangedBlockId()))
 					.findFirst().get();
 
-			Shape toAdd = shapeFactory.createShape(event.getChangedBlockId(), changedShape.getType(),
-					changedShape.getX_coord(), changedShape.getY_coord());
+//			Shape toAdd = shapeFactory.createShape(event.getChangedBlockId(), changedShape.getType(),
+//					changedShape.getX_coord(), changedShape.getY_coord());
 
 			System.out.println("before");
-			System.out.println(toAdd.getId());
-			System.out.println(toAdd.getType());
+			System.out.println(changedShape.getId());
+			System.out.println(changedShape.getType());
 			System.out.println(shapesInMovement.size());
-			shapesInMovement.remove(toAdd);
+			
+			shapesInMovement.remove(changedShape);
 
+			//before Clip on
+			System.out.println("BEFORE");
+			System.out.println("X coordinaat:"+changedShape.getX_coord());
+			System.out.println("Y coordinaat:"+changedShape.getY_coord());
+			
+			
 			if (programArea.getHighlightedShape() != null) {
-				toAdd.clipOn(programArea.getHighlightedShape(), toAdd.getConnectedVia());
+				changedShape.clipOn(programArea.getHighlightedShape(), changedShape.getConnectedVia());
 			}
+			
+			//before Clip on
+			System.out.println("AFTER");
+			System.out.println("X coordinaat:"+changedShape.getX_coord());
+			System.out.println("Y coordinaat:"+changedShape.getY_coord());
 
 			for (Shape shape : programArea.getShapesInProgramArea()) {
 				if (shape instanceof ControlShape
-						&& domainController.getAllBlockIDsInBody(shape.getId()).contains(toAdd.getId())) {
-					shape.getInternals().add(toAdd);
+						&& domainController.getAllBlockIDsInBody(shape.getId()).contains(changedShape.getId())) {
+					shape.getInternals().add(changedShape);
 				}
 			}
 
@@ -939,16 +957,21 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 			//
 
-			toAdd.setCoordinatesShape(toAdd.createCoordinatePairs(toAdd.getX_coord(), toAdd.getY_coord()));
-			programArea.addShapeToProgramArea(toAdd);
-			programArea.addToAlreadyFilledInCoordinates(toAdd);
+			changedShape.setCoordinatesShape(changedShape.createCoordinatePairs(changedShape.getX_coord(), changedShape.getY_coord()));
+			programArea.addShapeToProgramArea(changedShape);
+			programArea.addToAlreadyFilledInCoordinates(changedShape);
 			programArea.setHighlightedShape(null);
 			setCurrentShape(null);
 			super.repaint();
 			System.out.println("after");
-			System.out.println(toAdd.getId());
-			System.out.println(toAdd.getType());
+			System.out.println(changedShape.getId());
+			System.out.println(changedShape.getType());
 			System.out.println(shapesInMovement.size());
+			
+			//before Clip on
+			System.out.println("END");
+			System.out.println("X coordinaat:"+changedShape.getX_coord());
+			System.out.println("Y coordinaat:"+changedShape.getY_coord());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

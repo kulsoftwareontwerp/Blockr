@@ -275,6 +275,8 @@ public class BlockRepository {
 		//TODO: Fix wrong movedblocks, only returns one movedblock while there are supposed to be multiple, which should trigger multiple events.
 		Set<String> movedBlocks = new HashSet<String>();
 		Block movedBlock = getBlockByID(movedBlockId);
+		
+//		Set<String> movedBlocks = getAllBlocksConnectedToAndAfterACertainBlock(movedBlock).stream().map(s->s.getBlockId()).collect(Collectors.toSet());
 		Block afm = getBlockByID(connectedAfterMoveBlockId);
 		ConnectionType connectionBeforeMove = ConnectionType.NOCONNECTION;
 		ArrayList<String> beforeMove = new ArrayList<String>();

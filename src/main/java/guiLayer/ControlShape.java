@@ -69,10 +69,10 @@ public class ControlShape extends Shape implements Constants {
 	@Override
 	public void defineConnectionTypes() {
 		HashMap<ConnectionType, Pair<Integer, Integer>> connectionMap = new HashMap<ConnectionType, Pair<Integer,Integer>>();
-			connectionMap.put(ConnectionType.UP, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()-10));
-			connectionMap.put(ConnectionType.CONDITION, new Pair<Integer, Integer>(this.getX_coord()+(getWidth()-10), this.getY_coord()+5));
-			connectionMap.put(ConnectionType.BODY, new Pair<Integer, Integer>(this.getX_coord()+30, this.getY_coord()+20));
-			connectionMap.put(ConnectionType.DOWN, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()+(getHeight()-10)));
+			connectionMap.put(ConnectionType.UP, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()));
+			connectionMap.put(ConnectionType.CONDITION, new Pair<Integer, Integer>(this.getX_coord()+(getWidth()-10), this.getY_coord()+15));
+			connectionMap.put(ConnectionType.BODY, new Pair<Integer, Integer>(this.getX_coord()+30, this.getY_coord()+30));
+			connectionMap.put(ConnectionType.DOWN, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()+(getHeight())));
 		this.setCoordinateConnectionMap(connectionMap);
 		
 	}

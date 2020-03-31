@@ -52,8 +52,8 @@ public class ActionShape extends Shape {
 	@Override
 	public void defineConnectionTypes() {
 		HashMap<ConnectionType, Pair<Integer, Integer>> connectionMap = new HashMap<ConnectionType, Pair<Integer,Integer>>();
-		connectionMap.put(ConnectionType.UP, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()-10));
-		connectionMap.put(ConnectionType.DOWN, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()+20));
+		connectionMap.put(ConnectionType.UP, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()));
+		connectionMap.put(ConnectionType.DOWN, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()+30));
 		this.setCoordinateConnectionMap(connectionMap);
 	}
 
