@@ -947,11 +947,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			programArea.removeFromAlreadyFilledInCoordinates(shape);
 		}
 
-		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e))
+		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e, programArea.getShapesInProgramArea()))
 				.collect(Collectors.toSet())) {
 			shape.determineTotalDimensions();
 		}
-		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e))
+		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e, programArea.getShapesInProgramArea()))
 				.collect(Collectors.toSet())) {
 			for (String id : domainController.getAllBlockIDsBelowCertainBlock(shape.getId())) {
 				if (!id.equals(shape.getId())) {
@@ -978,9 +978,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		super.repaint();
 	}
 
-	private Shape getShapeByID(String id) {
+	private Shape getShapeByID(String id, Collection<Shape> collection) {
 		try {
-			return programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id)).findFirst().get();
+			return collection.stream().filter(e -> e.getId().equals(id)).findFirst().get();
 
 		} catch (Exception e) {
 			return null;
@@ -989,29 +989,23 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	public void onBlockRemoved(BlockRemovedEvent event) {
-
-		this.setHandleEvent(true);
-
-		Shape toRemove = shapeFactory.createShape(event.getRemovedBlockId(), getCurrentShape().getType(),
-				getCurrentShape().getX_coord(), getCurrentShape().getY_coord());
-
-		for (Shape shape : programArea.getShapesInProgramArea()) {
-			if (domainController.getAllBlockIDsInBody(shape.getId()).contains(toRemove.getId())) {
-				shape.getInternals().remove(toRemove);
-			}
+		Shape toRemove = getShapeByID(event.getRemovedBlockId(), shapesInMovement);
+		
+		Set<Shape> shapesToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream().filter(s->s.getId().equals(event.getRemovedBlockId())).collect(Collectors.toSet());
+		
+		for (Shape shape : shapesToBeRemovedFromProgramArea) {
+			programArea.removeShapeFromProgramArea(shape);
 		}
-		for (Shape shape : programArea.getShapesInProgramArea()) {
-			programArea.removeFromAlreadyFilledInCoordinates(shape);
-			shape.getHeight(); // if this is a controlShape, it also updates the dimensions based on the
-								// internals
-			programArea.addToAlreadyFilledInCoordinates(shape);
+		
+		
+		if (!event.getBeforeRemoveBlockId().equals("")) {
+			Shape decoupledShape = getShapeByID(event.getBeforeRemoveBlockId(), programArea.getShapesInProgramArea());
+			decoupledShape.switchCavityStatus(event.getBeforeRemoveConnection());
 		}
 
-		programArea.removeShapeFromProgramArea(toRemove);
-		programArea.removeFromAlreadyFilledInCoordinates(getCurrentShape());
-
+		shapesInMovement.remove(toRemove);
 		this.setCurrentShape(null);
-		programArea.setHighlightedShape(null);
+
 		super.repaint();
 	}
 
@@ -1023,12 +1017,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					.findFirst().get();
 			
 			if (!event.getBeforeMoveBlockId().equals("")) {
-				Shape decoupledShape = getShapeByID(event.getBeforeMoveBlockId());
+				Shape decoupledShape = getShapeByID(event.getBeforeMoveBlockId(), programArea.getShapesInProgramArea());
 				decoupledShape.switchCavityStatus(event.getBeforeMoveConnection());
 			}
 
 			if(!event.getChangedLinkedBlockId().equals("")) {
-				Shape changedLinkedShape = getShapeByID(event.getChangedLinkedBlockId());
+				Shape changedLinkedShape = getShapeByID(event.getChangedLinkedBlockId(), programArea.getShapesInProgramArea());
 				changedLinkedShape.switchCavityStatus(event.getConnectionType());
 				switch(event.getConnectionType()) {
 				case BODY:

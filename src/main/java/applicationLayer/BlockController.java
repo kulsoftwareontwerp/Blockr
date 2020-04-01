@@ -58,10 +58,11 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 	}
 
-	private void fireBlockRemoved(Set<String> idsToBeRemoved) {
+	private void fireBlockRemoved(Set<String> idsToBeRemoved, String connectedBlock, ConnectionType connectionType) {
 		for (String id : idsToBeRemoved) {
-			BlockRemovedEvent event = new BlockRemovedEvent(id);
-
+			BlockRemovedEvent event = new BlockRemovedEvent(id, connectedBlock, connectionType);
+			connectedBlock="";
+			connectionType=ConnectionType.NOCONNECTION;
 			for (GUIListener listener : guiListeners) {
 				listener.onBlockRemoved(event);
 			}
@@ -177,6 +178,7 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *        block was reached before removing the block.
 	 */
 	public void removeBlock(String blockID) {
+		ArrayList<String> previousConnection = programBlockRepository.getConnectedParentIfExists(blockID);
 		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
 		Set<String> idsToBeRemoved = programBlockRepository.removeBlock(blockID);
 		fireUpdateGameState();
@@ -184,7 +186,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		if (maxBlocksReachedBeforeRemove) {
 			firePanelChangedEvent(true);
 		}
-		fireBlockRemoved(idsToBeRemoved);
+		fireBlockRemoved(idsToBeRemoved, previousConnection.get(1), ConnectionType.valueOf(previousConnection.get(0)));
 	}
 
 	/**
@@ -223,7 +225,7 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *        successful.
 	 */
 	public void moveBlock(String movedBlockId, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMoveIfExists(movedBlockId);
+		ArrayList<String> previousConnection = programBlockRepository.getConnectedParentIfExists(movedBlockId);
 		String movedBlockID = programBlockRepository.moveBlock(movedBlockId, connectedAfterMoveBlockId,
 				connectionAfterMove);
 		

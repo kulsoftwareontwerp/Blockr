@@ -186,9 +186,38 @@ public class BlockRepository {
 		Set<Block> blocksToBeRemoved = getAllBlocksConnectedToAndAfterACertainBlock(b);
 		Set<String> blockIdsToBeRemoved = new HashSet<String>();
 
-		// If the given block was in HeadBlocks, none of the blocks connected to that
-		// block are in headBlocks
-		removeBlockFromHeadBlocks(b);
+		if(headBlocks.contains(b)) {
+			// If the given block was in HeadBlocks, none of the blocks connected to that
+			// block are in headBlocks
+			removeBlockFromHeadBlocks(b);			
+		}
+		else {
+			//Search the parent of b and cut all connections
+			ArrayList<String> parentIdentifiers = getConnectedParentIfExists(b.getBlockId());
+			Block parent = getBlockByID(parentIdentifiers.get(1));
+			switch(ConnectionType.valueOf(parentIdentifiers.get(0))) {
+			case BODY:
+				parent.setFirstBlockOfBody(null);
+				break;
+			case CONDITION:
+				parent.setConditionBlock(null);
+				break;
+			case DOWN:
+				parent.setNextBlock(null);
+				break;
+			case OPERAND:
+				parent.setOperand(null);
+				break;
+			default:
+				break;
+			
+			}
+			
+			
+		}
+		
+		
+
 
 		for (Block blockToBeRemoved : blocksToBeRemoved) {
 			removeBlockFromAllBlocks(blockToBeRemoved);
@@ -287,7 +316,7 @@ public class BlockRepository {
 		if (movedBlock == null)
 			throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
-		beforeMove = getConnectedBlockBeforeMoveIfExists(movedBlockId);
+		beforeMove = getConnectedParentIfExists(movedBlockId);
 
 		connectionBeforeMove = ConnectionType.valueOf(beforeMove.get(0));
 		String bfmBlockId = beforeMove.get(1);
@@ -526,7 +555,7 @@ public class BlockRepository {
 		return movedBlockID;
 	}
 
-	public ArrayList<String> getConnectedBlockBeforeMoveIfExists(String movedBlockId) {
+	public ArrayList<String> getConnectedParentIfExists(String movedBlockId) {
 
 		Block movedBlock = getBlockByID(movedBlockId);
 		Iterator itAllBlocks = allBlocks.entrySet().iterator();
