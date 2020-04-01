@@ -31,7 +31,6 @@ import types.BlockType;
 import types.ConnectionType;
 
 public class CanvasWindow extends CanvasResource implements GUIListener, Constants {
-
 	private ProgramArea programArea;
 	private GameArea gameArea;
 	private PaletteArea paletteArea;
@@ -918,11 +917,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		if (!(toAdd instanceof UnaryOperatorShape || toAdd instanceof ConditionShape)) {
 			String enclosingControlShapeId = domainController.getEnclosingControlBlock(toAdd.getId());
 			System.out.println("enclosingControlShapeId: " + enclosingControlShapeId);
-			String pepo = domainController.getEnclosingControlBlock(toAdd.getId());
 			Shape enclosingControlShape = null;
 			try {
-				enclosingControlShape = programArea.getShapesInProgramArea().stream()
-						.filter(e -> e.getId().equals(enclosingControlShapeId)).findFirst().get();
+				enclosingControlShape =getShapeByID(enclosingControlShapeId, programArea.getShapesInProgramArea());
 			} catch (Exception e) {
 				enclosingControlShape = null;
 			}
@@ -936,21 +933,18 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 		}
 
-//		for (Shape shape : shapesInProgramArea) {
-//			//Set<String> idsInBody= domainController.getAllBlockIDsInBody(shape.getId());
-//				programArea.removeFromAlreadyFilledInCoordinates(shape);
-//				shape.determineTotalDimensions();
-//				programArea.addToAlreadyFilledInCoordinates(shape);
-//		}
-
 		for (Shape shape : programArea.getShapesInProgramArea()) {
 			programArea.removeFromAlreadyFilledInCoordinates(shape);
 		}
 
+		
+		
 		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e, programArea.getShapesInProgramArea()))
 				.collect(Collectors.toSet())) {
 			shape.determineTotalDimensions();
 		}
+		
+		
 		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e, programArea.getShapesInProgramArea()))
 				.collect(Collectors.toSet())) {
 			for (String id : domainController.getAllBlockIDsBelowCertainBlock(shape.getId())) {
@@ -967,6 +961,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 
 		}
+		
+		
 
 		for (Shape shape : programArea.getShapesInProgramArea()) {
 			programArea.addToAlreadyFilledInCoordinates(shape);
