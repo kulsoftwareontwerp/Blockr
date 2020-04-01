@@ -230,8 +230,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			if (id == MouseEvent.MOUSE_RELEASED && programArea.checkIfInProgramArea(x) && currentShape != null) {
 
-				if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
-					// ADD
+				if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER) && programArea.getHighlightedShape()!=null) {
+					
+					
+					
+					// ADD					
 					currentShape.clipOn(programArea.getHighlightedShape(), currentShape.getConnectedVia());
 
 				} else {
@@ -615,11 +618,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		for (Shape shapeInMovement : getShapesInMovement()) {
 
-			connectionTriggerSetUP = new HashSet<Pair<Integer, Integer>>();
-			connectionTriggerSetDOWN = new HashSet<Pair<Integer, Integer>>();
-			connectionTriggerSetLEFT = new HashSet<Pair<Integer, Integer>>();
-			connectionTriggerSetCONDITION = new HashSet<Pair<Integer, Integer>>();
-			connectionTriggerSetOPERAND = new HashSet<Pair<Integer, Integer>>();
+//			connectionTriggerSetUP = new HashSet<Pair<Integer, Integer>>();
+//			connectionTriggerSetDOWN = new HashSet<Pair<Integer, Integer>>();
+//			connectionTriggerSetLEFT = new HashSet<Pair<Integer, Integer>>();
+//			connectionTriggerSetCONDITION = new HashSet<Pair<Integer, Integer>>();
+//			connectionTriggerSetOPERAND = new HashSet<Pair<Integer, Integer>>();
 
 			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.UP) != null
 					&& shapeInMovement.checkIfOpen(ConnectionType.UP)) {

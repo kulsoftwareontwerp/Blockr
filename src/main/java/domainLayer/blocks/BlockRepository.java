@@ -74,7 +74,7 @@ public class BlockRepository {
 			addBlockToHeadBlocks(newBlock);
 			break;
 		case UP:
-			if(headBlocks.stream().map(e-> e.getBlockId()).collect(Collectors.toSet()).contains(connectedBlockId)){
+			if (headBlocks.stream().map(e -> e.getBlockId()).collect(Collectors.toSet()).contains(connectedBlockId)) {
 				removeBlockFromHeadBlocks(connectedBlock);
 				addBlockToHeadBlocks(newBlock);
 			}
@@ -269,15 +269,15 @@ public class BlockRepository {
 	 * 
 	 * 
 	 */
-	public String moveBlock(String movedBlockId, String connectedAfterMoveBlockId,
-			ConnectionType connectionAfterMove) {
-		
-		//TODO: Fix wrong movedblocks, only returns one movedblock while there are supposed to be multiple, which should trigger multiple events.
+	public String moveBlock(String movedBlockId, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+
+		// TODO: Fix wrong movedblocks, only returns one movedblock while there are
+		// supposed to be multiple, which should trigger multiple events.
 		Block movedBlock = getBlockByID(movedBlockId);
-		
-		//The id of the block that's changed
-		String movedBlockID=movedBlockId;
-		
+
+		// The id of the block that's changed
+		String movedBlockID = movedBlockId;
+
 //		Set<String> movedBlocks = getAllBlocksConnectedToAndAfterACertainBlock(movedBlock).stream().map(s->s.getBlockId()).collect(Collectors.toSet());
 		Block afm = getBlockByID(connectedAfterMoveBlockId);
 		ConnectionType connectionBeforeMove = ConnectionType.NOCONNECTION;
@@ -304,12 +304,10 @@ public class BlockRepository {
 
 				removeBlockFromHeadBlocks(movedBlock);
 				afm.setNextBlock(movedBlock);
-				
-			}
-			else if ( connectionAfterMove == ConnectionType.NOCONNECTION) {
-				movedBlockID=null;
-			}
-			else if (connectionAfterMove == ConnectionType.UP) {
+
+			} else if (connectionAfterMove == ConnectionType.NOCONNECTION) {
+				movedBlockID = null;
+			} else if (connectionAfterMove == ConnectionType.UP) {
 				if (!headBlocks.contains(afm))
 					throw new InvalidBlockConnectionException("This socket is not free");
 				if (movedBlock.getNextBlock() != null) {
@@ -318,7 +316,7 @@ public class BlockRepository {
 						nextBlockInChain = nextBlockInChain.getNextBlock();
 					}
 					nextBlockInChain.setNextBlock(afm);
-					movedBlockID=nextBlockInChain.getBlockId();
+					movedBlockID = nextBlockInChain.getBlockId();
 				} else {
 					movedBlock.setNextBlock(afm);
 				}
@@ -352,7 +350,7 @@ public class BlockRepository {
 						nextChainBlock = nextChainBlock.getOperand();
 					}
 					nextChainBlock.setOperand(afm);
-					movedBlockID=nextChainBlock.getBlockId();
+					movedBlockID = nextChainBlock.getBlockId();
 				} else {
 					movedBlock.setOperand(afm);
 				}
@@ -375,7 +373,7 @@ public class BlockRepository {
 			if (connectionAfterMove == ConnectionType.NOCONNECTION) {
 				bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
 				addBlockToHeadBlocks(movedBlock);
-				movedBlockID=null;
+				movedBlockID = null;
 			}
 
 			else if (connectionAfterMove == ConnectionType.DOWN) {
@@ -399,7 +397,7 @@ public class BlockRepository {
 						nextBlockInChain = nextBlockInChain.getNextBlock();
 					}
 					nextBlockInChain.setNextBlock(afm);
-					movedBlockID=nextBlockInChain.getBlockId();
+					movedBlockID = nextBlockInChain.getBlockId();
 				} else {
 					movedBlock.setNextBlock(afm);
 				}
@@ -427,8 +425,8 @@ public class BlockRepository {
 			if (connectionAfterMove == ConnectionType.NOCONNECTION) {
 				bfm.setConditionBlock(null);
 				addBlockToHeadBlocks(movedBlock);
-				movedBlockID=null;
-				
+				movedBlockID = null;
+
 			} else if (connectionAfterMove == ConnectionType.CONDITION) {
 				if (afm == null)
 					throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
@@ -446,7 +444,7 @@ public class BlockRepository {
 						nextChainBlock = nextChainBlock.getOperand();
 					}
 					nextChainBlock.setOperand(afm);
-					movedBlockID=nextChainBlock.getBlockId();
+					movedBlockID = nextChainBlock.getBlockId();
 				} else {
 					movedBlock.setOperand(afm);
 				}
@@ -462,7 +460,7 @@ public class BlockRepository {
 			if (connectionAfterMove == ConnectionType.NOCONNECTION) {
 				bfm.setOperand(null);
 				headBlocks.add(movedBlock);
-				movedBlockID=null;
+				movedBlockID = null;
 			} else if (connectionAfterMove == ConnectionType.CONDITION) {
 				if (afm == null)
 					throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
@@ -480,7 +478,7 @@ public class BlockRepository {
 						nextBlockInChain = nextBlockInChain.getOperand();
 					}
 					nextBlockInChain.setOperand(afm);
-					movedBlockID=nextBlockInChain.getBlockId();
+					movedBlockID = nextBlockInChain.getBlockId();
 				} else {
 					movedBlock.setOperand(afm);
 				}
@@ -494,7 +492,7 @@ public class BlockRepository {
 			if (connectionAfterMove == ConnectionType.NOCONNECTION) {
 				bfm.setFirstBlockOfBody(null);
 				addBlockToHeadBlocks(movedBlock);
-				movedBlockID=null;
+				movedBlockID = null;
 			}
 
 			else if (connectionAfterMove == ConnectionType.DOWN) {
@@ -516,7 +514,7 @@ public class BlockRepository {
 						nextBlockInChain = nextBlockInChain.getNextBlock();
 					}
 					nextBlockInChain.setNextBlock(afm);
-					movedBlockID=nextBlockInChain.getBlockId();
+					movedBlockID = nextBlockInChain.getBlockId();
 				} else {
 					movedBlock.setNextBlock(afm);
 				}
@@ -542,31 +540,26 @@ public class BlockRepository {
 			Map.Entry element = (Entry) itAllBlocks.next();
 			Block block = (Block) element.getValue();
 			if (block instanceof ActionBlock) {
-				if (block.getNextBlock() != null) {
-					if (block.getNextBlock().equals(movedBlock)) {
-						connectedBlockInfo.add("DOWN");
-						connectedBlockInfo.add(block.getBlockId());
-					}
+				if (block.getNextBlock() != null && block.getNextBlock().equals(movedBlock)) {
+					connectedBlockInfo.add("DOWN");
+					connectedBlockInfo.add(block.getBlockId());
 				}
 			} else if (block instanceof ControlBlock) {
-				if (block.getNextBlock() != null) {
-					if (block.getNextBlock().equals(movedBlock)) {
-						connectedBlockInfo.add("DOWN");
-						connectedBlockInfo.add(block.getBlockId());
-					} else if (block.getConditionBlock().equals(movedBlock)) {
-						connectedBlockInfo.add("CONDITION");
-						connectedBlockInfo.add(block.getBlockId());
-					} else if (block.getFirstBlockOfBody().equals(movedBlock)) {
-						connectedBlockInfo.add("BODY");
-						connectedBlockInfo.add(block.getBlockId());
-					}
+				if (block.getNextBlock() != null && block.getNextBlock().equals(movedBlock)) {
+					connectedBlockInfo.add("DOWN");
+					connectedBlockInfo.add(block.getBlockId());
+				} else if (block.getConditionBlock() != null && block.getConditionBlock().equals(movedBlock)) {
+					connectedBlockInfo.add("CONDITION");
+					connectedBlockInfo.add(block.getBlockId());
+				} else if (block.getFirstBlockOfBody() != null && block.getFirstBlockOfBody().equals(movedBlock)) {
+					connectedBlockInfo.add("BODY");
+					connectedBlockInfo.add(block.getBlockId());
 				}
 			} else if (block instanceof OperatorBlock) {
-				if (block.getNextBlock() != null) {
-					if (block.getOperand().equals(movedBlock)) {
-						connectedBlockInfo.add("OPERAND");
-						connectedBlockInfo.add(block.getBlockId());
-					}
+
+				if (block.getOperand() != null && block.getOperand().equals(movedBlock)) {
+					connectedBlockInfo.add("OPERAND");
+					connectedBlockInfo.add(block.getBlockId());
 				}
 
 			}
@@ -715,7 +708,7 @@ public class BlockRepository {
 
 		return allBlocksInBody;
 	}
-	
+
 	private Set<Block> getAllBlocksAfterACertainBlock(Block block) {
 		Set<Block> allBlocksInBody = new HashSet<Block>();
 
@@ -782,21 +775,22 @@ public class BlockRepository {
 //
 //		return null;
 //	}
-	
-	
-	public Set<ControlBlock> getAllHeadControlBlocks(){
-		return this.headBlocks.stream().filter(e-> e instanceof ControlBlock).map(e-> (ControlBlock)e).collect(Collectors.toSet());
+
+	public Set<ControlBlock> getAllHeadControlBlocks() {
+		return this.headBlocks.stream().filter(e -> e instanceof ControlBlock).map(e -> (ControlBlock) e)
+				.collect(Collectors.toSet());
 	}
 
 	public ControlBlock getEnclosingControlBlock(ExecutableBlock block) {
 		Set<ControlBlock> chain = new HashSet<ControlBlock>();
 		for (Block headBlock : headBlocks) {
-			getAllBlocksConnectedToAndAfterACertainBlock(headBlock).stream().filter(e -> !e.getBlockId().equals(block.getBlockId()) && (e instanceof ControlBlock))
+			getAllBlocksConnectedToAndAfterACertainBlock(headBlock).stream()
+					.filter(e -> !e.getBlockId().equals(block.getBlockId()) && (e instanceof ControlBlock))
 					.forEach(p -> chain.add((ControlBlock) p));
 		}
-		for (ControlBlock c : chain) {			
+		for (ControlBlock c : chain) {
 			for (ExecutableBlock topLevelBlock : getAllBlocksInBodyTopLevel(c.getFirstBlockOfBody())) {
-				if(topLevelBlock.getBlockId().equals(block.getBlockId())) {
+				if (topLevelBlock.getBlockId().equals(block.getBlockId())) {
 					return c;
 				}
 			}
@@ -815,11 +809,10 @@ public class BlockRepository {
 
 		return allBlocksInBody;
 	}
-	
+
 	public Set<String> getAllBlockIDsBelowCertainBlock(Block block) {
 		Set<String> blockIDsUnderNeath = new HashSet<String>();
-		getAllBlocksAfterACertainBlock(block).stream().map(s -> s.getBlockId())
-				.forEach(s -> blockIDsUnderNeath.add(s));
+		getAllBlocksAfterACertainBlock(block).stream().map(s -> s.getBlockId()).forEach(s -> blockIDsUnderNeath.add(s));
 		return blockIDsUnderNeath;
 	}
 
