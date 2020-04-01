@@ -92,9 +92,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			programArea.getShapesInProgramArea().stream().forEach(((Shape e) -> e.draw(g)));
 		}
 
-		if (programArea.getHighlightedShape() != null) {
-			drawHighlightedGREEN(g, programArea.getHighlightedShape());
-		}
 
 		if (highlightedForExecution != null) {
 			drawHighlightedBLUE(g, highlightedForExecution);
@@ -108,12 +105,22 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 		}
 
+		if (programArea.getHighlightedShape() != null) {
+			drawHighlightedGREEN(g, programArea.getHighlightedShape());
+		}
 		// only for debugging purposes
 		for (Shape shape : programArea.getShapesInProgramArea()) {
-			for (var p : shape.getCoordinateConnectionMap().values()) {
-				int tempx = p.getLeft() - 3;
-				int tempy = p.getRight();
+			for (var p : shape.getCoordinateConnectionMap().entrySet()) {
+				int tempx = p.getValue().getLeft() - 3;
+				int tempy = p.getValue().getRight();
 				g.drawOval(tempx, tempy, 6, 6);
+				if(p.getKey()==ConnectionType.UP) {
+					g.drawString(shape.checkIfOpen(ConnectionType.UP).toString(),tempx, tempy);					
+				}
+				if(p.getKey()==ConnectionType.DOWN) {
+					g.drawString(shape.checkIfOpen(ConnectionType.DOWN).toString(),tempx, tempy);					
+				}
+				
 			}
 		}
 		for (Shape shape : shapesInMovement) {
@@ -178,7 +185,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				programArea.setHighlightedShape(determineHighlightShape());
 
-				updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy);
+				updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy, currentShape);
 
 			}
 
@@ -196,15 +203,18 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 							shapesInMovement.add(temp);
 
-							// We choose to only implement movements and adds with sequences of blocks
-							// where the connection happens with the block that was initially clicked.
+
 							previousCoordinates.put(temp,
 									new Pair<Integer, Integer>(temp.getX_coord(), temp.getY_coord()));
 						}
 					}
-
+					
 					setCurrentShape(shape);
-					shape.setConnectedVia(ConnectionType.NOCONNECTION);
+					
+					decoupleFromShape(currentShape);
+
+					currentShape.setConnectedVia(ConnectionType.NOCONNECTION);
+
 
 					var mouseOffset = calculateOffsetMouse(x, y, getCurrentShape().getX_coord(),
 							getCurrentShape().getY_coord());
@@ -230,11 +240,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			if (id == MouseEvent.MOUSE_RELEASED && programArea.checkIfInProgramArea(x) && currentShape != null) {
 
-				if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER) && programArea.getHighlightedShape()!=null) {
-					
-					
-					
-					// ADD					
+				if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)
+						&& programArea.getHighlightedShape() != null) {
+
+					// ADD
 					currentShape.clipOn(programArea.getHighlightedShape(), currentShape.getConnectedVia());
 
 				} else {
@@ -251,16 +260,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						System.out.println("AfterClipon X: " + movedShape.getX_coord());
 						System.out.println("AfterClipon Y: " + movedShape.getY_coord());
 
-						movedShape.switchCavityStatus(programArea.getHighlightedShape().getConnectedVia());
-						// TODO: Still need to switch the cavity of the previous connection,
-						// currentshape. to whom am i connected.
-
-						int diffX = movedShape.getX_coord()-originalChangedShapeX;
-						int diffy = movedShape.getY_coord()-originalChangedShapeY;
+						decoupleFromShape(movedShape);
+						int diffX = movedShape.getX_coord() - originalChangedShapeX;
+						int diffy = movedShape.getY_coord() - originalChangedShapeY;
 						System.out.println("diffX: " + diffX);
 						System.out.println("diffY: " + diffy);
 
-						updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy);
+						updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy, movedShape);
 					}
 
 				}
@@ -291,14 +297,15 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 						} else {
 
-							domainController.moveBlock(movedShape.getId(), programArea.getHighlightedShape().getId(),
+							domainController.moveBlock(currentShape.getId(), programArea.getHighlightedShape().getId(),
 									movedShape.getConnectedVia());
 						}
 					}
 					// decouple chain of blocks from a block
-					else if (getCurrentShape().getConnectedVia() != ConnectionType.NOCONNECTION) {
+					else if (getCurrentShape().getConnectedVia() != ConnectionType.NOCONNECTION || (getCurrentShape().getConnectedVia() == ConnectionType.NOCONNECTION && getCurrentShape().getPreviouslyConnectedVia() != ConnectionType.NOCONNECTION)) {
 						domainController.moveBlock(getCurrentShape().getId(), "", ConnectionType.NOCONNECTION);
 					}
+					
 					// ONLY GRAPHICAL MOVEMENT:
 					else {
 
@@ -346,6 +353,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				}
 
 				setCurrentShape(null);
+				programArea.setHighlightedShape(null);
+				movedShape=null;
 				setX_offsetCurrentShape(0);
 				setY_offsetCurrentShape(0);
 
@@ -364,11 +373,24 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 	}
 
-	private void updateAllShapesInMovementAccordingToChangeOfLeader(int diffX, int diffy) {
+	private void decoupleFromShape(Shape shapeToDecouple) {
+		ConnectionType connectionToDecouple = ConnectionType.NOCONNECTION;
+
+		if((shapeToDecouple instanceof ConditionShape || shapeToDecouple instanceof UnaryOperatorShape) && !shapeToDecouple.checkIfOpen(ConnectionType.LEFT)) {
+			connectionToDecouple=ConnectionType.LEFT;
+		}
+		else if((shapeToDecouple instanceof ActionShape || shapeToDecouple instanceof ControlShape)&& !shapeToDecouple.checkIfOpen(ConnectionType.UP)) {
+			connectionToDecouple=ConnectionType.UP;
+		}
+		
+		shapeToDecouple.switchCavityStatus(connectionToDecouple);
+	}
+
+	private void updateAllShapesInMovementAccordingToChangeOfLeader(int diffX, int diffy, Shape excludedShape) {
 		if (!shapesInMovement.isEmpty()) {
 			for (Shape shape : shapesInMovement) {
 
-				if (shape != currentShape) {
+				if (shape != excludedShape) {
 					shape.setX_coord(shape.getX_coord() + diffX);
 					shape.setY_coord(shape.getY_coord() + diffy);
 				}
@@ -999,40 +1021,33 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		try {
 			Shape changedShape = shapesInMovement.stream().filter(s -> s.getId().equals(event.getChangedBlockId()))
 					.findFirst().get();
+			
+			if (!event.getBeforeMoveBlockId().equals("")) {
+				Shape decoupledShape = getShapeByID(event.getBeforeMoveBlockId());
+				decoupledShape.switchCavityStatus(event.getBeforeMoveConnection());
+			}
 
-//			Shape toAdd = shapeFactory.createShape(event.getChangedBlockId(), changedShape.getType(),
-//					changedShape.getX_coord(), changedShape.getY_coord());
+			if(!event.getChangedLinkedBlockId().equals("")) {
+				Shape changedLinkedShape = getShapeByID(event.getChangedLinkedBlockId());
+				changedLinkedShape.switchCavityStatus(event.getConnectionType());
+				switch(event.getConnectionType()) {
+				case BODY:
+				case DOWN:
+					changedShape.switchCavityStatus(ConnectionType.UP);
+					break;
+				case OPERAND:
+				case CONDITION:
+					changedShape.switchCavityStatus(ConnectionType.LEFT);
+					break;
+				default:
+					break;
+				
+				}
+				
+				
+			}
+			
 
-//			System.out.println("before");
-//			System.out.println(changedShape.getId());
-//			System.out.println(changedShape.getType());
-//			System.out.println(shapesInMovement.size());
-//
-//			shapesInMovement.remove(changedShape);
-//
-//			int originalChangedShapeX = changedShape.getPreviousX_coord();
-//			int originalChangedShapeY = changedShape.getPreviousY_coord();
-//			System.out.println("BeforeClipon X: " + originalChangedShapeX);
-//			System.out.println("BeforeClipon Y: " + originalChangedShapeY);
-//
-//			if (programArea.getHighlightedShape() != null) {
-//				changedShape.clipOn(programArea.getHighlightedShape(), changedShape.getConnectedVia());
-//			}
-//
-//			System.out.println("AfterClipon X: " + changedShape.getX_coord());
-//			System.out.println("AfterClipon Y: " + changedShape.getY_coord());
-//
-//			changedShape.switchCavityStatus(programArea.getHighlightedShape().getConnectedVia());
-//			// TODO: Still need to switch the cavity of the previous connection,
-//			// currentshape. to whom am i connected.
-//
-//			int diffX = originalChangedShapeX - changedShape.getX_coord();
-//			int diffy = originalChangedShapeY - changedShape.getY_coord();
-//			System.out.println("diffX: " + diffX);
-//			System.out.println("diffY: " + diffy);
-//
-//			updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy);
-//			shapesInMovement.add(changedShape);
 
 			for (Shape movedShape : shapesInMovement) {
 

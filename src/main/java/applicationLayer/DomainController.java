@@ -164,7 +164,7 @@ public class DomainController {
 	 * 
 	 * 
 	 * 
-	 * @param movedBlockId					The Id of block to be moved, this parameter is required.
+	 * @param movedBlockId					The Id of block to be moved, if you move a chain of blocks this will be the first block in the chain, this parameter is required.
 	 * 
 	 * 
 	 * @param connectedAfterMoveBlockId		The Id of the block you wish to connect the block you are moving to. This parameter is Required.

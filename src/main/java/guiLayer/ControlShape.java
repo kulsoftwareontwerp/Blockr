@@ -146,8 +146,8 @@ public class ControlShape extends Shape implements Constants {
 			setX_coord(shapeToClipTo.getX_coord() + 10);
 			setY_coord(shapeToClipTo.getY_coord() + 30);
 			break;
-		case CONDITION:
-			setX_coord(shapeToClipTo.getX_coord() + shapeToClipTo.getWidth() - 10);
+		case LEFT:
+			setX_coord(shapeToClipTo.getX_coord() -getWidth()+10);
 			setY_coord(shapeToClipTo.getY_coord());
 			break;
 		default:

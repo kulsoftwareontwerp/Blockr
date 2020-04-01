@@ -1,5 +1,6 @@
 package applicationLayer;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -68,8 +69,8 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 	}
 
-	private void fireBlockChanged(String changedBlockId, String changedLinkedBlockId, ConnectionType connectionType) {
-		BlockChangeEvent event = new BlockChangeEvent(changedBlockId, changedLinkedBlockId, connectionType);
+	private void fireBlockChanged(String changedBlockId, String changedLinkedBlockId, ConnectionType connectionType, String beforeMoveBlockId, ConnectionType beforeMoveConnectionType) {
+		BlockChangeEvent event = new BlockChangeEvent(changedBlockId, changedLinkedBlockId, connectionType, beforeMoveBlockId, beforeMoveConnectionType);
 
 		for (GUIListener listener : guiListeners) {
 			listener.onBlockChangeEvent(event);
@@ -222,13 +223,18 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *        successful.
 	 */
 	public void moveBlock(String movedBlockId, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMoveIfExists(movedBlockId);
 		String movedBlockID = programBlockRepository.moveBlock(movedBlockId, connectedAfterMoveBlockId,
 				connectionAfterMove);
+		
+		
+
+		
 		fireUpdateGameState();
 		fireResetExecutionEvent();
-		if (movedBlockID != null) {
-			fireBlockChanged(movedBlockID, connectedAfterMoveBlockId, connectionAfterMove);
-		}
+
+			fireBlockChanged(movedBlockID, connectedAfterMoveBlockId, connectionAfterMove, previousConnection.get(1), ConnectionType.valueOf(previousConnection.get(0)));
+		
 	}
 
 //	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {

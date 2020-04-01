@@ -28,6 +28,7 @@ public abstract class Shape implements Constants {
 	private HashMap<ConnectionType, Boolean> connectionStatus; // Is a connection available to add something to it or
 																// not.
 
+
 	private ConnectionType connectedVia; // NOCONNECTION if solo, Connection from connectedBlock
 	private ConnectionType previouslyConnectedVia;
 
@@ -55,7 +56,7 @@ public abstract class Shape implements Constants {
 		initDimensions(); // setWidth & setHeight
 		coordinatesShape = createCoordinatePairs(getX_coord(), getY_coord());
 		coordinateConnectionMap = new HashMap<ConnectionType, Pair<Integer, Integer>>();
-		connectionStatus= new HashMap<ConnectionType, Boolean>();
+		connectionStatus = new HashMap<ConnectionType, Boolean>();
 		defineConnectionTypes(); // setCoordinateConnectionMap, SOCKETS AND PLUGS
 	}
 
@@ -84,20 +85,19 @@ public abstract class Shape implements Constants {
 	}
 
 	public Boolean checkIfOpen(ConnectionType connection) {
-		if(connectionStatus.get(connection)==null) {
+		if (connectionStatus.get(connection) == null) {
 			return false;
-		}
-		else {
-			return connectionStatus.get(connection);			
+		} else {
+			return connectionStatus.get(connection);
 		}
 	}
 
 	public void switchCavityStatus(ConnectionType connection) {
-		if (connectionStatus.containsKey(connection)) {
-			connectionStatus.put(connection, !connectionStatus.get(connection));
-		} else {
-			connectionStatus.put(connection, true);
-		}
+			if (connectionStatus.containsKey(connection)) {
+				connectionStatus.put(connection, !connectionStatus.get(connection));
+			} else {
+				connectionStatus.put(connection, true);
+			}
 	}
 
 	public String getId() {
