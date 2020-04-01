@@ -12,11 +12,15 @@ public class ProgramArea implements Constants {
 	private HashSet<Pair<Integer, Integer>> alreadyFilledInCoordinates;
 	private HashMap<Shape, Pair<Integer, Integer>> openConnectionCoordinates;
 	private Shape highlightedShape = null;
-	private ArrayList<Shape> shapesInProgramArea; // shapes with Id == null SHOULDN'T exist!!!!, only if dragged from
+	private HashSet<Shape> shapesInProgramArea; // shapes with Id == null SHOULDN'T exist!!!!, only if dragged from
 	// Palette, Id == "PALETTE"
 
-	public ArrayList<Shape> getShapesInProgramArea() {
-		return shapesInProgramArea;
+	public HashSet<Shape> getShapesInProgramArea() {
+		HashSet<Shape> copy = new HashSet<Shape>(shapesInProgramArea);
+		
+		
+		
+		return copy;
 	}
 
 	public void addShapeToProgramArea(Shape shape) {
@@ -32,7 +36,7 @@ public class ProgramArea implements Constants {
 
 	public ProgramArea() {
 		alreadyFilledInCoordinates = new HashSet<Pair<Integer, Integer>>();
-		shapesInProgramArea = new ArrayList<Shape>();
+		shapesInProgramArea = new HashSet<Shape>();
 		openConnectionCoordinates =new  HashMap<Shape, Pair<Integer, Integer>>();	}
 
 	public boolean checkIfInProgramArea(int x) {

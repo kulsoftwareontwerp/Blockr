@@ -204,7 +204,7 @@ public abstract class Shape implements Constants {
 		if (!(o instanceof Shape))
 			return false;
 		Shape shapeo = (Shape) o;
-		return this.getId().equals(shapeo.getId());
+		return this.getId().equals(shapeo.getId()) && getType().equals(shapeo.getType())  ;
 	}
 
 	public int getPreviousHeight() {
