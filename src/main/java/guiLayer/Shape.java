@@ -11,7 +11,7 @@ import java.util.Set;
 import types.BlockType;
 import types.ConnectionType;
 
-public abstract class Shape implements Constants {
+public abstract class Shape implements Constants,Cloneable {
 
 
 	private String id;
@@ -204,6 +204,15 @@ public abstract class Shape implements Constants {
 	@Override
 	public int hashCode() {
 		return getId().hashCode() + getType().hashCode();
+	}
+
+	
+	
+	
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		// TODO Auto-generated method stub
+		return super.clone();
 	}
 
 	@Override

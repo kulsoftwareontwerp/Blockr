@@ -302,7 +302,34 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						if (programArea.getHighlightedShape().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
 							domainController.moveBlock(getCurrentShape().getId(), "", ConnectionType.NOCONNECTION);
 
-						} else {
+						}
+							else if (programArea.getHighlightedShape().getConnectedVia() != ConnectionType.NOCONNECTION
+								&& getCurrentShape().getConnectedVia() != ConnectionType.NOCONNECTION) {
+							
+							Shape savedMovedShape=null;
+							try {
+								savedMovedShape = (Shape) movedShape.clone();
+							} catch (CloneNotSupportedException e) {
+
+								e.printStackTrace();
+							}
+							String currentShapeId = getCurrentShape().getId();
+							String highlightedShapeId = programArea.getHighlightedShape().getId();
+							HashSet<Shape> savedMovedShapes = new HashSet<Shape>(shapesInMovement);
+							
+							
+							domainController.moveBlock(currentShapeId, "", ConnectionType.NOCONNECTION);
+							
+							
+							setCurrentShape(getShapeByID(currentShapeId, programArea.getShapesInProgramArea()));
+							movedShape=savedMovedShape;							
+							shapesInMovement.addAll(savedMovedShapes);
+							
+							domainController.moveBlock(currentShapeId , highlightedShapeId ,
+									savedMovedShape.getConnectedVia());
+							
+						} 
+							else {
 
 							domainController.moveBlock(currentShape.getId(), programArea.getHighlightedShape().getId(),
 									movedShape.getConnectedVia());
@@ -649,11 +676,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			System.out.println(toAdd.getConnectedVia() + "        " + programArea.getHighlightedShape().getId());
 		}
 
-		// Normally already removed
-		// this.shapesInProgramArea.remove(getCurrentShape());
-		// IMPORTANT
-		// this.shapesInProgramArea.stream().forEach(e-> e.determineTotalDimensions());
-
 		programArea.addShapeToProgramArea(toAdd);
 
 		if (!(toAdd instanceof UnaryOperatorShape || toAdd instanceof ConditionShape)) {
@@ -684,57 +706,19 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		for (Shape shape : domainController.getAllHeadControlBlocks().stream()
 				.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet())) {
-//		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(s -> s instanceof ControlShape)
-//				.collect(Collectors.toSet())) {
 
-			String enclosingBlockID = domainController.getEnclosingControlBlock(toAdd.getId());
-			Set<String> idsToMove;
-			if (enclosingBlockID == null) {
-				idsToMove = domainController.getAllBlockIDsUnderneath(shape.getId()).stream()
-						.filter(s -> !s.equals(shape.getId())).collect(Collectors.toSet());
-			} else {
-				HashSet<String> allEnclosingBlocks = new HashSet<String>();
-				
-				String copyOriginal = enclosingBlockID;
-				String tempEnclosingId = enclosingBlockID;
-				
-				
-				
-				while(!tempEnclosingId.equals(shape.getId())) {
-					copyOriginal=tempEnclosingId;
-					tempEnclosingId=domainController.getEnclosingControlBlock(copyOriginal);
-					allEnclosingBlocks.add(copyOriginal);
-				}
-				
-				HashSet<String> blocksInBodiesToBeIgnored=new HashSet<String>();
-				for(String enclosingID : allEnclosingBlocks) {
-					String nextID= domainController.getFirstBlockBelow(enclosingID);
-					if(!allEnclosingBlocks.contains(nextID)) {
-						blocksInBodiesToBeIgnored.add(nextID);
-					}
-				}
-				
-				//final String finalEnclosingID= copyOriginal;
-				idsToMove = domainController.getAllBlockIDsUnderneath(shape.getId()).stream()
-						.filter(s -> !s.equals(shape.getId())).filter(s -> !allEnclosingBlocks.contains(s))
-						.filter(s -> !domainController.getAllBlockIDsInBody(enclosingBlockID).contains(s))
-						.filter(s -> !blocksInBodiesToBeIgnored.contains(s))
-						.collect(Collectors.toSet());
-			}
+			HashSet<String> idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(toAdd.getId());
 
 			for (String id : idsToMove) {
-//			for (String id : domainController.getAllBlockIDsBelowCertainBlock(shape.getId())) {
-//				if (!id.equals(shape.getId())) {
-					Shape shapeje = null;
-					try {
-						shapeje = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id))
-								.findFirst().get();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					shapeje.setY_coord(shapeje.getY_coord() + (shape.getHeight() - shape.getPreviousHeight()));
+				Shape shapeje = null;
+				try {
+					shapeje = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id))
+							.findFirst().get();
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-//			}
+				shapeje.setY_coord(shapeje.getY_coord() + (shape.getHeight() - shape.getPreviousHeight()));
+			}
 
 		}
 
@@ -748,6 +732,41 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		programArea.setHighlightedShape(null);
 		this.setCurrentShape(null);
 		super.repaint();
+	}
+
+	@SuppressWarnings("unchecked")
+	private HashSet<String> shapeIdsToBeMovedAfterUpdateOfControlShape(String changedBlockId) {
+		Set<String> ids = new HashSet<String>();
+		HashSet<String> enclosingShapes = getAllEnclosingShapeIds(changedBlockId);
+
+		for (String id : enclosingShapes) {
+			Set<String> blocksBelow = domainController.getAllBlockIDsBelowCertainBlock(id).stream()
+					.filter(s -> !s.equals(id)).collect(Collectors.toSet());
+			for (String idBlockBelow : blocksBelow) {
+				ids.addAll(domainController.getAllBlockIDsUnderneath(idBlockBelow));
+			}
+		}
+		
+		
+		
+		Set<String> idsShapesInMovement = shapesInMovement.stream().map(b -> b.getId()).collect(Collectors.toSet());
+		ids = ids.stream().filter(s -> !idsShapesInMovement.contains(s)).collect(Collectors.toSet());
+
+		return (HashSet<String>) ids;
+	}
+
+	private HashSet<String> getAllEnclosingShapeIds(String changedBlockId) {
+		HashSet<String> ids = new HashSet<String>();
+		Shape shape = getShapeByID(changedBlockId, programArea.getShapesInProgramArea());
+		if (shape instanceof ControlShape) {
+			ids.add(shape.getId());
+		}
+		String tempId = domainController.getEnclosingControlBlock(changedBlockId);
+		while (tempId != null) {
+			ids.add(tempId);
+			tempId = domainController.getEnclosingControlBlock(tempId);
+		}
+		return ids;
 	}
 
 	private Shape getShapeByID(String id, Collection<Shape> collection) {
@@ -782,19 +801,28 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	}
 
 	@Override
-	public void onBlockChangeEvent(BlockChangeEvent event) { // TO DO REMOVE FIRST, THEN ADD
+	public void onBlockChangeEvent(BlockChangeEvent event) { 
 
 		try {
 			Shape changedShape = shapesInMovement.stream().filter(s -> s.getId().equals(event.getChangedBlockId()))
 					.findFirst().get();
-
+			/**
+			 * newly connected shape
+			 */
+			Shape changedLinkedShape =null;
+			/**
+			 * the previous connected shape
+			 */
+			Shape decoupledShape =null;
+			
+			//begin handle couplings
 			if (!event.getBeforeMoveBlockId().equals("")) {
-				Shape decoupledShape = getShapeByID(event.getBeforeMoveBlockId(), programArea.getShapesInProgramArea());
+				 decoupledShape = getShapeByID(event.getBeforeMoveBlockId(), programArea.getShapesInProgramArea());
 				decoupledShape.switchCavityStatus(event.getBeforeMoveConnection());
 			}
 
 			if (!event.getChangedLinkedBlockId().equals("")) {
-				Shape changedLinkedShape = getShapeByID(event.getChangedLinkedBlockId(),
+				 changedLinkedShape = getShapeByID(event.getChangedLinkedBlockId(),
 						programArea.getShapesInProgramArea());
 				changedLinkedShape.switchCavityStatus(event.getConnectionType());
 				switch (event.getConnectionType()) {
@@ -812,7 +840,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				}
 
 			}
-
+			//end handle couplings
+			
+			
+			
+			//handle add to programArea in theory
 			for (Shape movedShape : shapesInMovement) {
 
 				movedShape.setCoordinatesShape(
@@ -822,6 +854,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			}
 
+			// update internals of controlshapes
 			for (Shape shape : programArea.getShapesInProgramArea()) {
 				if (shape instanceof ControlShape) {
 					Set<String> idsInBody = domainController.getAllBlockIDsInBody(shape.getId());
@@ -838,55 +871,61 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					}
 				}
 			}
-
+			
+				
+			
 			// update all ControlBlockAreas:
-			// set the length of all control block correct
+			// update the height of the controlShapes 
 			programArea.clearAlreadyFilledInCoordinates();
 			for (Shape shape : programArea.getShapesInProgramArea()) {
 				shape.determineTotalDimensions();
 			}
-
+			
+			
+			
+			
+			//Update the position of all blocks according to the changes of the controlshapes
 			for (Shape shape : domainController.getAllHeadControlBlocks().stream()
 					.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet())) {
-				for (String id : domainController.getAllBlockIDsBelowCertainBlock(shape.getId())) {
-					if (!id.equals(shape.getId())) {
-						Shape shapeje = null;
-						try {
-							shapeje = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id))
-									.findFirst().get();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						shapeje.setY_coord(shapeje.getY_coord() + (shape.getHeight() - shape.getPreviousHeight()));
+				HashSet<String> idsToMove = new HashSet<String>();
+
+				if (event.getBeforeMoveBlockId().equals("") || !event.getChangedLinkedBlockId().equals("")) {
+					idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(event.getChangedBlockId());
+				} else {
+					idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(event.getBeforeMoveBlockId());
+				}
+
+				for (String id : idsToMove) {
+					Shape shapeje = null;
+					try {
+						shapeje = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id))
+								.findFirst().get();
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
+					shapeje.setY_coord(shapeje.getY_coord() +(shape.getHeight() - shape.getPreviousHeight()));
 				}
 			}
 
+			
+			//changedShape is not in the programArea at the moment.
+			programArea.addShapeToProgramArea(changedShape);			
+			//handle add to programArea in practice, all coordinates etc are set.
 			for (Shape shape : programArea.getShapesInProgramArea()) {
 				shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
 				programArea.addToAlreadyFilledInCoordinates(shape);
 				shape.defineConnectionTypes();
-			}
+			}	
 
-			//
-
-			changedShape.setCoordinatesShape(
-					changedShape.createCoordinatePairs(changedShape.getX_coord(), changedShape.getY_coord()));
-			programArea.addShapeToProgramArea(changedShape);
-			programArea.addToAlreadyFilledInCoordinates(changedShape);
+			
+			
+			//Reset global variables
 			programArea.setHighlightedShape(null);
 			setCurrentShape(null);
 			shapesInMovement = new HashSet<Shape>();
+			
+			
 			super.repaint();
-			System.out.println("after");
-			System.out.println(changedShape.getId());
-			System.out.println(changedShape.getType());
-			System.out.println(shapesInMovement.size());
-
-			// before Clip on
-			System.out.println("END");
-			System.out.println("X coordinaat:" + changedShape.getX_coord());
-			System.out.println("Y coordinaat:" + changedShape.getY_coord());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

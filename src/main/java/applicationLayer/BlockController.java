@@ -61,8 +61,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	private void fireBlockRemoved(Set<String> idsToBeRemoved, String connectedBlock, ConnectionType connectionType) {
 		for (String id : idsToBeRemoved) {
 			BlockRemovedEvent event = new BlockRemovedEvent(id, connectedBlock, connectionType);
-			connectedBlock="";
-			connectionType=ConnectionType.NOCONNECTION;
+			connectedBlock = "";
+			connectionType = ConnectionType.NOCONNECTION;
 			for (GUIListener listener : guiListeners) {
 				listener.onBlockRemoved(event);
 			}
@@ -70,8 +70,10 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 	}
 
-	private void fireBlockChanged(String changedBlockId, String changedLinkedBlockId, ConnectionType connectionType, String beforeMoveBlockId, ConnectionType beforeMoveConnectionType) {
-		BlockChangeEvent event = new BlockChangeEvent(changedBlockId, changedLinkedBlockId, connectionType, beforeMoveBlockId, beforeMoveConnectionType);
+	private void fireBlockChanged(String changedBlockId, String changedLinkedBlockId, ConnectionType connectionType,
+			String beforeMoveBlockId, ConnectionType beforeMoveConnectionType) {
+		BlockChangeEvent event = new BlockChangeEvent(changedBlockId, changedLinkedBlockId, connectionType,
+				beforeMoveBlockId, beforeMoveConnectionType);
 
 		for (GUIListener listener : guiListeners) {
 			listener.onBlockChangeEvent(event);
@@ -228,15 +230,13 @@ public class BlockController implements GUISubject, DomainSubject {
 		ArrayList<String> previousConnection = programBlockRepository.getConnectedParentIfExists(movedBlockId);
 		String movedBlockID = programBlockRepository.moveBlock(movedBlockId, connectedAfterMoveBlockId,
 				connectionAfterMove);
-		
-		
 
-		
 		fireUpdateGameState();
 		fireResetExecutionEvent();
 
-			fireBlockChanged(movedBlockID, connectedAfterMoveBlockId, connectionAfterMove, previousConnection.get(1), ConnectionType.valueOf(previousConnection.get(0)));
-		
+		fireBlockChanged(movedBlockID, connectedAfterMoveBlockId, connectionAfterMove, previousConnection.get(1),
+				ConnectionType.valueOf(previousConnection.get(0)));
+
 	}
 
 //	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
@@ -305,8 +305,13 @@ public class BlockController implements GUISubject, DomainSubject {
 
 	public String getEnclosingControlBlock(String id) {
 
-		ControlBlock block = programBlockRepository
-				.getEnclosingControlBlock((ExecutableBlock) programBlockRepository.getBlockByID(id));
+		Block givenBlock = programBlockRepository.getBlockByID(id);
+		ControlBlock block = null;
+		if (givenBlock instanceof ExecutableBlock) {
+
+			block = programBlockRepository.getEnclosingControlBlock((ExecutableBlock) givenBlock);
+		}
+
 		if (block == null)
 			return null;
 
@@ -355,22 +360,19 @@ public class BlockController implements GUISubject, DomainSubject {
 
 	}
 
-	
 	public String getFirstBlockBelow(String id) {
 		Block block = programBlockRepository.getBlockByID(id);
 
-
 		if (block == null) {
 			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
-		} 
-		
-		if(block.getNextBlock()!=null) {
-			return block.getBlockId();
 		}
-		else {
+
+		if (block.getNextBlock() != null) {
+			return block.getBlockId();
+		} else {
 			return null;
 		}
-		
+
 	}
 
 }
