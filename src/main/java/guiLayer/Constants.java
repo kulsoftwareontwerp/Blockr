@@ -23,6 +23,8 @@ public interface Constants {
 	public final static int GAME_START_X = 750;
 	public final static int GAME_END_Y = 1000;
 	
+	public static final int INVALID_COORDINATE = -1;
+	
 	public static final String PALETTE_BLOCK_IDENTIFIER = "PALETTE";
 
 	public final static int ACTION_BLOCK_INIT_OFFSET = 5;

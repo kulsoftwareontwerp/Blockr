@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -79,8 +80,17 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	protected void paint(Graphics g) {
+		// only for debugging purposes
+		for (Pair<Integer,Integer> filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
+			g.drawOval(filledInCoordinate.getLeft(), filledInCoordinate.getRight(), 1, 1);
+		}
+		
 		if (currentShape != null)
 			currentShape.draw(g);
+		
+		
+		
+		
 		// Partition CanvasWindow in different sections
 
 		paletteArea.paint(g);
@@ -107,7 +117,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		if (programArea.getHighlightedShape() != null) {
 			drawHighlightedGREEN(g, programArea.getHighlightedShape());
 		}
-		// only for debugging purposes
+		// only for debugging purposes		
 		for (Shape shape : programArea.getShapesInProgramArea()) {
 			for (var p : shape.getCoordinateConnectionMap().entrySet()) {
 				int tempx = p.getValue().getLeft() - 3;
@@ -129,6 +139,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				g.drawOval(tempx, tempy, 6, 6);
 			}
 		}
+		
 
 	}
 
@@ -201,10 +212,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						if (temp != null) {
 
 							shapesInMovement.add(temp);
+							
+							temp.setPreviousX_coord(temp.getX_coord());
+							temp.setPreviousY_coord(temp.getY_coord());
 
-
-							previousCoordinates.put(temp,
-									new Pair<Integer, Integer>(temp.getX_coord(), temp.getY_coord()));
 						}
 					}
 					
@@ -228,7 +239,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				}
 			}
 
-			if (id == MouseEvent.MOUSE_RELEASED && currentShape != null && paletteArea.checkIfInPalette(x)) {
+			if (id == MouseEvent.MOUSE_RELEASED && currentShape != null && paletteArea.checkIfInPalette(currentShape.getX_coord())) {
 
 				if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
 					setCurrentShape(null);
@@ -339,15 +350,41 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 					// NOT PLACEABLE =>
 				} else {
-					for (Shape shape : shapesInMovement) {
-						shape.setX_coord(previousCoordinates.get(shape).getLeft());
-						shape.setY_coord(previousCoordinates.get(shape).getRight());
+					
+					for (Iterator iterator = shapesInMovement.iterator(); iterator.hasNext();) {
+						Shape shape = (Shape) iterator.next();
+						
+
+						if(shape.getPreviousX_coord()==INVALID_COORDINATE || shape.getPreviousY_coord()==INVALID_COORDINATE) {
+							iterator.remove();
+						}
+						else {
+						shape.setX_coord(shape.getPreviousX_coord());
+						shape.setY_coord(shape.getPreviousY_coord());
+						
 						shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
 						programArea.addToAlreadyFilledInCoordinates(shape);
 						shape.defineConnectionTypes();
 						programArea.addShapeToProgramArea(shape);
-
+						}
+						
 					}
+					
+//					for (Shape shape : shapesInMovement) {
+//
+//						if(shape.getX_coord()==INVALID_COORDINATE || shape.getY_coord()==INVALID_COORDINATE) {
+//						
+//						}
+//						else {
+//						shape.setX_coord(shape.getPreviousX_coord());
+//						shape.setY_coord(shape.getPreviousY_coord());
+//						
+//						shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+//						programArea.addToAlreadyFilledInCoordinates(shape);
+//						shape.defineConnectionTypes();
+//						programArea.addShapeToProgramArea(shape);
+//						}
+//					}
 					getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia());
 				}
 
@@ -933,16 +970,15 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 		}
 
-		for (Shape shape : programArea.getShapesInProgramArea()) {
-			programArea.removeFromAlreadyFilledInCoordinates(shape);
-		}
-
+		programArea.clearAlreadyFilledInCoordinates();
 		
 		
 		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e, programArea.getShapesInProgramArea()))
 				.collect(Collectors.toSet())) {
 			shape.determineTotalDimensions();
 		}
+		
+		
 		
 		
 		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e, programArea.getShapesInProgramArea()))
@@ -965,10 +1001,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		
 
 		for (Shape shape : programArea.getShapesInProgramArea()) {
+			shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
 			programArea.addToAlreadyFilledInCoordinates(shape);
+			shape.defineConnectionTypes();
 		}
 
-		programArea.addToAlreadyFilledInCoordinates(toAdd);
+		//programArea.addToAlreadyFilledInCoordinates(toAdd);
 		programArea.setHighlightedShape(null);
 		this.setCurrentShape(null);
 		super.repaint();
@@ -1051,17 +1089,44 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			for (Shape shape : programArea.getShapesInProgramArea()) {
 				if (shape instanceof ControlShape
 						&& domainController.getAllBlockIDsInBody(shape.getId()).contains(changedShape.getId())) {
-					shape.getInternals().add(changedShape);
+					shape.addInternal(changedShape);
+				}
+				else {
+					shape.removeInternal(changedShape);
 				}
 			}
 
 			// update all ControlBlockAreas:
 			// set the length of all control block correct
+			programArea.clearAlreadyFilledInCoordinates();
 			for (Shape shape : programArea.getShapesInProgramArea()) {
-				programArea.removeFromAlreadyFilledInCoordinates(shape);
 				shape.determineTotalDimensions();
-				programArea.addToAlreadyFilledInCoordinates(shape);
 			}
+			
+			for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e, programArea.getShapesInProgramArea()))
+					.collect(Collectors.toSet())) {
+				for (String id : domainController.getAllBlockIDsBelowCertainBlock(shape.getId())) {
+					if (!id.equals(shape.getId())) {
+						Shape shapeje = null;
+						try {
+							shapeje = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id))
+									.findFirst().get();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						shapeje.setY_coord(shapeje.getY_coord() + (shape.getHeight() - shape.getPreviousHeight()));
+					}
+				}
+
+			}
+			
+			
+			for (Shape shape : programArea.getShapesInProgramArea()) {
+				shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+				programArea.addToAlreadyFilledInCoordinates(shape);
+				shape.defineConnectionTypes();
+			}
+			
 			//
 
 			changedShape.setCoordinatesShape(

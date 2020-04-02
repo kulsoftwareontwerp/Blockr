@@ -22,6 +22,10 @@ public class ProgramArea implements Constants {
 		
 		return copy;
 	}
+	
+	public void clearAlreadyFilledInCoordinates() {
+		alreadyFilledInCoordinates.clear();
+	}
 
 	public void addShapeToProgramArea(Shape shape) {
 		this.shapesInProgramArea.add(shape);

@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import exceptions.InvalidBlockConnectionException;
@@ -807,8 +808,14 @@ public class BlockRepository {
 //	}
 
 	public Set<ControlBlock> getAllHeadControlBlocks() {
-		return this.headBlocks.stream().filter(e -> e instanceof ControlBlock).map(e -> (ControlBlock) e)
-				.collect(Collectors.toSet());
+		Set<ControlBlock> firstControlBlocks = new HashSet<ControlBlock>();
+		
+		for (ExecutableBlock block : headBlocks.stream().filter(b->b instanceof ExecutableBlock).map(b-> (ExecutableBlock) b).collect(Collectors.toSet())) {
+			firstControlBlocks.addAll(getAllBlocksInBodyTopLevel(block).stream().filter(b->b instanceof ControlBlock).map(b-> (ControlBlock) b).collect(Collectors.toSet()));
+		}
+		
+		
+		return firstControlBlocks;
 	}
 
 	public ControlBlock getEnclosingControlBlock(ExecutableBlock block) {

@@ -13,6 +13,7 @@ import types.ConnectionType;
 
 public abstract class Shape implements Constants {
 
+
 	private String id;
 	private BlockType type;
 	private int x_coord;
@@ -49,10 +50,16 @@ public abstract class Shape implements Constants {
 		setType(type);
 		setX_coord(x);
 		setY_coord(y);
+		
+		setPreviousX_coord(INVALID_COORDINATE);
+		setPreviousY_coord(INVALID_COORDINATE);
+		
+		
 		// note: order here is important, don't change if you don't know what you're
 		// doing.
 		setConnectedVia(ConnectionType.NOCONNECTION);
 		setPreviouslyConnectedVia(ConnectionType.NOCONNECTION);
+		
 		initDimensions(); // setWidth & setHeight
 		coordinatesShape = createCoordinatePairs(getX_coord(), getY_coord());
 		coordinateConnectionMap = new HashMap<ConnectionType, Pair<Integer, Integer>>();
