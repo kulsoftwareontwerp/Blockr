@@ -77,7 +77,7 @@ public class PaletteArea implements Constants {
 	}
 	
 	public boolean checkIfInPalette(int x) {
-		return x > PALETTE_START_X + PALETTE_OFFSET_BLOCKS && x <= PALETTE_END_X - PALETTE_OFFSET_BLOCKS;
+		return x <= PALETTE_END_X ;
 	}
 	
 	// will return null if there is no Shape in those coordinates => MOET BETER

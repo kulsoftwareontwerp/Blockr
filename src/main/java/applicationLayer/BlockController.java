@@ -355,4 +355,22 @@ public class BlockController implements GUISubject, DomainSubject {
 
 	}
 
+	
+	public String getFirstBlockBelow(String id) {
+		Block block = programBlockRepository.getBlockByID(id);
+
+
+		if (block == null) {
+			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
+		} 
+		
+		if(block.getNextBlock()!=null) {
+			return block.getBlockId();
+		}
+		else {
+			return null;
+		}
+		
+	}
+
 }

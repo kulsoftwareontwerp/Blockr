@@ -327,6 +327,20 @@ public class DomainController {
 		}
 	}
 	
+	/**
+	 * 
+	 * @param id
+	 * @return The ID of the first block below the block with the given ID, returns NULL if this block doesn't specify a block below.
+	 */
+	public String getFirstBlockBelow(String id) {
+		if(id == null || id == "") {
+			throw new IllegalArgumentException("No blockID given.");
+		}
+		blockController.getFirstBlockBelow(id);
+		
+		return "";
+	}
+	
 	//TO BE DOCUMENTED:
 	public String getEnclosingControlBlock(String id) {
 		return blockController.getEnclosingControlBlock(id);

@@ -81,16 +81,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	protected void paint(Graphics g) {
 		// only for debugging purposes
-		for (Pair<Integer,Integer> filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
-			g.drawOval(filledInCoordinate.getLeft(), filledInCoordinate.getRight(), 1, 1);
-		}
-		
+//		for (Pair<Integer, Integer> filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
+//			g.drawOval(filledInCoordinate.getLeft(), filledInCoordinate.getRight(), 1, 1);
+//		}
+
 		if (currentShape != null)
 			currentShape.draw(g);
-		
-		
-		
-		
+
 		// Partition CanvasWindow in different sections
 
 		paletteArea.paint(g);
@@ -100,7 +97,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		if (programArea.getShapesInProgramArea() != null && !programArea.getShapesInProgramArea().isEmpty()) {
 			programArea.getShapesInProgramArea().stream().forEach(((Shape e) -> e.draw(g)));
 		}
-
 
 		if (highlightedForExecution != null) {
 			drawHighlightedBLUE(g, highlightedForExecution);
@@ -117,19 +113,19 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		if (programArea.getHighlightedShape() != null) {
 			drawHighlightedGREEN(g, programArea.getHighlightedShape());
 		}
-		// only for debugging purposes		
+		// only for debugging purposes
 		for (Shape shape : programArea.getShapesInProgramArea()) {
 			for (var p : shape.getCoordinateConnectionMap().entrySet()) {
 				int tempx = p.getValue().getLeft() - 3;
 				int tempy = p.getValue().getRight();
 				g.drawOval(tempx, tempy, 6, 6);
-				if(p.getKey()==ConnectionType.UP) {
-					g.drawString(shape.checkIfOpen(ConnectionType.UP).toString(),tempx, tempy);					
+				if (p.getKey() == ConnectionType.UP) {
+					g.drawString(shape.checkIfOpen(ConnectionType.UP).toString(), tempx, tempy);
 				}
-				if(p.getKey()==ConnectionType.DOWN) {
-					g.drawString(shape.checkIfOpen(ConnectionType.DOWN).toString(),tempx, tempy);					
+				if (p.getKey() == ConnectionType.DOWN) {
+					g.drawString(shape.checkIfOpen(ConnectionType.DOWN).toString(), tempx, tempy);
 				}
-				
+
 			}
 		}
 		for (Shape shape : shapesInMovement) {
@@ -139,7 +135,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				g.drawOval(tempx, tempy, 6, 6);
 			}
 		}
-		
 
 	}
 
@@ -212,19 +207,18 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						if (temp != null) {
 
 							shapesInMovement.add(temp);
-							
+
 							temp.setPreviousX_coord(temp.getX_coord());
 							temp.setPreviousY_coord(temp.getY_coord());
 
 						}
 					}
-					
+
 					setCurrentShape(shape);
-					
+
 					decoupleFromShape(currentShape);
 
 					currentShape.setConnectedVia(ConnectionType.NOCONNECTION);
-
 
 					var mouseOffset = calculateOffsetMouse(x, y, getCurrentShape().getX_coord(),
 							getCurrentShape().getY_coord());
@@ -239,12 +233,15 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				}
 			}
 
-			if (id == MouseEvent.MOUSE_RELEASED && currentShape != null && paletteArea.checkIfInPalette(currentShape.getX_coord())) {
+			if (id == MouseEvent.MOUSE_RELEASED) {
+				if (currentShape != null && paletteArea.checkIfInPalette(currentShape.getX_coord())) {
 
-				if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
-					setCurrentShape(null);
-				} else {
-					domainController.removeBlock(currentShape.getId());
+					if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
+						setCurrentShape(null);
+						shapesInMovement.clear();
+					} else {
+						domainController.removeBlock(currentShape.getId());
+					}
 				}
 			}
 
@@ -312,10 +309,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						}
 					}
 					// decouple chain of blocks from a block
-					else if (getCurrentShape().getConnectedVia() != ConnectionType.NOCONNECTION || (getCurrentShape().getConnectedVia() == ConnectionType.NOCONNECTION && getCurrentShape().getPreviouslyConnectedVia() != ConnectionType.NOCONNECTION)) {
+					else if (getCurrentShape().getConnectedVia() != ConnectionType.NOCONNECTION
+							|| (getCurrentShape().getConnectedVia() == ConnectionType.NOCONNECTION
+									&& getCurrentShape().getPreviouslyConnectedVia() != ConnectionType.NOCONNECTION)) {
 						domainController.moveBlock(getCurrentShape().getId(), "", ConnectionType.NOCONNECTION);
 					}
-					
+
 					// ONLY GRAPHICAL MOVEMENT:
 					else {
 
@@ -330,75 +329,40 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 					}
 
-//					else {
-//						if (getTempStaticShape() != null && getTempDynamicShape() != null) {
-//							domainController.moveBlock(getTempDynamicShape().getId(), getTempStaticShape().getId(), getTempDynamicShape().getConnectedVia());}
-//							//domainController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
-//							/*this.onBlockChangeEvent(new BlockChangeEvent(getTempDynamicShape().getId(),
-//									getTempDynamicShape().getId(), getTempStaticShape().getConnectedVia()));*/
-//						else 
-//						if(getTempDynamicShape() != null){
-//							try {
-//							domainController.moveBlock(getTempDynamicShape().getId(), "", ConnectionType.NOCONNECTION);
-//							}catch (Exception e) {
-//								// TODO: handle exception
-//							}
-//							/*this.onBlockChangeEvent(new BlockChangeEvent(getTempDynamicShape().getId(),
-//									getTempDynamicShape().getId(), ConnectionType.NOCONNECTION));*/
-//						}
-//					}
-
 					// NOT PLACEABLE =>
 				} else {
-					
+
 					for (Iterator iterator = shapesInMovement.iterator(); iterator.hasNext();) {
 						Shape shape = (Shape) iterator.next();
-						
 
-						if(shape.getPreviousX_coord()==INVALID_COORDINATE || shape.getPreviousY_coord()==INVALID_COORDINATE) {
+						if (shape.getPreviousX_coord() == INVALID_COORDINATE
+								|| shape.getPreviousY_coord() == INVALID_COORDINATE) {
 							iterator.remove();
+						} else {
+							shape.setX_coord(shape.getPreviousX_coord());
+							shape.setY_coord(shape.getPreviousY_coord());
+
+							shape.setCoordinatesShape(
+									shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+							programArea.addToAlreadyFilledInCoordinates(shape);
+							shape.defineConnectionTypes();
+							programArea.addShapeToProgramArea(shape);
 						}
-						else {
-						shape.setX_coord(shape.getPreviousX_coord());
-						shape.setY_coord(shape.getPreviousY_coord());
-						
-						shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
-						programArea.addToAlreadyFilledInCoordinates(shape);
-						shape.defineConnectionTypes();
-						programArea.addShapeToProgramArea(shape);
-						}
-						
+
 					}
-					
-//					for (Shape shape : shapesInMovement) {
-//
-//						if(shape.getX_coord()==INVALID_COORDINATE || shape.getY_coord()==INVALID_COORDINATE) {
-//						
-//						}
-//						else {
-//						shape.setX_coord(shape.getPreviousX_coord());
-//						shape.setY_coord(shape.getPreviousY_coord());
-//						
-//						shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
-//						programArea.addToAlreadyFilledInCoordinates(shape);
-//						shape.defineConnectionTypes();
-//						programArea.addShapeToProgramArea(shape);
-//						}
-//					}
+
 					getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia());
 				}
 
 				setCurrentShape(null);
 				programArea.setHighlightedShape(null);
-				movedShape=null;
+				movedShape = null;
 				setX_offsetCurrentShape(0);
 				setY_offsetCurrentShape(0);
 
 				this.previousCoordinates = null;
 				this.shapesInMovement = new HashSet<Shape>();
 				blocksUnderneath = new HashSet<String>();
-				// this.setHandleEvent(false);
-
 			}
 
 			repaint();
@@ -412,13 +376,14 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private void decoupleFromShape(Shape shapeToDecouple) {
 		ConnectionType connectionToDecouple = ConnectionType.NOCONNECTION;
 
-		if((shapeToDecouple instanceof ConditionShape || shapeToDecouple instanceof UnaryOperatorShape) && !shapeToDecouple.checkIfOpen(ConnectionType.LEFT)) {
-			connectionToDecouple=ConnectionType.LEFT;
+		if ((shapeToDecouple instanceof ConditionShape || shapeToDecouple instanceof UnaryOperatorShape)
+				&& !shapeToDecouple.checkIfOpen(ConnectionType.LEFT)) {
+			connectionToDecouple = ConnectionType.LEFT;
+		} else if ((shapeToDecouple instanceof ActionShape || shapeToDecouple instanceof ControlShape)
+				&& !shapeToDecouple.checkIfOpen(ConnectionType.UP)) {
+			connectionToDecouple = ConnectionType.UP;
 		}
-		else if((shapeToDecouple instanceof ActionShape || shapeToDecouple instanceof ControlShape)&& !shapeToDecouple.checkIfOpen(ConnectionType.UP)) {
-			connectionToDecouple=ConnectionType.UP;
-		}
-		
+
 		shapeToDecouple.switchCavityStatus(connectionToDecouple);
 	}
 
@@ -433,203 +398,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 		}
 	}
-
-	// De relation between shape and shapeToClip is already established in a
-	// different method;
-//	private void clipOn(Shape shape, ConnectionType connection, Shape shapeToClip) {
-//		BlockType type = shape.getType();
-//		switch (type) {
-//		case MoveForward:
-//			switch (connection) {
-//			case UP:
-//				if (shapeToClip.getType() == BlockType.MoveForward || shapeToClip.getType() == BlockType.TurnLeft
-//						|| shapeToClip.getType() == BlockType.TurnRight) {
-//					shapeToClip.setX_coord(shape.getX_coord());
-//					shapeToClip.setY_coord(shape.getY_coord() - shapeToClip.getHeight());
-//				} else {
-//					shapeToClip.setX_coord(shape.getX_coord() + 10);
-//					shapeToClip.setY_coord(shape.getY_coord() + shapeToClip.getHeight());
-//				}
-//				// drawShape(g, shapeToClip);
-//				break;
-//			case DOWN:
-//				if (shapeToClip.getType() == BlockType.MoveForward || shapeToClip.getType() == BlockType.TurnLeft
-//						|| shapeToClip.getType() == BlockType.TurnRight) {
-//					shapeToClip.setX_coord(shape.getX_coord());
-//					shapeToClip.setY_coord(shape.getY_coord() + shape.getHeight());
-//				} else {
-//					shapeToClip.setX_coord(shape.getX_coord() - 10);
-//					shapeToClip.setY_coord(shape.getY_coord() + shape.getHeight());
-//				}
-//				// drawShape(g, shapeToClip);
-//				break;
-//			default:
-//				; // Do nothing
-//			}
-//			break;
-//		case TurnLeft:
-//			switch (connection) {
-//			case UP:
-//				if (shapeToClip.getType() == BlockType.MoveForward || shapeToClip.getType() == BlockType.TurnLeft
-//						|| shapeToClip.getType() == BlockType.TurnRight) {
-//					shapeToClip.setX_coord(shape.getX_coord());
-//					shapeToClip.setY_coord(shape.getY_coord() - shapeToClip.getHeight());
-//				} else {
-//					shapeToClip.setX_coord(shape.getX_coord() - 10);
-//					shapeToClip.setY_coord(shape.getY_coord() - shapeToClip.getHeight());
-//				}
-//				// drawShape(g, shapeToClip);
-//				break;
-//			case DOWN:
-//				if (shapeToClip.getType() == BlockType.MoveForward || shapeToClip.getType() == BlockType.TurnLeft
-//						|| shapeToClip.getType() == BlockType.TurnRight) {
-//					shapeToClip.setX_coord(shape.getX_coord());
-//					shapeToClip.setY_coord(shape.getY_coord() + shape.getHeight());
-//				} else {
-//					shapeToClip.setX_coord(shape.getX_coord() - 10);
-//					shapeToClip.setY_coord(shape.getY_coord() + shape.getHeight());
-//				}
-//				// drawShape(g, shapeToClip);
-//				break;
-//			default:
-//				; // Do nothing
-//			}
-//			break;
-//		case TurnRight:
-//			switch (connection) {
-//			case UP:
-//				if (shapeToClip.getType() == BlockType.MoveForward || shapeToClip.getType() == BlockType.TurnLeft
-//						|| shapeToClip.getType() == BlockType.TurnRight) {
-//					shapeToClip.setX_coord(shape.getX_coord());
-//					shapeToClip.setY_coord(shape.getY_coord() - shapeToClip.getHeight());
-//				} else {
-//					shapeToClip.setX_coord(shape.getX_coord() - 10);
-//					shapeToClip.setY_coord(shape.getY_coord() - shapeToClip.getHeight());
-//				}
-//				// drawShape(g, shapeToClip);
-//				break;
-//			case DOWN:
-//				if (shapeToClip.getType() == BlockType.MoveForward || shapeToClip.getType() == BlockType.TurnLeft
-//						|| shapeToClip.getType() == BlockType.TurnRight) {
-//					shapeToClip.setX_coord(shape.getX_coord());
-//					shapeToClip.setY_coord(shape.getY_coord() + shape.getHeight());
-//				} else {
-//					shapeToClip.setX_coord(shape.getX_coord() - 10);
-//					shapeToClip.setY_coord(shape.getY_coord() + shape.getHeight());
-//				}
-//				// drawShape(g, shapeToClip);
-//				break;
-//			default:
-//				; // Do nothing
-//			}
-//			break;
-//		case If:
-//			switch (connection) {
-//			case UP:
-//				if (shapeToClip.getType() == BlockType.MoveForward || shapeToClip.getType() == BlockType.TurnLeft
-//						|| shapeToClip.getType() == BlockType.TurnRight) {
-//					shapeToClip.setX_coord(shape.getX_coord() + 10);
-//					shapeToClip.setY_coord(shape.getY_coord() - 30);
-//				} else {
-//					shapeToClip.setX_coord(shape.getX_coord());
-//					shapeToClip.setY_coord(shape.getY_coord() - shapeToClip.getHeight());
-//				}
-//				// drawShape(g, shapeToClip);
-//				break;
-//			case DOWN:
-//				if (shapeToClip.getType() == BlockType.MoveForward || shapeToClip.getType() == BlockType.TurnLeft
-//						|| shapeToClip.getType() == BlockType.TurnRight) {
-//					shapeToClip.setX_coord(shape.getX_coord() + 10);
-//					shapeToClip.setY_coord(shape.getY_coord() + shape.getHeight());
-//					// drawShape(g, shapeToClip);
-//				} else {
-//					shapeToClip.setX_coord(shape.getX_coord());
-//					shapeToClip.setY_coord(shape.getY_coord() + shape.getHeight());
-//				}
-//				break;
-//			case BODY:
-//				shapeToClip.setX_coord(shape.getX_coord() + 10);
-//				shapeToClip.setY_coord(shape.getY_coord() + 30);
-//				// drawShape(g, shapeToClip);
-//				break;
-//			case CONDITION:
-//				shapeToClip.setX_coord(shape.getX_coord() + shape.getWidth() - 10);
-//				shapeToClip.setY_coord(shape.getY_coord());
-//				// drawShape(g, shapeToClip);
-//				break;
-//			default:
-//				; // Do nothing
-//			}
-//			break;
-//		case While:
-//			switch (connection) {
-//			case UP:
-//				if (shapeToClip.getType() == BlockType.MoveForward || shapeToClip.getType() == BlockType.TurnLeft
-//						|| shapeToClip.getType() == BlockType.TurnRight) {
-//					shapeToClip.setX_coord(shape.getX_coord() + 10);
-//					shapeToClip.setY_coord(shape.getY_coord() - 30);
-//				} else {
-//					shapeToClip.setX_coord(shape.getX_coord());
-//					shapeToClip.setY_coord(shape.getY_coord() - shapeToClip.getHeight());
-//				}
-//				// drawShape(g, shapeToClip);
-//				break;
-//			case DOWN:
-//				if (shapeToClip.getType() == BlockType.MoveForward || shapeToClip.getType() == BlockType.TurnLeft
-//						|| shapeToClip.getType() == BlockType.TurnRight) {
-//					shapeToClip.setX_coord(shape.getX_coord() + 10);
-//					shapeToClip.setY_coord(shape.getY_coord() + shape.getHeight());
-//					// drawShape(g, shapeToClip);
-//				} else {
-//					shapeToClip.setX_coord(shape.getX_coord());
-//					shapeToClip.setY_coord(shape.getY_coord() + shape.getHeight());
-//				}
-//				break;
-//			case BODY:
-//				shapeToClip.setX_coord(shape.getX_coord() + 10);
-//				shapeToClip.setY_coord(shape.getY_coord() + 30);
-//				// drawShape(g, shapeToClip);
-//				break;
-//			case CONDITION:
-//				shapeToClip.setX_coord(shape.getX_coord() + shape.getWidth() - 10);
-//				shapeToClip.setY_coord(shape.getY_coord());
-//				// drawShape(g, shapeToClip);
-//				break;
-//			default:
-//				; // Do nothing
-//			}
-//			break;
-//		case Not:
-//			switch (connection) {
-//			case LEFT:
-//				shapeToClip.setX_coord(shape.getX_coord() - 80);
-//				shapeToClip.setY_coord(shape.getY_coord());
-//				// drawShape(g, shapeToClip);
-//				break;
-//			case OPERAND:
-//				shapeToClip.setX_coord(shape.getX_coord() + 80);
-//				shapeToClip.setY_coord(shape.getY_coord());
-//				// drawShape(g, shapeToClip);
-//				break;
-//			default:
-//				; // Do nothing
-//			}
-//			break;
-//		case WallInFront:
-//			switch (connection) {
-//			case LEFT:
-//				shapeToClip.setX_coord(shape.getX_coord() - 80);
-//				shapeToClip.setY_coord(shape.getY_coord());
-//				// drawShape(g, shapeToClip);
-//				break;
-//			default:
-//				; // Do nothing
-//			}
-//			break;
-//		default:
-//			;
-//		} // Nothing has to happen
-//	}
 
 	private Shape determineHighlightShape() {
 
@@ -675,13 +443,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		HashSet<Pair<Integer, Integer>> connectionTriggerSetOPERAND = new HashSet<Pair<Integer, Integer>>();
 
 		for (Shape shapeInMovement : getShapesInMovement()) {
-
-//			connectionTriggerSetUP = new HashSet<Pair<Integer, Integer>>();
-//			connectionTriggerSetDOWN = new HashSet<Pair<Integer, Integer>>();
-//			connectionTriggerSetLEFT = new HashSet<Pair<Integer, Integer>>();
-//			connectionTriggerSetCONDITION = new HashSet<Pair<Integer, Integer>>();
-//			connectionTriggerSetOPERAND = new HashSet<Pair<Integer, Integer>>();
-
 			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.UP) != null
 					&& shapeInMovement.checkIfOpen(ConnectionType.UP)) {
 
@@ -822,68 +583,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shape.setConnectedVia(ConnectionType.OPERAND);
 				movedShape = shapeInMovement;
 				break;
-
 			}
 		}
 		if (movedShape != null)
 			System.out.println("Moved Shape ID " + movedShape.getId());
 
 		return shape;
-//		try {
-//			Shape shape = shapesInProgramAreaUpMap.entrySet().stream()
-//					.filter(e -> connectionTriggerSetDOWN.contains(e.getValue())).findFirst().get().getKey();
-//			getCurrentShape().setConnectedVia(ConnectionType.UP);
-//			return shape;
-//		} catch (NoSuchElementException e) {
-//			try {
-//				Shape shape = shapesInProgramAreaDownMap.entrySet().stream()
-//						.filter(p -> connectionTriggerSetUP.contains(p.getValue())).findFirst().get().getKey();
-//				getCurrentShape().setConnectedVia(ConnectionType.DOWN);
-//				return shape;
-//			} catch (NoSuchElementException e2) {
-//				try {
-//					Shape shape = shapesInProgramAreaBodyMap.entrySet().stream()
-//							.filter(q -> connectionTriggerSetUP.contains(q.getValue())).findFirst().get().getKey();
-//					getCurrentShape().setConnectedVia(ConnectionType.BODY);
-//					return shape;
-//				} catch (NoSuchElementException e3) {
-//					try {
-//						Shape shape = shapesInProgramAreaConditionMap.entrySet().stream()
-//								.filter(q -> connectionTriggerSetLEFT.contains(q.getValue())).findFirst().get()
-//								.getKey();
-//						getCurrentShape().setConnectedVia(ConnectionType.CONDITION);
-//						return shape;
-//					} catch (NoSuchElementException e4) {
-//						try {
-//							Shape shape = shapesInProgramAreaLeftMap.entrySet().stream()
-//									.filter(q -> connectionTriggerSetCONDITION.contains(q.getValue())).findFirst().get()
-//									.getKey();
-//							getCurrentShape().setConnectedVia(ConnectionType.LEFT);
-//							return shape;
-//						} catch (NoSuchElementException e5) {
-//							try {
-//								Shape shape = shapesInProgramAreaOperandMap.entrySet().stream()
-//										.filter(q -> connectionTriggerSetLEFT.contains(q.getValue())).findFirst().get()
-//										.getKey();
-//								getCurrentShape().setConnectedVia(ConnectionType.OPERAND);
-//								return shape;
-//							} catch (NoSuchElementException e6) {
-//								try {
-//									Shape shape = shapesInProgramAreaLeftMap.entrySet().stream()
-//											.filter(q -> connectionTriggerSetOPERAND.contains(q.getValue())).findFirst()
-//											.get().getKey();
-//									getCurrentShape().setConnectedVia(ConnectionType.LEFT);
-//									return shape;
-//								} catch (NoSuchElementException e7) {
-//									return null;
-//								}
-//							}
-//						}
-//					}
-//				}
-
-//			}
-//		}
 	}
 
 	private boolean isConnectionPresent(HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaUpMap,
@@ -956,7 +661,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			System.out.println("enclosingControlShapeId: " + enclosingControlShapeId);
 			Shape enclosingControlShape = null;
 			try {
-				enclosingControlShape =getShapeByID(enclosingControlShapeId, programArea.getShapesInProgramArea());
+				enclosingControlShape = getShapeByID(enclosingControlShapeId, programArea.getShapesInProgramArea());
 			} catch (Exception e) {
 				enclosingControlShape = null;
 			}
@@ -971,20 +676,55 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 
 		programArea.clearAlreadyFilledInCoordinates();
-		
-		
-		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e, programArea.getShapesInProgramArea()))
-				.collect(Collectors.toSet())) {
+
+		for (Shape shape : domainController.getAllHeadControlBlocks().stream()
+				.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet())) {
 			shape.determineTotalDimensions();
 		}
-		
-		
-		
-		
-		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e, programArea.getShapesInProgramArea()))
-				.collect(Collectors.toSet())) {
-			for (String id : domainController.getAllBlockIDsBelowCertainBlock(shape.getId())) {
-				if (!id.equals(shape.getId())) {
+
+		for (Shape shape : domainController.getAllHeadControlBlocks().stream()
+				.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet())) {
+//		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(s -> s instanceof ControlShape)
+//				.collect(Collectors.toSet())) {
+
+			String enclosingBlockID = domainController.getEnclosingControlBlock(toAdd.getId());
+			Set<String> idsToMove;
+			if (enclosingBlockID == null) {
+				idsToMove = domainController.getAllBlockIDsUnderneath(shape.getId()).stream()
+						.filter(s -> !s.equals(shape.getId())).collect(Collectors.toSet());
+			} else {
+				HashSet<String> allEnclosingBlocks = new HashSet<String>();
+				
+				String copyOriginal = enclosingBlockID;
+				String tempEnclosingId = enclosingBlockID;
+				
+				
+				
+				while(!tempEnclosingId.equals(shape.getId())) {
+					copyOriginal=tempEnclosingId;
+					tempEnclosingId=domainController.getEnclosingControlBlock(copyOriginal);
+					allEnclosingBlocks.add(copyOriginal);
+				}
+				
+				HashSet<String> blocksInBodiesToBeIgnored=new HashSet<String>();
+				for(String enclosingID : allEnclosingBlocks) {
+					String nextID= domainController.getFirstBlockBelow(enclosingID);
+					if(!allEnclosingBlocks.contains(nextID)) {
+						blocksInBodiesToBeIgnored.add(nextID);
+					}
+				}
+				
+				//final String finalEnclosingID= copyOriginal;
+				idsToMove = domainController.getAllBlockIDsUnderneath(shape.getId()).stream()
+						.filter(s -> !s.equals(shape.getId())).filter(s -> !allEnclosingBlocks.contains(s))
+						.filter(s -> !domainController.getAllBlockIDsInBody(enclosingBlockID).contains(s))
+						.filter(s -> !blocksInBodiesToBeIgnored.contains(s))
+						.collect(Collectors.toSet());
+			}
+
+			for (String id : idsToMove) {
+//			for (String id : domainController.getAllBlockIDsBelowCertainBlock(shape.getId())) {
+//				if (!id.equals(shape.getId())) {
 					Shape shapeje = null;
 					try {
 						shapeje = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id))
@@ -994,11 +734,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					}
 					shapeje.setY_coord(shapeje.getY_coord() + (shape.getHeight() - shape.getPreviousHeight()));
 				}
-			}
+//			}
 
 		}
-		
-		
 
 		for (Shape shape : programArea.getShapesInProgramArea()) {
 			shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
@@ -1006,7 +744,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			shape.defineConnectionTypes();
 		}
 
-		//programArea.addToAlreadyFilledInCoordinates(toAdd);
+		// programArea.addToAlreadyFilledInCoordinates(toAdd);
 		programArea.setHighlightedShape(null);
 		this.setCurrentShape(null);
 		super.repaint();
@@ -1024,14 +762,14 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	public void onBlockRemoved(BlockRemovedEvent event) {
 		Shape toRemove = getShapeByID(event.getRemovedBlockId(), shapesInMovement);
-		
-		Set<Shape> shapesToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream().filter(s->s.getId().equals(event.getRemovedBlockId())).collect(Collectors.toSet());
-		
+
+		Set<Shape> shapesToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
+				.filter(s -> s.getId().equals(event.getRemovedBlockId())).collect(Collectors.toSet());
+
 		for (Shape shape : shapesToBeRemovedFromProgramArea) {
 			programArea.removeShapeFromProgramArea(shape);
 		}
-		
-		
+
 		if (!event.getBeforeRemoveBlockId().equals("")) {
 			Shape decoupledShape = getShapeByID(event.getBeforeRemoveBlockId(), programArea.getShapesInProgramArea());
 			decoupledShape.switchCavityStatus(event.getBeforeRemoveConnection());
@@ -1049,16 +787,17 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		try {
 			Shape changedShape = shapesInMovement.stream().filter(s -> s.getId().equals(event.getChangedBlockId()))
 					.findFirst().get();
-			
+
 			if (!event.getBeforeMoveBlockId().equals("")) {
 				Shape decoupledShape = getShapeByID(event.getBeforeMoveBlockId(), programArea.getShapesInProgramArea());
 				decoupledShape.switchCavityStatus(event.getBeforeMoveConnection());
 			}
 
-			if(!event.getChangedLinkedBlockId().equals("")) {
-				Shape changedLinkedShape = getShapeByID(event.getChangedLinkedBlockId(), programArea.getShapesInProgramArea());
+			if (!event.getChangedLinkedBlockId().equals("")) {
+				Shape changedLinkedShape = getShapeByID(event.getChangedLinkedBlockId(),
+						programArea.getShapesInProgramArea());
 				changedLinkedShape.switchCavityStatus(event.getConnectionType());
-				switch(event.getConnectionType()) {
+				switch (event.getConnectionType()) {
 				case BODY:
 				case DOWN:
 					changedShape.switchCavityStatus(ConnectionType.UP);
@@ -1069,13 +808,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					break;
 				default:
 					break;
-				
-				}
-				
-				
-			}
-			
 
+				}
+
+			}
 
 			for (Shape movedShape : shapesInMovement) {
 
@@ -1087,12 +823,19 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 
 			for (Shape shape : programArea.getShapesInProgramArea()) {
-				if (shape instanceof ControlShape
-						&& domainController.getAllBlockIDsInBody(shape.getId()).contains(changedShape.getId())) {
-					shape.addInternal(changedShape);
-				}
-				else {
-					shape.removeInternal(changedShape);
+				if (shape instanceof ControlShape) {
+					Set<String> idsInBody = domainController.getAllBlockIDsInBody(shape.getId());
+					for (Shape movedShape : shapesInMovement) {
+						if (idsInBody.contains(movedShape.getId())) {
+							String enclosingControlBlockId = domainController
+									.getEnclosingControlBlock(movedShape.getId());
+							if (enclosingControlBlockId != null && enclosingControlBlockId.equals(shape.getId())) {
+								shape.addInternal(movedShape);
+							}
+						} else {
+							shape.removeInternal(movedShape);
+						}
+					}
 				}
 			}
 
@@ -1102,9 +845,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			for (Shape shape : programArea.getShapesInProgramArea()) {
 				shape.determineTotalDimensions();
 			}
-			
-			for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> getShapeByID(e, programArea.getShapesInProgramArea()))
-					.collect(Collectors.toSet())) {
+
+			for (Shape shape : domainController.getAllHeadControlBlocks().stream()
+					.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet())) {
 				for (String id : domainController.getAllBlockIDsBelowCertainBlock(shape.getId())) {
 					if (!id.equals(shape.getId())) {
 						Shape shapeje = null;
@@ -1117,16 +860,14 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						shapeje.setY_coord(shapeje.getY_coord() + (shape.getHeight() - shape.getPreviousHeight()));
 					}
 				}
-
 			}
-			
-			
+
 			for (Shape shape : programArea.getShapesInProgramArea()) {
 				shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
 				programArea.addToAlreadyFilledInCoordinates(shape);
 				shape.defineConnectionTypes();
 			}
-			
+
 			//
 
 			changedShape.setCoordinatesShape(
