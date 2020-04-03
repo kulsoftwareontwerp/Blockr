@@ -1,5 +1,6 @@
 package applicationLayer;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import domainLayer.elements.ElementType;
@@ -8,6 +9,7 @@ import exceptions.InvalidBlockConnectionException;
 import exceptions.InvalidBlockTypeException;
 import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
+import guiLayer.Shape;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -356,6 +358,10 @@ public class DomainController {
 	
 	public Set<String> getAllHeadControlBlocks(){
 		return blockController.getAllHeadControlBlocks();
+	}
+
+	public Set<String> getAllHeadBlocks() {
+		return blockController.getAllHeadBlocks();
 	}
 	
 	

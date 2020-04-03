@@ -375,4 +375,9 @@ public class BlockController implements GUISubject, DomainSubject {
 
 	}
 
+	public Set<String> getAllHeadBlocks() {		
+		return programBlockRepository.getAllHeadBlocks().stream().map(e -> e.getBlockId())
+				.collect(Collectors.toSet());
+	}
+
 }

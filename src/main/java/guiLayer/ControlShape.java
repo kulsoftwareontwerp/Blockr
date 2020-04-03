@@ -51,7 +51,7 @@ public class ControlShape extends Shape implements Constants {
 		g.drawLine(startX + getWidth() - 50, startY + 30, startX + getWidth(), startY + 30);
 		g.drawLine(startX + 30, startY + total, startX + getWidth(), startY + total);
 
-		g.drawString(getType().toString()+" "+this.getId(), startX + 10, startY + 23);
+		g.drawString(getType().toString()+ idForDisplay(), startX + 10, startY + 23);
 	}
 
 	@Override

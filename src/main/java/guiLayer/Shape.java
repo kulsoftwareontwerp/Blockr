@@ -11,8 +11,7 @@ import java.util.Set;
 import types.BlockType;
 import types.ConnectionType;
 
-public abstract class Shape implements Constants,Cloneable {
-
+public abstract class Shape implements Constants, Cloneable {
 
 	private String id;
 	private BlockType type;
@@ -28,7 +27,6 @@ public abstract class Shape implements Constants,Cloneable {
 	private HashMap<ConnectionType, Pair<Integer, Integer>> coordinateConnectionMap; // Plugs and Sockets
 	private HashMap<ConnectionType, Boolean> connectionStatus; // Is a connection available to add something to it or
 																// not.
-
 
 	private ConnectionType connectedVia; // NOCONNECTION if solo, Connection from connectedBlock
 	private ConnectionType previouslyConnectedVia;
@@ -50,16 +48,15 @@ public abstract class Shape implements Constants,Cloneable {
 		setType(type);
 		setX_coord(x);
 		setY_coord(y);
-		
+
 		setPreviousX_coord(INVALID_COORDINATE);
 		setPreviousY_coord(INVALID_COORDINATE);
-		
-		
+
 		// note: order here is important, don't change if you don't know what you're
 		// doing.
 		setConnectedVia(ConnectionType.NOCONNECTION);
 		setPreviouslyConnectedVia(ConnectionType.NOCONNECTION);
-		
+
 		initDimensions(); // setWidth & setHeight
 		coordinatesShape = createCoordinatePairs(getX_coord(), getY_coord());
 		coordinateConnectionMap = new HashMap<ConnectionType, Pair<Integer, Integer>>();
@@ -100,11 +97,28 @@ public abstract class Shape implements Constants,Cloneable {
 	}
 
 	public void switchCavityStatus(ConnectionType connection) {
-			if (connectionStatus.containsKey(connection)) {
-				connectionStatus.put(connection, !connectionStatus.get(connection));
-			} else {
-				connectionStatus.put(connection, true);
+		if (connectionStatus.containsKey(connection)) {
+			connectionStatus.put(connection, !connectionStatus.get(connection));
+		} else {
+			connectionStatus.put(connection, true);
+		}
+	}
+
+	public HashSet<Pair<Integer, Integer>> getTriggerSet(ConnectionType connection) {
+		HashSet<Pair<Integer, Integer>> triggerSet = new HashSet<Pair<Integer, Integer>>();
+
+		if (getCoordinateConnectionMap().keySet().contains(connection)) {
+			int x_current = getCoordinateConnectionMap().get(connection).getLeft();
+			int y_current = getCoordinateConnectionMap().get(connection).getRight();
+
+			for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
+				for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
+					triggerSet.add(new Pair<Integer, Integer>(i, j));
+				}
 			}
+		}
+
+		return triggerSet;
 	}
 
 	public String getId() {
@@ -206,9 +220,6 @@ public abstract class Shape implements Constants,Cloneable {
 		return getId().hashCode() + getType().hashCode();
 	}
 
-	
-	
-	
 	@Override
 	protected Object clone() throws CloneNotSupportedException {
 		// TODO Auto-generated method stub
@@ -220,7 +231,7 @@ public abstract class Shape implements Constants,Cloneable {
 		if (!(o instanceof Shape))
 			return false;
 		Shape shapeo = (Shape) o;
-		return this.getId().equals(shapeo.getId()) && getType().equals(shapeo.getType())  ;
+		return this.getId().equals(shapeo.getId()) && getType().equals(shapeo.getType());
 	}
 
 	public int getPreviousHeight() {
@@ -229,6 +240,16 @@ public abstract class Shape implements Constants,Cloneable {
 
 	private void setPreviousHeight(int previousHeight) {
 		this.previousHeight = previousHeight;
+	}
+	
+	
+	protected String idForDisplay() {
+		if (DebugModus.IDS.compareTo(CanvasWindow.debugModus) <= 0) {
+			return " "+getId();
+		}
+		else {
+			return "";
+		}
 	}
 
 }

@@ -27,7 +27,7 @@ public class UnaryOperatorShape extends Shape {
 		g.drawLine(startX + 90, startY + 25, startX + 90, startY + 30);
 		g.drawLine(startX + 10, startY + 25, startX + 10, startY + 30);
 		g.drawLine(startX + 10, startY + 30, startX + 90, startY + 30);
-		g.drawString(getType().toString(), startX + 35, startY + 19);
+		g.drawString(getType().toString() + idForDisplay(), startX + 35, startY + 19);
 		
 		
 	}

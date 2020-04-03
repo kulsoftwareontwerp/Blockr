@@ -26,7 +26,7 @@ public class ConditionShape extends Shape {
 		g.drawLine(startX + 10, startY, startX + 10, startY + 5);
 		g.drawLine(startX + 10, startY + 25, startX + 10, startY + 30);
 		g.drawLine(startX + 10, startY + 30, startX + 90, startY + 30);
-		g.drawString(type.toString(), startX + 15, startY + 19);
+		g.drawString(type.toString() + idForDisplay(), startX + 15, startY + 19);
 	}
 
 	@Override

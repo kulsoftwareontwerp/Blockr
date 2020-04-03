@@ -33,8 +33,8 @@ public class ActionShape extends Shape {
 			g.drawLine(startX, startY, startX + 10, startY);
 			g.drawLine(startX, startY + 30, startX + 10, startY + 30);
 			g.drawLine(startX + 30, startY + 30, startX + 90, startY + 30);
-			
-			g.drawString(type.toString() +" "+ getId(), startX + 3, startY + 23);
+
+			g.drawString(type.toString() + idForDisplay(), startX + 3, startY + 23);
 		
 	}
 

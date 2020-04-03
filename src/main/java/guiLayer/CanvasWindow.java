@@ -6,13 +6,11 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,7 +26,6 @@ import events.PanelChangeEvent;
 import events.RobotAddedEvent;
 import events.RobotChangeEvent;
 import events.UpdateHighlightingEvent;
-import types.BlockType;
 import types.ConnectionType;
 
 public class CanvasWindow extends CanvasResource implements GUIListener, Constants {
@@ -59,6 +56,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	private int x_offsetCurrentShape = 0;
 	private int y_offsetCurrentShape = 0;
+	public static DebugModus debugModus = DebugModus.NONE;
 
 	// methods of CanvasResource that need to be overridden:
 
@@ -81,10 +79,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	protected void paint(Graphics g) {
 		// only for debugging purposes
-//		for (Pair<Integer, Integer> filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
-//			g.drawOval(filledInCoordinate.getLeft(), filledInCoordinate.getRight(), 1, 1);
-//		}
-
+		if (debugModus == DebugModus.FILLINGS) {
+			for (Pair<Integer, Integer> filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
+				g.drawOval(filledInCoordinate.getLeft(), filledInCoordinate.getRight(), 1, 1);
+			}
+		}
 		if (currentShape != null)
 			currentShape.draw(g);
 
@@ -114,28 +113,27 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			drawHighlightedGREEN(g, programArea.getHighlightedShape());
 		}
 		// only for debugging purposes
-		for (Shape shape : programArea.getShapesInProgramArea()) {
-			for (var p : shape.getCoordinateConnectionMap().entrySet()) {
-				int tempx = p.getValue().getLeft() - 3;
-				int tempy = p.getValue().getRight();
-				g.drawOval(tempx, tempy, 6, 6);
-				if (p.getKey() == ConnectionType.UP) {
-					g.drawString(shape.checkIfOpen(ConnectionType.UP).toString(), tempx, tempy);
-				}
-				if (p.getKey() == ConnectionType.DOWN) {
-					g.drawString(shape.checkIfOpen(ConnectionType.DOWN).toString(), tempx, tempy);
-				}
+		if (DebugModus.CONNECTIONS.compareTo(debugModus) <= 0) {
+			for (Shape shape : programArea.getShapesInProgramArea()) {
+				for (var p : shape.getCoordinateConnectionMap().entrySet()) {
+					int tempx = p.getValue().getLeft() - 3;
+					int tempy = p.getValue().getRight();
+					g.drawOval(tempx, tempy, 6, 6);
 
+					if (DebugModus.CONNECTIONSTATUS.compareTo(debugModus) <= 0) {
+						g.drawString(shape.checkIfOpen(p.getKey()).toString(), tempx, tempy);
+					}
+				}
+			}
+
+			for (Shape shape : shapesInMovement) {
+				for (var p : shape.getCoordinateConnectionMap().values()) {
+					int tempx = p.getLeft() - 3;
+					int tempy = p.getRight();
+					g.drawOval(tempx, tempy, 6, 6);
+				}
 			}
 		}
-		for (Shape shape : shapesInMovement) {
-			for (var p : shape.getCoordinateConnectionMap().values()) {
-				int tempx = p.getLeft() - 3;
-				int tempy = p.getRight();
-				g.drawOval(tempx, tempy, 6, 6);
-			}
-		}
-
 	}
 
 	private void drawHighlightedGREEN(Graphics g, Shape shape) {
@@ -163,12 +161,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		if (isHandleEvent()) {
 
 			if (paletteArea.checkIfInPalette(x) && id == MouseEvent.MOUSE_PRESSED) {
-				this.currentShape = paletteArea.getShapeFromCoordinate(x, y);
-				if (currentShape != null) {
-					var temp = calculateOffsetMouse(x, y, currentShape.getX_coord(), currentShape.getY_coord());
+				setCurrentShape(paletteArea.getShapeFromCoordinate(x, y));
+				if (getCurrentShape() != null) {
+					var temp = calculateOffsetMouse(x, y, getCurrentShape().getX_coord(),
+							getCurrentShape().getY_coord());
 					this.x_offsetCurrentShape = temp[0];
 					this.y_offsetCurrentShape = temp[1];
-					getShapesInMovement().add(currentShape);
+					getShapesInMovement().add(getCurrentShape());
 				}
 			}
 
@@ -302,45 +301,23 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						if (programArea.getHighlightedShape().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
 							domainController.moveBlock(getCurrentShape().getId(), "", ConnectionType.NOCONNECTION);
 
-						}
-//							else if (programArea.getHighlightedShape().getConnectedVia() != ConnectionType.NOCONNECTION
-//								&& getCurrentShape().getConnectedVia() != ConnectionType.NOCONNECTION) {
-//							
-//							Shape savedMovedShape=null;
-//							try {
-//								savedMovedShape = (Shape) movedShape.clone();
-//							} catch (CloneNotSupportedException e) {
-//
-//								e.printStackTrace();
-//							}
-//							String currentShapeId = getCurrentShape().getId();
-//							String highlightedShapeId = programArea.getHighlightedShape().getId();
-//							HashSet<Shape> savedMovedShapes = new HashSet<Shape>(shapesInMovement);
-//							
-//							
-//							domainController.moveBlock(currentShapeId, "", ConnectionType.NOCONNECTION);
-//							
-//							
-//							setCurrentShape(getShapeByID(currentShapeId, programArea.getShapesInProgramArea()));
-//							movedShape=savedMovedShape;							
-//							shapesInMovement.addAll(savedMovedShapes);
-//							
-//							domainController.moveBlock(currentShapeId , highlightedShapeId ,
-//									savedMovedShape.getConnectedVia());
-//							
-//						} 
-						else {
+						} else {
 
 							domainController.moveBlock(currentShape.getId(), programArea.getHighlightedShape().getId(),
 									movedShape.getConnectedVia());
 						}
 					}
 					// decouple chain of blocks from a block
+					// Wanneer is decouple chain nodig?
+
 					else if (getCurrentShape().getConnectedVia() != ConnectionType.NOCONNECTION
 							|| (getCurrentShape().getConnectedVia() == ConnectionType.NOCONNECTION
 									&& getCurrentShape().getPreviouslyConnectedVia() != ConnectionType.NOCONNECTION)
-							) {
+									&& !domainController.getAllHeadBlocks().contains(getCurrentShape().getId())) {
+						// filter out the blocks that already a headblock.
+
 						domainController.moveBlock(getCurrentShape().getId(), "", ConnectionType.NOCONNECTION);
+
 					}
 
 					// ONLY GRAPHICAL MOVEMENT:
@@ -428,189 +405,89 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	}
 
 	private Shape determineHighlightShape() {
+		HashMap<ConnectionType, HashMap<Shape, Pair<Integer, Integer>>> shapesInProgramAreaConnectionMap = new HashMap<ConnectionType, HashMap<Shape, Pair<Integer, Integer>>>();
 
-		HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaUpMap = new HashMap<Shape, Pair<Integer, Integer>>();
-		HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaDownMap = new HashMap<Shape, Pair<Integer, Integer>>();
-		HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaBodyMap = new HashMap<Shape, Pair<Integer, Integer>>();
-		HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaConditionMap = new HashMap<Shape, Pair<Integer, Integer>>();
-		HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaOperandMap = new HashMap<Shape, Pair<Integer, Integer>>();
-		HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaLeftMap = new HashMap<Shape, Pair<Integer, Integer>>();
-
-		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(e -> e.checkIfOpen(ConnectionType.DOWN))
-				.collect(Collectors.toSet())) {
-			shapesInProgramAreaDownMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.DOWN));
-
-		}
-		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(e -> e.checkIfOpen(ConnectionType.BODY))
-				.collect(Collectors.toSet())) {
-			shapesInProgramAreaBodyMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.BODY));
-
-		}
-		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(e -> e.checkIfOpen(ConnectionType.UP))
-				.collect(Collectors.toSet())) {
-			shapesInProgramAreaUpMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.UP));
-		}
-
-		for (Shape shape : programArea.getShapesInProgramArea().stream()
-				.filter(e -> e.checkIfOpen(ConnectionType.CONDITION)).collect(Collectors.toSet())) {
-			shapesInProgramAreaConditionMap.put(shape,
-					shape.getCoordinateConnectionMap().get(ConnectionType.CONDITION));
-		}
-		for (Shape shape : programArea.getShapesInProgramArea().stream()
-				.filter(e -> e.checkIfOpen(ConnectionType.OPERAND)).collect(Collectors.toSet())) {
-			shapesInProgramAreaOperandMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.OPERAND));
-		}
-		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(e -> e.checkIfOpen(ConnectionType.LEFT))
-				.collect(Collectors.toSet())) {
-			shapesInProgramAreaLeftMap.put(shape, shape.getCoordinateConnectionMap().get(ConnectionType.LEFT));
-		}
-		HashSet<Pair<Integer, Integer>> connectionTriggerSetUP = new HashSet<Pair<Integer, Integer>>();
-		HashSet<Pair<Integer, Integer>> connectionTriggerSetDOWN = new HashSet<Pair<Integer, Integer>>();
-		HashSet<Pair<Integer, Integer>> connectionTriggerSetLEFT = new HashSet<Pair<Integer, Integer>>();
-		HashSet<Pair<Integer, Integer>> connectionTriggerSetCONDITION = new HashSet<Pair<Integer, Integer>>();
-		HashSet<Pair<Integer, Integer>> connectionTriggerSetOPERAND = new HashSet<Pair<Integer, Integer>>();
-
-		for (Shape shapeInMovement : getShapesInMovement()) {
-			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.UP) != null
-					&& shapeInMovement.checkIfOpen(ConnectionType.UP)) {
-
-				int x_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.UP).getLeft();
-				int y_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.UP).getRight();
-
-				for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
-					for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-						connectionTriggerSetUP.add(new Pair<Integer, Integer>(i, j));
-					}
-				}
-
-			}
-			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.DOWN) != null
-					&& shapeInMovement.checkIfOpen(ConnectionType.DOWN)) {
-
-				int x_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.DOWN).getLeft();
-				int y_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.DOWN).getRight();
-
-				for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
-					for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-						connectionTriggerSetDOWN.add(new Pair<Integer, Integer>(i, j));
-					}
-				}
-			}
-			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.LEFT) != null
-					&& shapeInMovement.checkIfOpen(ConnectionType.LEFT)) {
-
-				int x_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.LEFT).getLeft();
-				int y_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.LEFT).getRight();
-
-				for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
-					for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-						connectionTriggerSetLEFT.add(new Pair<Integer, Integer>(i, j));
-					}
-				}
-			}
-			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.CONDITION) != null
-					&& shapeInMovement.checkIfOpen(ConnectionType.CONDITION)) {
-
-				int x_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.CONDITION).getLeft();
-				int y_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.CONDITION).getRight();
-
-				for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
-					for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-						connectionTriggerSetCONDITION.add(new Pair<Integer, Integer>(i, j));
-					}
-				}
-
-			}
-			if (shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.OPERAND) != null
-					&& shapeInMovement.checkIfOpen(ConnectionType.OPERAND)) {
-
-				int x_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.OPERAND).getLeft();
-				int y_current = shapeInMovement.getCoordinateConnectionMap().get(ConnectionType.OPERAND).getRight();
-
-				for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
-					for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-						connectionTriggerSetOPERAND.add(new Pair<Integer, Integer>(i, j));
-					}
-				}
+		for (ConnectionType connection : ConnectionType.values()) {
+			shapesInProgramAreaConnectionMap.put(connection, new HashMap<Shape, Pair<Integer, Integer>>());
+			for (Shape shape : programArea.getShapesInProgramArea().stream().filter(e -> e.checkIfOpen(connection))
+					.collect(Collectors.toSet())) {
+				shapesInProgramAreaConnectionMap.get(connection).put(shape,
+						shape.getCoordinateConnectionMap().get(connection));
 			}
 		}
 
 		Shape shape = null;
 
 		for (Shape shapeInMovement : getShapesInMovement()) {
-			if (isConnectionPresent(shapesInProgramAreaUpMap, connectionTriggerSetDOWN) && connectionTriggerSetDOWN
-					.stream().anyMatch(s -> shapeInMovement.getCoordinateConnectionMap().values().contains(s))) {
-				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetDOWN;
-				shape = shapesInProgramAreaUpMap.entrySet().stream().filter(e -> trigger.contains(e.getValue()))
+
+			if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.UP),
+					shapeInMovement.getTriggerSet(ConnectionType.DOWN))) {
+				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.UP).entrySet().stream()
+						.filter(e -> shapeInMovement.getTriggerSet(ConnectionType.DOWN).contains(e.getValue()))
 						.findFirst().get().getKey();
 				shapeInMovement.setConnectedVia(ConnectionType.UP);
 				shape.setConnectedVia(ConnectionType.DOWN);
 				movedShape = shapeInMovement;
 				break;
 
-			} else if (isConnectionPresent(shapesInProgramAreaDownMap, connectionTriggerSetUP) && connectionTriggerSetUP
-					.stream().anyMatch(s -> shapeInMovement.getCoordinateConnectionMap().values().contains(s))) {
-				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetUP;
-				shape = shapesInProgramAreaDownMap.entrySet().stream().filter(p -> trigger.contains(p.getValue()))
+			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.DOWN),
+					shapeInMovement.getTriggerSet(ConnectionType.UP))) {
+				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.DOWN).entrySet().stream()
+						.filter(p -> shapeInMovement.getTriggerSet(ConnectionType.UP).contains(p.getValue()))
 						.findFirst().get().getKey();
 				shapeInMovement.setConnectedVia(ConnectionType.DOWN);
 				shape.setConnectedVia(ConnectionType.UP);
 				movedShape = shapeInMovement;
 				break;
 
-			} else if (isConnectionPresent(shapesInProgramAreaBodyMap, connectionTriggerSetUP) && connectionTriggerSetUP
-					.stream().anyMatch(s -> shapeInMovement.getCoordinateConnectionMap().values().contains(s))) {
-				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetUP;
-				shape = shapesInProgramAreaBodyMap.entrySet().stream().filter(q -> trigger.contains(q.getValue()))
+			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.BODY),
+					shapeInMovement.getTriggerSet(ConnectionType.UP))) {
+				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.BODY).entrySet().stream()
+						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.UP).contains(q.getValue()))
 						.findFirst().get().getKey();
 				shapeInMovement.setConnectedVia(ConnectionType.BODY);
 				shape.setConnectedVia(ConnectionType.UP);
 				movedShape = shapeInMovement;
 				break;
 
-			} else if (isConnectionPresent(shapesInProgramAreaConditionMap, connectionTriggerSetLEFT)
-					&& connectionTriggerSetLEFT.stream()
-							.anyMatch(s -> shapeInMovement.getCoordinateConnectionMap().values().contains(s))) {
-				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetLEFT;
-				shape = shapesInProgramAreaConditionMap.entrySet().stream().filter(q -> trigger.contains(q.getValue()))
+			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION),
+					shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
+				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION).entrySet().stream()
+						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.LEFT).contains(q.getValue()))
 						.findFirst().get().getKey();
 				shapeInMovement.setConnectedVia(ConnectionType.CONDITION);
 				shape.setConnectedVia(ConnectionType.LEFT);
 				movedShape = shapeInMovement;
 				break;
 
-			} else if (isConnectionPresent(shapesInProgramAreaLeftMap, connectionTriggerSetCONDITION)
-					&& connectionTriggerSetCONDITION.stream()
-							.anyMatch(s -> shapeInMovement.getCoordinateConnectionMap().values().contains(s))) {
-				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetCONDITION;
-				shape = shapesInProgramAreaLeftMap.entrySet().stream().filter(q -> trigger.contains(q.getValue()))
-						.findFirst().get().getKey();
-				shapeInMovement.setConnectedVia(ConnectionType.LEFT);
-				shape.setConnectedVia(ConnectionType.CONDITION);
-				movedShape = shapeInMovement;
-				break;
-
-			} else if (isConnectionPresent(shapesInProgramAreaOperandMap, connectionTriggerSetLEFT)
-					&& connectionTriggerSetLEFT.stream()
-							.anyMatch(s -> shapeInMovement.getCoordinateConnectionMap().values().contains(s))) {
-				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetLEFT;
-				shape = shapesInProgramAreaOperandMap.entrySet().stream().filter(q -> trigger.contains(q.getValue()))
+			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND),
+					shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
+				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND).entrySet().stream()
+						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.LEFT).contains(q.getValue()))
 						.findFirst().get().getKey();
 				shapeInMovement.setConnectedVia(ConnectionType.OPERAND);
 				shape.setConnectedVia(ConnectionType.LEFT);
 				movedShape = shapeInMovement;
 				break;
-
-			} else if (isConnectionPresent(shapesInProgramAreaLeftMap, connectionTriggerSetOPERAND)
-					&& connectionTriggerSetOPERAND.stream()
-							.anyMatch(s -> shapeInMovement.getCoordinateConnectionMap().values().contains(s))) {
-				final HashSet<Pair<Integer, Integer>> trigger = connectionTriggerSetOPERAND;
-				shape = shapesInProgramAreaLeftMap.entrySet().stream().filter(q -> trigger.contains(q.getValue()))
+			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
+					shapeInMovement.getTriggerSet(ConnectionType.CONDITION))) {
+				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT).entrySet().stream()
+						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.CONDITION).contains(q.getValue()))
+						.findFirst().get().getKey();
+				shapeInMovement.setConnectedVia(ConnectionType.LEFT);
+				shape.setConnectedVia(ConnectionType.CONDITION);
+				movedShape = shapeInMovement;
+				break;
+			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
+					shapeInMovement.getTriggerSet(ConnectionType.OPERAND))) {
+				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT).entrySet().stream()
+						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.OPERAND).contains(q.getValue()))
 						.findFirst().get().getKey();
 				shapeInMovement.setConnectedVia(ConnectionType.LEFT);
 				shape.setConnectedVia(ConnectionType.OPERAND);
 				movedShape = shapeInMovement;
 				break;
+
 			}
 		}
 		if (movedShape != null)
@@ -642,6 +519,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			if (keyCode == 27) {
 				// ESC-Key
 				domainController.resetGameExecution();
+			}
+
+			if (keyCode == 68) {
+				debugModus = debugModus.getNext();
+				repaint();
 			}
 
 		}
@@ -793,6 +675,19 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			decoupledShape.switchCavityStatus(event.getBeforeRemoveConnection());
 		}
 
+		// update internals of controlshapes
+		updateInternalsControlShape();
+
+		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(event.getRemovedBlockId(), "",
+				event.getBeforeRemoveBlockId());
+
+		// handle add to programArea in practice, all coordinates etc are set.
+		for (Shape shape : programArea.getShapesInProgramArea()) {
+			shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+			programArea.addToAlreadyFilledInCoordinates(shape);
+			shape.defineConnectionTypes();
+		}
+
 		shapesInMovement.remove(toRemove);
 		this.setCurrentShape(null);
 
@@ -833,6 +728,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				case CONDITION:
 					changedShape.switchCavityStatus(ConnectionType.LEFT);
 					break;
+				case LEFT:
+					changedShape.switchCavityStatus(ConnectionType.OPERAND);
+					changedShape.switchCavityStatus(ConnectionType.CONDITION);
+					break;
 				default:
 					break;
 
@@ -852,71 +751,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 
 			// update internals of controlshapes
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				if (shape instanceof ControlShape) {
-					Set<String> idsInBody = domainController.getAllBlockIDsInBody(shape.getId());
-					for (Shape movedShape : shapesInMovement) {
-						if (idsInBody.contains(movedShape.getId())) {
-							String enclosingControlBlockId = domainController
-									.getEnclosingControlBlock(movedShape.getId());
-							if (enclosingControlBlockId != null && enclosingControlBlockId.equals(shape.getId())) {
-								shape.addInternal(movedShape);
-							}
-						} else {
-							shape.removeInternal(movedShape);
-						}
-					}
-				}
-			}
-
-			// update all ControlBlockAreas:
-			// update the height of the controlShapes
-			programArea.clearAlreadyFilledInCoordinates();
-			for (Shape shape : domainController.getAllHeadControlBlocks().stream()
-					.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet())) {
-				shape.determineTotalDimensions();
-			}
+			updateInternalsControlShape();
 
 			// Update the position of all blocks according to the changes of the
 			// controlshapes
-			for (Shape shape : domainController.getAllHeadControlBlocks().stream()
-					.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet())) {
-				HashSet<String> idsToMove = new HashSet<String>();
 
-				int diffYPosition = shape.getHeight() - shape.getPreviousHeight();
-				// does this movement affect the height of the current stack?
-				Set<String> idsUnderneathShape = domainController.getAllBlockIDsUnderneath(shape.getId());
-				if (shape.getHeight() == shape.getPreviousHeight()
-						&& idsUnderneathShape.contains(changedShape.getId())) {
-					HashSet<String> idsToMoveUnderneath = new HashSet<String>();
-					// no
-					idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(event.getChangedBlockId()));
-
-					idsToMove.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(event.getBeforeMoveBlockId()));
-
-					diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
-					moveShapesAfterUpdateFromControlShape(idsToMoveUnderneath, diffYPosition);
-
-					// going up or down?
-
-					if (changedLinkedShape != null && decoupledShape != null) {
-//						diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
-
-						idsToMove.addAll(shapesInMovement.stream().map(s -> s.getId()).collect(Collectors.toSet()));
-						diffYPosition = changedLinkedShape.getPreviousHeight() - changedLinkedShape.getHeight();
-					}
-
-				} else {
-					// yes
-					if (event.getBeforeMoveBlockId().equals("") || !event.getChangedLinkedBlockId().equals("")) {
-						idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(event.getChangedBlockId());
-					} else {
-						idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(event.getBeforeMoveBlockId());
-					}
-				}
-
-				moveShapesAfterUpdateFromControlShape(idsToMove, diffYPosition);
-			}
+			updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(event.getChangedBlockId(),
+					event.getChangedLinkedBlockId(), event.getBeforeMoveBlockId());
 
 			// changedShape is not in the programArea at the moment.
 			programArea.addShapeToProgramArea(changedShape);
@@ -938,16 +779,103 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 	}
 
-	private void moveShapesAfterUpdateFromControlShape(HashSet<String> idsToMove, int diffYPosition) {
+	private void updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(String changedBlockId,
+			String changedConnectedBlockId, String beforeBlockId) {
+
+		Shape changedShape = shapesInMovement.stream().filter(s -> s.getId().equals(changedBlockId)).findFirst().get();
+		/**
+		 * newly connected shape
+		 */
+		Shape changedLinkedShape = null;
+		/**
+		 * the previous connected shape
+		 */
+		Shape decoupledShape = null;
+
+		// begin handle couplings
+		if (!beforeBlockId.equals("")) {
+			decoupledShape = getShapeByID(beforeBlockId, programArea.getShapesInProgramArea());
+		}
+
+		if (!changedConnectedBlockId.equals("")) {
+			changedLinkedShape = getShapeByID(changedConnectedBlockId, programArea.getShapesInProgramArea());
+		}
+
+		for (Shape shape : domainController.getAllHeadControlBlocks().stream()
+				.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet())) {
+			HashSet<String> idsToMove = new HashSet<String>();
+
+			int diffYPosition = shape.getHeight() - shape.getPreviousHeight();
+			// does this movement affect the height of the current stack?
+			Set<String> idsUnderneathShape = domainController.getAllBlockIDsUnderneath(shape.getId());
+			if (shape.getHeight() == shape.getPreviousHeight() && idsUnderneathShape.contains(changedShape.getId())) {
+				HashSet<String> idsToMoveUnderneath = new HashSet<String>();
+				// no
+				idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(changedBlockId));
+
+				idsToMove.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId));
+
+//					diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
+//					moveShapesAfterUpdateFromControlShape(idsToMoveUnderneath, diffYPosition);
+
+				// going up or down?
+
+				if (changedLinkedShape != null && decoupledShape != null) {
+//						diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
+
+					idsToMove.addAll(shapesInMovement.stream().map(s -> s.getId()).collect(Collectors.toSet()));
+					diffYPosition = changedLinkedShape.getPreviousHeight() - changedLinkedShape.getHeight();
+				}
+
+			} else {
+				// yes
+				if (beforeBlockId.equals("") || !changedConnectedBlockId.equals("")) {
+					idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(changedBlockId);
+				} else {
+					idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId);
+				}
+			}
+
+			moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMove, diffYPosition);
+		}
+	}
+
+	private void updateInternalsControlShape() {
+		for (Shape shape : programArea.getShapesInProgramArea()) {
+			if (shape instanceof ControlShape) {
+				Set<String> idsInBody = domainController.getAllBlockIDsInBody(shape.getId());
+				for (Shape movedShape : shapesInMovement) {
+					if (idsInBody.contains(movedShape.getId())) {
+						String enclosingControlBlockId = domainController.getEnclosingControlBlock(movedShape.getId());
+						if (enclosingControlBlockId != null && enclosingControlBlockId.equals(shape.getId())) {
+							shape.addInternal(movedShape);
+						}
+					} else {
+						shape.removeInternal(movedShape);
+					}
+				}
+			}
+		}
+
+		// update all ControlBlockAreas:
+		// update the height of the controlShapes
+		programArea.clearAlreadyFilledInCoordinates();
+		for (Shape shape : domainController.getAllHeadControlBlocks().stream()
+				.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet())) {
+			shape.determineTotalDimensions();
+		}
+	}
+
+	private void moveAllGivenShapesVerticallyWithTheGivenOffset(HashSet<String> idsToMove, int diffYPosition) {
 		for (String id : idsToMove) {
-			Shape shapeje = null;
+			Shape shape = null;
 			try {
-				shapeje = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id)).findFirst()
+				shape = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id)).findFirst()
 						.get();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			shapeje.setY_coord(shapeje.getY_coord() + diffYPosition);
+			shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
 		}
 	}
 
