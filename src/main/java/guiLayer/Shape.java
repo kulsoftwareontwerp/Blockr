@@ -29,6 +29,8 @@ public abstract class Shape implements Constants, Cloneable {
 																// not.
 
 	private ConnectionType connectedVia; // NOCONNECTION if solo, Connection from connectedBlock
+	private ConnectionType tempConnectedVia;
+	
 	private ConnectionType previouslyConnectedVia;
 
 	public ConnectionType getPreviouslyConnectedVia() {
@@ -54,7 +56,7 @@ public abstract class Shape implements Constants, Cloneable {
 
 		// note: order here is important, don't change if you don't know what you're
 		// doing.
-		setConnectedVia(ConnectionType.NOCONNECTION);
+		setConnectedVia(ConnectionType.NOCONNECTION, true);
 		setPreviouslyConnectedVia(ConnectionType.NOCONNECTION);
 
 		initDimensions(); // setWidth & setHeight
@@ -169,13 +171,43 @@ public abstract class Shape implements Constants, Cloneable {
 		this.coordinateConnectionMap = coordinateConnectionMap;
 	}
 
+	/**
+	 * Retrieve the connectedVia of this shape
+	 * If a temporary connectedvia was set this will be returned
+	 * @return connectedvia or temporary connectedvia if it has been set.
+	 */
 	public ConnectionType getConnectedVia() {
-		return connectedVia;
+		if(tempConnectedVia!=null) {
+			return tempConnectedVia;
+		}
+		else {
+			return connectedVia;			
+		}
 	}
 
-	public void setConnectedVia(ConnectionType connectedVia) {
+	public void setConnectedVia(ConnectionType connectedVia, Boolean persist) {
+		if(persist) {
 		setPreviouslyConnectedVia(this.getConnectedVia());
 		this.connectedVia = connectedVia;
+		}
+		else {
+			tempConnectedVia=connectedVia;
+		}
+	}
+	
+	/**
+	 * Persist or revert the temporary connectedvia
+	 * If no temporary connectedvia is assigned this method will do nothing.
+	 * @param persist	True if the temporary connectedVia needs to be saved.
+	 * 					False if the temporary connectedVia needs to be discarded.
+	 */
+	public void persistConnectedVia(Boolean persist) {
+		if(persist && tempConnectedVia!=null) {
+			setConnectedVia(tempConnectedVia, true);
+		}
+		else {
+			tempConnectedVia = null;
+		}
 	}
 
 	public int getHeight() {

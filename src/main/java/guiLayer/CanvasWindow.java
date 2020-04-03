@@ -217,7 +217,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 					decoupleFromShape(currentShape);
 
-					currentShape.setConnectedVia(ConnectionType.NOCONNECTION);
+					currentShape.setConnectedVia(ConnectionType.NOCONNECTION, true);
 
 					var mouseOffset = calculateOffsetMouse(x, y, getCurrentShape().getX_coord(),
 							getCurrentShape().getY_coord());
@@ -245,36 +245,47 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 
 			if (id == MouseEvent.MOUSE_RELEASED && programArea.checkIfInProgramArea(x) && currentShape != null) {
+				if (programArea.getHighlightedShape() != null) {
+					//connectedVia of highlightedshape must be persisted.
+					programArea.getHighlightedShape().persistConnectedVia(true);
+					
+					
+					if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
+						//persist the connectedVia.
+						currentShape.persistConnectedVia(true);
+						
+						// ADD
+						currentShape.clipOn(programArea.getHighlightedShape(), currentShape.getConnectedVia());
 
-				if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)
-						&& programArea.getHighlightedShape() != null) {
+					} else {
 
-					// ADD
-					currentShape.clipOn(programArea.getHighlightedShape(), currentShape.getConnectedVia());
+						// MOVE
+						// if movedshape is null, then clip on is not necessary
+						if (movedShape != null) {
+							//movedShape connectevia must be persisted, currentshape connectedvia reverted if they are different shapes
+							//this order is important.
+							movedShape.persistConnectedVia(true);
+							currentShape.persistConnectedVia(false);
+							
+							int originalChangedShapeX = movedShape.getX_coord();
+							int originalChangedShapeY = movedShape.getY_coord();
+							System.out.println("BeforeClipon X: " + originalChangedShapeX);
+							System.out.println("BeforeClipon Y: " + originalChangedShapeY);
 
-				} else {
+							movedShape.clipOn(programArea.getHighlightedShape(), movedShape.getConnectedVia());
+							System.out.println("AfterClipon X: " + movedShape.getX_coord());
+							System.out.println("AfterClipon Y: " + movedShape.getY_coord());
 
-					// MOVE
-					// if movedshape is null, then clip on is not necessary
-					if (programArea.getHighlightedShape() != null && movedShape != null) {
-						int originalChangedShapeX = movedShape.getX_coord();
-						int originalChangedShapeY = movedShape.getY_coord();
-						System.out.println("BeforeClipon X: " + originalChangedShapeX);
-						System.out.println("BeforeClipon Y: " + originalChangedShapeY);
+							decoupleFromShape(movedShape);
+							int diffX = movedShape.getX_coord() - originalChangedShapeX;
+							int diffy = movedShape.getY_coord() - originalChangedShapeY;
+							System.out.println("diffX: " + diffX);
+							System.out.println("diffY: " + diffy);
 
-						movedShape.clipOn(programArea.getHighlightedShape(), movedShape.getConnectedVia());
-						System.out.println("AfterClipon X: " + movedShape.getX_coord());
-						System.out.println("AfterClipon Y: " + movedShape.getY_coord());
+							updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy, movedShape);
+						}
 
-						decoupleFromShape(movedShape);
-						int diffX = movedShape.getX_coord() - originalChangedShapeX;
-						int diffy = movedShape.getY_coord() - originalChangedShapeY;
-						System.out.println("diffX: " + diffX);
-						System.out.println("diffY: " + diffy);
-
-						updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy, movedShape);
 					}
-
 				}
 
 				currentShape.setCoordinatesShape(
@@ -337,7 +348,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					// NOT PLACEABLE =>
 				} else {
 
-					for (Iterator iterator = shapesInMovement.iterator(); iterator.hasNext();) {
+					for (Iterator<Shape> iterator = shapesInMovement.iterator(); iterator.hasNext();) {
 						Shape shape = (Shape) iterator.next();
 
 						if (shape.getPreviousX_coord() == INVALID_COORDINATE
@@ -356,7 +367,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 					}
 
-					getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia());
+					getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia(), true);
 				}
 
 				setCurrentShape(null);
@@ -417,76 +428,98 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 
 		Shape shape = null;
-
 		for (Shape shapeInMovement : getShapesInMovement()) {
+			//The setConnectedVia of all shapes in movement will be reverted
+			shapeInMovement.persistConnectedVia(false);
 
 			if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.UP),
 					shapeInMovement.getTriggerSet(ConnectionType.DOWN))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.UP).entrySet().stream()
 						.filter(e -> shapeInMovement.getTriggerSet(ConnectionType.DOWN).contains(e.getValue()))
 						.findFirst().get().getKey();
-				shapeInMovement.setConnectedVia(ConnectionType.UP);
-				shape.setConnectedVia(ConnectionType.DOWN);
+				//The connectedvia of the determinedShape must be reverted.
+				shape.persistConnectedVia(false);
+				
+				shapeInMovement.setConnectedVia(ConnectionType.UP, false);
+				shape.setConnectedVia(ConnectionType.DOWN, false);
 				movedShape = shapeInMovement;
-				break;
+				//break;
 
 			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.DOWN),
 					shapeInMovement.getTriggerSet(ConnectionType.UP))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.DOWN).entrySet().stream()
 						.filter(p -> shapeInMovement.getTriggerSet(ConnectionType.UP).contains(p.getValue()))
 						.findFirst().get().getKey();
-				shapeInMovement.setConnectedVia(ConnectionType.DOWN);
-				shape.setConnectedVia(ConnectionType.UP);
+				//The connectedvia of the determinedShape must be reverted.
+				shape.persistConnectedVia(false);
+				
+				shapeInMovement.setConnectedVia(ConnectionType.DOWN, false);
+				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
-				break;
+				//break;
 
 			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.BODY),
 					shapeInMovement.getTriggerSet(ConnectionType.UP))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.BODY).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.UP).contains(q.getValue()))
 						.findFirst().get().getKey();
-				shapeInMovement.setConnectedVia(ConnectionType.BODY);
-				shape.setConnectedVia(ConnectionType.UP);
+				//The connectedvia of the determinedShape must be reverted.
+				shape.persistConnectedVia(false);
+				
+				shapeInMovement.setConnectedVia(ConnectionType.BODY, false);
+				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
-				break;
+				//break;
 
 			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION),
 					shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.LEFT).contains(q.getValue()))
 						.findFirst().get().getKey();
-				shapeInMovement.setConnectedVia(ConnectionType.CONDITION);
-				shape.setConnectedVia(ConnectionType.LEFT);
+				//The connectedvia of the determinedShape must be reverted.
+				shape.persistConnectedVia(false);
+				
+				shapeInMovement.setConnectedVia(ConnectionType.CONDITION, false);
+				shape.setConnectedVia(ConnectionType.LEFT, false);
 				movedShape = shapeInMovement;
-				break;
+				//break;
 
 			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND),
 					shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.LEFT).contains(q.getValue()))
 						.findFirst().get().getKey();
-				shapeInMovement.setConnectedVia(ConnectionType.OPERAND);
-				shape.setConnectedVia(ConnectionType.LEFT);
+				//The connectedvia of the determinedShape must be reverted.
+				shape.persistConnectedVia(false);
+				
+				shapeInMovement.setConnectedVia(ConnectionType.OPERAND, false);
+				shape.setConnectedVia(ConnectionType.LEFT, false);
 				movedShape = shapeInMovement;
-				break;
+			//	break;
 			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
 					shapeInMovement.getTriggerSet(ConnectionType.CONDITION))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.CONDITION).contains(q.getValue()))
 						.findFirst().get().getKey();
-				shapeInMovement.setConnectedVia(ConnectionType.LEFT);
-				shape.setConnectedVia(ConnectionType.CONDITION);
+				//The connectedvia of the determinedShape must be reverted.
+				shape.persistConnectedVia(false);
+				
+				shapeInMovement.setConnectedVia(ConnectionType.LEFT, false);
+				shape.setConnectedVia(ConnectionType.CONDITION, false);
 				movedShape = shapeInMovement;
-				break;
+				//break;
 			} else if (isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
 					shapeInMovement.getTriggerSet(ConnectionType.OPERAND))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.OPERAND).contains(q.getValue()))
 						.findFirst().get().getKey();
-				shapeInMovement.setConnectedVia(ConnectionType.LEFT);
-				shape.setConnectedVia(ConnectionType.OPERAND);
+				//The connectedvia of the determinedShape must be reverted.
+				shape.persistConnectedVia(false);
+				
+				shapeInMovement.setConnectedVia(ConnectionType.LEFT, false);
+				shape.setConnectedVia(ConnectionType.OPERAND, false);
 				movedShape = shapeInMovement;
-				break;
+				//break;
 
 			}
 		}
@@ -548,7 +581,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		 */
 
 		if (programArea.getHighlightedShape() != null) {
-			toAdd.setConnectedVia(currentShape.getConnectedVia());
+			toAdd.setConnectedVia(currentShape.getConnectedVia(), true);
 			toAdd.clipOn(programArea.getHighlightedShape(), toAdd.getConnectedVia());
 			toAdd.defineConnectionTypes();
 
@@ -815,12 +848,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				idsToMove.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId));
 
-//					diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
-//					moveShapesAfterUpdateFromControlShape(idsToMoveUnderneath, diffYPosition);
-
 				// going up or down?
 
 				if (changedLinkedShape != null && decoupledShape != null) {
+
+					diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
+					moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
+
 //						diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
 
 					idsToMove.addAll(shapesInMovement.stream().map(s -> s.getId()).collect(Collectors.toSet()));
