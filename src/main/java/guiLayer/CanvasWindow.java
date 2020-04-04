@@ -924,7 +924,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 		else {
 			for (Shape internalIn : internals) {
-				return checkRecursivelyIfShapeIsInInternals(shape, internalIn.getInternals());
+				if(checkRecursivelyIfShapeIsInInternals(shape, internalIn.getInternals())) {
+					return true;
+				}
 			}
 		}
 
