@@ -836,9 +836,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			HashSet<String> idsToMove = new HashSet<String>();
 
 			int diffYPosition = shape.getHeight() - shape.getPreviousHeight();
-			// does this movement affect the height of the current stack?
 			Set<String> idsUnderneathShape = domainController.getAllBlockIDsUnderneath(shape.getId());
 
+			// does this movement affect the height of the current stack?
 			if (idsUnderneathShape.contains(changedShape.getId())) {
 
 				if (shape.getHeight() == shape.getPreviousHeight()) {
@@ -873,9 +873,27 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				} else {
 					// yes
-					if (beforeBlockId.equals("") || !changedConnectedBlockId.equals("")) {
-						idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId);
-					}
+									
+						if(domainController.getAllBlockIDsBelowCertainBlock(shape.getId()).contains(changedLinkedShape.getId())) {
+							//yes
+							HashSet<String> idsToMoveUnderneath = new HashSet<String>();
+							idsToMoveUnderneath
+							.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(shape.getId()));
+							
+							
+							if (idsUnderneathShape.contains(beforeBlockId) && changedShape.getY_coord() > changedShape.getPreviousY_coord()) {
+							idsToMoveUnderneath.addAll(shapesInMovement.stream().map(s -> s.getId()).collect(Collectors.toSet()));
+							}
+							
+							
+							moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, shape.getHeight()-shape.getPreviousHeight()); 
+						}
+						else {
+							//no
+							idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(changedShape.getId());						
+						}
+
+					
 				}
 			} else {
 				idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId);
@@ -937,8 +955,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		return false;
 	}
 
-	private void moveAllGivenShapesVerticallyWithTheGivenOffset(HashSet<String> idsToMove, int diffYPosition) {
-		for (String id : idsToMove) {
+	private void moveAllGivenShapesVerticallyWithTheGivenOffset(Set<String> set, int diffYPosition) {
+		for (String id : set) {
 			Shape shape = null;
 			try {
 				shape = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id)).findFirst()
