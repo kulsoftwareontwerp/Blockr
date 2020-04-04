@@ -281,7 +281,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							if (movedShape == currentShape) {
 								decoupleFromShape(movedShape);
 							}
-								
+
 							int diffX = movedShape.getX_coord() - originalChangedShapeX;
 							int diffy = movedShape.getY_coord() - originalChangedShapeY;
 							System.out.println("diffX: " + diffX);
@@ -387,8 +387,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 
 			repaint();
-		} else
-		{
+		} else {
 			// Consume event;
 		}
 	}
@@ -842,21 +841,29 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			if (shape.getHeight() == shape.getPreviousHeight() && idsUnderneathShape.contains(changedShape.getId())) {
 				HashSet<String> idsToMoveUnderneath = new HashSet<String>();
 				// no
-				idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(changedBlockId));
 
-				idsToMove.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId));
 
-				// going up or down?
+//				idsToMove.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId));
 
 				if (changedLinkedShape != null && decoupledShape != null) {
 
-					diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
-					moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
+					// going up or down?
+					if (changedLinkedShape.getY_coord() < decoupledShape.getY_coord()) {
+						// up
+						idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(changedBlockId));
+						diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
+						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
+					} else {
+						// down
+						idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
+						idsToMoveUnderneath.addAll(shapesInMovement.stream().map(s -> s.getId()).collect(Collectors.toSet()));
+						diffYPosition = decoupledShape.getHeight() - decoupledShape.getPreviousHeight() ;
+						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
+					}
 
 //						diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
 
-					idsToMove.addAll(shapesInMovement.stream().map(s -> s.getId()).collect(Collectors.toSet()));
-					diffYPosition = changedLinkedShape.getPreviousHeight() - changedLinkedShape.getHeight();
+					diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
 				}
 
 			} else {
@@ -886,8 +893,21 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						shape.removeInternal(movedShape);
 					}
 				}
+				
+				// remove all shapes from internal that were added to another internal shape
+				for (Iterator<Shape> it = shape.getInternals().iterator(); it.hasNext();) {
+					Shape internal = it.next();
+					if(checkRecursivelyIfShapeIsInInternals(internal, shape.getInternals().stream().filter(s-> s!=internal).collect(Collectors.toSet()))) {
+						it.remove();
+					}
+				}
+				
+				
+				
 			}
 		}
+		
+
 
 		// update all ControlBlockAreas:
 		// update the height of the controlShapes
@@ -896,6 +916,19 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet())) {
 			shape.determineTotalDimensions();
 		}
+	}
+	
+	private boolean checkRecursivelyIfShapeIsInInternals(Shape shape,Set<Shape> internals) {
+		if(internals.contains(shape)) {
+			return true;
+		}
+		else {
+			for (Shape internalIn : internals) {
+				return checkRecursivelyIfShapeIsInInternals(shape, internalIn.getInternals());
+			}
+		}
+
+		return false;
 	}
 
 	private void moveAllGivenShapesVerticallyWithTheGivenOffset(HashSet<String> idsToMove, int diffYPosition) {
@@ -907,6 +940,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			shape.setY_coord(shape.getY_coord() + diffYPosition);
 			shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
 		}
 	}
