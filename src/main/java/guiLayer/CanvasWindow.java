@@ -830,9 +830,28 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		if (!changedConnectedBlockId.equals("")) {
 			changedLinkedShape = getShapeByID(changedConnectedBlockId, programArea.getShapesInProgramArea());
 		}
+		
+		
+		Set<Shape> allHeadControlBlocks = domainController.getAllHeadControlBlocks().stream()
+				.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet());
 
-		for (Shape shape : domainController.getAllHeadControlBlocks().stream()
-				.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet())) {
+		//use only the controlblocks that are the top of the chain, no controlblocks above them in any way.
+		for (Iterator<Shape> it = allHeadControlBlocks.iterator(); it.hasNext();) {
+			Shape head = it.next();
+			boolean remove = false;
+			for (Shape shape : allHeadControlBlocks.stream().filter(s-> s != head).collect(Collectors.toSet())) {
+				if(domainController.getAllBlockIDsUnderneath(shape.getId()).contains(head.getId())) {
+					remove = true;
+					break;
+				}
+			}
+			if(remove) {
+				it.remove();
+			}
+			
+		}
+		
+		for (Shape shape : allHeadControlBlocks) {
 			HashSet<String> idsToMove = new HashSet<String>();
 
 			int diffYPosition = shape.getHeight() - shape.getPreviousHeight();
