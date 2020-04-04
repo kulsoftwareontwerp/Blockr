@@ -752,6 +752,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				case DOWN:
 					changedShape.switchCavityStatus(ConnectionType.UP);
 					break;
+				case UP:
+					changedShape.switchCavityStatus(ConnectionType.DOWN);
+					break;
 				case OPERAND:
 				case CONDITION:
 					changedShape.switchCavityStatus(ConnectionType.LEFT);
