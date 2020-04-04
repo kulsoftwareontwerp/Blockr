@@ -166,13 +166,13 @@ public class DomainController {
 	 * 
 	 * 
 	 * 
-	 * @param movedBlockId					The Id of block to be moved, if you move a chain of blocks this will be the first block in the chain, this parameter is required.
-	 * 
-	 * 
+	 * @param topOfMovedChainBlockId					The Id of block to be moved, if you move a chain of blocks this will be the first block in the chain, this parameter is required.
+	 * @param movedBlockId TODO
 	 * @param connectedAfterMoveBlockId		The Id of the block you wish to connect the block you are moving to. This parameter is Required.
 	 * 										If there's no connected block after the move please use an empty String, "".
 	 * @param connectionAfterMove			The connection of the block you wish to connect the block you are moving to. This parameter is Required.
 	 * 										If there's no connected block after the move please use ConnectionType.NOCONNECTION.
+	 * 
 	 * 
 	 * @throws IllegalArgumentException		This Exception when thrown will result in a non execution of the expected changes.
 	 * 										This means that the block you wish to move will not be modified.
@@ -208,9 +208,12 @@ public class DomainController {
 	 * 			Fires a ResetExecutionEvent if the execution was successful.
 	 * 
 	 */
-	public void moveBlock(String movedBlockId,  String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-		if(movedBlockId == null || movedBlockId.equals("")) {
+	public void moveBlock(String topOfMovedChainBlockId,  String movedBlockId, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+		if(topOfMovedChainBlockId == null || topOfMovedChainBlockId.equals("")) {
 			throw new IllegalArgumentException("No movedBlockID given");
+		}
+		if(movedBlockId == null ) {
+			movedBlockId="";
 		}
 		else if(connectionAfterMove == null) {
 			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
@@ -219,7 +222,7 @@ public class DomainController {
 			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
 		}
 		else {
-			blockController.moveBlock(movedBlockId,  connectedAfterMoveBlockId, connectionAfterMove);
+			blockController.moveBlock(topOfMovedChainBlockId,  movedBlockId, connectedAfterMoveBlockId, connectionAfterMove);
 		}
 	}
 

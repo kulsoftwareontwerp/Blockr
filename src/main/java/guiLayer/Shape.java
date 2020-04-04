@@ -30,7 +30,7 @@ public abstract class Shape implements Constants, Cloneable {
 
 	private ConnectionType connectedVia; // NOCONNECTION if solo, Connection from connectedBlock
 	private ConnectionType tempConnectedVia;
-	
+
 	private ConnectionType previouslyConnectedVia;
 
 	public ConnectionType getPreviouslyConnectedVia() {
@@ -172,40 +172,40 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 	/**
-	 * Retrieve the connectedVia of this shape
-	 * If a temporary connectedvia was set this will be returned
+	 * Retrieve the connectedVia of this shape If a temporary connectedvia was set
+	 * this will be returned
+	 * 
 	 * @return connectedvia or temporary connectedvia if it has been set.
 	 */
 	public ConnectionType getConnectedVia() {
-		if(tempConnectedVia!=null) {
+		if (tempConnectedVia != null) {
 			return tempConnectedVia;
-		}
-		else {
-			return connectedVia;			
+		} else {
+			return connectedVia;
 		}
 	}
 
 	public void setConnectedVia(ConnectionType connectedVia, Boolean persist) {
-		if(persist) {
-		setPreviouslyConnectedVia(this.getConnectedVia());
-		this.connectedVia = connectedVia;
-		}
-		else {
-			tempConnectedVia=connectedVia;
+		if (persist) {
+			tempConnectedVia = null;
+			setPreviouslyConnectedVia(this.getConnectedVia());
+			this.connectedVia = connectedVia;
+		} else {
+			tempConnectedVia = connectedVia;
 		}
 	}
-	
+
 	/**
-	 * Persist or revert the temporary connectedvia
-	 * If no temporary connectedvia is assigned this method will do nothing.
-	 * @param persist	True if the temporary connectedVia needs to be saved.
-	 * 					False if the temporary connectedVia needs to be discarded.
+	 * Persist or revert the temporary connectedvia If no temporary connectedvia is
+	 * assigned this method will do nothing.
+	 * 
+	 * @param persist True if the temporary connectedVia needs to be saved. False if
+	 *                the temporary connectedVia needs to be discarded.
 	 */
 	public void persistConnectedVia(Boolean persist) {
-		if(persist && tempConnectedVia!=null) {
+		if (persist && tempConnectedVia != null) {
 			setConnectedVia(tempConnectedVia, true);
-		}
-		else {
+		} else {
 			tempConnectedVia = null;
 		}
 	}
@@ -273,13 +273,11 @@ public abstract class Shape implements Constants, Cloneable {
 	private void setPreviousHeight(int previousHeight) {
 		this.previousHeight = previousHeight;
 	}
-	
-	
+
 	protected String idForDisplay() {
 		if (DebugModus.IDS.compareTo(CanvasWindow.debugModus) <= 0) {
-			return " "+getId();
-		}
-		else {
+			return " " + getId();
+		} else {
 			return "";
 		}
 	}

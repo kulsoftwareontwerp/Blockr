@@ -209,39 +209,39 @@ public class MoveBlockTest {
 	public void testDCMoveBlockNegativeConnectionTypeNull() {
 		exceptionRule.expect(IllegalArgumentException.class);
 		
-		dc.moveBlock("", "",null);
+		dc.moveBlock("", "","", null);
 		verifyNoInteractions(mockBlockController);
 		
-		dc.moveBlock("1", "",null);
+		dc.moveBlock("1", "","", null);
 		verifyNoInteractions(mockBlockController);
 		
-		dc.moveBlock("1", "",null);
+		dc.moveBlock("1", "","", null);
 		verifyNoInteractions(mockBlockController);
 		
-		dc.moveBlock("1", "2",null);
+		dc.moveBlock("1", "","2", null);
 		verifyNoInteractions(mockBlockController);
 		
-		dc.moveBlock("1", "3",null);
+		dc.moveBlock("1", "","3", null);
 		verifyNoInteractions(mockBlockController);
 
 	}
 	
 	public void testDCMovePositive() {
 		
-		dc.moveBlock("1", "",ConnectionType.NOCONNECTION);
-		verify(mockBlockController).moveBlock("1",  "", ConnectionType.NOCONNECTION);
+		dc.moveBlock("1", "","", ConnectionType.NOCONNECTION);
+		verify(mockBlockController).moveBlock("1",  "", "", ConnectionType.NOCONNECTION);
 		
 		for(ConnectionType connectionType: connectionTypes ) {
 		
-		dc.moveBlock("1",  "",ConnectionType.NOCONNECTION);
-		verify(mockBlockController).moveBlock("1",  "", ConnectionType.NOCONNECTION);
+		dc.moveBlock("1",  "","", ConnectionType.NOCONNECTION);
+		verify(mockBlockController).moveBlock("1",  "", "", ConnectionType.NOCONNECTION);
 		
-		dc.moveBlock("1",  "3",connectionType);
-		verify(mockBlockController).moveBlock("1", "3",connectionType);
+		dc.moveBlock("1",  "","3", connectionType);
+		verify(mockBlockController).moveBlock("1", "","3", connectionType);
 		
 		
-		dc.moveBlock("1",  "3", connectionType);
-		verify(mockBlockController).moveBlock("1", "3", connectionType);
+		dc.moveBlock("1",  "", "3", connectionType);
+		verify(mockBlockController).moveBlock("1", "", "3", connectionType);
 		
 		}
 		
@@ -253,7 +253,7 @@ public class MoveBlockTest {
 		boolean pass = false;
 		
 		try {
-			dc.moveBlock(movedBlockId, connectedAfterMoveBlockId,connectionAfterMove );
+			dc.moveBlock(movedBlockId, "",connectedAfterMoveBlockId, connectionAfterMove );
 		} catch (IllegalArgumentException e) {
 			pass = e.getMessage().equals(excMessage);
 		}
@@ -295,23 +295,23 @@ public class MoveBlockTest {
 		exceptionRule.expect(IllegalArgumentException.class);
 		
 		InOrder updateResetOrder = inOrder(mockDomainListener);
-		dc.moveBlock("", "",null);
+		dc.moveBlock("", "","", null);
 		verifyNoInteractions(mockDomainListener);
 		verifyNoInteractions(mockGUIListener);
 		
-		dc.moveBlock("1",  "",null);
+		dc.moveBlock("1",  "","", null);
 		verifyNoInteractions(mockDomainListener);
 		verifyNoInteractions(mockGUIListener);
 		
-		dc.moveBlock("1", "",null);
+		dc.moveBlock("1", "","", null);
 		verifyNoInteractions(mockDomainListener);
 		verifyNoInteractions(mockGUIListener);
 		
-		dc.moveBlock("1",  "2",null);
+		dc.moveBlock("1",  "","2", null);
 		verifyNoInteractions(mockDomainListener);
 		verifyNoInteractions(mockGUIListener);
 		
-		dc.moveBlock("1", "3",null);
+		dc.moveBlock("1", "","3", null);
 		verifyNoInteractions(mockDomainListener);
 		verifyNoInteractions(mockGUIListener);
 	}
@@ -338,13 +338,13 @@ public class MoveBlockTest {
 //			when(mockBlockReprository.moveBlock("1","",connectionType)).thenReturn(blockIdsInRepository);
 //			when(mockBlockReprository.moveBlock("1","3",connectionType)).thenReturn(blockIdsInRepository);
 			
-			bc.moveBlock("1", "", connectionType);
+			bc.moveBlock("1", "", "", connectionType);
 			verify(mockBlockReprository).moveBlock("1","", connectionType);
 			updateResetOrder.verify(mockDomainListener, atLeastOnce()).onUpdateGameStateEvent(any(UpdateGameStateEvent.class));
 			updateResetOrder.verify(mockDomainListener, atLeastOnce()).onResetExecutionEvent(any(ResetExecutionEvent.class));
 			verify(mockGUIListener,atLeastOnce()).onBlockChangeEvent(any(BlockChangeEvent.class));
 			
-			bc.moveBlock("1",  "3", connectionType);
+			bc.moveBlock("1",  "", "3", connectionType);
 			verify(mockBlockReprository).moveBlock("1", "3", connectionType);
 			updateResetOrder.verify(mockDomainListener, atLeastOnce()).onUpdateGameStateEvent(any(UpdateGameStateEvent.class));
 			updateResetOrder.verify(mockDomainListener, atLeastOnce()).onResetExecutionEvent(any(ResetExecutionEvent.class));
