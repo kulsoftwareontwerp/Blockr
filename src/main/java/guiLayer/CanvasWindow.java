@@ -838,41 +838,47 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			int diffYPosition = shape.getHeight() - shape.getPreviousHeight();
 			// does this movement affect the height of the current stack?
 			Set<String> idsUnderneathShape = domainController.getAllBlockIDsUnderneath(shape.getId());
-			if (shape.getHeight() == shape.getPreviousHeight() && idsUnderneathShape.contains(changedShape.getId())) {
-				HashSet<String> idsToMoveUnderneath = new HashSet<String>();
-				// no
 
+			if (idsUnderneathShape.contains(changedShape.getId())) {
+
+				if (shape.getHeight() == shape.getPreviousHeight()) {
+					HashSet<String> idsToMoveUnderneath = new HashSet<String>();
+					// no
 
 //				idsToMove.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId));
 
-				if (changedLinkedShape != null && decoupledShape != null) {
+					if (changedLinkedShape != null && decoupledShape != null) {
 
-					// going up or down?
-					if (changedLinkedShape.getY_coord() < decoupledShape.getY_coord()) {
-						// up
-						idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(changedBlockId));
-						diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
-						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
-					} else {
-						// down
-						idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
-						idsToMoveUnderneath.addAll(shapesInMovement.stream().map(s -> s.getId()).collect(Collectors.toSet()));
-						diffYPosition = decoupledShape.getHeight() - decoupledShape.getPreviousHeight() ;
-						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
-					}
+						// going up or down?
+						if (changedShape.getY_coord() < changedShape.getPreviousY_coord()) {
+							// up
+							idsToMoveUnderneath
+									.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(changedLinkedShape.getId()));
+							diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
+							moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
+						} else {
+							// down
+							idsToMoveUnderneath
+									.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
+							idsToMoveUnderneath
+									.addAll(shapesInMovement.stream().map(s -> s.getId()).collect(Collectors.toSet()));
+							diffYPosition = decoupledShape.getHeight() - decoupledShape.getPreviousHeight();
+							moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
+						}
 
 //						diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
 
-					diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
-				}
+						diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
+					}
 
-			} else {
-				// yes
-				if (beforeBlockId.equals("") || !changedConnectedBlockId.equals("")) {
-					idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(changedBlockId);
 				} else {
-					idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId);
+					// yes
+					if (beforeBlockId.equals("") || !changedConnectedBlockId.equals("")) {
+						idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId);
+					}
 				}
+			} else {
+				idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId);
 			}
 
 			moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMove, diffYPosition);
@@ -880,34 +886,33 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	}
 
 	private void updateInternalsControlShape() {
-		for (Shape shape : programArea.getShapesInProgramArea()) {
-			if (shape instanceof ControlShape) {
-				Set<String> idsInBody = domainController.getAllBlockIDsInBody(shape.getId());
-				for (Shape movedShape : shapesInMovement) {
-					if (idsInBody.contains(movedShape.getId())) {
-						String enclosingControlBlockId = domainController.getEnclosingControlBlock(movedShape.getId());
-						if (enclosingControlBlockId != null && enclosingControlBlockId.equals(shape.getId())) {
-							shape.addInternal(movedShape);
-						}
-					} else {
-						shape.removeInternal(movedShape);
+		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(s -> s instanceof ControlShape)
+				.collect(Collectors.toSet())) {
+			Set<String> idsInBody = domainController.getAllBlockIDsInBody(shape.getId());
+			for (Shape movedShape : shapesInMovement) {
+				if (idsInBody.contains(movedShape.getId())) {
+					String enclosingControlBlockId = domainController.getEnclosingControlBlock(movedShape.getId());
+					if (enclosingControlBlockId != null && enclosingControlBlockId.equals(shape.getId())) {
+						shape.addInternal(movedShape);
 					}
+				} else {
+					shape.removeInternal(movedShape);
 				}
-				
-				// remove all shapes from internal that were added to another internal shape
-				for (Iterator<Shape> it = shape.getInternals().iterator(); it.hasNext();) {
-					Shape internal = it.next();
-					if(checkRecursivelyIfShapeIsInInternals(internal, shape.getInternals().stream().filter(s-> s!=internal).collect(Collectors.toSet()))) {
-						it.remove();
-					}
-				}
-				
-				
-				
 			}
 		}
 		
+		// remove all shapes from internal that were added to another internal shape
+		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(s -> s instanceof ControlShape)
+				.collect(Collectors.toSet())) {
+			for (Iterator<Shape> it = shape.getInternals().iterator(); it.hasNext();) {
+				Shape internal = it.next();
+				if (checkRecursivelyIfShapeIsInInternals(internal,
+						shape.getInternals().stream().filter(s -> s != internal).collect(Collectors.toSet()))) {
+					it.remove();
+				}
 
+			}
+		}
 
 		// update all ControlBlockAreas:
 		// update the height of the controlShapes
@@ -917,14 +922,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			shape.determineTotalDimensions();
 		}
 	}
-	
-	private boolean checkRecursivelyIfShapeIsInInternals(Shape shape,Set<Shape> internals) {
-		if(internals.contains(shape)) {
+
+	private boolean checkRecursivelyIfShapeIsInInternals(Shape shape, Set<Shape> internals) {
+		if (internals.contains(shape)) {
 			return true;
-		}
-		else {
+		} else {
 			for (Shape internalIn : internals) {
-				if(checkRecursivelyIfShapeIsInInternals(shape, internalIn.getInternals())) {
+				if (checkRecursivelyIfShapeIsInInternals(shape, internalIn.getInternals())) {
 					return true;
 				}
 			}
