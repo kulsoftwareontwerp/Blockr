@@ -855,7 +855,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							idsToMoveUnderneath
 									.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(changedLinkedShape.getId()));
 							diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
-							moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
 						} else {
 							// down
 							idsToMoveUnderneath
@@ -863,12 +862,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							idsToMoveUnderneath
 									.addAll(shapesInMovement.stream().map(s -> s.getId()).collect(Collectors.toSet()));
 							diffYPosition = decoupledShape.getHeight() - decoupledShape.getPreviousHeight();
-							moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
 						}
+						
+						//if the height of the shape did not change, none of the shapes below height should be moved
+						idsToMoveUnderneath.removeAll(shapeIdsToBeMovedAfterUpdateOfControlShape(shape.getId()));
 
-//						diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
 
-						diffYPosition = changedLinkedShape.getHeight() - changedLinkedShape.getPreviousHeight();
+						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
 					}
 
 				} else {
