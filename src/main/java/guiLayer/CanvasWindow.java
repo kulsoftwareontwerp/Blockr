@@ -831,8 +831,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			changedLinkedShape = getShapeByID(changedConnectedBlockId, programArea.getShapesInProgramArea());
 		}
 
-		Set<Shape> allHeadControlBlocks = domainController.getAllHeadControlBlocks().stream()
+		Set<Shape> allTopLevelControlBlocks = domainController.getAllHeadControlBlocks().stream()
 				.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet());
+		Set<Shape> allHeadControlBlocks = new HashSet<Shape>(allTopLevelControlBlocks);
 
 		// use only the controlblocks that are the top of the chain, no controlblocks
 		// above them in any way.
@@ -862,7 +863,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				if (shape.getHeight() == shape.getPreviousHeight()) {
 					HashSet<String> idsToMoveUnderneath = new HashSet<String>();
-					// no
+					// no, it does not affect the height of the current stack
 
 					if (changedLinkedShape != null && decoupledShape != null) {
 
@@ -872,11 +873,25 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							idsToMoveUnderneath
 									.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(changedLinkedShape.getId()));
 
+							Shape decoupledControlShape = getShapeByID(
+									domainController.getEnclosingControlBlock(decoupledShape.getId()),
+									programArea.getShapesInProgramArea());
+							if (decoupledControlShape == null || decoupledControlShape == shape) {
+								decoupledControlShape = decoupledShape;
+							}
+
+							if (decoupledControlShape.getHeight() != decoupledControlShape.getPreviousHeight()) {
+								final String decoupledControlShapeId = decoupledControlShape.getId();
+								idsToMoveUnderneath.removeAll(domainController
+										.getAllBlockIDsBelowCertainBlock(decoupledControlShape.getId()).stream()
+										.filter(s -> !s.equals(decoupledControlShapeId)).collect(Collectors.toSet()));
+							}
+
 							Shape linkedControlShape = getShapeByID(
 									domainController.getEnclosingControlBlock(changedLinkedShape.getId()),
 									programArea.getShapesInProgramArea());
-							if(linkedControlShape==null || linkedControlShape==shape) {
-								linkedControlShape=changedLinkedShape;
+							if (linkedControlShape == null || linkedControlShape == shape) {
+								linkedControlShape = changedLinkedShape;
 							}
 							diffYPosition = linkedControlShape.getHeight() - linkedControlShape.getPreviousHeight();
 						} else {
@@ -885,11 +900,26 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 									.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
 							idsToMoveUnderneath
 									.addAll(shapesInMovement.stream().map(s -> s.getId()).collect(Collectors.toSet()));
+
+							Shape linkedControlShape = getShapeByID(
+									domainController.getEnclosingControlBlock(changedLinkedShape.getId()),
+									programArea.getShapesInProgramArea());
+//							if (linkedControlShape != shape) {
+//								// linkedControlShape = changedLinkedShape;
+//
+//								if (linkedControlShape.getHeight() != linkedControlShape.getPreviousHeight()) {
+//									final String linkedControlShapeId = linkedControlShape.getId();
+//									idsToMoveUnderneath.removeAll(domainController
+//											.getAllBlockIDsBelowCertainBlock(linkedControlShape.getId()).stream()
+//											.filter(s -> !s.equals(linkedControlShapeId)).collect(Collectors.toSet()));
+//								}
+//							}
+
 							Shape decoupledControlShape = getShapeByID(
 									domainController.getEnclosingControlBlock(decoupledShape.getId()),
 									programArea.getShapesInProgramArea());
-							if(decoupledControlShape==null || decoupledControlShape==shape) {
-								decoupledControlShape=decoupledShape;
+							if (decoupledControlShape == null || decoupledControlShape == shape) {
+								decoupledControlShape = decoupledShape;
 							}
 							diffYPosition = decoupledControlShape.getHeight()
 									- decoupledControlShape.getPreviousHeight();
@@ -913,14 +943,15 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 						if (idsUnderneathShape.contains(beforeBlockId)
 								&& changedShape.getY_coord() > changedShape.getPreviousY_coord()) {
-							
+
 							Shape decoupledControlShape = getShapeByID(
 									domainController.getEnclosingControlBlock(decoupledShape.getId()),
 									programArea.getShapesInProgramArea());
-							if(decoupledControlShape==null || decoupledControlShape==shape) {
-								decoupledControlShape=decoupledShape;
+							if (decoupledControlShape == null || decoupledControlShape == shape) {
+								decoupledControlShape = decoupledShape;
 							}
-							idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledControlShape.getId()));
+							idsToMoveUnderneath
+									.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledControlShape.getId()));
 
 							idsToMoveUnderneath
 									.addAll(shapesInMovement.stream().map(s -> s.getId()).collect(Collectors.toSet()));

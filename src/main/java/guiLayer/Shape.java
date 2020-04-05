@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import types.BlockType;
 import types.ConnectionType;
@@ -109,7 +110,7 @@ public abstract class Shape implements Constants, Cloneable {
 	public HashSet<Pair<Integer, Integer>> getTriggerSet(ConnectionType connection) {
 		HashSet<Pair<Integer, Integer>> triggerSet = new HashSet<Pair<Integer, Integer>>();
 
-		if (getCoordinateConnectionMap().keySet().contains(connection)) {
+		if (getCoordinateConnectionMap().keySet().contains(connection) && checkIfOpen(connection)) {
 			int x_current = getCoordinateConnectionMap().get(connection).getLeft();
 			int y_current = getCoordinateConnectionMap().get(connection).getRight();
 
