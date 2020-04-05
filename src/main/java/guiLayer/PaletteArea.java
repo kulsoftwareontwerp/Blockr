@@ -5,47 +5,67 @@ import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 
+import domainLayer.gamestates.GameState;
 import types.BlockType;
 
 public class PaletteArea implements Constants {
 	
 	private HashSet<Shape> shapesInPalette;
 	private ShapeFactory shapeFactory;
+	private Boolean paletteVisible;
+
 
 
 	public PaletteArea(ShapeFactory shapeFactory) {
 		setShapeFactory(shapeFactory);
+		setPaletteVisible(true);
+	}
+	
+	public Boolean getPaletteVisible() {
+		return paletteVisible;
 	}
 	
 	
+	public void setPaletteVisible(Boolean paletteVisible) {
+		this.paletteVisible = paletteVisible;
+	}
+	
 	public void paint(Graphics g) {
 		// Palette
-				// ActionBlocks
-				g.drawLine(0, 10, 100, 10); // whiteSpace
-				g.drawLine(0, 40, 100, 40); // "Action Block"
+		
 
-				// ControlBlocks
-				g.drawLine(0, 185, 100, 185); // whiteSpace
-				g.drawLine(0, 215, 100, 215); // "Control Block"
 
-				// OperatorBlocks
-				g.drawLine(0, 435, 100, 435); // whiteSpace
-				g.drawLine(0, 465, 100, 465); // "Operator Block"
 
-				// ConditionBlocks
-				g.drawLine(0, 515, 100, 515); // whiteSpace
-				g.drawLine(0, 545, 100, 545); // "Condition Block"
+				
+				if(!getPaletteVisible()) {
+					
+					g.drawString("Too many blocks", 5, 30);
+				}
+				else {
+					// ActionBlocks
+					g.drawLine(0, 10, 100, 10); // whiteSpace
+					g.drawLine(0, 40, 100, 40); // "Action Block"
 
+					// ControlBlocks
+					g.drawLine(0, 185, 100, 185); // whiteSpace
+					g.drawLine(0, 215, 100, 215); // "Control Block"
+
+					// OperatorBlocks
+					g.drawLine(0, 435, 100, 435); // whiteSpace
+					g.drawLine(0, 465, 100, 465); // "Operator Block"
+
+					// ConditionBlocks
+					g.drawLine(0, 515, 100, 515); // whiteSpace
+					g.drawLine(0, 545, 100, 545); // "Condition Block"
+				}
 				// Rest of the Frame
 				g.drawLine(100, 0, 100, 600);
 				g.drawLine(GAME_START_X, 0, GAME_START_X, 600);
 				g.drawLine(GAME_START_X, 200, GAME_END_Y, 200);
 				g.drawLine(GAME_START_X, 400, GAME_END_Y, 400);
-				
 				drawFullPalette(g);
 
-				//
-				//if (isPaletteShown)
+				
 
 	}
 	
@@ -53,6 +73,7 @@ public class PaletteArea implements Constants {
 		
 		HashSet<Shape> set = new HashSet<Shape>();
 		
+		if(getPaletteVisible()) {
 		g.drawString("Action Blocks", 15, 30);
 		set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.MoveForward, ACTION_BLOCK_INIT_OFFSET, ACTION_BLOCK_MOVE_FORWARD_UPPER));
 		set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.TurnLeft, ACTION_BLOCK_INIT_OFFSET, ACTION_BLOCK_TURN_LEFT_UPPER));
@@ -69,6 +90,7 @@ public class PaletteArea implements Constants {
 		set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.WallInFront, CONDITION_BLOCK_INIT_OFFSET, CONDITION_BLOCK_WALL_UPPER));
 		
 		set.forEach(e-> e.draw(g));
+		}
 		
 		this.shapesInPalette = set; 
 		

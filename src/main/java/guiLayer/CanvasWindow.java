@@ -1041,7 +1041,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	public void onPanelChangedEvent(PanelChangeEvent event) {
-		isPaletteShown = event.isShown();
+		paletteArea.setPaletteVisible(event.isShown());
 		super.repaint();
 	}
 
