@@ -62,7 +62,7 @@ public class ProgramArea implements Constants {
 
 	public boolean checkIfPlaceable(HashSet<Pair<Integer, Integer>> currentCoordinates, Shape currentShape) {
 		boolean placeable = !((currentCoordinates.stream().anyMatch(i -> this.alreadyFilledInCoordinates.contains(i))))
-				&& currentShape.getX_coord() < PROGRAM_END_X;
+				&& currentShape.getX_coord()+currentShape.getWidth() < PROGRAM_END_X;
 
 		if ((currentShape.getType() == BlockType.If || currentShape.getType() == BlockType.While)
 				&& (getHighlightedShape() != null && (getHighlightedShape().getType() == BlockType.If

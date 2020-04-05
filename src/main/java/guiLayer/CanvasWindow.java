@@ -84,13 +84,15 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				g.drawOval(filledInCoordinate.getLeft(), filledInCoordinate.getRight(), 1, 1);
 			}
 		}
-		if (currentShape != null)
-			currentShape.draw(g);
+
 
 		// Partition CanvasWindow in different sections
 
 		paletteArea.paint(g);
 		gameArea.draw(g);
+		
+		if (currentShape != null)
+			currentShape.draw(g);
 
 		// draw all shapes in shapesInProgramArea
 		if (programArea.getShapesInProgramArea() != null && !programArea.getShapesInProgramArea().isEmpty()) {
@@ -241,155 +243,176 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					} else {
 						domainController.removeBlock(currentShape.getId());
 					}
-				}
-			}
+				}				
+				else if (programArea.checkIfInProgramArea(x) && currentShape != null) {
+					if (programArea.getHighlightedShape() != null) {
+						// connectedVia of highlightedshape must be persisted.
+						programArea.getHighlightedShape().persistConnectedVia(true);
 
-			if (id == MouseEvent.MOUSE_RELEASED && programArea.checkIfInProgramArea(x) && currentShape != null) {
-				if (programArea.getHighlightedShape() != null) {
-					// connectedVia of highlightedshape must be persisted.
-					programArea.getHighlightedShape().persistConnectedVia(true);
+						if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
+							// persist the connectedVia.
+							currentShape.persistConnectedVia(true);
 
-					if (currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
-						// persist the connectedVia.
-						currentShape.persistConnectedVia(true);
+							// ADD
+							currentShape.clipOn(programArea.getHighlightedShape(), currentShape.getConnectedVia());
 
-						// ADD
-						currentShape.clipOn(programArea.getHighlightedShape(), currentShape.getConnectedVia());
+						} else {
 
-					} else {
+							// MOVE
+							// if movedshape is null, then clip on is not necessary
+							if (movedShape != null) {
+								// movedShape connectevia must be persisted, currentshape connectedvia reverted
+								// if they are different shapes
+								// this order is important.
+								movedShape.persistConnectedVia(true);
+								currentShape.persistConnectedVia(false);
 
-						// MOVE
-						// if movedshape is null, then clip on is not necessary
-						if (movedShape != null) {
-							// movedShape connectevia must be persisted, currentshape connectedvia reverted
-							// if they are different shapes
-							// this order is important.
-							movedShape.persistConnectedVia(true);
-							currentShape.persistConnectedVia(false);
+								int originalChangedShapeX = movedShape.getX_coord();
+								int originalChangedShapeY = movedShape.getY_coord();
+								System.out.println("BeforeClipon X: " + originalChangedShapeX);
+								System.out.println("BeforeClipon Y: " + originalChangedShapeY);
 
-							int originalChangedShapeX = movedShape.getX_coord();
-							int originalChangedShapeY = movedShape.getY_coord();
-							System.out.println("BeforeClipon X: " + originalChangedShapeX);
-							System.out.println("BeforeClipon Y: " + originalChangedShapeY);
+								movedShape.clipOn(programArea.getHighlightedShape(), movedShape.getConnectedVia());
+								System.out.println("AfterClipon X: " + movedShape.getX_coord());
+								System.out.println("AfterClipon Y: " + movedShape.getY_coord());
 
-							movedShape.clipOn(programArea.getHighlightedShape(), movedShape.getConnectedVia());
-							System.out.println("AfterClipon X: " + movedShape.getX_coord());
-							System.out.println("AfterClipon Y: " + movedShape.getY_coord());
+								// Only if the shape that's being dragged is the moved shape than it should
+								// be decoupled from the chain it's in
+								if (movedShape == currentShape) {
+									decoupleFromShape(movedShape);
+								}
 
-							// Only if the shape that's being dragged is the moved shape than it should
-							// be decoupled from the chain it's in
-							if (movedShape == currentShape) {
-								decoupleFromShape(movedShape);
+								int diffX = movedShape.getX_coord() - originalChangedShapeX;
+								int diffy = movedShape.getY_coord() - originalChangedShapeY;
+								System.out.println("diffX: " + diffX);
+								System.out.println("diffY: " + diffy);
+
+								updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy, movedShape);
 							}
 
-							int diffX = movedShape.getX_coord() - originalChangedShapeX;
-							int diffy = movedShape.getY_coord() - originalChangedShapeY;
-							System.out.println("diffX: " + diffX);
-							System.out.println("diffY: " + diffy);
-
-							updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy, movedShape);
-						}
-
-					}
-				}
-
-				currentShape.setCoordinatesShape(
-						currentShape.createCoordinatePairs(currentShape.getX_coord(), currentShape.getY_coord()));
-				boolean placeable = programArea.checkIfPlaceable(getCurrentShape().getCoordinatesShape(),
-						getCurrentShape());
-
-				if (placeable) {
-
-					if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
-
-						if (programArea.getHighlightedShape() != null) {
-							domainController.addBlock(getCurrentShape().getType(),
-									programArea.getHighlightedShape().getId(), getCurrentShape().getConnectedVia());
-						} else {
-							domainController.addBlock(getCurrentShape().getType(), "", ConnectionType.NOCONNECTION);
 						}
 					}
 
-					// DOMAIN MOVEMENT, IF THERE IS A CHANGE IN CURRENTSHAPE.GETCONNECTIONVIA,
-					// EXCEPTIONS CATCHEN!!
-					else if (programArea.getHighlightedShape() != null) {
+					currentShape.setCoordinatesShape(
+							currentShape.createCoordinatePairs(currentShape.getX_coord(), currentShape.getY_coord()));
+					boolean placeable = programArea.checkIfPlaceable(getCurrentShape().getCoordinatesShape(),
+							getCurrentShape());
 
-						if (programArea.getHighlightedShape().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
+					if (placeable) {
+
+						if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
+
+							if (programArea.getHighlightedShape() != null) {
+								domainController.addBlock(getCurrentShape().getType(),
+										programArea.getHighlightedShape().getId(), getCurrentShape().getConnectedVia());
+							} else {
+								domainController.addBlock(getCurrentShape().getType(), "", ConnectionType.NOCONNECTION);
+							}
+						}
+
+						// DOMAIN MOVEMENT, IF THERE IS A CHANGE IN CURRENTSHAPE.GETCONNECTIONVIA,
+						// EXCEPTIONS CATCHEN!!
+						else if (programArea.getHighlightedShape() != null) {
+
+							if (programArea.getHighlightedShape().getConnectedVia()
+									.equals(ConnectionType.NOCONNECTION)) {
+								domainController.moveBlock(getCurrentShape().getId(), "", "",
+										ConnectionType.NOCONNECTION);
+
+							} else {
+
+								domainController.moveBlock(currentShape.getId(), movedShape.getId(),
+										programArea.getHighlightedShape().getId(), movedShape.getConnectedVia());
+							}
+						}
+						// decouple chain of blocks from a block
+						// Wanneer is decouple chain nodig?
+
+						else if (getCurrentShape().getConnectedVia() != ConnectionType.NOCONNECTION
+								|| (getCurrentShape().getConnectedVia() == ConnectionType.NOCONNECTION
+										&& getCurrentShape().getPreviouslyConnectedVia() != ConnectionType.NOCONNECTION)
+										&& !domainController.getAllHeadBlocks().contains(getCurrentShape().getId())) {
+							// filter out the blocks that already a headblock.
+
 							domainController.moveBlock(getCurrentShape().getId(), "", "", ConnectionType.NOCONNECTION);
 
-						} else {
-
-							domainController.moveBlock(currentShape.getId(), movedShape.getId(),
-									programArea.getHighlightedShape().getId(), movedShape.getConnectedVia());
 						}
-					}
-					// decouple chain of blocks from a block
-					// Wanneer is decouple chain nodig?
 
-					else if (getCurrentShape().getConnectedVia() != ConnectionType.NOCONNECTION
-							|| (getCurrentShape().getConnectedVia() == ConnectionType.NOCONNECTION
-									&& getCurrentShape().getPreviouslyConnectedVia() != ConnectionType.NOCONNECTION)
-									&& !domainController.getAllHeadBlocks().contains(getCurrentShape().getId())) {
-						// filter out the blocks that already a headblock.
+						// ONLY GRAPHICAL MOVEMENT:
+						else {
 
-						domainController.moveBlock(getCurrentShape().getId(), "", "", ConnectionType.NOCONNECTION);
+							for (Shape shape : shapesInMovement) {
 
-					}
+								shape.setCoordinatesShape(
+										shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+								programArea.addShapeToProgramArea(shape);
+								programArea.addToAlreadyFilledInCoordinates(shape);
 
-					// ONLY GRAPHICAL MOVEMENT:
-					else {
-
-						for (Shape shape : shapesInMovement) {
-
-							shape.setCoordinatesShape(
-									shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
-							programArea.addShapeToProgramArea(shape);
-							programArea.addToAlreadyFilledInCoordinates(shape);
+							}
 
 						}
 
+						// NOT PLACEABLE =>
+					} else {
+
+						revertMove();
 					}
 
-					// NOT PLACEABLE =>
-				} else {
+					setCurrentShape(null);
+					programArea.setHighlightedShape(null);
+					movedShape = null;
+					setX_offsetCurrentShape(0);
+					setY_offsetCurrentShape(0);
 
-					for (Iterator<Shape> iterator = shapesInMovement.iterator(); iterator.hasNext();) {
-						Shape shape = (Shape) iterator.next();
-
-						if (shape.getPreviousX_coord() == INVALID_COORDINATE
-								|| shape.getPreviousY_coord() == INVALID_COORDINATE) {
-							iterator.remove();
-						} else {
-							shape.setX_coord(shape.getPreviousX_coord());
-							shape.setY_coord(shape.getPreviousY_coord());
-
-							shape.setCoordinatesShape(
-									shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
-							programArea.addToAlreadyFilledInCoordinates(shape);
-							shape.defineConnectionTypes();
-							programArea.addShapeToProgramArea(shape);
-						}
-
-					}
-
-					getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia(), true);
+					this.previousCoordinates = null;
+					this.shapesInMovement = new HashSet<Shape>();
+					blocksUnderneath = new HashSet<String>();
 				}
-
-				setCurrentShape(null);
-				programArea.setHighlightedShape(null);
-				movedShape = null;
-				setX_offsetCurrentShape(0);
-				setY_offsetCurrentShape(0);
-
-				this.previousCoordinates = null;
-				this.shapesInMovement = new HashSet<Shape>();
-				blocksUnderneath = new HashSet<String>();
+				else {
+					if (currentShape==null || currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
+						setCurrentShape(null);
+						shapesInMovement.clear();
+					} else {
+						revertMove();
+					}
+					
+					setCurrentShape(null);
+					programArea.setHighlightedShape(null);
+					movedShape = null;
+					setX_offsetCurrentShape(0);
+					setY_offsetCurrentShape(0);
+					this.shapesInMovement = new HashSet<Shape>();
+					blocksUnderneath = new HashSet<String>();
+				}
 			}
 
 			repaint();
 		} else {
 			// Consume event;
 		}
+	}
+
+	private void revertMove() {
+		for (Iterator<Shape> iterator = shapesInMovement.iterator(); iterator.hasNext();) {
+			Shape shape = (Shape) iterator.next();
+
+			if (shape.getPreviousX_coord() == INVALID_COORDINATE
+					|| shape.getPreviousY_coord() == INVALID_COORDINATE) {
+				iterator.remove();
+			} else {
+				shape.setX_coord(shape.getPreviousX_coord());
+				shape.setY_coord(shape.getPreviousY_coord());
+
+				shape.setCoordinatesShape(
+						shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+				programArea.addToAlreadyFilledInCoordinates(shape);
+				shape.defineConnectionTypes();
+				programArea.addShapeToProgramArea(shape);
+			}
+
+		}
+
+		getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia(), true);
 	}
 
 	private void decoupleFromShape(Shape shapeToDecouple) {
