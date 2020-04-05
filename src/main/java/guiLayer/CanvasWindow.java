@@ -875,7 +875,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							Shape linkedControlShape = getShapeByID(
 									domainController.getEnclosingControlBlock(changedLinkedShape.getId()),
 									programArea.getShapesInProgramArea());
-							if(linkedControlShape==null) {
+							if(linkedControlShape==null || linkedControlShape==shape) {
 								linkedControlShape=changedLinkedShape;
 							}
 							diffYPosition = linkedControlShape.getHeight() - linkedControlShape.getPreviousHeight();
@@ -888,7 +888,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							Shape decoupledControlShape = getShapeByID(
 									domainController.getEnclosingControlBlock(decoupledShape.getId()),
 									programArea.getShapesInProgramArea());
-							if(decoupledControlShape==null) {
+							if(decoupledControlShape==null || decoupledControlShape==shape) {
 								decoupledControlShape=decoupledShape;
 							}
 							diffYPosition = decoupledControlShape.getHeight()
@@ -917,7 +917,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							Shape decoupledControlShape = getShapeByID(
 									domainController.getEnclosingControlBlock(decoupledShape.getId()),
 									programArea.getShapesInProgramArea());
-							if(decoupledControlShape==null) {
+							if(decoupledControlShape==null || decoupledControlShape==shape) {
 								decoupledControlShape=decoupledShape;
 							}
 							idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledControlShape.getId()));
