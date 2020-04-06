@@ -33,17 +33,17 @@
 
 		<plugins>
 			<plugin>
-			<artifactId>maven-compiler-plugin</artifactId>
-			<configuration>
-			<release>12</release>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<release>12</release>
 
-			</configuration>
+				</configuration>
 			</plugin>
 
 
 
 			<plugin>
-<!-- 				Build an executable JAR -->
+				<!-- Build an executable JAR -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>3.1.0</version>
@@ -83,6 +83,12 @@
 			<version>3.3.0</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.kuleuven.swop.group17</groupId>
+			<artifactId>GameWorldApi</artifactId>
+			<version>0.1</version>
+		</dependency>
+
 	</dependencies>
 
 </project>

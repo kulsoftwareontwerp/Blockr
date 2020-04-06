@@ -1,8 +1,3 @@
-
-
-
-import java.net.URL;
-
 import applicationLayer.DomainController;
 import domainLayer.elements.ElementType;
 import guiLayer.CanvasWindow;
