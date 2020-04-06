@@ -1002,7 +1002,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						HashSet<String> idsToMoveUnderneath = new HashSet<String>();
 						idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(shape.getId()));
 
-						if (idsUnderneathShape.contains(beforeBlockId)
+						if ((idsUnderneathShape.contains(beforeBlockId)||shape.getId().equals(beforeBlockId))
 								&& changedShape.getY_coord() > changedShape.getPreviousY_coord()) {
 
 							Shape decoupledControlShape = getShapeByID(
