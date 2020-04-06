@@ -85,12 +85,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 		}
 
-
 		// Partition CanvasWindow in different sections
 
 		paletteArea.paint(g);
 		gameArea.draw(g);
-		
+
 		if (currentShape != null)
 			currentShape.draw(g);
 
@@ -120,13 +119,23 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				for (var p : shape.getCoordinateConnectionMap().entrySet()) {
 					int tempx = p.getValue().getLeft() - 3;
 					int tempy = p.getValue().getRight();
+					g.setColor(Color.black);
 					g.drawOval(tempx, tempy, 6, 6);
 
 					if (DebugModus.CONNECTIONSTATUS.compareTo(debugModus) <= 0) {
-						g.drawString(shape.checkIfOpen(p.getKey()).toString(), tempx, tempy);
+						if(shape.checkIfOpen(p.getKey())) {
+							g.setColor(Color.green);
+						}
+						else {
+							g.setColor(Color.red);
+
+						}
+						
+						g.fillOval(tempx, tempy, 6, 6);
 					}
 				}
 			}
+			g.setColor(Color.black);
 
 			for (Shape shape : shapesInMovement) {
 				for (var p : shape.getCoordinateConnectionMap().values()) {
@@ -243,8 +252,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					} else {
 						domainController.removeBlock(currentShape.getId());
 					}
-				}				
-				else if (programArea.checkIfInProgramArea(x) && currentShape != null) {
+				} else if (programArea.checkIfInProgramArea(x) && currentShape != null) {
 					if (programArea.getHighlightedShape() != null) {
 						// connectedVia of highlightedshape must be persisted.
 						programArea.getHighlightedShape().persistConnectedVia(true);
@@ -367,15 +375,14 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					this.previousCoordinates = null;
 					this.shapesInMovement = new HashSet<Shape>();
 					blocksUnderneath = new HashSet<String>();
-				}
-				else {
-					if (currentShape==null || currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
+				} else {
+					if (currentShape == null || currentShape.getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
 						setCurrentShape(null);
 						shapesInMovement.clear();
 					} else {
 						revertMove();
 					}
-					
+
 					setCurrentShape(null);
 					programArea.setHighlightedShape(null);
 					movedShape = null;
@@ -396,15 +403,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		for (Iterator<Shape> iterator = shapesInMovement.iterator(); iterator.hasNext();) {
 			Shape shape = (Shape) iterator.next();
 
-			if (shape.getPreviousX_coord() == INVALID_COORDINATE
-					|| shape.getPreviousY_coord() == INVALID_COORDINATE) {
+			if (shape.getPreviousX_coord() == INVALID_COORDINATE || shape.getPreviousY_coord() == INVALID_COORDINATE) {
 				iterator.remove();
 			} else {
 				shape.setX_coord(shape.getPreviousX_coord());
 				shape.setY_coord(shape.getPreviousY_coord());
 
-				shape.setCoordinatesShape(
-						shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+				shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
 				programArea.addToAlreadyFilledInCoordinates(shape);
 				shape.defineConnectionTypes();
 				programArea.addShapeToProgramArea(shape);
@@ -879,7 +884,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			HashSet<String> idsToMove = new HashSet<String>();
 
 			int diffYPosition = shape.getHeight() - shape.getPreviousHeight();
-			Set<String> idsUnderneathShape = domainController.getAllBlockIDsUnderneath(shape.getId());
+			Set<String> idsUnderneathShape = domainController.getAllBlockIDsUnderneath(shape.getId()).stream().filter(s->!s.equals(shape.getId())).collect(Collectors.toSet());
 
 			// does this movement affect the height of the current stack?
 			if (idsUnderneathShape.contains(changedShape.getId())) {
@@ -946,11 +951,44 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							}
 							diffYPosition = decoupledControlShape.getHeight()
 									- decoupledControlShape.getPreviousHeight();
+
 						}
 
 						// if the height of the shape did not change, none of the shapes below height
 						// should be moved
 						idsToMoveUnderneath.removeAll(shapeIdsToBeMovedAfterUpdateOfControlShape(shape.getId()));
+
+						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
+					}
+					// add from move
+					else if (changedLinkedShape != null) {
+						Shape linkedControlShape = getShapeByID(
+								domainController.getEnclosingControlBlock(changedLinkedShape.getId()),
+								programArea.getShapesInProgramArea());
+						if (linkedControlShape == null || linkedControlShape == shape) {
+							linkedControlShape = changedLinkedShape;
+						}
+						diffYPosition = linkedControlShape.getHeight() - linkedControlShape.getPreviousHeight();
+
+						idsToMoveUnderneath
+								.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(changedLinkedShape.getId()));
+
+						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
+
+					}
+					// remove from move
+					else if (decoupledShape != null) {
+						Shape decoupledControlShape = getShapeByID(
+								domainController.getEnclosingControlBlock(decoupledShape.getId()),
+								programArea.getShapesInProgramArea());
+						if (decoupledControlShape == null || decoupledControlShape == shape) {
+							decoupledControlShape = decoupledShape;
+						}
+						diffYPosition = decoupledControlShape.getHeight()
+								- decoupledControlShape.getPreviousHeight();
+
+						idsToMoveUnderneath
+								.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
 
 						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
 					}
@@ -985,14 +1023,36 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					} else {
 						// no
 						idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(changedShape.getId());
+						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMove, diffYPosition);
 					}
 
 				}
 			} else {
-				idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId);
+				//idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId);
+				
+				if (decoupledShape != null) {
+					Shape decoupledControlShape = getShapeByID(
+							domainController.getEnclosingControlBlock(decoupledShape.getId()),
+							programArea.getShapesInProgramArea());
+					if (decoupledControlShape == null || decoupledControlShape == shape) {
+						decoupledControlShape = decoupledShape;
+					}
+//					diffYPosition = decoupledControlShape.getHeight()
+//							- decoupledControlShape.getPreviousHeight();
+
+					diffYPosition = shape.getHeight() - shape.getPreviousHeight();
+
+					idsToMove
+							.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
+
+					moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMove, diffYPosition);
+				}
+
+				
+				
 			}
 
-			moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMove, diffYPosition);
+//			moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMove, diffYPosition);
 		}
 	}
 
