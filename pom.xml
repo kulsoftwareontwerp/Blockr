@@ -86,7 +86,7 @@
 		<dependency>
 			<groupId>com.kuleuven.swop.group17</groupId>
 			<artifactId>GameWorldApi</artifactId>
-			<version>0.1</version>
+			<version>0.2</version>
 		</dependency>
 
 	</dependencies>
