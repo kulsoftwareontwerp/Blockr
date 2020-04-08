@@ -86,9 +86,14 @@
 		<dependency>
 			<groupId>com.kuleuven.swop.group17</groupId>
 			<artifactId>GameWorldApi</artifactId>
-			<version>0.3</version>
+			<version>0.4</version>
 		</dependency>
-
+		<dependency>
+			<groupId>com.kuleuven.swop.group17</groupId>
+			<artifactId>RobotGameWorld</artifactId>
+			<version>0.1</version>
+			<scope>runtime</scope>
+		</dependency>
 	</dependencies>
 
 </project>

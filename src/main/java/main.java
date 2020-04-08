@@ -1,3 +1,7 @@
+import com.kuleuven.swop.group17.GameWorldApi.Action;
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+import com.kuleuven.swop.group17.GameWorldApi.GameWorldType;
+
 import applicationLayer.DomainController;
 import domainLayer.elements.ElementType;
 import guiLayer.CanvasWindow;
@@ -5,6 +9,13 @@ import guiLayer.CanvasWindow;
 public class main {
 
 	public static void main(String[] args) {	
+		GameWorld gameWorld = GameWorldType.createInstance("com.kuleuven.swop.group17.RobotGameWorld.applicationLayer.RobotGameWorld");
+		
+		
+		
+		for (Action action : gameWorld.getType().supportedActions()) {
+			System.out.println(action);
+		}
 		
 		
 		DomainController dc = new DomainController();
