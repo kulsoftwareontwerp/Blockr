@@ -1,4 +1,3 @@
-import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorldType;
 
@@ -12,13 +11,7 @@ public class main {
 		GameWorld gameWorld = GameWorldType.createInstance("com.kuleuven.swop.group17.RobotGameWorld.applicationLayer.RobotGameWorld");
 		
 		
-		
-		for (Action action : gameWorld.getType().supportedActions()) {
-			System.out.println(action);
-		}
-		
-		
-		DomainController dc = new DomainController();
+		DomainController dc = new DomainController(gameWorld);
 
 //		Hier wordt ook de UI aangemaakt.
 		
@@ -26,7 +19,6 @@ public class main {
 		//Test push voor de UI-branch
 		java.awt.EventQueue.invokeLater(() -> {
 	         new CanvasWindow("Blockr", dc).show();
-	         initializeElements(dc);
 	  });
 
 		
@@ -35,14 +27,6 @@ public class main {
 	
 	
 	
-	private static void initializeElements(DomainController dc) {
-		dc.addElement(ElementType.ROBOT, 2, 3);
-		dc.addElement(ElementType.WALL,0,0);
-		dc.addElement(ElementType.WALL,4,0);
-		dc.addElement(ElementType.WALL,1,2);
-		dc.addElement(ElementType.WALL,2,2);
-		dc.addElement(ElementType.WALL,3,2);
-		dc.addElement(ElementType.GOAL,2,1);
-	}
+
 
 }

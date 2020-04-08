@@ -28,7 +28,6 @@ import types.ConnectionType;
 
 public class CanvasWindow extends CanvasResource implements GUIListener, Constants {
 	private ProgramArea programArea;
-	private GameArea gameArea;
 	private PaletteArea paletteArea;
 
 	private DomainController domainController;
@@ -59,7 +58,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		this.domainController.addGameListener(this);
 		setShapeFactory(new ShapeFactory());
 		this.programArea = new ProgramArea();
-		this.gameArea = new GameArea();
 		this.paletteArea = new PaletteArea(getShapeFactory());
 
 		this.blocksUnderneath = new HashSet<String>();
@@ -85,7 +83,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		paletteArea.paint(blockrGraphics);
 
 		domainController.paint(gameAreaGraphics);
-		gameArea.draw(gameAreaGraphics);
+//		gameArea.draw(gameAreaGraphics);
 
 		programArea.draw(blockrGraphics);
 
@@ -1085,42 +1083,18 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	// TODO Remove this method
 	@Override
 	public void onRobotChangeEvent(RobotChangeEvent event) {
-		// look for robot, set that cell to SAND
-		gameArea.moveRobot(event.getxCoordinate(), event.getyCoordinate() + OFFSET_GAMEAREA_CELLS,
-				event.getOrientation());
 		super.repaint();
 	}
 
 	// TODO Remove this method
 	@Override
 	public void onRobotAddedEvent(RobotAddedEvent event) {
-
-		int x_coord = event.getxCoordinate();
-		int y_coord = event.getyCoordinate();
-		Orientation orientation = event.getOrientation();
-
-		ElementType type = ElementType.ROBOT;
-
-		gameArea.addCell(new Cell(x_coord, y_coord + OFFSET_GAMEAREA_CELLS,
-				type.toString().toLowerCase() + orientation.toString()));
-
 		super.repaint();
 	}
 
 	// TODO Remove this method
 	@Override
 	public void onElementAddedEvent(ElementAddedEvent event) {
-		ElementType type = event.getType();
-
-		int x_coord = event.getxCoordinate();
-		int y_coord = event.getyCoordinate();
-
-		if (type == null) {
-			gameArea.addCell(new Cell(x_coord, y_coord + OFFSET_GAMEAREA_CELLS, "sand"));
-		} else {
-			gameArea.addCell(new Cell(x_coord, y_coord + OFFSET_GAMEAREA_CELLS, type.toString().toLowerCase()));
-		}
-
 		super.repaint();
 	}
 

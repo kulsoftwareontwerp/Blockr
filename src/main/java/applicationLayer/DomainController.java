@@ -1,8 +1,11 @@
 package applicationLayer;
 
 import java.awt.Graphics;
-import java.util.HashSet;
 import java.util.Set;
+
+import com.kuleuven.swop.group17.GameWorldApi.Action;
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
 import domainLayer.elements.ElementType;
 import events.GUIListener;
@@ -10,7 +13,6 @@ import exceptions.InvalidBlockConnectionException;
 import exceptions.InvalidBlockTypeException;
 import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
-import guiLayer.Shape;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -28,18 +30,23 @@ public class DomainController {
 	private GameController gameController;
 	private BlockController blockController;
 	private ElementController elementController;
+	private GameWorld gameWorld;
 
 	/**
 	 * Construct a domainController and it's dependencies. - GameController -
 	 * BlockController - ElementController
+	 * @param gameWorld TODO
 	 */
-	public DomainController() {
+	public DomainController(GameWorld gameWorld) {
 		gameController = new GameController();
 		blockController = new BlockController();
 		elementController = new ElementController();
 
 		blockController.addDomainListener(gameController);
 		elementController.addDomainListener(gameController);
+		
+		this.gameWorld=gameWorld;
+
 	}
 
 	/**
@@ -374,7 +381,7 @@ public class DomainController {
 	 * @param gameAreaGraphics
 	 */
 	public void paint(Graphics gameWorldGraphics) {
-		// TODO Auto-generated method stub
+		gameWorld.paint(gameWorldGraphics);
 		
 	}
 	

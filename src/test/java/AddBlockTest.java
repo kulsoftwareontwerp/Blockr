@@ -205,7 +205,7 @@ public class AddBlockTest {
 		String excMessage = "No blockType given.";
 		exceptionRule.expect(IllegalArgumentException.class);
 		exceptionRule.expectMessage(excMessage);
-		dc = new DomainController();
+		dc = new DomainController(null);
 
 		for (ConnectionType c : ConnectionType.values()) {
 			dc.addBlock(null, "", c);
@@ -223,7 +223,7 @@ public class AddBlockTest {
 		String excMessage = "No connection given for connected block.";
 		exceptionRule.expect(IllegalArgumentException.class);
 		exceptionRule.expectMessage(excMessage);
-		dc = new DomainController();
+		dc = new DomainController(null);
 
 		for (BlockType b : BlockType.values()) {
 			dc.addBlock(b, "connectedBlockId", ConnectionType.NOCONNECTION);
@@ -257,7 +257,7 @@ public class AddBlockTest {
 		exceptionRule.expect(IllegalArgumentException.class);
 		exceptionRule.expectMessage(excMessage);
 
-		dc = new DomainController();
+		dc = new DomainController(null);
 
 		for (BlockType b : BlockType.values()) {
 			for (ConnectionType c : ConnectionType.values()) {
