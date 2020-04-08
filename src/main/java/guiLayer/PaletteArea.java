@@ -58,11 +58,10 @@ public class PaletteArea implements Constants {
 					g.drawLine(0, 515, 100, 515); // whiteSpace
 					g.drawLine(0, 545, 100, 545); // "Condition Block"
 				}
+				
+				
 				// Rest of the Frame
 				g.drawLine(100, 0, 100, 600);
-				g.drawLine(GAME_START_X, 0, GAME_START_X, 600);
-				g.drawLine(GAME_START_X, 200, GAME_END_Y, 200);
-				g.drawLine(GAME_START_X, 400, GAME_END_Y, 400);
 				drawFullPalette(g);
 
 				

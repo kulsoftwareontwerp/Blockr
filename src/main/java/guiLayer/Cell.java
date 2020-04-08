@@ -31,7 +31,7 @@ public class Cell implements Constants {
 
 	public void setXcoord(int xcoord) {
 
-		int x = GAME_START_X + (xcoord * 50);
+		int x =  (xcoord * 50);
 		Xcoord = x;
 	}
 

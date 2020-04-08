@@ -1,5 +1,6 @@
 package guiLayer;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +18,10 @@ public class GameArea implements Constants {
 	}
 	
 	
-	public void draw(Graphics g) {
+	public void draw(Graphics g) {	
+		g.drawLine(0, 0, 0, 600);
+		g.drawLine(0, 200, 250, 200);
+		g.drawLine(0, 400, 250, 400);
 		try {
 			for (Cell cell : cells) {
 
@@ -76,5 +80,8 @@ public class GameArea implements Constants {
 	public Collection<Cell> getCells() {
 		return cells;
 	}
+
+
+
 
 }

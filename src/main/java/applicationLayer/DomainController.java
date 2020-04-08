@@ -1,5 +1,6 @@
 package applicationLayer;
 
+import java.awt.Graphics;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -365,6 +366,16 @@ public class DomainController {
 
 	public Set<String> getAllHeadBlocks() {
 		return blockController.getAllHeadBlocks();
+	}
+
+	
+	/**
+	 * Paint the gameWorld on a given graphics object.
+	 * @param gameAreaGraphics
+	 */
+	public void paint(Graphics gameWorldGraphics) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

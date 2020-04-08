@@ -2,6 +2,10 @@ package guiLayer;
 
 public interface Constants {
 	
+	public final static int HEIGHT = 600;
+	public final static int WIDTH = 1000;
+	public final static int ORIGIN = 0;
+	
 	public static final int STANDARD_HEIGHT_BLOCK = 30;
 	public static final int STANDARD_HEIGHT_CONTROL_BLOCK = 90;
 	
@@ -11,7 +15,7 @@ public interface Constants {
 	
 	public final static int HEIGHT_GAME_AREA = 4;
 	public final static int WIDTH_GAME_AREA = 5;
-	public final static int MAX_NB_BLOCKS = 20;
+
 
 	public final static int PALETTE_START_X = 0;
 	public final static int PALETTE_END_X = 100;
@@ -21,9 +25,15 @@ public interface Constants {
 	public final static int PROGRAM_END_X = 750;
 
 	public final static int GAME_START_X = 750;
-	public final static int GAME_END_Y = 1000;
+	public final static int GAME_END_X = 1000;
+	
+	
+	
 	
 	public static final int INVALID_COORDINATE = -1;
+	
+	
+	
 	
 	public static final String PALETTE_BLOCK_IDENTIFIER = "PALETTE";
 

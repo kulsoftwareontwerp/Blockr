@@ -1,8 +1,11 @@
 package guiLayer;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 import types.BlockType;
@@ -10,16 +13,15 @@ import types.BlockType;
 public class ProgramArea implements Constants {
 
 	private HashSet<Pair<Integer, Integer>> alreadyFilledInCoordinates;
-	private HashMap<Shape, Pair<Integer, Integer>> openConnectionCoordinates;
 	private Shape highlightedShape = null;
+
+
 	private HashSet<Shape> shapesInProgramArea; // shapes with Id == null SHOULDN'T exist!!!!, only if dragged from
 	// Palette, Id == "PALETTE"
+	private Shape highlightedShapeForExecution;
 
 	public HashSet<Shape> getShapesInProgramArea() {
 		HashSet<Shape> copy = new HashSet<Shape>(shapesInProgramArea);
-		
-		
-		
 		return copy;
 	}
 	
@@ -41,8 +43,8 @@ public class ProgramArea implements Constants {
 	public ProgramArea() {
 		alreadyFilledInCoordinates = new HashSet<Pair<Integer, Integer>>();
 		shapesInProgramArea = new HashSet<Shape>();
-		openConnectionCoordinates =new  HashMap<Shape, Pair<Integer, Integer>>();	}
-
+	}
+	
 	public boolean checkIfInProgramArea(int x) {
 		return x > PROGRAM_START_X && x < PROGRAM_END_X;
 	}
@@ -94,6 +96,71 @@ public class ProgramArea implements Constants {
 
 	public void setHighlightedShape(Shape highlightedShape) {
 		this.highlightedShape = highlightedShape;
+	}
+
+	
+	
+	void draw(Graphics blockrGraphics) {
+	
+	
+		// draw all shapes in shapesInProgramArea
+		if (getShapesInProgramArea() != null && !getShapesInProgramArea().isEmpty()) {
+			getShapesInProgramArea().stream().forEach(((Shape e) -> e.draw(blockrGraphics)));
+		}
+	
+		if (getHighlightedShapeForExecution() != null) {
+			drawHighlightedBLUE(blockrGraphics, getHighlightedShapeForExecution());
+		}
+	
+	
+	
+		if (getHighlightedShape() != null) {
+			drawHighlightedGREEN(blockrGraphics, getHighlightedShape());
+		}
+		// only for debugging purposes
+		if (DebugModus.CONNECTIONS.compareTo(CanvasWindow.debugModus) <= 0) {
+			for (Shape shape : getShapesInProgramArea()) {
+				for (var p : shape.getCoordinateConnectionMap().entrySet()) {
+					int tempx = p.getValue().getLeft() - 3;
+					int tempy = p.getValue().getRight();
+					blockrGraphics.setColor(Color.black);
+					blockrGraphics.drawOval(tempx, tempy, 6, 6);
+	
+					if (DebugModus.CONNECTIONSTATUS.compareTo(CanvasWindow.debugModus) <= 0) {
+						if(shape.checkIfOpen(p.getKey())) {
+							blockrGraphics.setColor(Color.green);
+						}
+						else {
+							blockrGraphics.setColor(Color.red);
+	
+						}
+						
+						blockrGraphics.fillOval(tempx, tempy, 6, 6);
+					}
+				}
+			}
+
+		}
+	}
+
+	void drawHighlightedBLUE(Graphics g, Shape shape) {
+		g.setColor(Color.BLUE);
+		shape.draw(g);
+		g.setColor(Color.BLACK);
+	}
+	void drawHighlightedGREEN(Graphics g, Shape shape) {
+		g.setColor(Color.GREEN);
+		shape.draw(g);
+		g.setColor(Color.BLACK);
+	}
+
+	
+	private Shape getHighlightedShapeForExecution() {
+		return highlightedShapeForExecution;
+	}
+	public void setHighlightedShapeForExecution(Shape shape) {
+		this.highlightedShapeForExecution = shape;
+		
 	}
 
 }

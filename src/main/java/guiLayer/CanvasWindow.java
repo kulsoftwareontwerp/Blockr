@@ -1,11 +1,9 @@
 package guiLayer;
 
 import java.awt.Color;
-
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,24 +33,17 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	private DomainController domainController;
 	private ShapeFactory shapeFactory;
-	private boolean isHandleEvent = true;
-	private HashSet<Shape> shapesInMovement;
+
+	HashSet<Shape> shapesInMovement;
 
 	public HashSet<Shape> getShapesInMovement() {
 		return shapesInMovement;
 	}
 
-	private HashMap<Shape, Pair<Integer, Integer>> previousCoordinates;
-
 	private Set<String> blocksUnderneath;
-
-	private boolean isGameAreaUpdated = true; // to initialise, it has to be true
-	private boolean isPaletteShown = true;
 
 	private Shape currentShape = null;
 	private Shape movedShape = null;
-
-	private Shape highlightedForExecution = null;
 
 	private int x_offsetCurrentShape = 0;
 	private int y_offsetCurrentShape = 0;
@@ -63,7 +54,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	public CanvasWindow(String title, DomainController dc) {
 		super(title);
 
-		super.width = 1000;
+		super.width = WIDTH;
 		this.domainController = dc;
 		this.domainController.addGameListener(this);
 		setShapeFactory(new ShapeFactory());
@@ -78,6 +69,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	protected void paint(Graphics g) {
+
+		Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, PROGRAM_END_X, HEIGHT);
+		Graphics gameAreaGraphics = g.create(GAME_START_X, ORIGIN, WIDTH - GAME_START_X, HEIGHT);
+
 		// only for debugging purposes
 		if (debugModus == DebugModus.FILLINGS) {
 			for (Pair<Integer, Integer> filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
@@ -87,76 +82,37 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		// Partition CanvasWindow in different sections
 
-		paletteArea.paint(g);
-		gameArea.draw(g);
+		paletteArea.paint(blockrGraphics);
 
+		domainController.paint(gameAreaGraphics);
+		gameArea.draw(gameAreaGraphics);
+
+		programArea.draw(blockrGraphics);
+
+		// Draw the shapes in movement
+		blockrGraphics.setColor(Color.black);
 		if (currentShape != null)
-			currentShape.draw(g);
-
-		// draw all shapes in shapesInProgramArea
-		if (programArea.getShapesInProgramArea() != null && !programArea.getShapesInProgramArea().isEmpty()) {
-			programArea.getShapesInProgramArea().stream().forEach(((Shape e) -> e.draw(g)));
-		}
-
-		if (highlightedForExecution != null) {
-			drawHighlightedBLUE(g, highlightedForExecution);
-		}
+			currentShape.draw(blockrGraphics);
 
 		if (this.shapesInMovement != null) {
 
 			for (Shape shape : shapesInMovement) {
 				if (shape != currentShape)
-					shape.draw(g);
+					shape.draw(blockrGraphics);
 			}
 		}
 
-		if (programArea.getHighlightedShape() != null) {
-			drawHighlightedGREEN(g, programArea.getHighlightedShape());
-		}
-		// only for debugging purposes
-		if (DebugModus.CONNECTIONS.compareTo(debugModus) <= 0) {
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				for (var p : shape.getCoordinateConnectionMap().entrySet()) {
-					int tempx = p.getValue().getLeft() - 3;
-					int tempy = p.getValue().getRight();
-					g.setColor(Color.black);
-					g.drawOval(tempx, tempy, 6, 6);
-
-					if (DebugModus.CONNECTIONSTATUS.compareTo(debugModus) <= 0) {
-						if(shape.checkIfOpen(p.getKey())) {
-							g.setColor(Color.green);
-						}
-						else {
-							g.setColor(Color.red);
-
-						}
-						
-						g.fillOval(tempx, tempy, 6, 6);
-					}
-				}
-			}
-			g.setColor(Color.black);
-
+		blockrGraphics.setColor(Color.black);
+		if (DebugModus.CONNECTIONS.compareTo(CanvasWindow.debugModus) <= 0) {
 			for (Shape shape : shapesInMovement) {
 				for (var p : shape.getCoordinateConnectionMap().values()) {
 					int tempx = p.getLeft() - 3;
 					int tempy = p.getRight();
-					g.drawOval(tempx, tempy, 6, 6);
+					blockrGraphics.drawOval(tempx, tempy, 6, 6);
 				}
 			}
 		}
-	}
 
-	private void drawHighlightedGREEN(Graphics g, Shape shape) {
-		g.setColor(Color.GREEN);
-		shape.draw(g);
-		g.setColor(Color.BLACK);
-	}
-
-	private void drawHighlightedBLUE(Graphics g, Shape shape) {
-		g.setColor(Color.BLUE);
-		shape.draw(g);
-		g.setColor(Color.BLACK);
 	}
 
 	private int[] calculateOffsetMouse(int x_Mouse, int y_Mouse, int x_Shape, int y_Shape) {
@@ -169,18 +125,15 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	protected void handleMouseEvent(int id, int x, int y, int clickCount) {
 
-		if (isHandleEvent()) {
-
-			if (paletteArea.checkIfInPalette(x) && id == MouseEvent.MOUSE_PRESSED) {
-				setCurrentShape(paletteArea.getShapeFromCoordinate(x, y));
-				if (getCurrentShape() != null) {
-					var temp = calculateOffsetMouse(x, y, getCurrentShape().getX_coord(),
-							getCurrentShape().getY_coord());
-					this.x_offsetCurrentShape = temp[0];
-					this.y_offsetCurrentShape = temp[1];
-					getShapesInMovement().add(getCurrentShape());
-				}
+		if (paletteArea.checkIfInPalette(x) && id == MouseEvent.MOUSE_PRESSED) {
+			setCurrentShape(paletteArea.getShapeFromCoordinate(x, y));
+			if (getCurrentShape() != null) {
+				var temp = calculateOffsetMouse(x, y, getCurrentShape().getX_coord(), getCurrentShape().getY_coord());
+				this.x_offsetCurrentShape = temp[0];
+				this.y_offsetCurrentShape = temp[1];
+				getShapesInMovement().add(getCurrentShape());
 			}
+		}
 
 			if ((id == MouseEvent.MOUSE_DRAGGED || id == MouseEvent.MOUSE_PRESSED) && currentShape != null) {
 
@@ -205,7 +158,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 
 			if (id == MouseEvent.MOUSE_PRESSED && x > PROGRAM_START_X && x < PROGRAM_END_X) {
-				this.previousCoordinates = new HashMap<Shape, Pair<Integer, Integer>>();
 				Shape shape = programArea.getShapeFromCoordinate(x, y);
 				if (shape != null) {
 					blocksUnderneath = domainController.getAllBlockIDsUnderneath(shape.getId());
@@ -372,7 +324,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					setX_offsetCurrentShape(0);
 					setY_offsetCurrentShape(0);
 
-					this.previousCoordinates = null;
 					this.shapesInMovement = new HashSet<Shape>();
 					blocksUnderneath = new HashSet<String>();
 				} else {
@@ -394,9 +345,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 
 			repaint();
-		} else {
-			// Consume event;
-		}
 	}
 
 	private void revertMove() {
@@ -588,8 +536,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	public void onBlockAdded(BlockAddedEvent event) {
-		this.setHandleEvent(true);
-
 		// normaal is ID van event, en geen random DateTime
 
 		Shape toAdd = shapeFactory.createShape(event.getAddedBlockID(), getCurrentShape().getType(),
@@ -884,7 +830,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			HashSet<String> idsToMove = new HashSet<String>();
 
 			int diffYPosition = shape.getHeight() - shape.getPreviousHeight();
-			Set<String> idsUnderneathShape = domainController.getAllBlockIDsUnderneath(shape.getId()).stream().filter(s->!s.equals(shape.getId())).collect(Collectors.toSet());
+			Set<String> idsUnderneathShape = domainController.getAllBlockIDsUnderneath(shape.getId()).stream()
+					.filter(s -> !s.equals(shape.getId())).collect(Collectors.toSet());
 
 			// does this movement affect the height of the current stack?
 			if (idsUnderneathShape.contains(changedShape.getId())) {
@@ -984,11 +931,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						if (decoupledControlShape == null || decoupledControlShape == shape) {
 							decoupledControlShape = decoupledShape;
 						}
-						diffYPosition = decoupledControlShape.getHeight()
-								- decoupledControlShape.getPreviousHeight();
+						diffYPosition = decoupledControlShape.getHeight() - decoupledControlShape.getPreviousHeight();
 
-						idsToMoveUnderneath
-								.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
+						idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
 
 						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
 					}
@@ -1002,7 +947,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						HashSet<String> idsToMoveUnderneath = new HashSet<String>();
 						idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(shape.getId()));
 
-						if ((idsUnderneathShape.contains(beforeBlockId)||shape.getId().equals(beforeBlockId))
+						if ((idsUnderneathShape.contains(beforeBlockId) || shape.getId().equals(beforeBlockId))
 								&& changedShape.getY_coord() > changedShape.getPreviousY_coord()) {
 
 							Shape decoupledControlShape = getShapeByID(
@@ -1028,8 +973,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				}
 			} else {
-				//idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId);
-				
+				// idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId);
+
 				if (decoupledShape != null) {
 					Shape decoupledControlShape = getShapeByID(
 							domainController.getEnclosingControlBlock(decoupledShape.getId()),
@@ -1042,14 +987,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 					diffYPosition = shape.getHeight() - shape.getPreviousHeight();
 
-					idsToMove
-							.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
+					idsToMove.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
 
 					moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMove, diffYPosition);
 				}
 
-				
-				
 			}
 
 //			moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMove, diffYPosition);
@@ -1131,15 +1073,16 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	public void onUpdateHighlightingEvent(UpdateHighlightingEvent event) {
 		try {
-			highlightedForExecution = programArea.getShapesInProgramArea().stream()
-					.filter(e -> e.getId() == event.getHighlightBlockId()).findFirst().get();
+			programArea.setHighlightedShapeForExecution(programArea.getShapesInProgramArea().stream()
+					.filter(e -> e.getId() == event.getHighlightBlockId()).findFirst().get());
 		} catch (Exception e) {
-			highlightedForExecution = null;
+			programArea.setHighlightedShapeForExecution(null);
 		} finally {
 			super.repaint();
 		}
 	}
 
+	// TODO Remove this method
 	@Override
 	public void onRobotChangeEvent(RobotChangeEvent event) {
 		// look for robot, set that cell to SAND
@@ -1148,6 +1091,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		super.repaint();
 	}
 
+	// TODO Remove this method
 	@Override
 	public void onRobotAddedEvent(RobotAddedEvent event) {
 
@@ -1163,6 +1107,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		super.repaint();
 	}
 
+	// TODO Remove this method
 	@Override
 	public void onElementAddedEvent(ElementAddedEvent event) {
 		ElementType type = event.getType();
@@ -1177,14 +1122,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 
 		super.repaint();
-	}
-
-	private boolean checkIsGameAreaUpdated() {
-		return isGameAreaUpdated;
-	}
-
-	private void setGameAreaUpdated(boolean isGameAreaUpdated) {
-		this.isGameAreaUpdated = isGameAreaUpdated;
 	}
 
 	public Shape getCurrentShape() {
@@ -1209,22 +1146,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	public void setY_offsetCurrentShape(int y_offsetCurrentShape) {
 		this.y_offsetCurrentShape = y_offsetCurrentShape;
-	}
-
-	private void disableEvents() {
-		this.isHandleEvent = false;
-	}
-
-	private void enableEvents() {
-		this.isHandleEvent = true;
-	}
-
-	public boolean isHandleEvent() {
-		return isHandleEvent;
-	}
-
-	public void setHandleEvent(boolean isHandleEvent) {
-		this.isHandleEvent = isHandleEvent;
 	}
 
 	public ShapeFactory getShapeFactory() {
