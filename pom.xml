@@ -65,7 +65,18 @@
 					<skipTests>true</skipTests>
 				</configuration>
 			</plugin>
-
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
 		</plugins>
 
@@ -86,12 +97,12 @@
 		<dependency>
 			<groupId>com.kuleuven.swop.group17</groupId>
 			<artifactId>GameWorldApi</artifactId>
-			<version>0.4</version>
+			<version>0.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kuleuven.swop.group17</groupId>
 			<artifactId>RobotGameWorld</artifactId>
-			<version>0.3</version>
+			<version>0.4</version>
 			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
