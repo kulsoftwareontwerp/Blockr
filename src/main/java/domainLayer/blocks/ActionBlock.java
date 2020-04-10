@@ -1,6 +1,7 @@
 package domainLayer.blocks;
 
 import domainLayer.elements.ElementRepository;
+import types.BlockCategory;
 
 /**
  * The abstract class for the concept of an action block.
@@ -8,16 +9,27 @@ import domainLayer.elements.ElementRepository;
  * @version 0.1
  * @author group17
  */
-public abstract class ActionBlock extends ExecutableBlock {
+public class ActionBlock extends ExecutableBlock {
+	
+	private String action;
 
 	/**
 	 * Create an Action Block
 	 * @param 	blockId
 	 * 			The ID for the block.
 	 */
-	public ActionBlock(String blockId) {
+	public ActionBlock(String blockId, String action) {
 		super(blockId);
+		setAction(action);
+		
 	}
 
-	public abstract void execute(ElementRepository elementsRepo);
+	public String getAction() {
+		return action;
+	}
+
+	private void setAction(String action) {
+		this.action = action;
+	}
+
 }

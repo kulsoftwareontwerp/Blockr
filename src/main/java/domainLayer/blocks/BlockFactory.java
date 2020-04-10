@@ -1,5 +1,6 @@
 package domainLayer.blocks;
 
+import domainLayer.elements.ElementRepository;
 import types.BlockType;
 
 /**
@@ -23,27 +24,25 @@ public class BlockFactory {
 	 */
 	public Block createBlock(BlockType type) {
 		String blockId = blockIDGenerator.generateBlockID();
-		switch (type) {
-		case If:
-			return new IfBlock(blockId);
-		case MoveForward:
-			return new MoveForwardBlock(blockId);
-		case Not:
+		switch (type.cat()) {
+		case CONTROL:
+			switch (type.type()) {
+			case "If":
+				return new IfBlock(blockId);
+			case "While":
+				return new WhileBlock(blockId);
+			default:
+				throw new IllegalArgumentException("Unexpected value: " + type.type());
+			}
+		case OPERATOR:
 			return new NotBlock(blockId);
-		case TurnLeft:
-			return new TurnLeftBlock(blockId);
-		case TurnRight:
-			return new TurnRightBlock(blockId);
-		case WallInFront:
-			return new WallInFrontBlock(blockId);
-		case While:
-			return new WhileBlock(blockId);
+		case ACTION:
+			return new ActionBlock(blockId, type.type());
+		case CONDITION:
+			return new ConditionBlock(blockId, type.type());
 		default:
-			// This can't happen.
-			break;
+			return null;
 		}
-		
-		return null;
 	}
 
 }

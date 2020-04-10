@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 
 import domainLayer.gamestates.GameState;
+import types.BlockCategory;
 import types.BlockType;
 
 public class PaletteArea implements Constants {
@@ -32,36 +33,14 @@ public class PaletteArea implements Constants {
 	
 	public void paint(Graphics g) {
 		// Palette
-		
-
-
-
 				
 				if(!getPaletteVisible()) {
 					
 					g.drawString("Too many blocks", 5, 30);
-				}
-				else {
-					// ActionBlocks
-					g.drawLine(0, 10, 100, 10); // whiteSpace
-					g.drawLine(0, 40, 100, 40); // "Action Block"
-
-					// ControlBlocks
-					g.drawLine(0, 185, 100, 185); // whiteSpace
-					g.drawLine(0, 215, 100, 215); // "Control Block"
-
-					// OperatorBlocks
-					g.drawLine(0, 435, 100, 435); // whiteSpace
-					g.drawLine(0, 465, 100, 465); // "Operator Block"
-
-					// ConditionBlocks
-					g.drawLine(0, 515, 100, 515); // whiteSpace
-					g.drawLine(0, 545, 100, 545); // "Condition Block"
-				}
-				
+				}				
 				
 				// Rest of the Frame
-				g.drawLine(100, 0, 100, 600);
+				g.drawLine(100, 0, 100, Integer.MAX_VALUE);
 				drawFullPalette(g);
 
 				
@@ -69,26 +48,65 @@ public class PaletteArea implements Constants {
 	}
 	
 	private void drawFullPalette(Graphics g) {
-		
+				
 		HashSet<Shape> set = new HashSet<Shape>();
 		
+		int tempHeight = 30; // initial starting position in paletteArea to draw Strings
 		if(getPaletteVisible()) {
-		g.drawString("Action Blocks", 15, 30);
-		set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.MoveForward, ACTION_BLOCK_INIT_OFFSET, ACTION_BLOCK_MOVE_FORWARD_UPPER));
-		set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.TurnLeft, ACTION_BLOCK_INIT_OFFSET, ACTION_BLOCK_TURN_LEFT_UPPER));
-		set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.TurnRight, ACTION_BLOCK_INIT_OFFSET, ACTION_BLOCK_TURN_RIGHT_UPPER));
-		
-		g.drawString("Control Blocks", 10, 205);
-		set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.If, CONTROL_BLOCK_INIT_OFFSET, CONTROL_BLOCK_IF_UPPER));
-		set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.While, CONTROL_BLOCK_INIT_OFFSET, CONTROL_BLOCK_WHILE_UPPER));
-
-		g.drawString("Operator Blocks", 5, 455);
-		set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.Not, OPERATOR_BLOCK_INIT_OFFSET, OPERATOR_BLOCK_NOT_UPPER));
-
-		g.drawString("Condition Blocks", 5, 535);
-		set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.WallInFront, CONDITION_BLOCK_INIT_OFFSET, CONDITION_BLOCK_WALL_UPPER));
-		
-		set.forEach(e-> e.draw(g));
+			g.drawLine(0, tempHeight-20, 100, tempHeight-20);
+			g.drawString("Action Blocks", 15, tempHeight);
+			tempHeight +=20;
+			g.drawLine(0, tempHeight -10, 100, tempHeight-10);
+			
+			for (var type : BlockType.values()) {
+				if(type.cat() == BlockCategory.ACTION){
+					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType)type, ACTION_BLOCK_INIT_OFFSET, tempHeight));
+					tempHeight += 45;
+				}
+			}
+			
+			
+			tempHeight += 20;
+			g.drawLine(0, tempHeight-20, 100, tempHeight-20);
+			g.drawString("Control Blocks", 10, tempHeight);
+			tempHeight +=20;
+			g.drawLine(0, tempHeight -10, 100, tempHeight-10);
+			
+			for (var type : BlockType.values()) {
+				if(type.cat() == BlockCategory.CONTROL){
+					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType)type, CONTROL_BLOCK_INIT_OFFSET, tempHeight));
+					tempHeight += 105;
+				}
+			}
+			
+			
+			tempHeight += 20;
+			g.drawLine(0, tempHeight-20, 100, tempHeight-20);
+			g.drawString("Operator Blocks", 5, tempHeight);
+			tempHeight +=20;
+			g.drawLine(0, tempHeight -10, 100, tempHeight-10);
+			
+			for (var type : BlockType.values()) {
+				if(type.cat() == BlockCategory.OPERATOR){
+					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType)type, OPERATOR_BLOCK_INIT_OFFSET, tempHeight));
+					tempHeight += 35 ;
+				}
+			}
+			
+			tempHeight += 25;
+			g.drawLine(0, tempHeight-20, 100, tempHeight-20);
+			g.drawString("Condition Blocks", 5, tempHeight);
+			tempHeight +=20;
+			g.drawLine(0, tempHeight -10, 100, tempHeight-10);
+			
+			for (var type : BlockType.values()) {
+				if(type.cat() == BlockCategory.CONDITION){
+					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType)type, CONDITION_BLOCK_INIT_OFFSET, tempHeight));
+					tempHeight += 35 ;
+				}
+			}
+			
+			set.forEach(e-> e.draw(g));
 		}
 		
 		this.shapesInPalette = set; 

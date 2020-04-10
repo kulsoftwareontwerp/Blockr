@@ -66,9 +66,9 @@ public class ProgramArea implements Constants {
 		boolean placeable = !((currentCoordinates.stream().anyMatch(i -> this.alreadyFilledInCoordinates.contains(i))))
 				&& currentShape.getX_coord()+currentShape.getWidth() < PROGRAM_END_X;
 
-		if ((currentShape.getType() == BlockType.If || currentShape.getType() == BlockType.While)
-				&& (getHighlightedShape() != null && (getHighlightedShape().getType() == BlockType.If
-						|| getHighlightedShape().getType() == BlockType.While))) {
+		if ((currentShape.getType() == BlockType.valueOf("If") || currentShape.getType() == BlockType.valueOf("While"))
+				&& (getHighlightedShape() != null && (getHighlightedShape().getType() == BlockType.valueOf("If")
+						|| getHighlightedShape().getType() == BlockType.valueOf("While")))) {
 			placeable = true;
 		}
 		// TODO Hotfix needed

@@ -1,51 +1,29 @@
 package types;
-/**
- * The types of possible blocks in the domain.
- * 
- * @version 0.1
- * @author group17
- */
-public enum BlockType {
-	MoveForward{
-		@Override
-		public String toString() {
-			return "Move Forward";
-		}
-	},
-	TurnLeft{
-		@Override
-		public String toString() {
-			return "Turn Left";
-		}
-	},
-	TurnRight{
-		@Override
-		public String toString() {
-			return "Turn Right";
-		}
-	},
-	While{
-		@Override
-		public String toString() {
-			return "While";
-		}
-	},
-	If{
-		@Override
-		public String toString() {
-			return "If";
-		}
-	},
-	Not{
-		@Override
-		public String toString() {
-			return "Not";
-		}
-	},
-	WallInFront{
-		@Override
-		public String toString() {
-			return "Wall In Front";
-		}
+
+public class BlockType extends DynaEnum<BlockType>{
+	
+	public final static BlockType IF = new BlockType("If", BlockCategory.CONTROL);
+	public final static BlockType WHILE = new BlockType("While", BlockCategory.CONTROL);
+	public final static BlockType NOT = new BlockType("Not", BlockCategory.OPERATOR);
+	
+	//TODO ffkes flexen
+	
+	public final static BlockType BANAAN = new BlockType("BANAAN", BlockCategory.CONDITION);
+	public final static BlockType PEER = new BlockType("PEER", BlockCategory.CONTROL);
+	public final static BlockType KIWI = new BlockType("KIWI", BlockCategory.ACTION);
+	public final static BlockType APPEL = new BlockType("APPEL", BlockCategory.OPERATOR);
+
+	
+	public BlockType(String type, BlockCategory cat) {
+		super(type, cat);
 	}
+
+    public static <E> DynaEnum<? extends DynaEnum<?>>[] values() {
+    	return values(BlockType.class);
+    }
+    
+    public static <E> BlockType valueOf(String type) {
+    	return valueOf(BlockType.class, type);
+    }
+
 }

@@ -10,16 +10,35 @@ import domainLayer.elements.ElementRepository;
  * @version 0.1
  * @author group17
  */
-public abstract class ConditionBlock extends AssessableBlock {
-
-
+public class ConditionBlock extends AssessableBlock {
+	
+	private String predicate;
+	
 	/**
 	 * Create a Condition Block
 	 * @param 	blockId
 	 * 			The ID for the block.
 	 */
-	public ConditionBlock(String blockId) {
+	public ConditionBlock(String blockId, String predicate) {
 		super(blockId);
+		setPredicate(predicate);
+	}
+
+
+	public String getPredicate() {
+		return predicate;
+	}
+
+
+	private void setPredicate(String predicate) {
+		this.predicate = predicate;
+	}
+
+
+	@Override
+	public boolean assess(ElementRepository elementsRepo) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 

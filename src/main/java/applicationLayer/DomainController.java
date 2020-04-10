@@ -1,7 +1,10 @@
 package applicationLayer;
 
 import java.awt.Graphics;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
@@ -13,6 +16,7 @@ import exceptions.InvalidBlockConnectionException;
 import exceptions.InvalidBlockTypeException;
 import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
+import types.BlockCategory;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -46,6 +50,18 @@ public class DomainController {
 		elementController.addDomainListener(gameController);
 		
 		this.gameWorld=gameWorld;
+		
+		//fill dynamic enum with actions and predicates from GameWorldApi
+		Set<String> supportedPredicates =  gameWorld.getType().supportedPredicates().stream().map(e->e.toString()).collect(Collectors.toSet());
+		Set<String> supportedActions =  gameWorld.getType().supportedActions().stream().map(e->e.toString()).collect(Collectors.toSet());
+		
+		for (String s : supportedPredicates) {
+			new BlockType(s, BlockCategory.CONDITION);
+		}
+		
+		for (String s : supportedActions) {
+			new BlockType(s, BlockCategory.ACTION);
+		}
 
 	}
 
