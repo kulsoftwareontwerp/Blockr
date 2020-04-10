@@ -1,5 +1,7 @@
 package domainLayer.blocks;
 
+import com.kuleuven.swop.group17.GameWorldApi.Action;
+
 import domainLayer.elements.ElementRepository;
 import types.BlockCategory;
 
@@ -11,24 +13,24 @@ import types.BlockCategory;
  */
 public class ActionBlock extends ExecutableBlock {
 	
-	private String action;
+	private Action action;
 
 	/**
 	 * Create an Action Block
 	 * @param 	blockId
 	 * 			The ID for the block.
 	 */
-	public ActionBlock(String blockId, String action) {
+	public ActionBlock(String blockId, Action action) {
 		super(blockId);
 		setAction(action);
 		
 	}
 
-	public String getAction() {
+	public Action getAction() {
 		return action;
 	}
 
-	private void setAction(String action) {
+	private void setAction(Action action) {
 		this.action = action;
 	}
 

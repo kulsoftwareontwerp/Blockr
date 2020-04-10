@@ -42,7 +42,7 @@ public class DomainController {
 	 * @param gameWorld TODO
 	 */
 	public DomainController(GameWorld gameWorld) {
-		gameController = new GameController();
+		gameController = new GameController(gameWorld);
 		blockController = new BlockController();
 		elementController = new ElementController();
 
@@ -52,15 +52,15 @@ public class DomainController {
 		this.gameWorld=gameWorld;
 		
 		//fill dynamic enum with actions and predicates from GameWorldApi
-		Set<String> supportedPredicates =  gameWorld.getType().supportedPredicates().stream().map(e->e.toString()).collect(Collectors.toSet());
-		Set<String> supportedActions =  gameWorld.getType().supportedActions().stream().map(e->e.toString()).collect(Collectors.toSet());
+		Set<Predicate> supportedPredicates =  gameWorld.getType().supportedPredicates();
+		Set<Action> supportedActions =  gameWorld.getType().supportedActions();
 		
-		for (String s : supportedPredicates) {
-			new BlockType(s, BlockCategory.CONDITION);
+		for (Predicate predicate : supportedPredicates) {
+			new BlockType(predicate.toString(), BlockCategory.CONDITION, predicate);
 		}
 		
-		for (String s : supportedActions) {
-			new BlockType(s, BlockCategory.ACTION);
+		for (Action action : supportedActions) {
+			new BlockType(action.toString(), BlockCategory.ACTION, action);
 		}
 
 	}

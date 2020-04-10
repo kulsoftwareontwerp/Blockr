@@ -6,6 +6,9 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.kuleuven.swop.group17.GameWorldApi.Action;
+import com.kuleuven.swop.group17.GameWorldApi.Predicate;
+
 //Source: https://dzone.com/articles/enum-tricks-dynamic-enums
 
 public class DynaEnum<E extends DynaEnum<E>> {
@@ -23,10 +26,24 @@ public class DynaEnum<E extends DynaEnum<E>> {
     public final BlockCategory cat() {
     	return cat;
     }
+    
+    final Action action;
 
-	protected DynaEnum(String type, BlockCategory cat) {
+    public final Action action() {
+    	return action;
+    }
+    
+    final Predicate predicate;
+
+    public final Predicate predicate() {
+    	return predicate;
+    }
+
+	protected DynaEnum(String type, BlockCategory cat, Action action, Predicate predicate) {
 		this.type = type;
 		this.cat = cat;
+		this.predicate = predicate;
+		this.action = action;
 		Map<String, DynaEnum<?>> typeElements = elements.get(getClass());
 		if (typeElements == null) {
 			typeElements = new LinkedHashMap<String, DynaEnum<?>>();

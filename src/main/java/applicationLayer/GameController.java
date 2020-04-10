@@ -2,9 +2,12 @@ package applicationLayer;
 
 import java.util.*;
 
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.AssessableBlock;
 import domainLayer.blocks.BlockRepository;
+import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.ExecutableBlock;
 import domainLayer.blocks.IfBlock;
@@ -26,8 +29,10 @@ public class GameController implements DomainListener, GUISubject {
 	private BlockRepository programBlockRepository;
 	private GameState currentState;
 	private ElementRepository gameElementRepository;
+	private GameWorld gameWorld;
 
-	public GameController() {
+	public GameController(GameWorld gameWorld) {
+		this.gameWorld = gameWorld;
 		programBlockRepository = BlockRepository.getInstance();
 		gameElementRepository = ElementRepository.getInstance();
 
@@ -116,11 +121,20 @@ public class GameController implements DomainListener, GUISubject {
 		} else {
 			// If or while block
 			AssessableBlock condition = currentBlock.getConditionBlock();
-			if (condition.assess(gameElementRepository)) {
+			
+			if (evaluateCondition(condition)) {
 				return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getFirstBlockOfBody());
 			} else {
 				return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getNextBlock());
 			}
+		}
+	}
+	
+	private boolean evaluateCondition(AssessableBlock condition){
+		if(condition instanceof ConditionBlock){
+			return gameWorld.evaluate(((ConditionBlock) condition).getPredicate());
+		}else {
+			return !evaluateCondition(condition.getOperand());
 		}
 	}
 
@@ -129,7 +143,7 @@ public class GameController implements DomainListener, GUISubject {
 	 * @param block
 	 */
 	public void performRobotAction(ActionBlock block) {
-		block.execute(gameElementRepository);
+		gameWorld.performAction(block.getAction());
 		fireRobotChangeEvent();
 	}
 
