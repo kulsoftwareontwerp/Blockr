@@ -49,6 +49,13 @@ public class BlockController implements GUISubject, DomainSubject {
 		programBlockRepository = BlockRepository.getInstance();
 
 	}
+	
+	@SuppressWarnings("unused")
+	private BlockController(BlockRepository programBlockRepository) {
+		this.guiListeners = new HashSet<GUIListener>();;
+		this.domainListeners = new HashSet<DomainListener>();
+		this.programBlockRepository = programBlockRepository;
+	}
 
 	private void fireBlockAdded(String newBlockId) {
 		BlockAddedEvent event = new BlockAddedEvent(newBlockId);

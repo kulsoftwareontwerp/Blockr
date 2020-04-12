@@ -36,6 +36,12 @@ public class BlockRepository {
 		allBlocks = new HashMap<String, Block>();
 		blockFactory = new BlockFactory();
 	}
+	
+	BlockRepository(HashSet<Block> headBlocks,HashMap<String, Block> allBlocks ) {
+		this.headBlocks = headBlocks;
+		this.allBlocks = allBlocks;
+		blockFactory = new BlockFactory();
+	}
 
 	/**
 	 * Add a block of the given blockType to the domain and connect it with the
@@ -491,6 +497,7 @@ public class BlockRepository {
 
 						addBlockToHeadBlocks(movedBlock);
 						removeBlockFromHeadBlocks(afm);
+						bfm.setConditionBlock(null);
 						if (movedBlock.getOperand() != null) {
 							Block nextChainBlock = movedBlock;
 							while (nextChainBlock.getOperand() != null) {
@@ -534,6 +541,7 @@ public class BlockRepository {
 
 						addBlockToHeadBlocks(movedBlock);
 						removeBlockFromHeadBlocks(afm);
+						bfm.setOperand(null);
 						if (movedBlock.getNextBlock() != null) {
 							Block nextBlockInChain = movedBlock;
 							while (nextBlockInChain.getOperand() != null) {
