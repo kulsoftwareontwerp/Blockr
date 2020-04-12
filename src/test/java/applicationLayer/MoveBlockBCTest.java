@@ -103,13 +103,13 @@ public class MoveBlockBCTest {
 	
 
 		when(mockBlockReprository.getConnectedBlockBeforeMove(any(String.class), any(String.class), any(ConnectionType.class))).thenReturn(parentInfo);
-		when(mockBlockReprository.moveBlock(any(String.class), any(String.class), any(ConnectionType.class))).thenReturn("1");
+		when(mockBlockReprository.moveBlock(any(String.class), any(String.class),any(String.class), any(ConnectionType.class))).thenReturn("1");
 		when(mockBlockReprository.getBlockIdToPerformMoveOn(any(String.class), any(String.class), any(ConnectionType.class))).thenReturn("1");
 
 		for (ConnectionType connectionType : ConnectionsWithoutNoConnection) {
 			
 			bc.moveBlock("1", "", "3", connectionType);
-			verify(mockBlockReprository).moveBlock("1", "3", connectionType);
+			verify(mockBlockReprository).moveBlock("1","1", "3", connectionType);
 
 			updateMoveOrder.verify(mockDomainListener, atLeastOnce())
 					.onUpdateGameStateEvent(any(UpdateGameStateEvent.class));

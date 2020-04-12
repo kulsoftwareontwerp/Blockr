@@ -301,10 +301,10 @@ public class BlockRepository {
 	 * 
 	 * 
 	 */
-	public String moveBlock(String movedBlockId, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+	public String moveBlock(String topOfMovedChainBlockId, String movedBlockId, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
 
 		Block movedBlock = getBlockByID(movedBlockId);
-
+		Block topMovedBlock = getBlockByID(topOfMovedChainBlockId);
 		// The id of the block that's changed
 		String movedBlockID = movedBlockId;
 
@@ -317,13 +317,16 @@ public class BlockRepository {
 		if (movedBlock == null)
 			throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
-//		beforeMove = getConnectedParentIfExists(movedBlockId);
-		beforeMove = getConnectedBlockBeforeMove(movedBlockId,connectedAfterMoveBlockId,connectionAfterMove);
+		ArrayList<String> beforeMoveTopBlock = getConnectedParentIfExists(topOfMovedChainBlockId);
+		beforeMove = getConnectedBlockBeforeMove(movedBlockId,connectedAfterMoveBlockId,connectionAfterMove);//TODO
 
 		connectionBeforeMove = ConnectionType.valueOf(beforeMove.get(0));
 		String bfmBlockId = beforeMove.get(1);
 		bfm = getBlockByID(bfmBlockId);
-
+		
+		if(beforeMoveTopBlock.get(0) != "NOCONNECTION") {
+			disconnectParentTopOfChain(topOfMovedChainBlockId);
+		}
 		if (connectionBeforeMove == ConnectionType.NOCONNECTION) {
 			// indien no connection dan is er hier geen nood aan verandering
 			if (afm == null)
@@ -497,7 +500,6 @@ public class BlockRepository {
 
 						addBlockToHeadBlocks(movedBlock);
 						removeBlockFromHeadBlocks(afm);
-						bfm.setConditionBlock(null);
 						if (movedBlock.getOperand() != null) {
 							Block nextChainBlock = movedBlock;
 							while (nextChainBlock.getOperand() != null) {
@@ -541,7 +543,10 @@ public class BlockRepository {
 
 						addBlockToHeadBlocks(movedBlock);
 						removeBlockFromHeadBlocks(afm);
-						bfm.setOperand(null);
+						
+						//dit moet de gelinkte blok zijn met de TOP block en niet de blok waarbij de effectieve move op gedaan wordt.
+						//Er is hier dus nood aan 2 blokken
+						disconnectParentTopOfChain(topOfMovedChainBlockId);
 						if (movedBlock.getNextBlock() != null) {
 							Block nextBlockInChain = movedBlock;
 							while (nextBlockInChain.getOperand() != null) {
@@ -609,6 +614,38 @@ public class BlockRepository {
 			}
 		}
 		return movedBlockID;
+	}
+
+	/**
+	 * Disconnects the topOfChainBlock with its old parent if it has one.
+	 * Should be notified to GUI TODO
+	 * @param topOfMovedChainBlockId
+	 */
+	private void disconnectParentTopOfChain(String topOfMovedChainBlockId) {
+		ArrayList<String> parentInfo = getConnectedParentIfExists(topOfMovedChainBlockId);
+		
+		if(parentInfo.size() != 0) {
+			Block parent = getBlockByID(parentInfo.get(1));
+			switch(parentInfo.get(0)){
+			
+			case "NOCONNECTION":
+				break;
+			case "DOWN":
+				parent.setNextBlock(null);
+				break;
+			case "OPERAND":
+				parent.setOperand(null);
+				break;
+			case "CONDITION":
+				parent.setConditionBlock(null);
+				break;
+			case "BODY":
+				parent.setFirstBlockOfBody(null);
+				break;
+			}
+			
+		}
+		
 	}
 
 	/**

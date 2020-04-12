@@ -239,10 +239,12 @@ public class BlockController implements GUISubject, DomainSubject {
 			ConnectionType connectionAfterMove) {
 
 		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId, connectionAfterMove);
-		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
-				connectedAfterMoveBlockId, connectionAfterMove);
+//		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
+//				connectedAfterMoveBlockId, connectionAfterMove);
+		
+		ArrayList<String> previousConnection = programBlockRepository.getConnectedParentIfExists(topOfMovedChainBlockId);
 
-		String movedBlockID = programBlockRepository.moveBlock(movedID, connectedAfterMoveBlockId, connectionAfterMove);
+		String movedBlockID = programBlockRepository.moveBlock(topOfMovedChainBlockId ,movedID, connectedAfterMoveBlockId, connectionAfterMove);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
