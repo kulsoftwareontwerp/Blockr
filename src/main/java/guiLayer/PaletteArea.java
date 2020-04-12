@@ -40,7 +40,7 @@ public class PaletteArea implements Constants {
 				}				
 				
 				// Rest of the Frame
-				g.drawLine(100, 0, 100, Integer.MAX_VALUE);
+				g.drawLine(100, 0, 100, g.getClipBounds().height);
 				drawFullPalette(g);
 
 				
