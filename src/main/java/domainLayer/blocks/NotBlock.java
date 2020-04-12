@@ -23,11 +23,16 @@ public class NotBlock extends UnaryOperatorBlock {
 		super(blockId);
 	}
 
-	
-
 	@Override
 	public boolean assess(ElementRepository elementsRepo) {
-		return ! getOperand().assess(elementsRepo);
+		if(getOperand() instanceof NotBlock) {
+		return !((NotBlock) getOperand()).assess(elementsRepo);
+		}else {
+			
+			//TODO Refactor needed
+			return false;
+		}
+		
 	}
 
 
