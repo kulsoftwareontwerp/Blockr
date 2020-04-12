@@ -8,10 +8,16 @@ import exceptions.InvalidBlockConnectionException;
  * @version 0.1
  * @author group17
  */
-public abstract class Block {
+public abstract class Block implements Cloneable {
 
 	private String blockId;
 
+	
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
+	
 	/**
 	 * Create a block with the given ID as ID
 	 * 

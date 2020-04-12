@@ -149,7 +149,7 @@ public class DomainController {
 			throw new IllegalArgumentException("No blockType given.");
 		}
 		else {
-			blockController.removeBlock(blockID);
+			blockController.removeBlock(blockID, true);
 		}
 			
 	}

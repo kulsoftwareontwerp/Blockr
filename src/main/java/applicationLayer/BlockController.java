@@ -24,6 +24,7 @@ import exceptions.InvalidBlockConnectionException;
 import exceptions.InvalidBlockTypeException;
 import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
+import types.BlockSnapshot;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -113,6 +114,7 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *                         new block must be connected. If no connectedBlockId
 	 *                         was given, this parameter must be set to
 	 *                         "ConnectionType.NOCONNECTION".
+	 * @return TODO
 	 * @throws InvalidBlockConnectionException The given combination of the
 	 *                                         blockType,connectedBlockId and
 	 *                                         connection is impossible. - an
@@ -139,9 +141,10 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *        successful.
 	 * @event PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
 	 *        block has been reached after adding a block.
+	 * @return The id of the block that has been added.
 	 * 
 	 */
-	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
+	public String addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		if (programBlockRepository.checkIfMaxNbOfBlocksReached()) {
 			throw new MaxNbOfBlocksReachedException("The maximum number of blocks has already been reached.");
 		}
@@ -153,6 +156,7 @@ public class BlockController implements GUISubject, DomainSubject {
 			firePanelChangedEvent(false);
 		}
 		fireBlockAdded(newBlockId);
+		return newBlockId;
 	}
 
 	/**
@@ -168,6 +172,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * Removes a block with the given blockID from the domain.
 	 * 
 	 * @param blockID The blockID of the block to be removed.
+	 * @param isChain A flag announcing if a chain of blocks has to be removed or if
+	 *                only the given blockId has to be removed.
 	 * @throws NoSuchConnectedBlockException If the given BlockID doesn't result in
 	 *                                       a block in the domain.
 	 * @event RemoveBlockEvent Fires an RemoveBlockEvent if the execution was
@@ -178,17 +184,32 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *        successful.
 	 * @event PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
 	 *        block was reached before removing the block.
+	 * @return a snapshot containing all the information regarding the removed
+	 *         block.
 	 */
-	public void removeBlock(String blockID) {
+	public BlockSnapshot removeBlock(String blockID, Boolean isChain) {
 		ArrayList<String> previousConnection = programBlockRepository.getConnectedParentIfExists(blockID);
 		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
-		Set<String> idsToBeRemoved = programBlockRepository.removeBlock(blockID);
+		Set<String> idsToBeRemoved = new HashSet<String>();
+		Block deletedBlock = programBlockRepository.getBlockByID(blockID);
+		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1));
+		BlockSnapshot snapshot = new BlockSnapshot(deletedBlock, null,connectedBlockBeforeDelete);
+
+		idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
+
 		fireUpdateGameState();
 		fireResetExecutionEvent();
 		if (maxBlocksReachedBeforeRemove) {
 			firePanelChangedEvent(true);
 		}
 		fireBlockRemoved(idsToBeRemoved, previousConnection.get(1), ConnectionType.valueOf(previousConnection.get(0)));
+
+		return snapshot;
+	}
+
+	public void restoreBlockSnapshot(BlockSnapshot snapshot) {
+		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
+
 	}
 
 	/**
@@ -231,7 +252,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	public void moveBlock(String topOfMovedChainBlockId, String movedBlockId, String connectedAfterMoveBlockId,
 			ConnectionType connectionAfterMove) {
 
-		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId, connectionAfterMove);
+		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId,
+				connectionAfterMove);
 		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
 				connectedAfterMoveBlockId, connectionAfterMove);
 
