@@ -20,7 +20,4 @@ public abstract class AssessableBlock extends Block {
 		super(blockId);
 	}
 
-	//TODO: write documentation for this method.
-	abstract public boolean assess(ElementRepository elementsRepo);
-
 }
