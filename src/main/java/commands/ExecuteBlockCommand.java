@@ -3,6 +3,10 @@
  */
 package commands;
 
+import applicationLayer.GameController;
+import domainLayer.blocks.ActionBlock;
+import types.ExecutionSnapshot;
+
 /**
 /**
  * ExecuteBlockCommand
@@ -12,23 +16,32 @@ package commands;
  *
  */
 public class ExecuteBlockCommand implements GameWorldCommand {
+	private GameController gameController;
+	private ExecutionSnapshot snapshot;
+	private ActionBlock block;
 
 	/**
-	 * 
+	 * @param gameController
 	 */
-	public ExecuteBlockCommand() {
-		// TODO Auto-generated constructor stub
+	public ExecuteBlockCommand(GameController gameController,ActionBlock block) {
+		super();
+		this.gameController = gameController;
+		this.block=block;
+		snapshot=null;
+		
 	}
 
 	@Override
 	public void execute() {
-		// TODO Auto-generated method stub
-
+	snapshot = gameController.performAction(block);
 	}
 
 	@Override
 	public void undo() {
-		// TODO Auto-generated method stub
+		if(snapshot!=null) {
+			gameController.restoreExecutionSnapshot(snapshot);
+			snapshot = null;
+		}
 
 	}
 

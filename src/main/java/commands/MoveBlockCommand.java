@@ -4,6 +4,7 @@
 package commands;
 
 import applicationLayer.BlockController;
+import types.BlockSnapshot;
 import types.ConnectionType;
 
 /**
@@ -19,6 +20,7 @@ public class MoveBlockCommand implements BlockCommand {
 	private String connectedAfterMoveBlockId;
 	private ConnectionType connectionAfterMove;
 	private BlockController blockController;
+	private BlockSnapshot snapshot;
 
 	/**
 	 * @param topOfMovedChainBlockId
@@ -34,18 +36,21 @@ public class MoveBlockCommand implements BlockCommand {
 		this.connectedAfterMoveBlockId = connectedAfterMoveBlockId;
 		this.connectionAfterMove = connectionAfterMove;
 		this.blockController = blockController;
+		this.snapshot =null;
 	}
 
 	@Override
 	public void execute() {
-		// TODO Auto-generated method stub
+		snapshot = blockController.moveBlock(topOfMovedChainBlockId, movedBlockId, connectedAfterMoveBlockId, connectionAfterMove);
 
 	}
 
 	@Override
 	public void undo() {
-		// TODO Auto-generated method stub
-
+		if(snapshot!=null) {
+			blockController.restoreBlockSnapshot(snapshot);
+			snapshot = null;
+		}
 	}
 
 }

@@ -3,10 +3,13 @@ package domainLayer.gamestates;
 import java.lang.reflect.Constructor;
 
 import applicationLayer.GameController;
+import commands.GameWorldCommand;
+import commands.ResetCommand;
 
 public class ResettingState extends GameState {
 
 	private Class<? extends GameState> nextState;
+	private Boolean updated;
 
 	/**
 	 * 
@@ -15,6 +18,7 @@ public class ResettingState extends GameState {
 	public ResettingState(GameController gameController) {
 		super(gameController);
 		setNextState(ValidProgramState.class);
+		updated = false;
 	}
 	
 
@@ -27,6 +31,7 @@ public class ResettingState extends GameState {
 	 * 			
 	 */
 	public void update() {
+		updated=true;
 		boolean currentState = gameController.checkIfValidProgram();
 		if(!currentState) {
 			setNextState(InValidProgramState.class);
@@ -38,16 +43,14 @@ public class ResettingState extends GameState {
 
 
 	public void reset() {
-		gameController.resetRobot();
-		try {
-			//GameState newState = getNextState().getDeclaredConstructor().newInstance(gameController);
-			Constructor<? extends GameState> constructor = getNextState().getConstructor(GameController.class);
-			GameState newState = (GameState) constructor.newInstance(gameController);
-			gameController.toState(newState);
-		} catch (Exception e) {
-			e.printStackTrace();
+		if(!updated) {
+		GameWorldCommand command = new ResetCommand(gameController);
+		gameController.handleCommand(command);
 		}
-		
+		else {
+			gameController.resetGame();
+			updated=false;
+		}
 	}
 
 
@@ -59,7 +62,7 @@ public class ResettingState extends GameState {
 		this.nextState = state;
 	}
 
-	private Class<? extends GameState> getNextState() {
+	public Class<? extends GameState> getNextState() {
 		return this.nextState;
 	}
 

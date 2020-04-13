@@ -1,11 +1,18 @@
 package applicationLayer;
 
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
 
+import commands.CommandHandler;
+import commands.GameWorldCommand;
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.AssessableBlock;
+import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.ControlBlock;
@@ -15,6 +22,7 @@ import domainLayer.elements.ElementRepository;
 import domainLayer.elements.Robot;
 import domainLayer.gamestates.GameState;
 import domainLayer.gamestates.InValidProgramState;
+import domainLayer.gamestates.ResettingState;
 import events.DomainListener;
 import events.GUIListener;
 import events.GUISubject;
@@ -22,6 +30,7 @@ import events.ResetExecutionEvent;
 import events.RobotChangeEvent;
 import events.UpdateGameStateEvent;
 import events.UpdateHighlightingEvent;
+import types.ExecutionSnapshot;
 
 public class GameController implements DomainListener, GUISubject {
 
@@ -30,40 +39,64 @@ public class GameController implements DomainListener, GUISubject {
 	private GameState currentState;
 	private ElementRepository gameElementRepository;
 	private GameWorld gameWorld;
+	private GameWorldSnapshot initialSnapshot;
+	private CommandHandler commandHandler;
 
-	public GameController(GameWorld gameWorld) {
+	public GameController(GameWorld gameWorld, CommandHandler commandHandler) {
 		this.gameWorld = gameWorld;
 		programBlockRepository = BlockRepository.getInstance();
 		gameElementRepository = ElementRepository.getInstance();
 
 		guiListeners = new HashSet<GUIListener>();
+		
+		this.commandHandler=commandHandler;
+		initialSnapshot = gameWorld.saveState();
+		
 
 		toState(new InValidProgramState(this));
 
 	}
 
-
-	public void fireRobotChangeEvent() {
-		Robot robot = gameElementRepository.getRobot();
-		RobotChangeEvent robotChangeEvent = new RobotChangeEvent(robot.getXCoordinate(), robot.getYCoordinate(),
-				robot.getOrientation());
-		for (GUIListener listener : guiListeners) {
-			listener.onRobotChangeEvent(robotChangeEvent);
-		}
+	public void handleCommand(GameWorldCommand command) {
+		this.commandHandler.handle(command);
 	}
-
-	private boolean isMaxNbOfBlocksReached() {
-		// TODO - implement GameController.isMaxNbOfBlocksReached
-		throw new UnsupportedOperationException();
-	}
-
+	
 	public void resetGameExecution() {
 		GameState currentState = getCurrentState();
 		currentState.reset();
-		fireUpdateHighlightingEvent(null);
-		fireRobotChangeEvent();
+		
 	}
-
+	
+	
+	/**
+	 * ResetGame is only allowed to be called from the resettingState class.
+	 * @return
+	 */
+	public ExecutionSnapshot resetGame() {
+		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
+		ActionBlock nextBlockToBeExecuted = getCurrentState().getNextActionBlockToBeExecuted();
+		ExecutionSnapshot snapshot = new ExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot,getCurrentState());
+		gameWorld.restoreState(initialSnapshot);
+		fireUpdateHighlightingEvent(null);
+		
+		
+		try {
+			if(getCurrentState().getNextState()==null) {
+				//This is not a resettingState.
+				toState(new ResettingState(this));
+			}
+			Constructor<? extends GameState> constructor = getCurrentState().getNextState().getConstructor(GameController.class);
+			GameState newState = (GameState) constructor.newInstance(this);
+			toState(newState);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return snapshot;
+	}
+	
+	
+	
 	public GameState getCurrentState() {
 		return this.currentState;
 	}
@@ -80,11 +113,7 @@ public class GameController implements DomainListener, GUISubject {
 		currentState.update();
 	}
 
-	public void resetRobot() {
-		gameElementRepository.removeRobot();
-		gameElementRepository.initializeRobot();
-		fireRobotChangeEvent();
-	}
+
 
 	public void executeBlock() {
 		GameState currentState = getCurrentState();
@@ -115,13 +144,12 @@ public class GameController implements DomainListener, GUISubject {
 			} else {
 				return findNextActionBlockToBeExecuted(currentBlock, cb);
 			}
-		}
-		else if (currentBlock instanceof ActionBlock) {
+		} else if (currentBlock instanceof ActionBlock) {
 			return (ActionBlock) currentBlock;
 		} else {
 			// If or while block
 			AssessableBlock condition = currentBlock.getConditionBlock();
-			
+
 			if (evaluateCondition(condition)) {
 				return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getFirstBlockOfBody());
 			} else {
@@ -129,11 +157,11 @@ public class GameController implements DomainListener, GUISubject {
 			}
 		}
 	}
-	
-	private boolean evaluateCondition(AssessableBlock condition){
-		if(condition instanceof ConditionBlock){
+
+	private boolean evaluateCondition(AssessableBlock condition) {
+		if (condition instanceof ConditionBlock) {
 			return gameWorld.evaluate(((ConditionBlock) condition).getPredicate());
-		}else {
+		} else {
 			return !evaluateCondition(condition.getOperand());
 		}
 	}
@@ -142,9 +170,31 @@ public class GameController implements DomainListener, GUISubject {
 	 * 
 	 * @param block
 	 */
-	public void performRobotAction(ActionBlock block) {
+	public ExecutionSnapshot performAction(ActionBlock block) {
+		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
+		ActionBlock nextBlockToBeExecuted = getCurrentState().getNextActionBlockToBeExecuted();
+		ExecutionSnapshot snapshot = new ExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot,getCurrentState());
 		gameWorld.performAction(block.getAction());
-		fireRobotChangeEvent();
+		
+		ActionBlock newNextActionBlockToBeExecuted = findNextActionBlockToBeExecuted(block, block.getNextBlock());
+		getCurrentState().setNextActionBlockToBeExecuted(newNextActionBlockToBeExecuted);
+		if (getCurrentState().getNextActionBlockToBeExecuted() != null) {
+			fireUpdateHighlightingEvent(getCurrentState().getNextActionBlockToBeExecuted().getBlockId());
+		} else {
+			fireUpdateHighlightingEvent(null);
+		}
+		return snapshot;
+	}
+	
+	public void restoreExecutionSnapshot(ExecutionSnapshot snapshot) {
+		getCurrentState().setNextActionBlockToBeExecuted(snapshot.getNextActionBlockToBeExecuted());
+		gameWorld.restoreState(snapshot.getGameSnapshot());
+		toState(snapshot.getState());
+		if (getCurrentState().getNextActionBlockToBeExecuted() != null) {
+			fireUpdateHighlightingEvent(getCurrentState().getNextActionBlockToBeExecuted().getBlockId());
+		} else {
+			fireUpdateHighlightingEvent(null);
+		}
 	}
 
 	public boolean checkIfValidProgram() {
@@ -155,8 +205,8 @@ public class GameController implements DomainListener, GUISubject {
 	 * 
 	 * @param highlightedBlockId
 	 */
-public void fireUpdateHighlightingEvent(String highlightedBlockId) {
-	
+	public void fireUpdateHighlightingEvent(String highlightedBlockId) {
+
 		UpdateHighlightingEvent updateHighlightingEvent = new UpdateHighlightingEvent(highlightedBlockId);
 		for (GUIListener listener : guiListeners) {
 			listener.onUpdateHighlightingEvent(updateHighlightingEvent);

@@ -6,19 +6,19 @@ package commands;
 import java.util.Stack;
 
 /**
- * /** BlockCommandHandler
+ * /** CommandHandler
  * 
  * @version 0.1
  * @author group17
  *
  */
-public class BlockCommandHandler {
+public class CommandHandler {
 	private Stack<Command> executedBlockCommands;
 	private Stack<Command> undoneBlockCommands;
 	private Stack<Command> executedGameWorldCommands;
 	private Stack<Command> undoneGameWorldCommands;
 
-	public BlockCommandHandler() {
+	public CommandHandler() {
 		executedBlockCommands=new Stack<Command>();
 		undoneBlockCommands=new Stack<Command>();
 		executedGameWorldCommands=new Stack<Command>();

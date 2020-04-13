@@ -231,8 +231,17 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		ConnectionType before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(), snapshot.getBlock());
 		ConnectionType after = programBlockRepository.getConnectionType(snapshot.getConnectedBlockAfterSnapshot(), snapshot.getBlock());
-		fireBlockChanged(snapshot.getBlock().getBlockId(), snapshot.getConnectedBlockBeforeSnapshot().getBlockId(),
-				before, snapshot.getConnectedBlockAfterSnapshot().getBlockId(), after);		
+		
+		String cbID="";
+		String caID="";
+		if(snapshot.getConnectedBlockBeforeSnapshot()!=null) {
+		 cbID= snapshot.getConnectedBlockBeforeSnapshot().getBlockId();
+		}
+		if(snapshot.getConnectedBlockAfterSnapshot()!=null) {
+		caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
+		}
+		fireBlockChanged(snapshot.getBlock().getBlockId(), cbID,
+				before, caID, after);		
 
 	}
 	
@@ -285,8 +294,9 @@ public class BlockController implements GUISubject, DomainSubject {
 		
 		
 		Block movedBlock = programBlockRepository.getBlockByID(movedID);
-		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1));
-		BlockSnapshot snapshot = new BlockSnapshot(movedBlock, null,connectedBlockBeforeDelete);
+		Block connectedBlockBeforeMove = programBlockRepository.getBlockByID(previousConnection.get(1));
+		Block connectedBlockAfterMove = programBlockRepository.getBlockByID(connectedAfterMoveBlockId);		
+		BlockSnapshot snapshot = new BlockSnapshot(movedBlock, connectedBlockAfterMove,connectedBlockBeforeMove);
 
 
 		String movedBlockID = programBlockRepository.moveBlock(topOfMovedChainBlockId ,movedID, connectedAfterMoveBlockId, connectionAfterMove);
@@ -297,7 +307,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		fireBlockChanged(movedBlockID, connectedAfterMoveBlockId, connectionAfterMove, previousConnection.get(1),
 				ConnectionType.valueOf(previousConnection.get(0)));
 
-		return null;
+		return snapshot;
 	}
 
 	/**

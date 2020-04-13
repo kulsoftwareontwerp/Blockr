@@ -3,6 +3,9 @@
  */
 package commands;
 
+import applicationLayer.GameController;
+import types.ExecutionSnapshot;
+
 /**
 /**
  * ResetCommand
@@ -11,24 +14,31 @@ package commands;
  * @author group17
  *
  */
-public class ResetCommand implements BlockCommand {
+public class ResetCommand implements GameWorldCommand {
+	private GameController gameController;
+	private ExecutionSnapshot snapshot;
+
+
 
 	/**
-	 * 
+	 * @param gameController
+	 * @param snapshot
 	 */
-	public ResetCommand() {
-		// TODO Auto-generated constructor stub
+	public ResetCommand(GameController gameController) {
+		super();
+		this.gameController = gameController;
+		this.snapshot = null;
 	}
 
 	@Override
 	public void execute() {
-		// TODO Auto-generated method stub
-
+		
+		snapshot = gameController.resetGame();
 	}
 
 	@Override
 	public void undo() {
-		// TODO Auto-generated method stub
+		gameController.restoreExecutionSnapshot(snapshot);
 
 	}
 
