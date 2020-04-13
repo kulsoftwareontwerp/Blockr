@@ -4,10 +4,24 @@
 package applicationLayer;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+
+import domainLayer.blocks.ActionBlock;
+import domainLayer.blocks.BlockRepository;
+import domainLayer.gamestates.InExecutionState;
 
 /**
  * GameControllerTest
@@ -17,11 +31,22 @@ import org.junit.Test;
  */
 public class GameControllerTest {
 
+	@Mock(name="blockRepository")
+	private BlockRepository blockRepository;
+	@Spy @InjectMocks
+	private GameController gc;
+	
+	
+	private InExecutionState inExecutionState;
+	private ActionBlock actionBlock;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
+		inExecutionState = spy(new InExecutionState(gc, actionBlock));
 	}
 
 	/**

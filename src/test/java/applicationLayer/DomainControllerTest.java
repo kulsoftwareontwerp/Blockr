@@ -4,10 +4,19 @@
 package applicationLayer;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 
 /**
  * DomainControllerTest
@@ -17,11 +26,21 @@ import org.junit.Test;
  */
 public class DomainControllerTest {
 
+	@Mock(name="gameWorld")
+	private GameWorld gameWorld;
+	@Mock(name="gameController")
+	private GameController gameController;
+	@Mock(name="blockController")
+	private BlockController blockController;
+	@Spy @InjectMocks
+	private DomainController dc;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
 	}
 
 	/**
@@ -54,13 +73,14 @@ public class DomainControllerTest {
 	public void testRemoveBlock() {
 		fail("Not yet implemented");
 	}
-
+	
 	/**
 	 * Test method for {@link applicationLayer.DomainController#resetGameExecution()}.
 	 */
 	@Test
-	public void testResetGameExecution() {
-		fail("Not yet implemented");
+	public void testResetGameExecution_Positive() {
+		dc.resetGameExecution();
+		verify(gameController,atLeastOnce()).resetGameExecution();
 	}
 
 	/**
@@ -99,8 +119,9 @@ public class DomainControllerTest {
 	 * Test method for {@link applicationLayer.DomainController#executeBlock()}.
 	 */
 	@Test
-	public void testExecuteBlock() {
-		fail("Not yet implemented");
+	public void testExecuteBlock_Positive() {
+		dc.executeBlock();
+		verify(gameController,atLeastOnce()).executeBlock();
 	}
 
 	/**

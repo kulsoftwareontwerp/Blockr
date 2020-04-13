@@ -36,6 +36,11 @@ public class GameController implements DomainListener, GUISubject {
 		toState(new InValidProgramState(this));
 
 	}
+	
+	// Used for mockinjection in the tests
+	private GameController(BlockRepository br) {
+		this.programBlockRepository = br;
+	}
 
 
 	public void fireRobotChangeEvent() {

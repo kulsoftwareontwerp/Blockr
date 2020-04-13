@@ -3,9 +3,7 @@ package applicationLayer;
 import java.awt.Graphics;
 import java.util.Set;
 
-import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
-import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
 import domainLayer.elements.ElementType;
 import events.GUIListener;
@@ -15,7 +13,6 @@ import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
 import types.BlockType;
 import types.ConnectionType;
-
 
 
 /**
@@ -47,6 +44,13 @@ public class DomainController {
 		
 		this.gameWorld=gameWorld;
 
+	}
+	
+	// Used for mockinjection in the tests
+	private DomainController(GameWorld gw, GameController gc, BlockController bc) {
+		this.gameWorld = gw;
+		this.gameController = gc;
+		this.blockController = bc;
 	}
 
 	/**
@@ -138,12 +142,10 @@ public class DomainController {
 			
 	}
 
+	
 	public void resetGameExecution() {
 		gameController.resetGameExecution();
 	}
-
-	
-	
 	
 	/**
 	 * Returns all the blockID's in the body of a given ControlBlock
@@ -234,26 +236,6 @@ public class DomainController {
 		}
 	}
 
-	
-//	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-//		if(movedBlockId == null || movedBlockId.equals("")) {
-//			throw new IllegalArgumentException("No movedBlockID given");
-//		}
-//		else if(connectionBeforeMove == null || connectionAfterMove == null) {
-//			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
-//		}
-//		else if(connectedBeforeMoveBlockId.equals("")  && !(connectionBeforeMove == ConnectionType.NOCONNECTION)) {
-//			throw new IllegalArgumentException("No blockId given for connectedBeforeMovedBlockID");
-//			}
-//		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
-//			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
-//		}
-//		else if(movedBlockId.equals(connectedBeforeMoveBlockId) || movedBlockId.equals(connectedAfterMoveBlockId))
-//			throw new IllegalArgumentException("You can't connect a block to itself.");
-//		else {
-//			blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
-//		}
-//	}
 	/**
 	 * Adds a GUI listener for Game, this listener will be notified about all changes for the GUI.
 	 * If the given listener is already a listener for Game it will not be added another time.
@@ -269,7 +251,6 @@ public class DomainController {
 		gameController.addListener(listener);
 		blockController.addListener(listener);
 		elementController.addListener(listener);
-
 	}
 
 	/**
@@ -289,6 +270,7 @@ public class DomainController {
 		blockController.removeListener(listener);
 	}
 
+	
 	public void executeBlock() {
 		gameController.executeBlock();
 	}
@@ -306,7 +288,6 @@ public class DomainController {
 	 *         kind of block in the body of the given block or under the given
 	 *         block. The ID of the block itself is also given.
 	 */
-
 	public Set<String> getAllBlockIDsUnderneath(String blockID) {
 		if(blockID == null || blockID == "") {
 			throw new IllegalArgumentException("No blockID given.");
@@ -314,7 +295,6 @@ public class DomainController {
 		
 		 return blockController.getAllBlockIDsUnderneath(blockID);
 	}
-
 
 	/**
 	 * Add an element to the domain.
@@ -374,7 +354,6 @@ public class DomainController {
 	public Set<String> getAllHeadBlocks() {
 		return blockController.getAllHeadBlocks();
 	}
-
 	
 	/**
 	 * Paint the gameWorld on a given graphics object.
