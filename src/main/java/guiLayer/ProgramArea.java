@@ -30,6 +30,10 @@ public class ProgramArea implements Constants {
 	}
 
 	public void addShapeToProgramArea(Shape shape) {
+		Shape presentShape = getShapeById(shape.getId());
+		if(presentShape!=null){
+			this.shapesInProgramArea.remove(presentShape);
+		}
 		this.shapesInProgramArea.add(shape);
 	}
 
@@ -55,11 +59,24 @@ public class ProgramArea implements Constants {
 			return this.getShapesInProgramArea().stream()
 					.filter(e -> e.getCoordinatesShape().contains(new Pair<Integer, Integer>(x, y))).findFirst().get();
 		} catch (NoSuchElementException e) {
-			System.out.println("NULL");
 			return null;
 
 		}
+	}
+	
+	/**
+	 * Retrieve a shape by its ID
+	 * @param id
+	 * @return
+	 */
+	public Shape getShapeById(String id) {
 
+		try {
+			return this.getShapesInProgramArea().stream()
+					.filter(e -> e.getId().equals(id)).findFirst().get();
+		} catch (NoSuchElementException e) {
+			return null;
+		}
 	}
 
 	public boolean checkIfPlaceable(HashSet<Pair<Integer, Integer>> currentCoordinates, Shape currentShape) {
@@ -83,6 +100,10 @@ public class ProgramArea implements Constants {
 	}
 
 	public void addToAlreadyFilledInCoordinates(Shape shape) {
+		Shape presentShape = getShapeById(shape.getId());
+		if(presentShape!=null){
+			removeFromAlreadyFilledInCoordinates(presentShape);
+		}
 		getAlreadyFilledInCoordinates().addAll(shape.getCoordinatesShape());
 	}
 

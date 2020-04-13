@@ -1026,7 +1026,7 @@ public class BlockRepository {
 
 		Boolean isRemoved = false;
 		for (Block b : connectedBlocks) {
-			if (getBlockByID(b.getBlockId()) != null) {
+			if (getBlockByID(b.getBlockId()) == null) {
 				isRemoved = true;
 				break;
 			}
@@ -1046,17 +1046,15 @@ public class BlockRepository {
 			}
 		} else {
 			// blocks are still present in the domain (Move)
-			if (snapshot.getConnectedBlockAfterSnapshot() != null) {
-				Block ab = snapshot.getConnectedBlockAfterSnapshot();
-				addBlockToAllBlocks(ab);
-			} else {
-				removeBlockFromHeadBlocks(snapshot.getBlock());
-			}
 			if (snapshot.getConnectedBlockBeforeSnapshot() != null) {
 				Block cb = snapshot.getConnectedBlockBeforeSnapshot();
 				addBlockToAllBlocks(cb);
-			} else {
 				addBlockToHeadBlocks(snapshot.getBlock());
+			}
+			if (snapshot.getConnectedBlockAfterSnapshot() != null) {
+				Block ab = snapshot.getConnectedBlockAfterSnapshot();
+				addBlockToAllBlocks(ab);
+				removeBlockFromHeadBlocks(snapshot.getBlock());
 			}
 		}
 
@@ -1068,23 +1066,23 @@ public class BlockRepository {
 			return ConnectionType.NOCONNECTION;
 		}
 		
-		if(parent.getConditionBlock()==child) {
+		if(parent.getConditionBlock()!=null && parent.getConditionBlock().equals(child)) {
 			return ConnectionType.CONDITION;
 		}
-		if(parent.getFirstBlockOfBody()==child) {
+		if(parent.getFirstBlockOfBody()!=null && parent.getFirstBlockOfBody().equals(child)) {
 			return ConnectionType.BODY;
 		}
-		if(parent.getNextBlock()==child) {
-			return ConnectionType.UP;
+		if(parent.getNextBlock()!=null && parent.getNextBlock().equals(child)) {
+			return ConnectionType.DOWN;
 		}
-		if(parent.getOperand()==child) {
+		if(parent.getOperand()!=null &&  parent.getOperand().equals(child)) {
 			return ConnectionType.OPERAND;
 		}
-		if(child.getOperand()==parent|| child.getConditionBlock()==parent) {
+		if((child.getOperand()!=null && child.getOperand().equals(parent))|| (child.getConditionBlock()!=null && child.getConditionBlock().equals(parent)  )) {
 			return ConnectionType.LEFT;
 		}
-		if(child.getNextBlock()==parent) {
-			return ConnectionType.DOWN;
+		if(child.getNextBlock()!=null && child.getNextBlock().equals(parent)) {
+			return ConnectionType.UP;
 		}
 		return ConnectionType.NOCONNECTION;
 	}

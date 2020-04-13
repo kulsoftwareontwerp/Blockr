@@ -254,9 +254,14 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return super.clone();
+	protected Shape clone() {
+		Shape s=null;
+		try {
+			s= (Shape)super.clone();
+		} catch (CloneNotSupportedException e) {
+			new RuntimeException(e);
+		}
+		return s;
 	}
 
 	@Override
