@@ -990,9 +990,8 @@ public class BlockRepository {
 			if (snapshot.getConnectedBlockBeforeSnapshot() != null) {
 				Block cb = snapshot.getConnectedBlockBeforeSnapshot();
 				addBlockToAllBlocks(cb);
-			}
-			else {
-				addBlockToHeadBlocks(snapshot.getBlock());				
+			} else {
+				addBlockToHeadBlocks(snapshot.getBlock());
 			}
 
 			for (Block b : connectedBlocks) {
@@ -1000,11 +999,47 @@ public class BlockRepository {
 			}
 		} else {
 			// blocks are still present in the domain (Move)
-			
-
+			if (snapshot.getConnectedBlockAfterSnapshot() != null) {
+				Block ab = snapshot.getConnectedBlockAfterSnapshot();
+				addBlockToAllBlocks(ab);
+			} else {
+				removeBlockFromHeadBlocks(snapshot.getBlock());
+			}
+			if (snapshot.getConnectedBlockBeforeSnapshot() != null) {
+				Block cb = snapshot.getConnectedBlockBeforeSnapshot();
+				addBlockToAllBlocks(cb);
+			} else {
+				addBlockToHeadBlocks(snapshot.getBlock());
+			}
 		}
 
 		return isRemoved;
+	}
+
+	public ConnectionType getConnectionType(Block parent, Block child) {
+		if(parent==null) {
+			return ConnectionType.NOCONNECTION;
+		}
+		
+		if(parent.getConditionBlock()==child) {
+			return ConnectionType.CONDITION;
+		}
+		if(parent.getFirstBlockOfBody()==child) {
+			return ConnectionType.BODY;
+		}
+		if(parent.getNextBlock()==child) {
+			return ConnectionType.UP;
+		}
+		if(parent.getOperand()==child) {
+			return ConnectionType.OPERAND;
+		}
+		if(child.getOperand()==parent|| child.getConditionBlock()==parent) {
+			return ConnectionType.LEFT;
+		}
+		if(child.getNextBlock()==parent) {
+			return ConnectionType.DOWN;
+		}
+		return ConnectionType.NOCONNECTION;
 	}
 
 }

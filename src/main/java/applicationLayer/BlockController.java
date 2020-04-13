@@ -207,11 +207,29 @@ public class BlockController implements GUISubject, DomainSubject {
 		return snapshot;
 	}
 
+	/**
+	 * Restore a given BlockSnapshot and send the needed events according to the type of restore.
+	 * @param snapshot
+	 */
 	public void restoreBlockSnapshot(BlockSnapshot snapshot) {
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
+		
+		
+		if(removed) {
+			Set<String> idsToAdd = programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock());
+			for(String id: idsToAdd) {
+				fireBlockAdded(id);
+			}
+		}
+
+		ConnectionType before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(), snapshot.getBlock());
+		ConnectionType after = programBlockRepository.getConnectionType(snapshot.getConnectedBlockAfterSnapshot(), snapshot.getBlock());
+		fireBlockChanged(snapshot.getBlock().getBlockId(), snapshot.getConnectedBlockBeforeSnapshot().getBlockId(),
+				before, snapshot.getConnectedBlockAfterSnapshot().getBlockId(), after);		
 
 	}
-
+	
+	
 	/**
 	 * Add a block of the given blockType to the domain and connect it with the
 	 * given connectedBlockId on the given connection
@@ -248,14 +266,21 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *        was successful.
 	 * @event ResetExecutionEvent Fires a ResetExecutionEvent if the execution was
 	 *        successful.
+	 * @return the blockSnapshot representing the state and state changes affected by this move.
 	 */
-	public void moveBlock(String topOfMovedChainBlockId, String movedBlockId, String connectedAfterMoveBlockId,
+	public BlockSnapshot moveBlock(String topOfMovedChainBlockId, String movedBlockId, String connectedAfterMoveBlockId,
 			ConnectionType connectionAfterMove) {
 
 		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId,
 				connectionAfterMove);
 		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
 				connectedAfterMoveBlockId, connectionAfterMove);
+		
+		Block movedBlock = programBlockRepository.getBlockByID(movedID);
+		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1));
+		BlockSnapshot snapshot = new BlockSnapshot(movedBlock, null,connectedBlockBeforeDelete);
+		
+		
 
 		String movedBlockID = programBlockRepository.moveBlock(movedID, connectedAfterMoveBlockId, connectionAfterMove);
 
@@ -265,6 +290,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		fireBlockChanged(movedBlockID, connectedAfterMoveBlockId, connectionAfterMove, previousConnection.get(1),
 				ConnectionType.valueOf(previousConnection.get(0)));
 
+		return null;
 	}
 
 	/**
