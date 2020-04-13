@@ -50,6 +50,13 @@ public class BlockController implements GUISubject, DomainSubject {
 		programBlockRepository = BlockRepository.getInstance();
 
 	}
+	
+	@SuppressWarnings("unused")
+	private BlockController(BlockRepository programBlockRepository) {
+		this.guiListeners = new HashSet<GUIListener>();;
+		this.domainListeners = new HashSet<DomainListener>();
+		this.programBlockRepository = programBlockRepository;
+	}
 
 	private void fireBlockAdded(String newBlockId) {
 		BlockAddedEvent event = new BlockAddedEvent(newBlockId);
@@ -270,19 +277,19 @@ public class BlockController implements GUISubject, DomainSubject {
 	 */
 	public BlockSnapshot moveBlock(String topOfMovedChainBlockId, String movedBlockId, String connectedAfterMoveBlockId,
 			ConnectionType connectionAfterMove) {
-
-		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId,
-				connectionAfterMove);
-		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
-				connectedAfterMoveBlockId, connectionAfterMove);
+		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId, connectionAfterMove);
+//		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
+//				connectedAfterMoveBlockId, connectionAfterMove);
+		
+		ArrayList<String> previousConnection = programBlockRepository.getConnectedParentIfExists(topOfMovedChainBlockId);
+		
 		
 		Block movedBlock = programBlockRepository.getBlockByID(movedID);
 		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1));
 		BlockSnapshot snapshot = new BlockSnapshot(movedBlock, null,connectedBlockBeforeDelete);
-		
-		
 
-		String movedBlockID = programBlockRepository.moveBlock(movedID, connectedAfterMoveBlockId, connectionAfterMove);
+
+		String movedBlockID = programBlockRepository.moveBlock(topOfMovedChainBlockId ,movedID, connectedAfterMoveBlockId, connectionAfterMove);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();

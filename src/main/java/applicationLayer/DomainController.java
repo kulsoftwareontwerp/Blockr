@@ -50,6 +50,7 @@ public class DomainController {
 		elementController.addDomainListener(gameController);
 		
 		this.gameWorld=gameWorld;
+
 		
 		//fill dynamic enum with actions and predicates from GameWorldApi
 		Set<Predicate> supportedPredicates =  gameWorld.getType().supportedPredicates();
@@ -64,6 +65,20 @@ public class DomainController {
 		}
 
 	}
+	
+	@SuppressWarnings("unused")
+	private DomainController(GameController gameController , BlockController blockController  ,ElementController elementController ,  GameWorld gameWorld) {
+		this.gameController = gameController;
+		this.blockController = blockController;
+		this.elementController = elementController;
+
+
+		this.blockController.addDomainListener(gameController);
+		this.elementController.addDomainListener(gameController);
+		
+		this.gameWorld=gameWorld;
+	}
+	
 
 	/**
 	 * Add a block of the given blockType to the domain and connect it with the
@@ -239,7 +254,7 @@ public class DomainController {
 		if(movedBlockId == null ) {
 			movedBlockId="";
 		}
-		else if(connectionAfterMove == null) {
+		if(connectionAfterMove == null) {
 			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
 		}
 		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
