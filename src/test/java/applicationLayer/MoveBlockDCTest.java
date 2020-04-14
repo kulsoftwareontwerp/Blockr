@@ -26,9 +26,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 
 import domainLayer.blocks.IfBlock;
-import domainLayer.blocks.MoveForwardBlock;
 import domainLayer.blocks.NotBlock;
-import domainLayer.blocks.WallInFrontBlock;
 import domainLayer.blocks.WhileBlock;
 import exceptions.InvalidBlockConnectionException;
 import exceptions.NoSuchConnectedBlockException;

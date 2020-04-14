@@ -24,6 +24,7 @@ import events.PanelChangeEvent;
 import events.RobotAddedEvent;
 import events.RobotChangeEvent;
 import events.UpdateHighlightingEvent;
+import types.BlockType;
 import types.ConnectionType;
 
 public class CanvasWindow extends CanvasResource implements GUIListener, Constants {
@@ -53,6 +54,31 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	public CanvasWindow(String title, DomainController dc) {
 		super(title);
 
+		//Calculate Total Height of the CanvasWindow based on the different type of blocks
+		int totalHeight = 160; //4x40px for the titles in the palette
+		for (var type  : BlockType.values()) {
+			switch (type.cat()) {
+			case ACTION:
+				totalHeight += 45;
+				break;
+			case CONDITION:
+				totalHeight += 35;
+				break;
+			case CONTROL:
+				totalHeight += 105;
+				break;
+			case OPERATOR:
+				totalHeight += 35;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		totalHeight += 25; //Padding at the bottom
+		
+		super.height = totalHeight;
+		System.out.println(totalHeight);
 		super.width = WIDTH;
 		this.domainController = dc;
 		this.domainController.addGameListener(this);
@@ -68,8 +94,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	protected void paint(Graphics g) {
 
-		Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, PROGRAM_END_X, HEIGHT);
-		Graphics gameAreaGraphics = g.create(GAME_START_X, ORIGIN, WIDTH - GAME_START_X, HEIGHT);
+		Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, PROGRAM_END_X, super.height);
+		Graphics gameAreaGraphics = g.create(GAME_START_X, ORIGIN, WIDTH - GAME_START_X, super.height);
 
 		// only for debugging purposes
 		if (debugModus == DebugModus.FILLINGS) {

@@ -1,6 +1,8 @@
 package domainLayer.blocks;
 import java.util.HashSet;
 
+import domainLayer.elements.ElementRepository;
+
 
 /**
  * The concrete class for the concept of an operator block.
@@ -20,9 +22,6 @@ public abstract class OperatorBlock extends AssessableBlock {
 		super(blockId);
 	}
 
-//	public boolean assess(HashSet<Element> gameElements) {
-//		// TODO - implement OperatorBlock.assess
-//		throw new UnsupportedOperationException();
-//	}
+	abstract public boolean assess(ElementRepository elementsRepo);
 
 }

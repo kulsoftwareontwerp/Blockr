@@ -27,9 +27,7 @@ import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.IfBlock;
-import domainLayer.blocks.MoveForwardBlock;
 import domainLayer.blocks.NotBlock;
-import domainLayer.blocks.WallInFrontBlock;
 import domainLayer.blocks.WhileBlock;
 import events.BlockChangeEvent;
 import events.DomainListener;

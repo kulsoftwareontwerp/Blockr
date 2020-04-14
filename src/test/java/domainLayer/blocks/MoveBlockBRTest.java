@@ -30,7 +30,9 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
+import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
 import applicationLayer.BlockController;
 import applicationLayer.DomainController;
@@ -69,8 +71,8 @@ public class MoveBlockBRTest {
 	private BlockRepository blockRepositoryValidBeforeMove;
 
 	private ActionBlock movedActionBlock;
-	private MoveForwardBlock movedMoveForwardBlock;
-	private WallInFrontBlock movedWallInFrontBlock;
+	private ActionBlock movedMoveForwardBlock;
+	private ConditionBlock movedWallInFrontBlock;
 	private NotBlock movedNotBlock;
 	private WhileBlock movedWhileBlock;
 	private IfBlock movedIfBlock;
@@ -81,23 +83,26 @@ public class MoveBlockBRTest {
 	private NotBlock connectedNotBlockA;
 	private NotBlock connectedNotBlockB;
 
-	private MoveForwardBlock connectedMoveForwardBlockA;
-	private MoveForwardBlock connectedMoveForwardBlockB;
-	private MoveForwardBlock connectedMoveForwardBlockC;
+	private ActionBlock connectedMoveForwardBlockA;
+	private ActionBlock connectedMoveForwardBlockB;
+	private ActionBlock connectedMoveForwardBlockC;
 
-	private TurnLeftBlock connectedTurnLeftBlockA;
-	private TurnLeftBlock connectedTurnLeftBlockkB;
-	private TurnLeftBlock movedTurnLeftBlock;
+	private ActionBlock connectedTurnLeftBlockA;
+	private ActionBlock connectedTurnLeftBlockkB;
+	private ActionBlock movedTurnLeftBlock;
 
-	private TurnRightBlock TurnRightBlocA;
-	private TurnRightBlock TurnRightBlocB;
-	private TurnRightBlock movedTurnRightBloc;
+	private ActionBlock TurnRightBlocA;
+	private ActionBlock TurnRightBlocB;
+	private ActionBlock movedTurnRightBloc;
 
-	private WallInFrontBlock WallInFrontBlockA;
-	private WallInFrontBlock WallInFrontBlockB;
+	private ConditionBlock WallInFrontBlockA;
+	private ConditionBlock WallInFrontBlockB;
 
 	private WhileBlock connectedWhileBlockA;
 	private WhileBlock connectedWhileBlockB;
+
+	private Action action;
+	private Predicate predicate;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -131,10 +136,10 @@ public class MoveBlockBRTest {
 		connectionTypes.add(ConnectionType.UP);
 
 		// Mulptiple head block reprository
-		movedActionBlock = spy(new MoveForwardBlock("1"));
-		connectedMoveForwardBlockA = spy(new MoveForwardBlock("2"));
-		connectedMoveForwardBlockB = spy(new MoveForwardBlock("3"));
-		connectedMoveForwardBlockC = spy(new MoveForwardBlock("16"));
+		movedActionBlock = spy(new ActionBlock("1", action));
+		connectedMoveForwardBlockA = spy(new ActionBlock("2", action));
+		connectedMoveForwardBlockB = spy(new ActionBlock("3", action));
+		connectedMoveForwardBlockC = spy(new ActionBlock("16", action));
 
 		connectedIfBlockA = spy(new IfBlock("4"));
 		connectedIfBlockB = spy(new IfBlock("5"));
@@ -144,10 +149,9 @@ public class MoveBlockBRTest {
 		connectedWhileBlockB = spy(new WhileBlock("8"));
 		movedWhileBlock = spy(new WhileBlock("9"));
 
-		WallInFrontBlockA = spy(new WallInFrontBlock("10"));
-		WallInFrontBlockB = spy(new WallInFrontBlock("11"));
-		movedWallInFrontBlock = spy(new WallInFrontBlock("12"));
-
+		WallInFrontBlockA = spy(new ConditionBlock("10", predicate));
+		WallInFrontBlockB = spy(new ConditionBlock("11", predicate));
+		movedWallInFrontBlock = spy(new ConditionBlock("12", predicate));
 		movedNotBlock = spy(new NotBlock("13"));
 		connectedNotBlockA = spy(new NotBlock("14"));
 		connectedNotBlockB = spy(new NotBlock("15"));
@@ -220,7 +224,7 @@ public class MoveBlockBRTest {
 	// BASIC CASES
 	@Test
 	public void testBRMoveBlockPositiveNOCONNECTIONtoDOWN() {
-		assertEquals("1", blockRepository.moveBlock("1", "1","2", ConnectionType.DOWN));
+		assertEquals("1", blockRepository.moveBlock("1", "1", "2", ConnectionType.DOWN));
 		verify(connectedMoveForwardBlockA).setNextBlock(movedActionBlock);
 
 	}
@@ -228,7 +232,7 @@ public class MoveBlockBRTest {
 	@Test
 	public void testBRMoveBlockPositiveNOCONNECTIONtoUP() {
 		when(mockHeadBlocks.contains(connectedMoveForwardBlockA)).thenReturn(true);
-		assertEquals("1", blockRepository.moveBlock("1","1", "2", ConnectionType.UP));
+		assertEquals("1", blockRepository.moveBlock("1", "1", "2", ConnectionType.UP));
 		verify(movedActionBlock).setNextBlock(connectedMoveForwardBlockA);
 		verify(mockHeadBlocks).remove(connectedMoveForwardBlockA);
 
@@ -236,7 +240,7 @@ public class MoveBlockBRTest {
 
 	@Test
 	public void testBRMoveBlockPositiveNOCONNECTIONtoBODY() {
-		assertEquals("1", blockRepository.moveBlock("1","1", "4", ConnectionType.BODY));
+		assertEquals("1", blockRepository.moveBlock("1", "1", "4", ConnectionType.BODY));
 		verify(connectedIfBlockA).setFirstBlockOfBody(movedActionBlock);
 		verify(mockHeadBlocks).remove(movedActionBlock);
 
@@ -244,8 +248,8 @@ public class MoveBlockBRTest {
 
 	@Test
 	public void testBRMoveBlockPositiveNOCONNECTIONtoCONDITION() {
-		assertEquals(movedNotBlock.getBlockId(),
-				blockRepository.moveBlock(movedNotBlock.getBlockId(),movedNotBlock.getBlockId(), "4", ConnectionType.CONDITION));
+		assertEquals(movedNotBlock.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),
+				movedNotBlock.getBlockId(), "4", ConnectionType.CONDITION));
 		verify(connectedIfBlockA).setConditionBlock(movedNotBlock);
 		verify(mockHeadBlocks).remove(movedNotBlock);
 
@@ -255,8 +259,8 @@ public class MoveBlockBRTest {
 	public void testBRMoveBlockPositiveNOCONNECTIONtoLEFT() {
 		when(mockHeadBlocks.contains(connectedNotBlockA)).thenReturn(true);
 
-		assertEquals(movedNotBlock.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),movedNotBlock.getBlockId(),
-				connectedNotBlockA.getBlockId(), ConnectionType.LEFT));
+		assertEquals(movedNotBlock.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),
+				movedNotBlock.getBlockId(), connectedNotBlockA.getBlockId(), ConnectionType.LEFT));
 		verify(movedNotBlock, times(2)).setOperand(connectedNotBlockA);
 		verify(mockHeadBlocks).remove(connectedNotBlockA);
 
@@ -264,8 +268,8 @@ public class MoveBlockBRTest {
 
 	@Test
 	public void testBRMoveBlockPositiveNOCONNECTIONtoOPERAND() {
-		assertEquals(movedNotBlock.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),movedNotBlock.getBlockId(),
-				connectedNotBlockA.getBlockId(), ConnectionType.OPERAND));
+		assertEquals(movedNotBlock.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),
+				movedNotBlock.getBlockId(), connectedNotBlockA.getBlockId(), ConnectionType.OPERAND));
 		verify(connectedNotBlockA).setOperand(movedNotBlock);
 		verify(mockHeadBlocks).remove(movedNotBlock);
 
@@ -306,7 +310,7 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals("1", blockRepository.moveBlock("1","1", "3", ConnectionType.DOWN));
+		assertEquals("1", blockRepository.moveBlock("1", "1", "3", ConnectionType.DOWN));
 		verify(connectedMoveForwardBlockA).setNextBlock(null);
 		verify(connectedMoveForwardBlockB).setNextBlock(movedActionBlock);
 
@@ -351,7 +355,7 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals("1", blockRepository.moveBlock("1","1", "3", ConnectionType.UP));
+		assertEquals("1", blockRepository.moveBlock("1", "1", "3", ConnectionType.UP));
 		verify(connectedMoveForwardBlockA).setNextBlock(null);
 		verify(movedActionBlock).setNextBlock(connectedMoveForwardBlockB);
 		verify(mockHeadBlocks).add(movedActionBlock);
@@ -395,7 +399,7 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals("1", blockRepository.moveBlock("1","1", "4", ConnectionType.BODY));
+		assertEquals("1", blockRepository.moveBlock("1", "1", "4", ConnectionType.BODY));
 		verify(connectedMoveForwardBlockA).setNextBlock(null);
 		verify(connectedIfBlockA).setFirstBlockOfBody(movedActionBlock);
 
@@ -437,8 +441,8 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals(movedWallInFrontBlock.getBlockId(), blockRepository.moveBlock(movedWallInFrontBlock.getBlockId(),movedWallInFrontBlock.getBlockId(),
-				connectedIfBlockB.getBlockId(), ConnectionType.CONDITION));
+		assertEquals(movedWallInFrontBlock.getBlockId(), blockRepository.moveBlock(movedWallInFrontBlock.getBlockId(),
+				movedWallInFrontBlock.getBlockId(), connectedIfBlockB.getBlockId(), ConnectionType.CONDITION));
 		verify(connectedIfBlockA).setConditionBlock(null);
 		verify(connectedIfBlockB).setConditionBlock(movedWallInFrontBlock);
 
@@ -480,8 +484,8 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals(movedWallInFrontBlock.getBlockId(), blockRepository.moveBlock(movedWallInFrontBlock.getBlockId(),movedWallInFrontBlock.getBlockId(),
-				movedNotBlock.getBlockId(), ConnectionType.OPERAND));
+		assertEquals(movedWallInFrontBlock.getBlockId(), blockRepository.moveBlock(movedWallInFrontBlock.getBlockId(),
+				movedWallInFrontBlock.getBlockId(), movedNotBlock.getBlockId(), ConnectionType.OPERAND));
 		verify(connectedIfBlockA).setConditionBlock(null);
 		verify(movedNotBlock).setOperand(movedWallInFrontBlock);
 
@@ -524,8 +528,32 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals(movedNotBlock.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),movedNotBlock.getBlockId(),
-				movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedNotBlock.getBlockId())) {
+						return parentInfo;
+					}
+
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedParentIfExists(any());
+
+		assertEquals(movedNotBlock.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),
+				movedNotBlock.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
 		verify(connectedIfBlockA).setConditionBlock(null);
 		verify(movedNotBlock).setOperand(movedWallInFrontBlock);
 		verify(mockHeadBlocks).add(movedNotBlock);
@@ -568,12 +596,12 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals(movedWallInFrontBlock.getBlockId(), blockRepository.moveBlock(movedWallInFrontBlock.getBlockId(),movedWallInFrontBlock.getBlockId(),
-				connectedIfBlockA.getBlockId(), ConnectionType.CONDITION));
+		assertEquals(movedWallInFrontBlock.getBlockId(), blockRepository.moveBlock(movedWallInFrontBlock.getBlockId(),
+				movedWallInFrontBlock.getBlockId(), connectedIfBlockA.getBlockId(), ConnectionType.CONDITION));
 		verify(movedNotBlock).setOperand(null);
 		verify(connectedIfBlockA).setConditionBlock(movedWallInFrontBlock);
 	}
-	
+
 	@Test
 	public void testBRMoveBlockPositiveOPERANDtoOPERAND() {
 
@@ -610,8 +638,8 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals(movedWallInFrontBlock.getBlockId(), blockRepository.moveBlock(movedWallInFrontBlock.getBlockId(),movedWallInFrontBlock.getBlockId(),
-				connectedNotBlockB.getBlockId(), ConnectionType.OPERAND));
+		assertEquals(movedWallInFrontBlock.getBlockId(), blockRepository.moveBlock(movedWallInFrontBlock.getBlockId(),
+				movedWallInFrontBlock.getBlockId(), connectedNotBlockB.getBlockId(), ConnectionType.OPERAND));
 		verify(connectedNotBlockA).setOperand(null);
 		verify(connectedNotBlockB).setOperand(movedWallInFrontBlock);
 	}
@@ -626,7 +654,7 @@ public class MoveBlockBRTest {
 		ArrayList<String> parentInfo = new ArrayList<String>();
 		parentInfo.add("OPERAND");
 		parentInfo.add(connectedNotBlockA.getBlockId());
-		
+
 		when(mockHeadBlocks.contains(connectedNotBlockB)).thenReturn(true);
 
 		// Opstellen van program
@@ -654,14 +682,105 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals(movedNotBlock.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),movedNotBlock.getBlockId(),
-				connectedNotBlockB.getBlockId(), ConnectionType.LEFT));
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedNotBlock.getBlockId())) {
+						return parentInfo;
+					}
+
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedParentIfExists(any());
+
+		assertEquals(movedNotBlock.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),
+				movedNotBlock.getBlockId(), connectedNotBlockB.getBlockId(), ConnectionType.LEFT));
 		verify(connectedNotBlockA).setOperand(null);
 		verify(movedNotBlock).setOperand(connectedNotBlockB);
 		verify(mockHeadBlocks).add(movedNotBlock);
 		verify(mockHeadBlocks).remove(connectedNotBlockB);
 	}
-	
+
+	@Test
+	public void testBRMoveBlockPositiveBODYtoLEFT() {
+
+		ArrayList<String> parentInfoDefault = new ArrayList<String>();
+		parentInfoDefault.add("NOCONNECTION");
+		parentInfoDefault.add("");
+
+		ArrayList<String> parentInfo = new ArrayList<String>();
+		parentInfo.add("BODY");
+		parentInfo.add(connectedIfBlockA.getBlockId());
+
+		// Opstellen van program
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedIfBlock.getBlockId())) {
+						return parentInfo;
+					}
+
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
+		
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedIfBlock.getBlockId())) {
+						return parentInfo;
+					}
+
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedParentIfExists(any());
+		
+		when(mockHeadBlocks.contains(movedWallInFrontBlock)).thenReturn(true);
+		
+		assertEquals(movedIfBlock.getBlockId(), blockRepository.moveBlock(movedIfBlock.getBlockId(),
+				movedIfBlock.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		verify(connectedIfBlockA).setFirstBlockOfBody(null);
+		verify(movedIfBlock).setConditionBlock(movedWallInFrontBlock);
+	}
 	@Test
 	public void testBRMoveBlockPositiveBODYtoDOWN() {
 
@@ -698,13 +817,12 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals(movedActionBlock.getBlockId(), blockRepository.moveBlock(movedActionBlock.getBlockId(),movedActionBlock.getBlockId(),
-				connectedMoveForwardBlockA.getBlockId(), ConnectionType.DOWN));
+		assertEquals(movedActionBlock.getBlockId(), blockRepository.moveBlock(movedActionBlock.getBlockId(),
+				movedActionBlock.getBlockId(), connectedMoveForwardBlockA.getBlockId(), ConnectionType.DOWN));
 		verify(connectedIfBlockA).setFirstBlockOfBody(null);
 		verify(connectedMoveForwardBlockA).setNextBlock(movedActionBlock);
 	}
-	
-	
+
 	@Test
 	public void testBRMoveBlockPositiveBODYtoUP() {
 
@@ -715,7 +833,7 @@ public class MoveBlockBRTest {
 		ArrayList<String> parentInfo = new ArrayList<String>();
 		parentInfo.add("BODY");
 		parentInfo.add(connectedIfBlockA.getBlockId());
-		
+
 		when(mockHeadBlocks.contains(connectedMoveForwardBlockA)).thenReturn(true);
 
 		// Opstellen van program
@@ -743,14 +861,14 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals(movedActionBlock.getBlockId(), blockRepository.moveBlock(movedActionBlock.getBlockId(),movedActionBlock.getBlockId(),
-				connectedMoveForwardBlockA.getBlockId(), ConnectionType.UP));
+		assertEquals(movedActionBlock.getBlockId(), blockRepository.moveBlock(movedActionBlock.getBlockId(),
+				movedActionBlock.getBlockId(), connectedMoveForwardBlockA.getBlockId(), ConnectionType.UP));
 		verify(connectedIfBlockA).setFirstBlockOfBody(null);
 		verify(movedActionBlock).setNextBlock(connectedMoveForwardBlockA);
 		verify(mockHeadBlocks).add(movedActionBlock);
 		verify(mockHeadBlocks).remove(connectedMoveForwardBlockA);
 	}
-	
+
 	@Test
 	public void testBRMoveBlockPositiveBODYtoBODY() {
 
@@ -787,60 +905,52 @@ public class MoveBlockBRTest {
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
 
-		assertEquals(movedActionBlock.getBlockId(), blockRepository.moveBlock(movedActionBlock.getBlockId(),movedActionBlock.getBlockId(),
-				connectedIfBlockB.getBlockId(), ConnectionType.BODY));
+		assertEquals(movedActionBlock.getBlockId(), blockRepository.moveBlock(movedActionBlock.getBlockId(),
+				movedActionBlock.getBlockId(), connectedIfBlockB.getBlockId(), ConnectionType.BODY));
 		verify(connectedIfBlockA).setFirstBlockOfBody(null);
 		verify(connectedIfBlockB).setFirstBlockOfBody(movedActionBlock);
 	}
 
-
-	
-	
-	//MORE COMPLEX TESTS
-	//CHAIN OF BLOCKS
+	// MORE COMPLEX TESTS
+	// CHAIN OF BLOCKS
 	@Test
 	public void testBRMoveBlockPositiveChainOfBlocksNOCONNECTIONtoUP() {
-		
-		//initialisation of situation
+
+		// initialisation of situation
 		when(mockHeadBlocks.contains(connectedMoveForwardBlockA)).thenReturn(true);
-		when(movedActionBlock.getNextBlock()).thenReturn(connectedMoveForwardBlockB);
-		
-		assertEquals(connectedMoveForwardBlockB.getBlockId(), blockRepository.moveBlock(movedActionBlock.getBlockId(),connectedMoveForwardBlockB.getBlockId(), connectedMoveForwardBlockA.getBlockId(), ConnectionType.UP));
+
+		assertEquals(connectedMoveForwardBlockB.getBlockId(), blockRepository.moveBlock(movedActionBlock.getBlockId(),
+				connectedMoveForwardBlockB.getBlockId(), connectedMoveForwardBlockA.getBlockId(), ConnectionType.UP));
 		verify(connectedMoveForwardBlockB).setNextBlock(connectedMoveForwardBlockA);
 		verify(mockHeadBlocks).remove(connectedMoveForwardBlockA);
 
 	}
-	
-	
+
 	@Test
 	public void testBRMoveBlockPositiveChainOfBlocksNOCONNECTIONtoLEFTConditionBlock() {
-		
-		//initialisation of situation
+
+		// initialisation of situation
 		when(mockHeadBlocks.contains(movedWallInFrontBlock)).thenReturn(true);
-		when(movedIfBlock.getConditionBlock()).thenReturn(movedNotBlock);
-		when(movedNotBlock.getOperand()).thenReturn(connectedNotBlockA);
-		
-		assertEquals(connectedNotBlockA.getBlockId(), blockRepository.moveBlock(movedIfBlock.getBlockId(),connectedNotBlockA.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
-		verify(connectedNotBlockA).setOperand(movedWallInFrontBlock);
+
+		assertEquals(connectedNotBlockA.getBlockId(), blockRepository.moveBlock(movedIfBlock.getBlockId(),
+				connectedNotBlockA.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		verify(connectedNotBlockA, times(2)).setOperand(movedWallInFrontBlock);
 		verify(mockHeadBlocks).remove(movedWallInFrontBlock);
-		
 
 	}
-	
+
 	@Test
 	public void testBRMoveBlockPositiveChainOfBlocksNOCONNECTIONtoLEFTOperandBlock() {
-		
-		//initialisation of situation
+
+		// initialisation of situation
 		when(mockHeadBlocks.contains(movedWallInFrontBlock)).thenReturn(true);
-		when(movedNotBlock.getOperand()).thenReturn(connectedNotBlockA);
-		when(connectedNotBlockA.getOperand()).thenReturn(connectedNotBlockB);
-		
-		assertEquals(connectedNotBlockB.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),connectedNotBlockB.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
-		verify(connectedNotBlockB).setOperand(movedWallInFrontBlock);
+
+		assertEquals(connectedNotBlockB.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),
+				connectedNotBlockB.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		verify(connectedNotBlockB, times(2)).setOperand(movedWallInFrontBlock);
 		verify(mockHeadBlocks).remove(movedWallInFrontBlock);
 	}
-	
-	
+
 	@Test
 	public void testBRMoveBlockPositiveChainOfBlocksDOWNtoUP() {
 		ArrayList<String> parentInfoDefault = new ArrayList<String>();
@@ -875,17 +985,40 @@ public class MoveBlockBRTest {
 			}
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
-		
-		when(mockHeadBlocks.contains(connectedMoveForwardBlockC)).thenReturn(true);
-		when(movedActionBlock.getNextBlock()).thenReturn(connectedMoveForwardBlockB);
 
-		assertEquals(connectedMoveForwardBlockB.getBlockId(), blockRepository.moveBlock(movedActionBlock.getBlockId(),connectedMoveForwardBlockB.getBlockId(),connectedMoveForwardBlockC.getBlockId(), ConnectionType.UP));
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedActionBlock.getBlockId())) {
+						return parentInfo;
+					}
+
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedParentIfExists(any());
+
+		when(mockHeadBlocks.contains(connectedMoveForwardBlockC)).thenReturn(true);
+
+		assertEquals(connectedMoveForwardBlockB.getBlockId(), blockRepository.moveBlock(movedActionBlock.getBlockId(),
+				connectedMoveForwardBlockB.getBlockId(), connectedMoveForwardBlockC.getBlockId(), ConnectionType.UP));
 		verify(connectedMoveForwardBlockA).setNextBlock(null);
 		verify(connectedMoveForwardBlockB).setNextBlock(connectedMoveForwardBlockC);
 
 	}
-	
-	
+
 	@Test
 	public void testBRMoveBlockPositiveChainOfBlocksCONDITIONtoLEFT() {
 		ArrayList<String> parentInfoDefault = new ArrayList<String>();
@@ -920,8 +1053,7 @@ public class MoveBlockBRTest {
 			}
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
-		
-		
+
 		doAnswer(new Answer<ArrayList<String>>() {
 			@Override
 			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
@@ -945,18 +1077,16 @@ public class MoveBlockBRTest {
 			}
 
 		}).when(blockRepository).getConnectedParentIfExists(any());
-		
-		when(movedNotBlock.getOperand()).thenReturn(connectedNotBlockA);
-		when(connectedNotBlockA.getOperand()).thenReturn(connectedNotBlockB);
+
 		when(mockHeadBlocks.contains(movedWallInFrontBlock)).thenReturn(true);
 
-		assertEquals(connectedNotBlockB.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),connectedNotBlockB.getBlockId(),movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		assertEquals(connectedNotBlockB.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),
+				connectedNotBlockB.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
 		verify(movedIfBlock).setConditionBlock(null);
-		verify(connectedNotBlockB).setOperand(movedWallInFrontBlock);
+		verify(connectedNotBlockB, times(2)).setOperand(movedWallInFrontBlock);
 
 	}
-	
-	
+
 	@Test
 	public void testBRMoveBlockPositiveChainOfBlocksOPERANDtoLEFT() {
 		ArrayList<String> parentInfoDefault = new ArrayList<String>();
@@ -966,7 +1096,7 @@ public class MoveBlockBRTest {
 		ArrayList<String> parentInfo13 = new ArrayList<String>();
 		parentInfo13.add("OPERAND");
 		parentInfo13.add(movedNotBlock.getBlockId());
-		
+
 		ArrayList<String> parentInfo14 = new ArrayList<String>();
 		parentInfo14.add("OPERAND");
 		parentInfo14.add(connectedNotBlockA.getBlockId());
@@ -998,18 +1128,140 @@ public class MoveBlockBRTest {
 			}
 
 		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
-		when(connectedNotBlockA.getOperand()).thenReturn(movedNotBlock);
+
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(connectedNotBlockB.getBlockId())) {
+						return parentInfo13;
+					}
+					if (id.equals(movedNotBlock.getBlockId())) {
+						return parentInfo14;
+					}
+
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedParentIfExists(any());
+
 		when(movedNotBlock.getOperand()).thenReturn(connectedNotBlockB);
 		when(mockHeadBlocks.contains(movedWallInFrontBlock)).thenReturn(true);
-		//effective moved block determined by getBlockIdToPerformMoveOn
-		assertEquals(connectedNotBlockB.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),connectedNotBlockB.getBlockId(),movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		// effective moved block determined by getBlockIdToPerformMoveOn
+		assertEquals(connectedNotBlockB.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),
+				connectedNotBlockB.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
 		verify(connectedNotBlockA).setOperand(null);
 		verify(connectedNotBlockB).setOperand(movedWallInFrontBlock);
 
 	}
 	
 	
-	//NEGATIVE TESTS
+	//COMPLEX SITUATIONS
+	@Test
+	public void testBRMoveBlockPositiveComplexIfIfConnectToCondition() {
+
+		when(mockHeadBlocks.contains(movedWallInFrontBlock)).thenReturn(true);
+		// effective moved block determined by getBlockIdToPerformMoveOn
+		assertEquals(connectedIfBlockA.getBlockId(), blockRepository.moveBlock(movedIfBlock.getBlockId(),
+				connectedIfBlockA.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		verify(connectedIfBlockA,times(2)).setConditionBlock(movedWallInFrontBlock);
+
+	}
+	
+	
+	@Test
+	public void testBRMoveBlockPositiveComplexIfInIfConnectToCondition() {
+
+		ArrayList<String> parentInfoDefault = new ArrayList<String>();
+		parentInfoDefault.add("NOCONNECTION");
+		parentInfoDefault.add("");
+
+		ArrayList<String> parentInfo13 = new ArrayList<String>();
+		parentInfo13.add("OPERAND");
+		parentInfo13.add(movedNotBlock.getBlockId());
+
+		ArrayList<String> parentInfo14 = new ArrayList<String>();
+		parentInfo14.add("OPERAND");
+		parentInfo14.add(connectedNotBlockA.getBlockId());
+
+		// Opstellen van program
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(connectedNotBlockB.getBlockId())) {
+						return parentInfo13;
+					}
+					if (id.equals(movedNotBlock.getBlockId())) {
+						return parentInfo14;
+					}
+
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedBlockBeforeMove(any(), any(), any());
+
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(connectedNotBlockB.getBlockId())) {
+						return parentInfo13;
+					}
+					if (id.equals(movedNotBlock.getBlockId())) {
+						return parentInfo14;
+					}
+
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedParentIfExists(any());
+		
+		when(mockHeadBlocks.contains(movedWallInFrontBlock)).thenReturn(true);
+		
+		
+		// effective moved block determined by getBlockIdToPerformMoveOn
+		assertEquals(connectedNotBlockA.getBlockId(), blockRepository.moveBlock(connectedIfBlockA.getBlockId(),
+				connectedNotBlockA.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		verify(connectedNotBlockA,times(2)).setOperand(movedWallInFrontBlock);
+
+	}
+	
+
+	// NEGATIVE TESTS
 	@Test
 	public void testBRMoveBlockNegativeConnectionNotPossible() {
 		String excMessage = "This socket is not free";
@@ -1038,20 +1290,20 @@ public class MoveBlockBRTest {
 		}
 
 	}
-	
+
 	@Ignore
 	public void assertExceptionBRMoveBlock(String movedBlockId, String connectedAfterMoveBlockId,
 			ConnectionType connectionAfterMove, String excMessage) {
 		boolean pass = false;
 
 		try {
-			blockRepository.moveBlock(movedBlockId,movedBlockId, connectedAfterMoveBlockId, connectionAfterMove);
+			blockRepository.moveBlock(movedBlockId, movedBlockId, connectedAfterMoveBlockId, connectionAfterMove);
 		} catch (NoSuchConnectedBlockException e) {
 			pass = e.getMessage().equals(excMessage);
 		} catch (InvalidBlockConnectionException e) {
 			pass = e.getMessage().equals(excMessage);
 		}
-		assertTrue("moveBlock failed in the domainController for combination=" + movedBlockId
+		assertTrue("moveBlock failed in the blockRepository for combination=" + movedBlockId+" "
 				+ connectedAfterMoveBlockId + " " + connectionAfterMove, pass);
 	}
 
@@ -1085,16 +1337,330 @@ public class MoveBlockBRTest {
 			assertExceptionBRMoveBlock("1", "", connectionTypeB, excMessage);
 		}
 	}
+	@Test
+	public void testBRSocketNotFreeNOCONNECTION() {
+		String excMessage = "This socket is not free";
+		
+		
+		when(connectedIfBlockA.getNextBlock()).thenReturn(connectedIfBlockB);
+		when(connectedIfBlockA.getFirstBlockOfBody()).thenReturn(movedIfBlock);
+		when(connectedIfBlockA.getConditionBlock()).thenReturn(connectedNotBlockA);
+		when(connectedNotBlockA.getOperand()).thenReturn(connectedNotBlockB);
+
+		assertExceptionBRMoveBlock(movedActionBlock.getBlockId(), connectedIfBlockA.getBlockId(), ConnectionType.DOWN, excMessage);
+		assertExceptionBRMoveBlock(movedActionBlock.getBlockId(), connectedIfBlockA.getBlockId(), ConnectionType.BODY, excMessage);
+		assertExceptionBRMoveBlock(movedNotBlock.getBlockId(), connectedIfBlockA.getBlockId(), ConnectionType.CONDITION, excMessage);
+		assertExceptionBRMoveBlock(movedNotBlock.getBlockId(), connectedNotBlockA.getBlockId(), ConnectionType.OPERAND, excMessage);
+		
+		//connectedIfBlock not in headBlocks, should trigger an Exception
+		assertExceptionBRMoveBlock(movedActionBlock.getBlockId(), connectedIfBlockB.getBlockId(), ConnectionType.UP, excMessage);
+		//NotBlock not in headBlocks, should trigger an Exception
+		assertExceptionBRMoveBlock(movedNotBlock.getBlockId(), connectedNotBlockA.getBlockId(), ConnectionType.LEFT, excMessage);
+	}
+	
+	@Test
+	public void testBRSocketNotFreeDOWN() {
+		String excMessage = "This socket is not free";
+		
+		ArrayList<String> parentInfoDefault = new ArrayList<String>();
+		parentInfoDefault.add("NOCONNECTION");
+		parentInfoDefault.add("");
+		
+		ArrayList<String> parentInfo2 = new ArrayList<String>();
+		parentInfo2.add("DOWN");
+		parentInfo2.add(connectedMoveForwardBlockA.getBlockId());
+		
+
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedActionBlock.getBlockId())) {
+						return parentInfo2;
+					}
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedParentIfExists(any());
+		
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedActionBlock.getBlockId())) {
+						return parentInfo2;
+					}
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedBlockBeforeMove(any(),any(),any());
+		
+		
+		
+		when(connectedIfBlockA.getNextBlock()).thenReturn(connectedIfBlockB);
+		when(connectedIfBlockA.getFirstBlockOfBody()).thenReturn(movedIfBlock);
+
+		assertExceptionBRMoveBlock(movedActionBlock.getBlockId(), connectedIfBlockA.getBlockId(), ConnectionType.DOWN, excMessage);
+		assertExceptionBRMoveBlock(movedActionBlock.getBlockId(), connectedIfBlockA.getBlockId(), ConnectionType.BODY, excMessage);
+		//connectedIfBlock not in headBlocks, should trigger an Exception
+		assertExceptionBRMoveBlock(movedActionBlock.getBlockId(), connectedIfBlockB.getBlockId(), ConnectionType.UP, excMessage);
+		
+		
+	}
+	
+	@Test
+	public void testBRSocketNotFreeCONDITION() {
+		String excMessage = "This socket is not free";
+		
+		ArrayList<String> parentInfoDefault = new ArrayList<String>();
+		parentInfoDefault.add("NOCONNECTION");
+		parentInfoDefault.add("");
+		
+		ArrayList<String> parentInfo7 = new ArrayList<String>();
+		parentInfo7.add("CONDITION");
+		parentInfo7.add(connectedWhileBlockA.getBlockId());
+		
+
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedNotBlock.getBlockId())) {
+						return parentInfo7;
+					}
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedParentIfExists(any());
+		
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedNotBlock.getBlockId())) {
+						return parentInfo7;
+					}
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedBlockBeforeMove(any(),any(),any());
+		
+		
+		when(mockHeadBlocks.contains(connectedNotBlockB)).thenReturn(false);
+		
+		when(connectedIfBlockA.getConditionBlock()).thenReturn(connectedNotBlockA);
+		when(connectedNotBlockA.getOperand()).thenReturn(connectedNotBlockB);
+
+		assertExceptionBRMoveBlock(movedNotBlock.getBlockId(), connectedIfBlockA.getBlockId(), ConnectionType.CONDITION, excMessage);
+		assertExceptionBRMoveBlock(movedNotBlock.getBlockId(), connectedNotBlockA.getBlockId(), ConnectionType.OPERAND, excMessage);
+		//connectedIfBlock not in headBlocks, should trigger an Exception
+		assertExceptionBRMoveBlock(movedNotBlock.getBlockId(), connectedNotBlockB.getBlockId(), ConnectionType.LEFT, excMessage);
+		
+		
+	}
+	
+	
+	@Test
+	public void testBRSocketNotFreeOPERAND() {
+		String excMessage = "This socket is not free";
+		
+		ArrayList<String> parentInfoDefault = new ArrayList<String>();
+		parentInfoDefault.add("NOCONNECTION");
+		parentInfoDefault.add("");
+		
+		ArrayList<String> parentInfo14 = new ArrayList<String>();
+		parentInfo14.add("OPERAND");
+		parentInfo14.add(connectedNotBlockA.getBlockId());
+		
+
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedNotBlock.getBlockId())) {
+						return parentInfo14;
+					}
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedParentIfExists(any());
+		
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedNotBlock.getBlockId())) {
+						return parentInfo14;
+					}
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedBlockBeforeMove(any(),any(),any());
+		
+		NotBlock notBlockC = spy(new NotBlock("17"));
+		when(mockHeadBlocks.contains(connectedNotBlockB)).thenReturn(false);
+		when(blockRepository.getBlockByID("17")).thenReturn(notBlockC);
+		
+		when(connectedIfBlockA.getConditionBlock()).thenReturn(notBlockC);
+		when(notBlockC.getOperand()).thenReturn(connectedNotBlockB);
+
+		assertExceptionBRMoveBlock(movedNotBlock.getBlockId(), connectedIfBlockA.getBlockId(), ConnectionType.CONDITION, excMessage);
+		assertExceptionBRMoveBlock(movedNotBlock.getBlockId(), notBlockC.getBlockId(), ConnectionType.OPERAND, excMessage);
+		//connectedIfBlock not in headBlocks, should trigger an Exception
+		assertExceptionBRMoveBlock(movedNotBlock.getBlockId(), connectedNotBlockB.getBlockId(), ConnectionType.LEFT, excMessage);
+		
+		
+	}
 	
 	
 	
-	//TEST USED METHODS FOR MOVE
+	@Test
+	public void testBRSocketNotFreeBODY() {
+		String excMessage = "This socket is not free";
+		
+		ArrayList<String> parentInfoDefault = new ArrayList<String>();
+		parentInfoDefault.add("NOCONNECTION");
+		parentInfoDefault.add("");
+		
+		ArrayList<String> parentInfo4 = new ArrayList<String>();
+		parentInfo4.add("BODY");
+		parentInfo4.add(connectedIfBlockA.getBlockId());
+		
+
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedIfBlock.getBlockId())) {
+						return parentInfo4;
+					}
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedParentIfExists(any());
+		
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedIfBlock.getBlockId())) {
+						return parentInfo4;
+					}
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedBlockBeforeMove(any(),any(),any());
+		
+
+		when(connectedIfBlockB.getFirstBlockOfBody()).thenReturn(movedActionBlock);
+		when(connectedIfBlockB.getNextBlock()).thenReturn(movedWhileBlock);
+		when(mockHeadBlocks.contains(movedWallInFrontBlock)).thenReturn(false);
+
+		assertExceptionBRMoveBlock(movedIfBlock.getBlockId(),connectedIfBlockB.getBlockId(), ConnectionType.BODY, excMessage);
+		assertExceptionBRMoveBlock(movedIfBlock.getBlockId(),connectedIfBlockB.getBlockId(), ConnectionType.DOWN, excMessage);
+		assertExceptionBRMoveBlock(movedIfBlock.getBlockId(),connectedIfBlockB.getBlockId(), ConnectionType.UP, excMessage);
+		//connectedIfBlock not in headBlocks, should trigger an Exception
+		assertExceptionBRMoveBlock(movedIfBlock.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT, excMessage);
+		
+		
+	}
+	
+
+	// TEST USED METHODS FOR MOVE
 
 	@Test
-	public void testBRConnectionBlockBFMPositive() {
+	public void testBRParentIfExtistsPositive() {
 
-		movedMoveForwardBlock = Mockito.spy(new MoveForwardBlock("17"));
-		ActionBlock movedMoveForwardBlockB = Mockito.spy(new MoveForwardBlock("18"));
+		movedMoveForwardBlock = Mockito.spy(new ActionBlock("17", action));
+		ActionBlock movedMoveForwardBlockB = Mockito.spy(new ActionBlock("18", action));
 		HashMap<String, Block> allBlocks = new HashMap<String, Block>();
 		allBlocks.put(movedActionBlock.getBlockId(), movedActionBlock);
 		allBlocks.put(connectedMoveForwardBlockA.getBlockId(), connectedMoveForwardBlockA);
@@ -1156,7 +1722,6 @@ public class MoveBlockBRTest {
 
 	}
 
-	
 	@Test
 	public void testBRBlockIdToPerformOnPositive() {
 
@@ -1229,7 +1794,71 @@ public class MoveBlockBRTest {
 				movedWhileBlock.getBlockId(), movedWhileBlock.getBlockId(), ConnectionType.LEFT));
 
 	}
-
 	
+	@Test
+	public void testBRConnectedBRM() {
+		ArrayList<String> parentInfoDefault = new ArrayList<String>();
+		parentInfoDefault.add("NOCONNECTION");
+		parentInfoDefault.add("");
+		
+		
+		ArrayList<String> parentInfo4 = new ArrayList<String>();
+		parentInfo4.add("BODY");
+		parentInfo4.add(connectedIfBlockA.getBlockId());
+		
+		ArrayList<String> parentInfo41 = new ArrayList<String>();
+		parentInfo41.add("DOWN");
+		parentInfo41.add(connectedIfBlockA.getBlockId());
+		
+		
+		ArrayList<String> parentInfo42 = new ArrayList<String>();
+		parentInfo42.add("CONDITION");
+		parentInfo42.add(connectedIfBlockA.getBlockId());
+		
+		
+		ArrayList<String> parentInfo = new ArrayList<String>();
+		parentInfo.add("OPERAND");
+		parentInfo.add(connectedNotBlockA.getBlockId());
+		
+		
+		doAnswer(new Answer<ArrayList<String>>() {
+			@Override
+			public ArrayList<String> answer(InvocationOnMock invocation) throws Throwable {
+				if (invocation.getArguments().length != 0) {
+					Object obj = invocation.getArgument(0);
+					String id = "";
+					if (obj != null) {
+						id = (String) obj;
+					}
+
+					if (id.equals(movedIfBlock.getBlockId())) {
+						return parentInfo4;
+					}
+					if (id.equals(connectedIfBlockB.getBlockId())) {
+						return parentInfo4;
+					}
+					if (id.equals(movedNotBlock.getBlockId())) {
+						return parentInfo42;
+					}
+					if (id.equals(connectedNotBlockB.getBlockId())) {
+						return parentInfo;
+					}
+					
+					if (id.equals("")) {
+						return parentInfoDefault;
+					}
+				}
+
+				return parentInfoDefault;
+			}
+
+		}).when(blockRepository).getConnectedParentIfExists(any());
+		
+		assertEquals(parentInfoDefault, blockRepository.getConnectedBlockBeforeMove(movedIfBlock.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		assertEquals(parentInfoDefault, blockRepository.getConnectedBlockBeforeMove(connectedIfBlockB.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		assertEquals(parentInfoDefault, blockRepository.getConnectedBlockBeforeMove(movedNotBlock.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		assertEquals(parentInfoDefault, blockRepository.getConnectedBlockBeforeMove(connectedNotBlockB.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
+		
+	}
 
 }
