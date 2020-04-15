@@ -1,5 +1,7 @@
 package events;
 
+import java.util.Set;
+
 import types.ConnectionType;
 
 /**
@@ -15,6 +17,7 @@ public class BlockChangeEvent implements EventObject {
 	private ConnectionType changedConnection;
 	private String beforeMoveBlockId;
 	private ConnectionType beforeMoveConnection;
+
 	
 	
 
@@ -80,4 +83,5 @@ public class BlockChangeEvent implements EventObject {
 	public ConnectionType getBeforeMoveConnection() {
 		return beforeMoveConnection;
 	}
+
 }

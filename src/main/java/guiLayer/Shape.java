@@ -309,4 +309,19 @@ public abstract class Shape implements Constants, Cloneable {
 		}
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Shape [id=");
+		builder.append(id);
+		builder.append(", x_coord=");
+		builder.append(x_coord);
+		builder.append(", y_coord=");
+		builder.append(y_coord);
+		builder.append(", hasToBeRemovedOnUndo=");
+		builder.append(hasToBeRemovedOnUndo);
+		builder.append("]");
+		return builder.toString();
+	}
+
 }

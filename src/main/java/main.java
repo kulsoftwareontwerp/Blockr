@@ -8,8 +8,8 @@ import guiLayer.CanvasWindow;
 public class main {
 
 	public static void main(String[] args) {	
-//		GameWorld gameWorld = GameWorldType.createInstance("com.kuleuven.swop.group17.RobotGameWorld.applicationLayer.RobotGameWorld");
-		GameWorld gameWorld = GameWorldType.createInstance("com.kuleuven.swop.group17.CoolGameWorld.applicationLayer.CoolGameWorld");
+		GameWorld gameWorld = GameWorldType.createInstance("com.kuleuven.swop.group17.RobotGameWorld.applicationLayer.RobotGameWorld");
+//		GameWorld gameWorld = GameWorldType.createInstance("com.kuleuven.swop.group17.CoolGameWorld.applicationLayer.CoolGameWorld");
 		
 		
 		DomainController dc = new DomainController(gameWorld);

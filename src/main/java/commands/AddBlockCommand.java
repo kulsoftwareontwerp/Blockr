@@ -4,12 +4,12 @@
 package commands;
 
 import applicationLayer.BlockController;
+import types.BlockSnapshot;
 import types.BlockType;
 import types.ConnectionType;
 
 /**
-/**
- * AddBlockCommand
+ * /** AddBlockCommand
  * 
  * @version 0.1
  * @author group17
@@ -20,11 +20,8 @@ public class AddBlockCommand implements BlockCommand {
 	private BlockType blockType;
 	private String connectedBlockId;
 	private ConnectionType connection;
-	private String addedBlockId;
-	
+	private BlockSnapshot snapshot;
 
-	
-	
 	/**
 	 * @param blockController
 	 * @param type
@@ -42,12 +39,19 @@ public class AddBlockCommand implements BlockCommand {
 
 	@Override
 	public void execute() {
-		addedBlockId = blockController.addBlock(blockType, connectedBlockId, connection);
+		if (snapshot == null) {
+			snapshot = blockController.addBlock(blockType, connectedBlockId, connection);
+		} else {
+			 blockController.restoreBlockSnapshot(snapshot, false);
+		}
 	}
 
 	@Override
 	public void undo() {
-		blockController.removeBlock(addedBlockId, false);
+		blockController.removeBlock(snapshot.getBlock().getBlockId(), false);
+//		BlockSnapshot newSnapshot = new BlockSnapshot(snapshot.getBlock(), snapshot.getConnectedBlockAfterSnapshot(), snapshot.getConnectedBlockBeforeSnapshot());
+//		
+//		this.snapshot=newSnapshot;
 	}
 
 }

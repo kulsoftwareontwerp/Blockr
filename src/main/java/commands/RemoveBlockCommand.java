@@ -17,7 +17,7 @@ import types.BlockSnapshot;
 public class RemoveBlockCommand implements BlockCommand {
 	private BlockController blockController;
 	private String blockIdToBeRemoved;
-	private BlockSnapshot deletedBlockSnapshot;
+	private BlockSnapshot snapshot;
 
 	/**
 	 * @param blockIdToBeRemoved
@@ -26,19 +26,21 @@ public class RemoveBlockCommand implements BlockCommand {
 		super();
 		this.blockController = blockController;
 		this.blockIdToBeRemoved = blockIdToBeRemoved;
-		deletedBlockSnapshot = null;
+		snapshot = null;
 	}
 
 	@Override
 	public void execute() {
-		deletedBlockSnapshot = blockController.removeBlock(blockIdToBeRemoved, true);
+		snapshot = blockController.removeBlock(blockIdToBeRemoved, true);
 	}
 
 	@Override
 	public void undo() {
-		if (deletedBlockSnapshot != null) {
-			blockController.restoreBlockSnapshot(deletedBlockSnapshot);
-			deletedBlockSnapshot = null;
+		if (snapshot != null) {
+			BlockSnapshot newSnapshot = new BlockSnapshot(snapshot.getBlock(), snapshot.getConnectedBlockAfterSnapshot(), snapshot.getConnectedBlockBeforeSnapshot());
+			this.snapshot=newSnapshot;
+			blockController.restoreBlockSnapshot(snapshot, true);
+			snapshot = null;
 		}
 	}
 

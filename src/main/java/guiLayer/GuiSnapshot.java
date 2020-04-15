@@ -86,4 +86,28 @@ public class GuiSnapshot {
 		}
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("GuiSnapshot [connectedShapeAfterSnapshot=");
+		builder.append(connectedShapeAfterSnapshot);
+		builder.append(", isDomainInvolved=");
+		builder.append(isDomainInvolved);
+		builder.append("\n");
+		builder.append(", shapesInMovement=");
+		builder.append("\n");
+		for(Shape shape : shapesInMovement) {
+			builder.append(shape);
+			builder.append("\n");
+		}
+		builder.append(", currentShape=");
+		builder.append(currentShape);
+		builder.append(", highlightedShape=");
+		builder.append(highlightedShape);
+		builder.append("]");
+		return builder.toString();
+	}
+	
+	
+
 }

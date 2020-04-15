@@ -16,53 +16,48 @@ public class BlockSnapshot {
 	private Block block;
 	private Block connectedBlockAfterSnapshot;
 	private Block connectedBlockBeforeSnapshot;
-	
-	
+
 	/**
+	 * 
 	 * @param block
-	 * @param parentId
-	 * @param parentConnection
+	 * @param connectedBlockBeforeSnapshot
+	 * @param connectedBlockAfterSnapshot
 	 */
-	public BlockSnapshot(Block block, Block connectedBlockAfterSnapshot, Block connectedBlockBeforeSnapshot)  {
+	public BlockSnapshot(Block block, Block connectedBlockBeforeSnapshot, Block connectedBlockAfterSnapshot) {
 		super();
-		if(block==null) {
+		if (block == null) {
 			throw new NullPointerException("No valid snapshot");
 		}
 		try {
-		this.block = (Block) block.clone();
-		if(connectedBlockAfterSnapshot!=null) {
-			this.connectedBlockAfterSnapshot=(Block) connectedBlockAfterSnapshot.clone();
-		}
-		if(connectedBlockBeforeSnapshot!=null) {
-			this.connectedBlockBeforeSnapshot=(Block) connectedBlockBeforeSnapshot.clone();
-		}
-		}
-		catch(Exception e) {
+			this.block = (Block) block.clone();
+			if (connectedBlockAfterSnapshot != null) {
+				this.connectedBlockAfterSnapshot = (Block) connectedBlockAfterSnapshot.clone();
+			}
+			if (connectedBlockBeforeSnapshot != null) {
+				this.connectedBlockBeforeSnapshot = (Block) connectedBlockBeforeSnapshot.clone();
+			}
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		
-	}
 
+	}
 
 	public Block getBlock() {
 		return block;
 	}
 
-
-	public Block getConnectedBlockAfterSnapshot() {		
-		return connectedBlockAfterSnapshot;
+	public Block getConnectedBlockAfterSnapshot() {
+		if(connectedBlockAfterSnapshot!=null) {
+			return connectedBlockAfterSnapshot.clone();			
+		}
+		return null;
 	}
-
 
 	public Block getConnectedBlockBeforeSnapshot() {
-		return connectedBlockBeforeSnapshot;
+		if(connectedBlockBeforeSnapshot!=null) {
+			return connectedBlockBeforeSnapshot.clone();			
+		}
+		return null;
 	}
-
-
-
-	
-	
-
-
 
 }
