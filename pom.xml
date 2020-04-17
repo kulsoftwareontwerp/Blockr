@@ -27,7 +27,11 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.8.1</version>
 				</plugin>
-
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>3.2.0</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 
@@ -76,6 +80,15 @@
 						</goals>
 					</execution>
 				</executions>
+				<!--Only while in development, comment out for releases -->
+				<configuration>
+					<additionalparam>-Xdoclint:all -Xdoclint:-missing</additionalparam>
+					<additionalOptions>-Xdoclint:all -Xdoclint:-missing</additionalOptions>
+					<additionalJOptions>
+						<additionalJOption>-Xdoclint:all</additionalJOption>
+						<additionalJOption>-Xdoclint:-missing</additionalJOption>
+					</additionalJOptions>
+				</configuration>
 			</plugin>
 
 		</plugins>
