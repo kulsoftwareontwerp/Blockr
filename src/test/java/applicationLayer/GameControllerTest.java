@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
@@ -22,6 +23,7 @@ import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.gamestates.InExecutionState;
+import domainLayer.gamestates.ValidProgramState;
 
 /**
  * GameControllerTest
@@ -31,13 +33,13 @@ import domainLayer.gamestates.InExecutionState;
  */
 public class GameControllerTest {
 
-	@Mock(name="blockRepository")
+	@Mock(name="programBlockRepository")
 	private BlockRepository blockRepository;
 	@Spy @InjectMocks
 	private GameController gc;
 	
-	
 	private InExecutionState inExecutionState;
+	private ValidProgramState validProgramState;
 	private ActionBlock actionBlock;
 	
 	/**
@@ -47,6 +49,7 @@ public class GameControllerTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		inExecutionState = spy(new InExecutionState(gc, actionBlock));
+		validProgramState = spy(new ValidProgramState(gc));
 	}
 
 	/**
@@ -76,8 +79,17 @@ public class GameControllerTest {
 	 * Test method for {@link applicationLayer.GameController#resetGameExecution()}.
 	 */
 	@Test
-	public void testResetGameExecution() {
-		fail("Not yet implemented");
+	public void testResetGameExecution_Positive() {
+		when(gc.getCurrentState()).thenReturn(inExecutionState);
+		Mockito.doNothing().when(inExecutionState).reset();
+		Mockito.doNothing().when(gc).fireUpdateHighlightingEvent(null);
+		Mockito.doNothing().when(gc).fireRobotChangeEvent();
+		
+		gc.resetGameExecution();
+		
+		verify(inExecutionState,atLeastOnce()).reset();
+		verify(gc,atLeastOnce()).fireUpdateHighlightingEvent(null);
+		verify(gc,atLeastOnce()).fireRobotChangeEvent();
 	}
 
 	/**
@@ -117,15 +129,22 @@ public class GameControllerTest {
 	 */
 	@Test
 	public void testExecuteBlock() {
-		fail("Not yet implemented");
+		when(gc.getCurrentState()).thenReturn(validProgramState);
+		Mockito.doNothing().when(validProgramState).execute();
+		
+		gc.executeBlock();
+		verify(validProgramState,atLeastOnce()).execute();
 	}
 
 	/**
 	 * Test method for {@link applicationLayer.GameController#findFirstBlockToBeExecuted()}.
 	 */
 	@Test
-	public void testFindFirstBlockToBeExecuted() {
-		fail("Not yet implemented");
+	public void testFindFirstBlockToBeExecuted_ActionBlock_Positive() {
+		when(blockRepository.findFirstBlockToBeExecuted()).thenReturn(actionBlock);
+		
+		assertEquals(gc.findFirstBlockToBeExecuted(), actionBlock);
+		verify(blockRepository,atLeastOnce()).findFirstBlockToBeExecuted();
 	}
 
 	/**

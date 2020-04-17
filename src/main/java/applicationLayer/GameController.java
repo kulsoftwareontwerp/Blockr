@@ -160,8 +160,7 @@ public class GameController implements DomainListener, GUISubject {
 	 * 
 	 * @param highlightedBlockId
 	 */
-public void fireUpdateHighlightingEvent(String highlightedBlockId) {
-	
+	public void fireUpdateHighlightingEvent(String highlightedBlockId) {
 		UpdateHighlightingEvent updateHighlightingEvent = new UpdateHighlightingEvent(highlightedBlockId);
 		for (GUIListener listener : guiListeners) {
 			listener.onUpdateHighlightingEvent(updateHighlightingEvent);
