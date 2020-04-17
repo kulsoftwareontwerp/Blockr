@@ -1,5 +1,6 @@
 package events;
 
+import types.BlockType;
 import types.ConnectionType;
 
 /**
@@ -12,6 +13,7 @@ public class BlockAddedEvent implements EventObject {
 
 	private String addedBlockID;
 	private String linkedBlockID;
+	private BlockType type;
 	private ConnectionType linkedType;
 
 	/**
@@ -20,11 +22,13 @@ public class BlockAddedEvent implements EventObject {
 	 * @param addedBlockID the ID of the block that has been added.
 	 * @param linkedBlock TODO
 	 * @param linkedType TODO
+	 * @param type TODO
 	 */
-	public BlockAddedEvent(String addedBlockID, String linkedBlock, ConnectionType linkedType) {
+	public BlockAddedEvent(String addedBlockID, String linkedBlock, ConnectionType linkedType, BlockType type) {
 		this.addedBlockID = addedBlockID;
 		this.linkedBlockID=linkedBlock;
 		this.linkedType=linkedType;
+		this.type=type;
 	}
 
 	/**
@@ -50,5 +54,13 @@ public class BlockAddedEvent implements EventObject {
 	 */
 	public String getLinkedBlockID() {
 		return linkedBlockID;
+	}
+
+	/**
+	 * Retrieve the BlockType of the added block.
+	 * @return the BlockType of the added block.
+	 */
+	public BlockType getAddedBlockType() {
+		return type;
 	}
 }

@@ -750,7 +750,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			setCurrentShape(toAddFromShapesInMovement);
 		}
 
-		Shape toAdd = shapeFactory.createShape(event.getAddedBlockID(), getCurrentShape().getType(),
+		Shape toAdd = shapeFactory.createShape(event.getAddedBlockID(), event.getAddedBlockType(),
 				getCurrentShape().getX_coord(), getCurrentShape().getY_coord());
 
 		// Update the ID of the snapshot in the executionStack
