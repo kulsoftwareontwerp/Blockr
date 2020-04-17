@@ -1,15 +1,13 @@
 package guiLayer;
 
 import java.awt.Graphics;
-import java.awt.event.MouseEvent;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 
-import domainLayer.gamestates.GameState;
 import guiLayer.shapes.Shape;
 import guiLayer.shapes.ShapeFactory;
 import guiLayer.types.Constants;
-import guiLayer.types.Pair;
+import guiLayer.types.Coordinate;
 import types.BlockCategory;
 import types.BlockType;
 
@@ -130,7 +128,7 @@ public class PaletteArea implements Constants {
 
 		try {
 			return this.getShapesInPalette().stream()
-					.filter(e -> e.getCoordinatesShape().contains(new Pair<Integer, Integer>(x, y))).findFirst().get();
+					.filter(e -> e.getCoordinatesShape().contains(new Coordinate(x, y))).findFirst().get();
 		} catch (NoSuchElementException e) {
 			System.out.println("NULL");
 			return null;

@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import guiLayer.types.Coordinate;
 import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
@@ -40,11 +41,11 @@ public class ActionShape extends Shape {
 	}
 
 	@Override
-	protected HashSet<Pair<Integer, Integer>> createCoordinatePairs() {
-		HashSet<Pair<Integer, Integer>> set = new HashSet<Pair<Integer, Integer>>();
+	protected HashSet<Coordinate> fillShapeWithCoordinates() {
+		HashSet<Coordinate> set = new HashSet<Coordinate>();
 			for (int i = getX_coord(); i < getX_coord() + getWidth(); i++) {
 				for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
-					set.add(new Pair<Integer, Integer>(i, j));
+					set.add(new Coordinate(i, j));
 				}
 			}
 		return set;
@@ -52,9 +53,9 @@ public class ActionShape extends Shape {
 
 	@Override
 	public void defineConnectionTypes() {
-		HashMap<ConnectionType, Pair<Integer, Integer>> connectionMap = new HashMap<ConnectionType, Pair<Integer,Integer>>();
-		connectionMap.put(ConnectionType.UP, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()));
-		connectionMap.put(ConnectionType.DOWN, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()+30));
+		HashMap<ConnectionType, Coordinate> connectionMap = new HashMap<ConnectionType, Coordinate>();
+		connectionMap.put(ConnectionType.UP, new Coordinate(this.getX_coord()+20, this.getY_coord()));
+		connectionMap.put(ConnectionType.DOWN, new Coordinate(this.getX_coord()+20, this.getY_coord()+30));
 		this.setCoordinateConnectionMap(connectionMap);
 	}
 

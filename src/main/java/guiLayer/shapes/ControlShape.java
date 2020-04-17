@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import guiLayer.types.Constants;
+import guiLayer.types.Coordinate;
 import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
@@ -57,12 +58,12 @@ public class ControlShape extends Shape implements Constants {
 	}
 
 	@Override
-	protected HashSet<Pair<Integer, Integer>> createCoordinatePairs() {
-		HashSet<Pair<Integer, Integer>> set = new HashSet<Pair<Integer, Integer>>();
+	protected HashSet<Coordinate> fillShapeWithCoordinates() {
+		HashSet<Coordinate> set = new HashSet<Coordinate>();
 			for (int i = getX_coord(); i < getX_coord() + getWidth(); i++) {
 				for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
 					if (!(j > 25+getY_coord() && j <= getY_coord()+getHeight()-25 && i > getX_coord() && i <= getX_coord()+getWidth())) // to give room for the clip, otherwise it won't wrok
-						set.add(new Pair<Integer, Integer>(i, j));
+						set.add(new Coordinate(i, j));
 				}
 			}
 		return set;
@@ -70,11 +71,11 @@ public class ControlShape extends Shape implements Constants {
 
 	@Override
 	public void defineConnectionTypes() {
-		HashMap<ConnectionType, Pair<Integer, Integer>> connectionMap = new HashMap<ConnectionType, Pair<Integer,Integer>>();
-			connectionMap.put(ConnectionType.UP, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()));
-			connectionMap.put(ConnectionType.CONDITION, new Pair<Integer, Integer>(this.getX_coord()+(getWidth()-10), this.getY_coord()+15));
-			connectionMap.put(ConnectionType.BODY, new Pair<Integer, Integer>(this.getX_coord()+30, this.getY_coord()+30));
-			connectionMap.put(ConnectionType.DOWN, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()+(getHeight())));
+		HashMap<ConnectionType, Coordinate> connectionMap = new HashMap<ConnectionType,Coordinate>();
+			connectionMap.put(ConnectionType.UP, new Coordinate(this.getX_coord()+20, this.getY_coord()));
+			connectionMap.put(ConnectionType.CONDITION, new Coordinate(this.getX_coord()+(getWidth()-10), this.getY_coord()+15));
+			connectionMap.put(ConnectionType.BODY, new Coordinate(this.getX_coord()+30, this.getY_coord()+30));
+			connectionMap.put(ConnectionType.DOWN, new Coordinate(this.getX_coord()+20, this.getY_coord()+(getHeight())));
 		this.setCoordinateConnectionMap(connectionMap);
 		
 	}

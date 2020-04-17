@@ -30,6 +30,7 @@ import guiLayer.shapes.Shape;
 import guiLayer.shapes.ShapeFactory;
 import guiLayer.shapes.UnaryOperatorShape;
 import guiLayer.types.Constants;
+import guiLayer.types.Coordinate;
 import guiLayer.types.DebugModus;
 import guiLayer.types.GuiSnapshot;
 import guiLayer.types.MaskedKeyBag;
@@ -214,8 +215,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		// only for debugging purposes
 		if (debugModus == DebugModus.FILLINGS) {
-			for (Pair<Integer, Integer> filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
-				g.drawOval(filledInCoordinate.getLeft(), filledInCoordinate.getRight(), 1, 1);
+			for (Coordinate filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
+				g.drawOval(filledInCoordinate.getX(), filledInCoordinate.getY(), 1, 1);
 			}
 		}
 
@@ -242,8 +243,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		if (DebugModus.CONNECTIONS.compareTo(CanvasWindow.debugModus) <= 0) {
 			for (Shape shape : getShapesInMovement()) {
 				for (var p : shape.getCoordinateConnectionMap().values()) {
-					int tempx = p.getLeft() - 3;
-					int tempy = p.getRight();
+					int tempx = p.getX() - 3;
+					int tempy = p.getY();
 					blockrGraphics.drawOval(tempx, tempy, 6, 6);
 				}
 			}
@@ -554,10 +555,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	}
 
 	private Shape determineHighlightShape() {
-		HashMap<ConnectionType, HashMap<Shape, Pair<Integer, Integer>>> shapesInProgramAreaConnectionMap = new HashMap<ConnectionType, HashMap<Shape, Pair<Integer, Integer>>>();
+		HashMap<ConnectionType, HashMap<Shape, Coordinate>> shapesInProgramAreaConnectionMap = new HashMap<ConnectionType, HashMap<Shape, Coordinate>>();
 
 		for (ConnectionType connection : ConnectionType.values()) {
-			shapesInProgramAreaConnectionMap.put(connection, new HashMap<Shape, Pair<Integer, Integer>>());
+			shapesInProgramAreaConnectionMap.put(connection, new HashMap<Shape, Coordinate>());
 			for (Shape shape : programArea.getShapesInProgramArea().stream().filter(e -> e.checkIfOpen(connection))
 					.collect(Collectors.toSet())) {
 				shapesInProgramAreaConnectionMap.get(connection).put(shape,
@@ -656,9 +657,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		return shape;
 	}
 
-	private boolean isConnectionPresent(HashMap<Shape, Pair<Integer, Integer>> shapesInProgramAreaUpMap,
-			HashSet<Pair<Integer, Integer>> connectionTriggerSetDOWN) {
-		for (Map.Entry<Shape, Pair<Integer, Integer>> s : shapesInProgramAreaUpMap.entrySet()) {
+	private boolean isConnectionPresent(HashMap<Shape, Coordinate> shapesInProgramAreaUpMap,
+			HashSet<Coordinate> connectionTriggerSetDOWN) {
+		for (Map.Entry<Shape, Coordinate> s : shapesInProgramAreaUpMap.entrySet()) {
 			if (connectionTriggerSetDOWN.contains(s.getValue())) {
 				return true;
 			}

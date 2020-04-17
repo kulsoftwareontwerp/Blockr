@@ -2,7 +2,7 @@ package guiLayer.types;
 
 /**
  * The concept of a coordinate, a point matching a certain location in the
- * robotGameworld. A coordinate is immutable.
+ * programArea. A coordinate is immutable.
  * 
  * @version 0.1
  * @author group17
@@ -17,7 +17,7 @@ public class Coordinate {
 	 * @param x The x value for the coordinate.
 	 * @param y The y value for the coordinate.
 	 */
-	Coordinate(int x, int y) {
+	public Coordinate(int x, int y) {
 		super();
 		this.x=x;
 		this.y=y;
@@ -85,5 +85,18 @@ public class Coordinate {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Coordinate [x=");
+		builder.append(x);
+		builder.append(", y=");
+		builder.append(y);
+		builder.append("]");
+		return builder.toString();
+	}
+	
+	
 
 }
