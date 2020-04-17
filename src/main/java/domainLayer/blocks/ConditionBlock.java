@@ -3,6 +3,8 @@ package domainLayer.blocks;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
+import types.BlockType;
+
 /**
  * The abstract class for the concept of a condition block.
  * 
@@ -10,33 +12,36 @@ import com.kuleuven.swop.group17.GameWorldApi.Predicate;
  * @author group17
  */
 public class ConditionBlock extends AssessableBlock {
-	
-	private Predicate predicate;
+		private BlockType type;
 	
 	/**
 	 * Create a Condition Block
 	 * @param 	blockId
 	 * 			The ID for the block.
 	 */
-	public ConditionBlock(String blockId, Predicate predicate) {
+	public ConditionBlock(String blockId, BlockType type) {
 		super(blockId);
-		setPredicate(predicate);
+
 	}
 
 
 	public Predicate getPredicate() {
-		return predicate;
+		return type.predicate();
 	}
 
 
-	private void setPredicate(Predicate predicate) {
-		this.predicate = predicate;
-	}
+
 
 
 	@Override
 	public boolean assess(GameWorld gameWorld) {
 		return gameWorld.evaluate(getPredicate());
+	}
+
+
+	@Override
+	public BlockType getBlockType() {
+		return type;
 	}
 
 

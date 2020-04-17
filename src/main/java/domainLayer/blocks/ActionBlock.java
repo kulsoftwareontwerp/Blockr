@@ -2,6 +2,8 @@ package domainLayer.blocks;
 
 import com.kuleuven.swop.group17.GameWorldApi.Action;
 
+import types.BlockType;
+
 /**
  * The abstract class for the concept of an action block.
  * 
@@ -9,26 +11,26 @@ import com.kuleuven.swop.group17.GameWorldApi.Action;
  * @author group17
  */
 public class ActionBlock extends ExecutableBlock {
-	
-	private Action action;
+
+	private BlockType type;
 
 	/**
 	 * Create an Action Block
-	 * @param 	blockId
-	 * 			The ID for the block.
+	 * 
+	 * @param blockId The ID for the block.
 	 */
-	public ActionBlock(String blockId, Action action) {
+	public ActionBlock(String blockId, BlockType type) {
 		super(blockId);
-		setAction(action);
-		
+		this.type = type;
 	}
 
 	public Action getAction() {
-		return action;
+		return type.action();
 	}
 
-	private void setAction(Action action) {
-		this.action = action;
+	@Override
+	public BlockType getBlockType() {
+		return type;
 	}
 
 }

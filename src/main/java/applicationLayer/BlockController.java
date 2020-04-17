@@ -527,4 +527,20 @@ public class BlockController implements GUISubject, DomainSubject {
 		return programBlockRepository.getBlockByID(id) != null;
 	}
 
+	/**
+	 * Retrieve the blockType of the block associated with the given id;
+	 * 
+	 * @param id The id of the block to retrieve the Blocktype from.
+	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
+	 *                                       is not present in the domain.
+	 * @return the blockType associated with the given block
+	 */
+	public BlockType getBlockType(String id) {
+		Block b = programBlockRepository.getBlockByID(id);
+		if(b==null) {
+			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
+		}
+		return b.getBlockType();
+	}
+
 }

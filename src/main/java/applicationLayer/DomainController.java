@@ -353,10 +353,20 @@ public class DomainController {
 		if (id == null || id == "") {
 			throw new IllegalArgumentException("No blockID given.");
 		}
-		blockController.getFirstBlockBelow(id);
-	
-		return "";
+		return blockController.getFirstBlockBelow(id);
 	}
+	/**
+	 * Retrieve the blockType of the block associated with the given id;
+	 * @param id The id of the block to retrieve the Blocktype from.
+	 * @return the blockType associated with the given block
+	 */
+	public BlockType getBlockType(String id) {
+		if (id == null || id == "") {
+			throw new IllegalArgumentException("No blockID given.");
+		}
+		return blockController.getBlockType(id);
+	}
+	
 
 	/**
 	 * Check if the given id is present in the domain.

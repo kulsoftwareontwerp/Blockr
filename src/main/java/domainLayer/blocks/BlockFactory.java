@@ -36,9 +36,9 @@ public class BlockFactory {
 		case OPERATOR:
 			return new NotBlock(blockId);
 		case ACTION:
-			return new ActionBlock(blockId, type.action());
+			return new ActionBlock(blockId, type);
 		case CONDITION:
-			return new ConditionBlock(blockId, type.predicate());
+			return new ConditionBlock(blockId, type);
 		default:
 			return null;
 		}

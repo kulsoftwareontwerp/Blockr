@@ -1,6 +1,7 @@
 package domainLayer.blocks;
 
 import exceptions.InvalidBlockConnectionException;
+import types.BlockType;
 
 /**
  * The abstract class for the concept of a program block.
@@ -283,5 +284,11 @@ public abstract class Block implements Cloneable {
 	public String getBlockId() {
 		return this.blockId;
 	}
+	
+	/**
+	 * Retrieve the Type of the corresponding block.
+	 * @return the Type of the corresponding block.
+	 */
+	public abstract BlockType getBlockType();
 
 }

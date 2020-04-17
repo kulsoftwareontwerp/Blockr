@@ -2,6 +2,8 @@ package domainLayer.blocks;
 
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 
+import types.BlockType;
+
 /**
  * The abstract class for the concept of a Not block.
  * 
@@ -24,8 +26,9 @@ public class NotBlock extends UnaryOperatorBlock {
 		return !getOperand().assess(gameWorld);
 	}
 
-
-
-
+	@Override
+	public BlockType getBlockType() {
+		return BlockType.NOT;
+	}
 
 }

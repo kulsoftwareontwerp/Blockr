@@ -1,4 +1,7 @@
 package domainLayer.blocks;
+
+import types.BlockType;
+
 /**
  * The concrete class for the concept of an if block.
  * 
@@ -15,5 +18,8 @@ public class IfBlock extends ControlBlock {
 	public IfBlock(String blockId) {
 		super(blockId);
 	}
-
+	@Override
+	public BlockType getBlockType() {
+		return BlockType.IF;
+	}
 }
