@@ -1,5 +1,6 @@
 package events;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import types.ConnectionType;
@@ -20,6 +21,9 @@ public class BlockChangeEvent implements EventObject {
 
 	private String beforeMoveBlockId;
 	private ConnectionType beforeMoveConnection;
+	
+	
+	private Set<String> changedBlocks;
 
 	/**
 	 * Create the BlockChangeEvent
@@ -29,9 +33,10 @@ public class BlockChangeEvent implements EventObject {
 	 * @param changedConnection    The new connection
 	 * @param beforeMoveBlockId    TODO
 	 * @param beforeMoveConnection TODO
+	 * @param changedBlocks TODO
 	 */
 	public BlockChangeEvent(String changedBlockId, String topOfMovedChainId, String changedLinkedBlockId,
-			ConnectionType changedConnection, String beforeMoveBlockId, ConnectionType beforeMoveConnection) {
+			ConnectionType changedConnection, String beforeMoveBlockId, ConnectionType beforeMoveConnection, Set<String> changedBlocks) {
 		super();
 		this.changedBlockId = changedBlockId;
 		this.changedLinkedBlockId = changedLinkedBlockId;
@@ -39,7 +44,20 @@ public class BlockChangeEvent implements EventObject {
 		this.beforeMoveBlockId = beforeMoveBlockId;
 		this.beforeMoveConnection = beforeMoveConnection;
 		this.topOfMovedChainId = topOfMovedChainId;
+		
+		if(changedBlocks==null) {
+			changedBlocks=new HashSet<String>();
+		}
+		this.changedBlocks=changedBlocks;
 	}
+	
+	/**
+	 * @return the changedBlocks
+	 */
+	public Set<String> getChangedBlocks() {
+		return changedBlocks;
+	}
+
 
 	/**
 	 * Retrieve the changed block ID

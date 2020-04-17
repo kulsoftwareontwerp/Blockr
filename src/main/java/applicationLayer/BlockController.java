@@ -58,8 +58,9 @@ public class BlockController implements GUISubject, DomainSubject {
 		this.programBlockRepository = programBlockRepository;
 	}
 
-	private void fireBlockAdded(String newBlockId, String linkedBlockId, ConnectionType linkedConnection, BlockType type) {
-		BlockAddedEvent event = new BlockAddedEvent(newBlockId, linkedBlockId, linkedConnection, type);
+	private void fireBlockAdded(String newBlockId, String linkedBlockId, ConnectionType linkedConnection,
+			BlockType type, Set<String> changedBlocks) {
+		BlockAddedEvent event = new BlockAddedEvent(newBlockId, linkedBlockId, linkedConnection, type, changedBlocks);
 
 		for (GUIListener listener : guiListeners) {
 			listener.onBlockAdded(event);
@@ -68,7 +69,7 @@ public class BlockController implements GUISubject, DomainSubject {
 
 	private void fireBlockRemoved(Set<String> idsToBeRemoved, String connectedBlock, ConnectionType connectionType) {
 		for (String id : idsToBeRemoved) {
-			BlockRemovedEvent event = new BlockRemovedEvent(id, connectedBlock, connectionType);
+			BlockRemovedEvent event = new BlockRemovedEvent(id, connectedBlock, connectionType, idsToBeRemoved);
 			connectedBlock = "";
 			connectionType = ConnectionType.NOCONNECTION;
 			for (GUIListener listener : guiListeners) {
@@ -79,9 +80,10 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	private void fireBlockChanged(String changedBlockId, String topOfMovedChainId, String beforeMoveBlockId,
-			ConnectionType beforeMoveConnectionType, String changedLinkedBlockId, ConnectionType connectionType) {
+			ConnectionType beforeMoveConnectionType, String changedLinkedBlockId, ConnectionType connectionType,
+			Set<String> changedBlocks) {
 		BlockChangeEvent event = new BlockChangeEvent(changedBlockId, topOfMovedChainId, changedLinkedBlockId,
-				connectionType, beforeMoveBlockId, beforeMoveConnectionType);
+				connectionType, beforeMoveBlockId, beforeMoveConnectionType, changedBlocks);
 
 		for (GUIListener listener : guiListeners) {
 			listener.onBlockChangeEvent(event);
@@ -175,8 +177,9 @@ public class BlockController implements GUISubject, DomainSubject {
 		if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 			caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 		}
-
-		fireBlockAdded(newBlockId, caID, after, blockType);
+		HashSet<String> addedBlocks = new HashSet<String>();
+		addedBlocks.add(newBlockId);
+		fireBlockAdded(newBlockId, caID, after, blockType, addedBlocks);
 
 		return snapshot;
 	}
@@ -265,7 +268,7 @@ public class BlockController implements GUISubject, DomainSubject {
 				if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 					caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 				}
-				fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType());
+				fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType(), null);
 			}
 		} else {
 
@@ -280,8 +283,9 @@ public class BlockController implements GUISubject, DomainSubject {
 			if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 				caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 			}
+			
 			fireBlockChanged(snapshot.getBlock().getBlockId(), snapshot.getBlock().getBlockId(), cbID, before, caID,
-					after);
+					after, programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock()));
 		}
 	}
 
@@ -293,7 +297,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 			caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 		}
-		fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType());
+		fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType(), programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock()));
 
 		Block toAdd = snapshot.getBlock();
 
@@ -381,7 +385,8 @@ public class BlockController implements GUISubject, DomainSubject {
 		fireResetExecutionEvent();
 
 		fireBlockChanged(movedBlockID, topOfMovedChainBlockId, previousConnection.get(1),
-				ConnectionType.valueOf(previousConnection.get(0)), connectedAfterMoveBlockId, connectionAfterMove);
+				ConnectionType.valueOf(previousConnection.get(0)), connectedAfterMoveBlockId, connectionAfterMove,
+				programBlockRepository.getAllBlockIDsUnderneath(movedBlock));
 
 		return snapshot;
 	}
@@ -537,7 +542,7 @@ public class BlockController implements GUISubject, DomainSubject {
 	 */
 	public BlockType getBlockType(String id) {
 		Block b = programBlockRepository.getBlockByID(id);
-		if(b==null) {
+		if (b == null) {
 			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
 		}
 		return b.getBlockType();

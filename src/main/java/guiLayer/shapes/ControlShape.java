@@ -3,6 +3,7 @@ package guiLayer.shapes;
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 import guiLayer.types.Constants;
 import guiLayer.types.Coordinate;
@@ -11,11 +12,9 @@ import types.BlockType;
 import types.ConnectionType;
 
 public class ControlShape extends Shape implements Constants {
-	private HashSet<Shape> internals;
 
-	public ControlShape(String id, BlockType type, int x, int y) {
-		super(id, type, x, y);
-		internals = new HashSet<Shape>(); //empty on init
+	public ControlShape(String id, BlockType type, Coordinate coordinate) {
+		super(id, type, coordinate);
 		switchCavityStatus(ConnectionType.UP, true);
 		switchCavityStatus(ConnectionType.DOWN, true);
 		switchCavityStatus(ConnectionType.CONDITION, true);
@@ -26,7 +25,6 @@ public class ControlShape extends Shape implements Constants {
 	public void draw(Graphics g) {
 		int startX = getX_coord();
 		int startY = getY_coord();
-		HashSet<Shape> internals = getInternals();
 		
 		setCoordinatesShape();
 		int total = getHeight();
@@ -85,49 +83,20 @@ public class ControlShape extends Shape implements Constants {
 		setHeight(90);
 		setWidth(90);
 		
-	}
+	}	
+	
 	
 	@Override
-	public HashSet<Shape> getInternals() {
-		return internals;
-	}
-
-	@Override
-	public void addInternal(Shape shape) {
-		this.getInternals().add(shape);
-	}
-	
-	@Override
-	public void removeInternal(Shape shape) {
-		this.getInternals().remove(shape);
-	}
-	
-	@Override
-	public void determineTotalDimensions() {
-		int totalHeight = determineTotalDimensions(this);
-		
-		setHeight(totalHeight);
+	public void determineTotalHeight(Set<Shape> mapSetOfIdsToShapes) {
+		int tempHeight = getStandardHeight();
+		for(Shape shape:mapSetOfIdsToShapes) {
+			tempHeight += shape.getStandardHeight();
+		}
+		setHeight(tempHeight);
 		defineConnectionTypes();
 		setCoordinatesShape();
 	}
-	
-	private Integer determineTotalDimensions(Shape shape) {
-		int total_height = shape.getStandardHeight();
-	
-		if(!shape.getInternals().isEmpty()){
-			int tempExtraHeight = 0;
-			for (Shape shapeInternal : shape.getInternals()) {
-				
-				if(shapeInternal instanceof ControlShape) {
-					shapeInternal.determineTotalDimensions();
-				}
-				tempExtraHeight += determineTotalDimensions(shapeInternal);
-			}
-			return total_height+tempExtraHeight;
-		}else {
-		return total_height;
-		}
-	}
+
 	
 	@Override
 	public Integer getStandardHeight() {
@@ -160,31 +129,4 @@ public class ControlShape extends Shape implements Constants {
 	}
 	
 	
-//	private Pair<Integer, Integer> determineTotalDimensions(Shape shape) {
-//		int total_y = shape.getHeight();
-//		int total_x = shape.getWidth();
-//		int extraWidth = 0;
-//		boolean flag = true;
-//		
-//		for (Shape shapeInternal : shape.getInternals()) {
-//			if(shape instanceof ControlShape) {
-//				if(flag) {
-//					flag = false;
-//					extraWidth = 10;
-//					}
-//					
-//			}
-//			Pair<Integer, Integer> temp = determineTotalDimensions(shapeInternal);
-//			extraWidth += temp.getLeft();
-//			total_y += temp.getRight();
-//		}
-//		
-//		
-//		return new Pair<Integer, Integer>(extraWidth, total_y);
-//	}
-	
-	
-	
-	
-
 }

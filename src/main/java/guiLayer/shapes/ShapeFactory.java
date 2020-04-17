@@ -5,6 +5,7 @@ import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.IfBlock;
 import domainLayer.blocks.NotBlock;
 import domainLayer.blocks.WhileBlock;
+import guiLayer.types.Coordinate;
 import types.BlockType;
 
 public class ShapeFactory {
@@ -13,19 +14,21 @@ public class ShapeFactory {
 		
 	}
 	
-	public Shape createShape(String id, BlockType type, int x, int y) {
+	public Shape createShape(String id, BlockType type, Coordinate coordinate) {
 		switch (type.cat()) {
 		case ACTION:
-			return new ActionShape(id, type, x, y);
+			return new ActionShape(id, type, coordinate);
 		case CONTROL :
-			return new ControlShape(id, type, x, y);
+			return new ControlShape(id, type, coordinate);
 		case OPERATOR: 
-			return new UnaryOperatorShape(id, type, x, y);
+			return new UnaryOperatorShape(id, type, coordinate);
 		case CONDITION: 
-			return new ConditionShape(id, type, x, y);
+			return new ConditionShape(id, type, coordinate);
 
 		default: return null;
 		}		
 	}
+
+
 
 }

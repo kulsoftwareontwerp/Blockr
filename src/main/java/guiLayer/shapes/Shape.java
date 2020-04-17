@@ -3,6 +3,7 @@ package guiLayer.shapes;
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 import guiLayer.CanvasWindow;
 import guiLayer.types.Constants;
@@ -46,13 +47,12 @@ public abstract class Shape implements Constants, Cloneable {
 	private int height = 0;
 	private int width = 0;
 
-	public Shape(String id, BlockType type, int x, int y) {
+	public Shape(String id, BlockType type, Coordinate coordinate) {
 		hasToBeRemovedOnUndo = false;
 
 		setId(id);
 		setType(type);
-		setX_coord(x);
-		setY_coord(y);
+		setCoordinate(coordinate);
 
 		setPreviousX_coord(INVALID_COORDINATE);
 		setPreviousY_coord(INVALID_COORDINATE);
@@ -72,25 +72,19 @@ public abstract class Shape implements Constants, Cloneable {
 	// shape = static shape on which it will be clipped
 	public abstract void clipOn(Shape shape, ConnectionType connection);
 
-	public void addInternal(Shape shape) {
-	}
 
-	public void removeInternal(Shape shape) {
-	}
 
 	public abstract void draw(Graphics g); // Each Type of Shape implements its own method
 
 	protected abstract HashSet<Coordinate> fillShapeWithCoordinates();
 
-	public void determineTotalDimensions() {
+
+	public void determineTotalHeight(Set<Shape> internals) {
+		
 	}
 
 	public Integer getStandardHeight() {
 		return STANDARD_HEIGHT_BLOCK;
-	}
-
-	public HashSet<Shape> getInternals() {
-		return new HashSet<Shape>();
 	}
 
 	public synchronized Boolean getHasToBeRemovedOnUndo() {
@@ -152,6 +146,11 @@ public abstract class Shape implements Constants, Cloneable {
 			}
 		}
 	}
+	
+	public void setCavityStatus(ConnectionType connection,Boolean status) {
+		connectionStatus.put(connection, status);
+	}
+	
 
 	/**
 	 * Persist or revert the temporary CavityStatus If no temporary CavityStatus is
@@ -416,6 +415,10 @@ public abstract class Shape implements Constants, Cloneable {
 		builder.append(hasToBeRemovedOnUndo);
 		builder.append("]");
 		return builder.toString();
+	}
+
+	public Coordinate getCoordinate() {
+		return coordinate;
 	}
 
 }

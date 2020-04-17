@@ -11,8 +11,8 @@ import types.ConnectionType;
 
 public class UnaryOperatorShape extends Shape {
 
-	public UnaryOperatorShape(String id, BlockType type, int x, int y) {
-		super(id, type, x, y);
+	public UnaryOperatorShape(String id, BlockType type, Coordinate coordinate) {
+		super(id, type, coordinate);
 		switchCavityStatus(ConnectionType.LEFT, true);
 		switchCavityStatus(ConnectionType.OPERAND, true);	}
 
