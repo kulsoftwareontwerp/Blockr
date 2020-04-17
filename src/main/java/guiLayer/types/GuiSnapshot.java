@@ -1,7 +1,7 @@
 /**
  * 
  */
-package guiLayer.commands;
+package guiLayer.types;
 
 import java.util.HashSet;
 import java.util.Set;
