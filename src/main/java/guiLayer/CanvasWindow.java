@@ -732,18 +732,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		programArea.addShapeToProgramArea(toAdd);
 
-		if (!(toAdd instanceof UnaryOperatorShape || toAdd instanceof ConditionShape)) {
-			String enclosingControlShapeId = domainController.getEnclosingControlBlock(toAdd.getId());
-			System.out.println("enclosingControlShapeId: " + enclosingControlShapeId);
-			Shape enclosingControlShape = null;
-			try {
-
-				enclosingControlShape = programArea.getShapeById(enclosingControlShapeId);
-			} catch (Exception e) {
-				enclosingControlShape = null;
-			}
-		}
-
 		programArea.clearAlreadyFilledInCoordinates();
 
 
