@@ -7,12 +7,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import events.GUIListener;
+
 import exceptions.InvalidBlockConnectionException;
 import exceptions.NoSuchConnectedBlockException;
+import types.BlockSnapshot;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -34,6 +35,12 @@ public class BlockRepository {
 	private BlockRepository() {
 		headBlocks = new HashSet<Block>();
 		allBlocks = new HashMap<String, Block>();
+		blockFactory = new BlockFactory();
+	}
+
+	BlockRepository(HashSet<Block> headBlocks, HashMap<String, Block> allBlocks) {
+		this.headBlocks = headBlocks;
+		this.allBlocks = allBlocks;
 		blockFactory = new BlockFactory();
 	}
 
@@ -173,25 +180,43 @@ public class BlockRepository {
 	/**
 	 * Remove a block by its ID
 	 * 
-	 * @param block The ID of the block to be removed.
+	 * @param isChain A flag announcing if a chain of blocks has to be removed or if
+	 *                only the given blockId has to be removed.
+	 * @param block   The ID of the block to be removed.
+	 * 
 	 * @throws NoSuchConnectedBlockException If the given BlockID doesn't result in
 	 *                                       a block in the domain.
 	 * @return A set containing the id's of all the blocks that were removed from
 	 *         the domain.
 	 */
-	public Set<String> removeBlock(String blockId) {
+	public Set<String> removeBlock(String blockId, Boolean isChain) {
 		Block b = getBlockByID(blockId);
 
 		// the given exception may be thrown here.
 		validateConnectedBlockIsInDomain(b);
-
-		Set<Block> blocksToBeRemoved = getAllBlocksConnectedToAndAfterACertainBlock(b);
 		Set<String> blockIdsToBeRemoved = new HashSet<String>();
+		Set<Block> blocksToBeRemoved = new HashSet<Block>();
+		if (isChain) {
+			blocksToBeRemoved = getAllBlocksConnectedToAndAfterACertainBlock(b);
+		} else {
+			blocksToBeRemoved.add(b);
+		}
 
 		if (headBlocks.contains(b)) {
 			// If the given block was in HeadBlocks, none of the blocks connected to that
 			// block are in headBlocks
 			removeBlockFromHeadBlocks(b);
+
+			if (!isChain && b.getNextBlock() != null) {
+				addBlockToHeadBlocks(b.getNextBlock());
+			}
+			if (!isChain && b.getConditionBlock() != null) {
+				addBlockToHeadBlocks(b.getConditionBlock());
+			}
+			if (!isChain && b.getOperand() != null) {
+				addBlockToHeadBlocks(b.getOperand());
+			}
+
 		} else {
 			// Search the parent of b and cut all connections
 			ArrayList<String> parentIdentifiers = getConnectedParentIfExists(b.getBlockId());
@@ -295,10 +320,11 @@ public class BlockRepository {
 	 * 
 	 * 
 	 */
-	public String moveBlock(String movedBlockId, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+	public String moveBlock(String topOfMovedChainBlockId, String movedBlockId, String connectedAfterMoveBlockId,
+			ConnectionType connectionAfterMove) {
 
 		Block movedBlock = getBlockByID(movedBlockId);
-
+		Block topMovedBlock = getBlockByID(topOfMovedChainBlockId);
 		// The id of the block that's changed
 		String movedBlockID = movedBlockId;
 
@@ -311,13 +337,16 @@ public class BlockRepository {
 		if (movedBlock == null)
 			throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
-//		beforeMove = getConnectedParentIfExists(movedBlockId);
-		beforeMove = getConnectedBlockBeforeMove(movedBlockId,connectedAfterMoveBlockId,connectionAfterMove);
+		ArrayList<String> beforeMoveTopBlock = getConnectedParentIfExists(topOfMovedChainBlockId);
+		beforeMove = getConnectedBlockBeforeMove(movedBlockId, connectedAfterMoveBlockId, connectionAfterMove);// TODO
 
 		connectionBeforeMove = ConnectionType.valueOf(beforeMove.get(0));
 		String bfmBlockId = beforeMove.get(1);
 		bfm = getBlockByID(bfmBlockId);
 
+		if (beforeMoveTopBlock.get(0) != "NOCONNECTION") {
+			disconnectParentTopOfChain(topOfMovedChainBlockId);
+		}
 		if (connectionBeforeMove == ConnectionType.NOCONNECTION) {
 			// indien no connection dan is er hier geen nood aan verandering
 			if (afm == null)
@@ -388,10 +417,10 @@ public class BlockRepository {
 						nextChainBlock.setOperand(afm);
 						movedBlockID = nextChainBlock.getBlockId();
 					} else {
-						//If movedBlock is a controlBlock it doesn't have an operand and vice versa,
+						// If movedBlock is a controlBlock it doesn't have an operand and vice versa,
 						// We don't have to worry about calling setCondition or setOperand.
 						movedBlock.setConditionBlock(afm);
-						movedBlock.setOperand(afm);							
+						movedBlock.setOperand(afm);
 					}
 				}
 
@@ -534,6 +563,11 @@ public class BlockRepository {
 
 						addBlockToHeadBlocks(movedBlock);
 						removeBlockFromHeadBlocks(afm);
+
+						// dit moet de gelinkte blok zijn met de TOP block en niet de blok waarbij de
+						// effectieve move op gedaan wordt.
+						// Er is hier dus nood aan 2 blokken
+						disconnectParentTopOfChain(topOfMovedChainBlockId);
 						if (movedBlock.getNextBlock() != null) {
 							Block nextBlockInChain = movedBlock;
 							while (nextBlockInChain.getOperand() != null) {
@@ -604,6 +638,39 @@ public class BlockRepository {
 	}
 
 	/**
+	 * Disconnects the topOfChainBlock with its old parent if it has one. Should be
+	 * notified to GUI TODO
+	 * 
+	 * @param topOfMovedChainBlockId
+	 */
+	private void disconnectParentTopOfChain(String topOfMovedChainBlockId) {
+		ArrayList<String> parentInfo = getConnectedParentIfExists(topOfMovedChainBlockId);
+
+		if (parentInfo.size() != 0) {
+			Block parent = getBlockByID(parentInfo.get(1));
+			switch (parentInfo.get(0)) {
+
+			case "NOCONNECTION":
+				break;
+			case "DOWN":
+				parent.setNextBlock(null);
+				break;
+			case "OPERAND":
+				parent.setOperand(null);
+				break;
+			case "CONDITION":
+				parent.setConditionBlock(null);
+				break;
+			case "BODY":
+				parent.setFirstBlockOfBody(null);
+				break;
+			}
+
+		}
+
+	}
+
+	/**
 	 * Returns the connected block before a move that isn't connected anymore after
 	 * the move.
 	 * 
@@ -620,13 +687,44 @@ public class BlockRepository {
 		ArrayList<String> connectedBlockInfo = getConnectedParentIfExists(movedBlockId);
 		ConnectionType cbfm = ConnectionType.valueOf(connectedBlockInfo.get(0));
 
-		if ((cbfm == ConnectionType.BODY || cbfm == ConnectionType.DOWN || cbfm == ConnectionType.CONDITION || cbfm == ConnectionType.OPERAND) && cafm == ConnectionType.LEFT) {
+		if ((cbfm == ConnectionType.BODY || cbfm == ConnectionType.DOWN || cbfm == ConnectionType.CONDITION
+				|| cbfm == ConnectionType.OPERAND) && cafm == ConnectionType.LEFT) {
 			connectedBlockInfo.set(0, ConnectionType.NOCONNECTION.toString());
 			connectedBlockInfo.set(1, "");
 		}
 
 		return connectedBlockInfo;
 	}
+	
+	
+	/**
+	 * Calculate the connection before the remove happened
+	 * @param movedBlockId
+	 * @return
+	 */
+	public ArrayList<String> getConnectedBlockBeforeRemove(String removedBlockId){
+		ArrayList<String> connectedBlockInfo = getConnectedParentIfExists(removedBlockId);
+		ConnectionType cbfm = ConnectionType.valueOf(connectedBlockInfo.get(0));
+		if(cbfm==ConnectionType.NOCONNECTION) {
+			Block block = getBlockByID(removedBlockId);
+			if(block.getNextBlock()!=null) {
+				connectedBlockInfo.set(1, block.getNextBlock().getBlockId());
+				connectedBlockInfo.set(0,ConnectionType.UP.toString());
+			}
+			if(block.getConditionBlock()!=null) {
+				connectedBlockInfo.set(1, block.getConditionBlock().getBlockId());
+				connectedBlockInfo.set(0,ConnectionType.LEFT.toString());
+			}
+			if(block.getOperand()!=null) {
+				connectedBlockInfo.set(1, block.getOperand().getBlockId());
+				connectedBlockInfo.set(0,ConnectionType.LEFT.toString());
+			}
+			
+		}
+		
+		return connectedBlockInfo;
+	}
+	
 
 	public ArrayList<String> getConnectedParentIfExists(String movedBlockId) {
 
@@ -746,12 +844,62 @@ public class BlockRepository {
 	 * @param block
 	 */
 	private void addBlockToHeadBlocks(Block block) {
+		if (allBlocks.containsKey(block.getBlockId())) {
+			deepReplace(block, this.headBlocks);
+		}
 		this.headBlocks.add(block);
 	}
 
 	private void addBlockToAllBlocks(Block block) {
+		if (allBlocks.containsKey(block.getBlockId())) {
+			deepReplace(block, this.allBlocks.values());
+		}
+
 		this.allBlocks.put(block.getBlockId(), block);
 	}
+
+	private void deepReplace(Block block, Collection<Block> collection) {
+		for (Block b : collection) {
+			Optional<Block> connectedBlock = getAllBlocksConnectedToAndAfterACertainBlock(b).stream().filter(s -> s.getBlockId().equals(block.getBlockId())).findAny();
+			if(connectedBlock.isPresent()) {
+				// index 1: ID
+				// index 0: connection
+				ArrayList<String> parentInfo = getConnectedParentIfExists(connectedBlock.get().getBlockId());
+				
+				Block parent = getBlockByID(parentInfo.get(1));
+				ConnectionType connection = ConnectionType.valueOf(parentInfo.get(0));
+				
+				switch(connection) {
+				case BODY:
+					parent.setFirstBlockOfBody(block);
+					break;
+				case CONDITION:
+					parent.setConditionBlock(block);
+					break;
+				case OPERAND:
+					parent.setOperand(block);
+					break;
+				case DOWN:
+					parent.setNextBlock(block);
+					break;
+				default:
+					break;
+				}
+				
+				
+				
+			}
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	private void removeBlockFromHeadBlocks(Block block) {
 		this.headBlocks.remove(block);
@@ -791,7 +939,7 @@ public class BlockRepository {
 	 *         kind of block in the body of the given block or under the given
 	 *         block. The ID of the block itself is also given.
 	 */
-	public Set<String> getAllBlockIDsUnderneath(Block block) {
+	public Set<String> getAllBlockIDsUnderneath(Block block) {		
 		Set<String> blockIDsUnderNeath = new HashSet<String>();
 		getAllBlocksConnectedToAndAfterACertainBlock(block).stream().map(s -> s.getBlockId())
 				.forEach(s -> blockIDsUnderNeath.add(s));
@@ -931,7 +1079,8 @@ public class BlockRepository {
 		return new HashSet<Block>(headBlocks);
 	}
 
-	public String getBlockIdToPerformMoveOn(String topOfMovedChainBlockId, String movedBlockId, ConnectionType connectionAfterMove) {
+	public String getBlockIdToPerformMoveOn(String topOfMovedChainBlockId, String movedBlockId,
+			ConnectionType connectionAfterMove) {
 		String movedID = topOfMovedChainBlockId;
 		if (connectionAfterMove == ConnectionType.LEFT) {
 			Block movedBlock = getBlockByID(movedBlockId);
@@ -940,17 +1089,89 @@ public class BlockRepository {
 			} else {
 				ArrayList<String> parentInfo = getConnectedParentIfExists(movedBlockId);
 				ConnectionType parentConnection = ConnectionType.valueOf(parentInfo.get(0));
-				while(parentConnection == ConnectionType.OPERAND) {
-					parentInfo=getConnectedParentIfExists(parentInfo.get(1));
+				while (parentConnection == ConnectionType.OPERAND) {
+					parentInfo = getConnectedParentIfExists(parentInfo.get(1));
 					parentConnection = ConnectionType.valueOf(parentInfo.get(0));
 				}
-				if(parentConnection == ConnectionType.CONDITION) {
+				if (parentConnection == ConnectionType.CONDITION) {
 					movedID = movedBlockId;
 				}
 			}
-	
+
 		}
 		return movedID;
+	}
+
+	public Boolean restoreBlockSnapshot(BlockSnapshot snapshot) {
+		Set<Block> connectedBlocks = getAllBlocksConnectedToAndAfterACertainBlock(snapshot.getBlock());
+
+		Boolean isRemoved = false;
+		for (Block b : connectedBlocks) {
+			if (getBlockByID(b.getBlockId()) == null) {
+				isRemoved = true;
+				break;
+			}
+		}
+
+		if (isRemoved) {
+			// removed blocks
+			if (snapshot.getConnectedBlockAfterSnapshot() != null) {
+				Block cb = snapshot.getConnectedBlockAfterSnapshot();
+				if(getAllBlockIDsBelowCertainBlock(snapshot.getBlock()).contains(cb.getBlockId())) {
+					removeBlockFromHeadBlocks(cb);
+					addBlockToHeadBlocks(snapshot.getBlock());
+				}
+				addBlockToAllBlocks(cb);
+				
+			} else {
+				addBlockToHeadBlocks(snapshot.getBlock());
+			}
+
+			for (Block b : connectedBlocks) {
+				addBlockToAllBlocks(b);
+			}
+		} else {
+			// blocks are still present in the domain (Move)
+			if (snapshot.getConnectedBlockBeforeSnapshot() != null) {
+				Block cb = snapshot.getConnectedBlockBeforeSnapshot();
+				addBlockToAllBlocks(cb);
+				addBlockToHeadBlocks(snapshot.getBlock());
+			}
+			if (snapshot.getConnectedBlockBeforeSnapshot() != null) {
+				Block ab = snapshot.getConnectedBlockBeforeSnapshot();
+				addBlockToAllBlocks(ab);
+				removeBlockFromHeadBlocks(snapshot.getBlock());
+			}
+		}
+
+		return isRemoved;
+	}
+
+	public ConnectionType getConnectionType(Block parent, Block child) {
+		if (parent == null) {
+			return ConnectionType.NOCONNECTION;
+		}
+
+		if (parent.getConditionBlock() != null && parent.getConditionBlock().equals(child)) {
+			return ConnectionType.CONDITION;
+		}
+		if (parent.getFirstBlockOfBody() != null && parent.getFirstBlockOfBody().equals(child)) {
+			return ConnectionType.BODY;
+		}
+		if (parent.getNextBlock() != null && parent.getNextBlock().equals(child)) {
+			return ConnectionType.DOWN;
+		}
+		if (parent.getOperand() != null && parent.getOperand().equals(child)) {
+			return ConnectionType.OPERAND;
+		}
+		if ((child.getOperand() != null && child.getOperand().equals(parent))
+				|| (child.getConditionBlock() != null && child.getConditionBlock().equals(parent))) {
+			return ConnectionType.LEFT;
+		}
+		if (child.getNextBlock() != null && child.getNextBlock().equals(parent)) {
+			return ConnectionType.UP;
+		}
+		return ConnectionType.NOCONNECTION;
 	}
 
 }

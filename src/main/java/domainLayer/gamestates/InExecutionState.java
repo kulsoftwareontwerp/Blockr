@@ -1,6 +1,8 @@
 package domainLayer.gamestates;
 
 import applicationLayer.GameController;
+import commands.ExecuteBlockCommand;
+import commands.GameWorldCommand;
 import domainLayer.blocks.ActionBlock;
 
 public class InExecutionState extends GameState {
@@ -17,26 +19,21 @@ public class InExecutionState extends GameState {
 		setNextActionBlockToBeExecuted(nextBlock);
 	}
 
+	@Override
 	public void reset() {
 		ResettingState resettingState = new ResettingState(gameController);
 		gameController.toState(resettingState);
 		resettingState.reset();
 	}
 
+	@Override
 	public void execute() {
 		ActionBlock currentActionBlockToBeExecuted = getNextActionBlockToBeExecuted();
 		
 		// If there is no next actionBlock to be executed, the program has finished and the user needs to reset
 		if (currentActionBlockToBeExecuted != null) {
-			gameController.performRobotAction(currentActionBlockToBeExecuted);
-			
-			ActionBlock newNextActionBlockToBeExecuted = gameController.findNextActionBlockToBeExecuted(currentActionBlockToBeExecuted, currentActionBlockToBeExecuted.getNextBlock());
-			setNextActionBlockToBeExecuted(newNextActionBlockToBeExecuted);
-			
-			if (newNextActionBlockToBeExecuted != null)
-				gameController.fireUpdateHighlightingEvent(getNextActionBlockToBeExecuted().getBlockId());
-			else
-				gameController.fireUpdateHighlightingEvent(null);
+			GameWorldCommand command = new ExecuteBlockCommand(gameController, currentActionBlockToBeExecuted);
+			gameController.handleCommand(command);
 		}
 	}
 
@@ -45,6 +42,7 @@ public class InExecutionState extends GameState {
 	 * The ResettingState will then evaluate in which state the program Area is after triggering of this method.
 	 * The results of this method are then either a ValidProgramState or an InValidProgramState.
 	 */
+	@Override
 	public void update() {
 			GameState ResettingStateFollowingUpdate = new ResettingState(gameController);
 			ResettingStateFollowingUpdate.update();
@@ -52,10 +50,12 @@ public class InExecutionState extends GameState {
 			
 	}
 
+	@Override
 	public ActionBlock getNextActionBlockToBeExecuted() {
 		return this.nextActionBlockToBeExecuted;
 	}
 	
+	@Override
 	public void setNextActionBlockToBeExecuted(ActionBlock nextActionBlockToBeExecuted) {
 		this.nextActionBlockToBeExecuted = nextActionBlockToBeExecuted;
 	}

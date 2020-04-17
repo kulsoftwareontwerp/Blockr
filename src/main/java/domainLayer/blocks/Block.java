@@ -8,9 +8,84 @@ import exceptions.InvalidBlockConnectionException;
  * @version 0.1
  * @author group17
  */
-public abstract class Block {
+public abstract class Block implements Cloneable {
 
 	private String blockId;
+
+	
+	
+	
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((blockId == null) ? 0 : blockId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Block other = (Block) obj;
+		if (blockId == null) {
+			if (other.blockId != null)
+				return false;
+		} else if (!blockId.equals(other.blockId))
+			return false;
+		return true;
+	}
+
+	@Override
+	public Block clone() {
+		Block cloned;
+		try {
+			cloned = (Block) super.clone();
+			try {
+				if (cloned.getConditionBlock() != null) {
+					cloned.setConditionBlock(cloned.getConditionBlock().clone());
+				}
+			} catch (InvalidBlockConnectionException ex) {
+				// In the unlikely case that a block has a connection but doesn't allow to set
+				// the connection, don't do anything with the exception and move on.
+			}
+			try {
+				if (cloned.getFirstBlockOfBody() != null) {
+					cloned.setFirstBlockOfBody(cloned.getFirstBlockOfBody().clone());
+				}
+			} catch (InvalidBlockConnectionException ex) {
+				// In the unlikely case that a block has a connection but doesn't allow to set
+				// the connection, don't do anything with the exception and move on.
+			}
+			try {
+				if (cloned.getNextBlock() != null) {
+					cloned.setNextBlock(cloned.getNextBlock().clone());
+				}
+			} catch (InvalidBlockConnectionException ex) {
+				// In the unlikely case that a block has a connection but doesn't allow to set
+				// the connection, don't do anything with the exception and move on.
+			}
+			try {
+				if (cloned.getOperand() != null) {
+					cloned.setOperand(cloned.getOperand().clone());
+				}
+			} catch (InvalidBlockConnectionException ex) {
+				// In the unlikely case that a block has a connection but doesn't allow to set
+				// the connection, don't do anything with the exception and move on.
+			}
+			
+
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+
+		return cloned;
+	}
 
 	/**
 	 * Create a block with the given ID as ID
@@ -95,7 +170,7 @@ public abstract class Block {
 	 *                                         block of which the required
 	 *                                         connection is not provided.
 	 */
-	public final void setConditionBlock(Block block) {		
+	public final void setConditionBlock(Block block) {
 		parseToValidOperation(block);
 
 	}
@@ -104,19 +179,15 @@ public abstract class Block {
 		if (!(block instanceof AssessableBlock)) {
 			throw new InvalidBlockConnectionException("This block is no AssessableBlock.");
 		} else {
-			if(this instanceof ControlBlock) {
+			if (this instanceof ControlBlock) {
 				this.setConditionBlock((AssessableBlock) block);
-			}
-			else if(this instanceof OperatorBlock) {				
+			} else if (this instanceof OperatorBlock) {
 				this.setOperand((AssessableBlock) block);
-			}
-			else {
+			} else {
 				throw new InvalidBlockConnectionException("The connected block doesn't have the requested connection.");
 			}
 		}
 	}
-	
-	
 
 	/**
 	 * Set the operand connection to the given block.

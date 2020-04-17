@@ -9,6 +9,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import types.ConnectionType;
+
 /**
  * BlockAddedEventTest
  *
@@ -32,7 +34,7 @@ public class BlockAddedEventTest {
 	}
 
 	/**
-	 * Test method for {@link events.BlockAddedEvent#BlockAddedEvent(java.lang.String)}.
+	 * Test method for {@link events.BlockAddedEvent#BlockAddedEvent(java.lang.String, String, ConnectionType)}.
 	 */
 	@Test
 	public void testBlockAddedEvent() {

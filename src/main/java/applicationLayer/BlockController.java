@@ -24,6 +24,7 @@ import exceptions.InvalidBlockConnectionException;
 import exceptions.InvalidBlockTypeException;
 import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
+import types.BlockSnapshot;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -50,8 +51,15 @@ public class BlockController implements GUISubject, DomainSubject {
 
 	}
 
-	private void fireBlockAdded(String newBlockId) {
-		BlockAddedEvent event = new BlockAddedEvent(newBlockId);
+	@SuppressWarnings("unused")
+	private BlockController(BlockRepository programBlockRepository) {
+		this.guiListeners = new HashSet<GUIListener>();
+		this.domainListeners = new HashSet<DomainListener>();
+		this.programBlockRepository = programBlockRepository;
+	}
+
+	private void fireBlockAdded(String newBlockId, String linkedBlockId, ConnectionType linkedConnection) {
+		BlockAddedEvent event = new BlockAddedEvent(newBlockId, linkedBlockId, linkedConnection);
 
 		for (GUIListener listener : guiListeners) {
 			listener.onBlockAdded(event);
@@ -113,6 +121,7 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *                         new block must be connected. If no connectedBlockId
 	 *                         was given, this parameter must be set to
 	 *                         "ConnectionType.NOCONNECTION".
+	 * @return TODO
 	 * @throws InvalidBlockConnectionException The given combination of the
 	 *                                         blockType,connectedBlockId and
 	 *                                         connection is impossible. - an
@@ -139,20 +148,37 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *        successful.
 	 * @event PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
 	 *        block has been reached after adding a block.
+	 * @return The id of the block that has been added.
 	 * 
 	 */
-	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
+	public BlockSnapshot addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		if (programBlockRepository.checkIfMaxNbOfBlocksReached()) {
 			throw new MaxNbOfBlocksReachedException("The maximum number of blocks has already been reached.");
 		}
 		String newBlockId = programBlockRepository.addBlock(blockType, connectedBlockId, connection);
+
+		Block newBlock = programBlockRepository.getBlockByID(newBlockId);
+		Block connectedBlock = programBlockRepository.getBlockByID(connectedBlockId);
+
+		BlockSnapshot snapshot = new BlockSnapshot(newBlock, null, connectedBlock);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
 		if (programBlockRepository.checkIfMaxNbOfBlocksReached()) {
 			firePanelChangedEvent(false);
 		}
-		fireBlockAdded(newBlockId);
+
+		ConnectionType after = programBlockRepository.getConnectionType(snapshot.getConnectedBlockAfterSnapshot(),
+				snapshot.getBlock());
+
+		String caID = "";
+		if (snapshot.getConnectedBlockAfterSnapshot() != null) {
+			caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
+		}
+
+		fireBlockAdded(newBlockId, caID, after);
+
+		return snapshot;
 	}
 
 	/**
@@ -168,6 +194,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * Removes a block with the given blockID from the domain.
 	 * 
 	 * @param blockID The blockID of the block to be removed.
+	 * @param isChain A flag announcing if a chain of blocks has to be removed or if
+	 *                only the given blockId has to be removed.
 	 * @throws NoSuchConnectedBlockException If the given BlockID doesn't result in
 	 *                                       a block in the domain.
 	 * @event RemoveBlockEvent Fires an RemoveBlockEvent if the execution was
@@ -178,17 +206,102 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *        successful.
 	 * @event PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
 	 *        block was reached before removing the block.
+	 * @return a snapshot containing all the information regarding the removed
+	 *         block.
 	 */
-	public void removeBlock(String blockID) {
-		ArrayList<String> previousConnection = programBlockRepository.getConnectedParentIfExists(blockID);
+	public BlockSnapshot removeBlock(String blockID, Boolean isChain) {
+//		ArrayList<String> previousConnection = programBlockRepository.getConnectedParentIfExists(blockID);
+		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeRemove(blockID);
 		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
-		Set<String> idsToBeRemoved = programBlockRepository.removeBlock(blockID);
+		Set<String> idsToBeRemoved = new HashSet<String>();
+		Block deletedBlock = programBlockRepository.getBlockByID(blockID);
+		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1));
+		BlockSnapshot snapshot = new BlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null);
+
+		idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
+
 		fireUpdateGameState();
 		fireResetExecutionEvent();
 		if (maxBlocksReachedBeforeRemove) {
 			firePanelChangedEvent(true);
 		}
 		fireBlockRemoved(idsToBeRemoved, previousConnection.get(1), ConnectionType.valueOf(previousConnection.get(0)));
+
+		return snapshot;
+	}
+
+	/**
+	 * Restore a given BlockSnapshot and send the needed events according to the
+	 * type of restore.
+	 * 
+	 * @param snapshot
+	 * @param isChain TODO
+	 */
+	public void restoreBlockSnapshot(BlockSnapshot snapshot, Boolean isChain) {
+		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
+
+		if (removed) {
+			Boolean maxBlocksReached = programBlockRepository.checkIfMaxNbOfBlocksReached();
+			if (maxBlocksReached) {
+				firePanelChangedEvent(false);
+			}
+			if(isChain) {
+			fireBlockAdded(snapshot);
+			}else {
+				ConnectionType after = programBlockRepository.getConnectionType(snapshot.getConnectedBlockAfterSnapshot(),
+						snapshot.getBlock());
+				String caID = "";
+				if (snapshot.getConnectedBlockAfterSnapshot() != null) {
+					caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
+				}
+				fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after);
+			}
+		} else {
+			ConnectionType before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
+					snapshot.getBlock());
+			ConnectionType after = programBlockRepository.getConnectionType(snapshot.getConnectedBlockAfterSnapshot(),
+					snapshot.getBlock());
+
+			String cbID = "";
+			String caID = "";
+			if (snapshot.getConnectedBlockBeforeSnapshot() != null) {
+				cbID = snapshot.getConnectedBlockBeforeSnapshot().getBlockId();
+			}
+			if (snapshot.getConnectedBlockAfterSnapshot() != null) {
+				caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
+			}
+			fireBlockChanged(snapshot.getBlock().getBlockId(), cbID, before, caID, after);
+		}
+	}
+
+	private void fireBlockAdded(BlockSnapshot snapshot) {
+
+		ConnectionType after = programBlockRepository.getConnectionType(snapshot.getConnectedBlockAfterSnapshot(),
+				snapshot.getBlock());
+		String caID = "";
+		if (snapshot.getConnectedBlockAfterSnapshot() != null) {
+			caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
+		}
+		fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after);
+
+		Block toAdd = snapshot.getBlock();
+
+		if (toAdd.getConditionBlock() != null) {
+			BlockSnapshot s = new BlockSnapshot(toAdd.getConditionBlock(), null, toAdd);
+			fireBlockAdded(s);
+		}
+		if (toAdd.getFirstBlockOfBody() != null) {
+			BlockSnapshot s = new BlockSnapshot(toAdd.getFirstBlockOfBody(), null, toAdd);
+			fireBlockAdded(s);
+		}
+		if (toAdd.getNextBlock() != null) {
+			BlockSnapshot s = new BlockSnapshot(toAdd.getNextBlock(), null, toAdd);
+			fireBlockAdded(s);
+		}
+		if (toAdd.getOperand() != null) {
+			BlockSnapshot s = new BlockSnapshot(toAdd.getOperand(), null, toAdd);
+			fireBlockAdded(s);
+		}
 	}
 
 	/**
@@ -227,15 +340,26 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *        was successful.
 	 * @event ResetExecutionEvent Fires a ResetExecutionEvent if the execution was
 	 *        successful.
+	 * @return the blockSnapshot representing the state and state changes affected
+	 *         by this move.
 	 */
-	public void moveBlock(String topOfMovedChainBlockId, String movedBlockId, String connectedAfterMoveBlockId,
+	public BlockSnapshot moveBlock(String topOfMovedChainBlockId, String movedBlockId, String connectedAfterMoveBlockId,
 			ConnectionType connectionAfterMove) {
+		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId,
+				connectionAfterMove);
+//		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
+//				connectedAfterMoveBlockId, connectionAfterMove);
 
-		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId, connectionAfterMove);
-		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
+		ArrayList<String> previousConnection = programBlockRepository
+				.getConnectedParentIfExists(topOfMovedChainBlockId);
+
+		Block movedBlock = programBlockRepository.getBlockByID(movedID);
+		Block connectedBlockBeforeMove = programBlockRepository.getBlockByID(previousConnection.get(1));
+		Block connectedBlockAfterMove = programBlockRepository.getBlockByID(connectedAfterMoveBlockId);
+		BlockSnapshot snapshot = new BlockSnapshot(movedBlock, connectedBlockBeforeMove, connectedBlockAfterMove);
+
+		String movedBlockID = programBlockRepository.moveBlock(topOfMovedChainBlockId, movedID,
 				connectedAfterMoveBlockId, connectionAfterMove);
-
-		String movedBlockID = programBlockRepository.moveBlock(movedID, connectedAfterMoveBlockId, connectionAfterMove);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
@@ -243,6 +367,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		fireBlockChanged(movedBlockID, connectedAfterMoveBlockId, connectionAfterMove, previousConnection.get(1),
 				ConnectionType.valueOf(previousConnection.get(0)));
 
+		return snapshot;
 	}
 
 	/**

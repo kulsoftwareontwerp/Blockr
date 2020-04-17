@@ -117,7 +117,7 @@ public class GameControllerTest {
 	}
 
 	/**
-	 * Test method for {@link applicationLayer.GameController#resetRobot()}.
+	 * Test method for {@link applicationLayer.GameController#resetGame()}.
 	 */
 	@Test
 	public void testResetRobot() {
@@ -156,7 +156,7 @@ public class GameControllerTest {
 	}
 
 	/**
-	 * Test method for {@link applicationLayer.GameController#performRobotAction(domainLayer.blocks.ActionBlock)}.
+	 * Test method for {@link applicationLayer.GameController#performAction(domainLayer.blocks.ActionBlock)}.
 	 */
 	@Test
 	public void testPerformRobotAction() {

@@ -23,6 +23,8 @@ public abstract class Shape implements Constants, Cloneable {
 	private int previousY_coord;
 	private int previousHeight;
 
+	private Boolean hasToBeRemovedOnUndo;
+
 	private HashSet<Pair<Integer, Integer>> coordinatesShape;
 
 	private HashMap<ConnectionType, Pair<Integer, Integer>> coordinateConnectionMap; // Plugs and Sockets
@@ -46,6 +48,7 @@ public abstract class Shape implements Constants, Cloneable {
 	private int width = 0;
 
 	public Shape(String id, BlockType type, int x, int y) {
+		hasToBeRemovedOnUndo = false;
 
 		setId(id);
 		setType(type);
@@ -91,6 +94,14 @@ public abstract class Shape implements Constants, Cloneable {
 		return new HashSet<Shape>();
 	}
 
+	public synchronized Boolean getHasToBeRemovedOnUndo() {
+		return hasToBeRemovedOnUndo;
+	}
+
+	public synchronized void setHasToBeRemovedOnUndo(Boolean hasToBeRemovedOnUndo) {
+		this.hasToBeRemovedOnUndo = hasToBeRemovedOnUndo;
+	}
+
 	public Boolean checkIfOpen(ConnectionType connection) {
 		if (connectionStatus.get(connection) == null) {
 			return false;
@@ -104,6 +115,12 @@ public abstract class Shape implements Constants, Cloneable {
 			connectionStatus.put(connection, !connectionStatus.get(connection));
 		} else {
 			connectionStatus.put(connection, true);
+		}
+	}
+
+	public void restoreCavityStatus(Shape shape) {
+		if (shape != null) {
+			this.connectionStatus = new HashMap<ConnectionType, Boolean>(shape.connectionStatus);
 		}
 	}
 
@@ -254,9 +271,18 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 	@Override
-	protected Object clone() throws CloneNotSupportedException {
-		// TODO Auto-generated method stub
-		return super.clone();
+	protected Shape clone() {
+		Shape s = null;
+		try {
+			s = (Shape) super.clone();
+			s.connectionStatus = new HashMap<ConnectionType, Boolean>(this.connectionStatus);
+			s.coordinateConnectionMap = new HashMap<ConnectionType, Pair<Integer, Integer>>(
+					this.coordinateConnectionMap);
+			s.coordinatesShape = new HashSet<Pair<Integer, Integer>>(this.coordinatesShape);
+		} catch (CloneNotSupportedException e) {
+			new RuntimeException(e);
+		}
+		return s;
 	}
 
 	@Override
@@ -281,6 +307,21 @@ public abstract class Shape implements Constants, Cloneable {
 		} else {
 			return "";
 		}
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Shape [id=");
+		builder.append(id);
+		builder.append(", x_coord=");
+		builder.append(x_coord);
+		builder.append(", y_coord=");
+		builder.append(y_coord);
+		builder.append(", hasToBeRemovedOnUndo=");
+		builder.append(hasToBeRemovedOnUndo);
+		builder.append("]");
+		return builder.toString();
 	}
 
 }
