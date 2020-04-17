@@ -70,7 +70,7 @@ public abstract class Shape implements Constants, Cloneable {
 		setPreviouslyConnectedVia(ConnectionType.NOCONNECTION);
 
 		initDimensions(); // setWidth & setHeight
-		coordinatesShape = createCoordinatePairs(getX_coord(), getY_coord());
+		coordinatesShape = createCoordinatePairs();
 		coordinateConnectionMap = new HashMap<ConnectionType, Pair<Integer, Integer>>();
 		connectionStatus = new HashMap<ConnectionType, Boolean>();
 		defineConnectionTypes(); // setCoordinateConnectionMap, SOCKETS AND PLUGS
@@ -87,7 +87,7 @@ public abstract class Shape implements Constants, Cloneable {
 
 	public abstract void draw(Graphics g); // Each Type of Shape implements its own method
 
-	public abstract HashSet<Pair<Integer, Integer>> createCoordinatePairs(int x, int y);
+	public abstract HashSet<Pair<Integer, Integer>> createCoordinatePairs();
 
 	public void determineTotalDimensions() {
 	}

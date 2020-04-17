@@ -40,10 +40,10 @@ public class ActionShape extends Shape {
 	}
 
 	@Override
-	public HashSet<Pair<Integer, Integer>> createCoordinatePairs(int x, int y) {
+	public HashSet<Pair<Integer, Integer>> createCoordinatePairs() {
 		HashSet<Pair<Integer, Integer>> set = new HashSet<Pair<Integer, Integer>>();
-			for (int i = x; i < x + getWidth(); i++) {
-				for (int j = y; j < y + getHeight(); j++) {
+			for (int i = getX_coord(); i < getX_coord() + getWidth(); i++) {
+				for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
 					set.add(new Pair<Integer, Integer>(i, j));
 				}
 			}

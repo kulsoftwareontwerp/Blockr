@@ -140,7 +140,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				// redo = false;
 			} else {
 				for (Shape shape : snapshot.getShapesInMovement()) {
-					shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+					shape.setCoordinatesShape(shape.createCoordinatePairs());
 					programArea.addToAlreadyFilledInCoordinates(shape);
 					shape.defineConnectionTypes();
 					programArea.addShapeToProgramArea(shape);
@@ -168,7 +168,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 //				redo = false;
 			} else {
 				for (Shape shape : snapshot.getShapesInMovement()) {
-					shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+					shape.setCoordinatesShape(shape.createCoordinatePairs());
 					programArea.addToAlreadyFilledInCoordinates(shape);
 					shape.defineConnectionTypes();
 					programArea.addShapeToProgramArea(shape);
@@ -398,7 +398,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				}
 
 				getCurrentShape().setCoordinatesShape(getCurrentShape()
-						.createCoordinatePairs(getCurrentShape().getX_coord(), getCurrentShape().getY_coord()));
+						.createCoordinatePairs());
 				boolean placeable = programArea.checkIfPlaceable(getCurrentShape().getCoordinatesShape(),
 						getCurrentShape());
 
@@ -466,7 +466,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						for (Shape shape : getShapesInMovement()) {
 
 							shape.setCoordinatesShape(
-									shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+									shape.createCoordinatePairs());
 							programArea.addShapeToProgramArea(shape);
 							programArea.addToAlreadyFilledInCoordinates(shape);
 
@@ -519,7 +519,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shape.setX_coord(shape.getPreviousX_coord());
 				shape.setY_coord(shape.getPreviousY_coord());
 
-				shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+				shape.setCoordinatesShape(shape.createCoordinatePairs());
 				programArea.addToAlreadyFilledInCoordinates(shape);
 				shape.defineConnectionTypes();
 				programArea.addShapeToProgramArea(shape);
@@ -789,7 +789,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			toAdd.switchCavityStatus(linkedShape.getConnectedVia(), true);
 
-			toAdd.setCoordinatesShape(toAdd.createCoordinatePairs(toAdd.getX_coord(), toAdd.getY_coord()));
+			toAdd.setCoordinatesShape(toAdd.createCoordinatePairs());
 			System.out.println(toAdd.getConnectedVia() + "        " + linkedShape.getId());
 
 			programArea.addShapeToProgramArea(linkedShape);
@@ -844,7 +844,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 
 		for (Shape shape : programArea.getShapesInProgramArea()) {
-			shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+			shape.setCoordinatesShape(shape.createCoordinatePairs());
 			programArea.addToAlreadyFilledInCoordinates(shape);
 			shape.defineConnectionTypes();
 		}
@@ -949,7 +949,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		// handle add to programArea in practice, all coordinates etc are set.
 		for (Shape shape : programArea.getShapesInProgramArea()) {
-			shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+			shape.setCoordinatesShape(shape.createCoordinatePairs());
 			programArea.addToAlreadyFilledInCoordinates(shape);
 			shape.defineConnectionTypes();
 		}
@@ -1074,7 +1074,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			for (Shape movedShape : getShapesInMovement()) {
 
 				movedShape.setCoordinatesShape(
-						movedShape.createCoordinatePairs(movedShape.getX_coord(), movedShape.getY_coord()));
+						movedShape.createCoordinatePairs());
 				movedShape.defineConnectionTypes();
 				Boolean removeOnUndo = movedShape.getHasToBeRemovedOnUndo();
 				movedShape.setHasToBeRemovedOnUndo(false);
@@ -1114,7 +1114,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			// handle add to programArea in practice, all coordinates etc are set.
 			for (Shape shape : programArea.getShapesInProgramArea()) {
-				shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+				shape.setCoordinatesShape(shape.createCoordinatePairs());
 				programArea.addToAlreadyFilledInCoordinates(shape);
 				shape.defineConnectionTypes();
 			}
@@ -1410,7 +1410,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				e.printStackTrace();
 			}
 			shape.setY_coord(shape.getY_coord() + diffYPosition);
-			shape.setCoordinatesShape(shape.createCoordinatePairs(shape.getX_coord(), shape.getY_coord()));
+			shape.setCoordinatesShape(shape.createCoordinatePairs());
 		}
 	}
 
