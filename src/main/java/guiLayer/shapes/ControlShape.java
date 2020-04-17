@@ -1,9 +1,10 @@
-package guiLayer;
+package guiLayer.shapes;
 
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import guiLayer.types.Constants;
 import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;

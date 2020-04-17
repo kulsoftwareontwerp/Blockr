@@ -1,4 +1,4 @@
-package guiLayer;
+package guiLayer.shapes;
 
 import java.awt.Graphics;
 import java.util.ArrayList;
@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import guiLayer.CanvasWindow;
+import guiLayer.types.Constants;
+import guiLayer.types.DebugModus;
 import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;

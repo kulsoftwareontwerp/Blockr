@@ -7,6 +7,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 
+import guiLayer.shapes.ControlShape;
+import guiLayer.shapes.Shape;
+import guiLayer.types.Constants;
+import guiLayer.types.DebugModus;
 import guiLayer.types.Pair;
 
 import java.util.NoSuchElementException;

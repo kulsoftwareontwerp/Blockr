@@ -6,7 +6,7 @@ package guiLayer.commands;
 import java.util.HashSet;
 import java.util.Set;
 
-import guiLayer.Shape;
+import guiLayer.shapes.Shape;
 
 /**
  * /** GuiAction

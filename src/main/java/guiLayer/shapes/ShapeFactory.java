@@ -1,4 +1,4 @@
-package guiLayer;
+package guiLayer.shapes;
 
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.ConditionBlock;

@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 
 import domainLayer.gamestates.GameState;
+import guiLayer.shapes.Shape;
+import guiLayer.shapes.ShapeFactory;
+import guiLayer.types.Constants;
 import guiLayer.types.Pair;
 import types.BlockCategory;
 import types.BlockType;

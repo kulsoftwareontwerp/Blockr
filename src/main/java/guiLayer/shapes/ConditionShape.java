@@ -1,4 +1,4 @@
-package guiLayer;
+package guiLayer.shapes;
 
 import java.awt.Graphics;
 import java.util.HashMap;
