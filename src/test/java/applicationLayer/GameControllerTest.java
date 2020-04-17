@@ -17,11 +17,19 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.internal.matchers.Any;
 
+import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
 import domainLayer.blocks.ActionBlock;
+import domainLayer.blocks.AssessableBlock;
 import domainLayer.blocks.BlockRepository;
+import domainLayer.blocks.ConditionBlock;
+import domainLayer.blocks.ControlBlock;
+import domainLayer.blocks.IfBlock;
+import domainLayer.blocks.WhileBlock;
 import domainLayer.gamestates.InExecutionState;
 import domainLayer.gamestates.ValidProgramState;
 
@@ -34,13 +42,17 @@ import domainLayer.gamestates.ValidProgramState;
 public class GameControllerTest {
 
 	@Mock(name="programBlockRepository")
-	private BlockRepository blockRepository;
+	private BlockRepository programBlockRepository;
+	// Voor uitleg waarom hier specifiek een constructor wordt gecalled, zie comments boven constructor in kwestie.
 	@Spy @InjectMocks
-	private GameController gc;
+	private GameController gc = new GameController(programBlockRepository);
 	
 	private InExecutionState inExecutionState;
 	private ValidProgramState validProgramState;
 	private ActionBlock actionBlock;
+	private ControlBlock ifBlock;
+	private ControlBlock whileBlock;
+	private AssessableBlock assessableBlock;
 	
 	/**
 	 * @throws java.lang.Exception
@@ -48,6 +60,10 @@ public class GameControllerTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
+		actionBlock = new ActionBlock("actionBlockId", Mockito.mock(Action.class));
+		ifBlock = spy(new IfBlock("IfBlock"));
+		whileBlock = spy(new WhileBlock("WhileBlock"));
+		assessableBlock = spy(new ConditionBlock("ConditionBlock", Mockito.mock(Predicate.class)));
 		inExecutionState = spy(new InExecutionState(gc, actionBlock));
 		validProgramState = spy(new ValidProgramState(gc));
 	}
@@ -82,14 +98,10 @@ public class GameControllerTest {
 	public void testResetGameExecution_Positive() {
 		when(gc.getCurrentState()).thenReturn(inExecutionState);
 		Mockito.doNothing().when(inExecutionState).reset();
-		Mockito.doNothing().when(gc).fireUpdateHighlightingEvent(null);
-		Mockito.doNothing().when(gc).fireRobotChangeEvent();
 		
 		gc.resetGameExecution();
 		
 		verify(inExecutionState,atLeastOnce()).reset();
-		verify(gc,atLeastOnce()).fireUpdateHighlightingEvent(null);
-		verify(gc,atLeastOnce()).fireRobotChangeEvent();
 	}
 
 	/**
@@ -117,14 +129,6 @@ public class GameControllerTest {
 	}
 
 	/**
-	 * Test method for {@link applicationLayer.GameController#resetGame()}.
-	 */
-	@Test
-	public void testResetRobot() {
-		fail("Not yet implemented");
-	}
-
-	/**
 	 * Test method for {@link applicationLayer.GameController#executeBlock()}.
 	 */
 	@Test
@@ -133,6 +137,7 @@ public class GameControllerTest {
 		Mockito.doNothing().when(validProgramState).execute();
 		
 		gc.executeBlock();
+		
 		verify(validProgramState,atLeastOnce()).execute();
 	}
 
@@ -141,26 +146,89 @@ public class GameControllerTest {
 	 */
 	@Test
 	public void testFindFirstBlockToBeExecuted_ActionBlock_Positive() {
-		when(blockRepository.findFirstBlockToBeExecuted()).thenReturn(actionBlock);
+		when(programBlockRepository.findFirstBlockToBeExecuted()).thenReturn(actionBlock);
 		
-		assertEquals(gc.findFirstBlockToBeExecuted(), actionBlock);
-		verify(blockRepository,atLeastOnce()).findFirstBlockToBeExecuted();
+		assertEquals(actionBlock, gc.findFirstBlockToBeExecuted());
+		verify(programBlockRepository,atLeastOnce()).findFirstBlockToBeExecuted();
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#findFirstBlockToBeExecuted()}.
+	 */
+	@Test
+	public void testFindFirstBlockToBeExecuted_ControlBlock_Positive() {
+		when(programBlockRepository.findFirstBlockToBeExecuted()).thenReturn(ifBlock);
+		Mockito.doReturn(actionBlock).when(gc).findNextActionBlockToBeExecuted(null, ifBlock);
+		
+		assertEquals(actionBlock, gc.findFirstBlockToBeExecuted());
+		verify(programBlockRepository,atLeastOnce()).findFirstBlockToBeExecuted();
 	}
 
 	/**
 	 * Test method for {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(domainLayer.blocks.ExecutableBlock, domainLayer.blocks.ExecutableBlock)}.
 	 */
 	@Test
-	public void testFindNextActionBlockToBeExecuted() {
-		fail("Not yet implemented");
+	public void testFindNextActionBlockToBeExecuted_CurrentBlockNull_ControlBlockIfBlock_Positive() {
+		when(programBlockRepository.getEnclosingControlBlock(actionBlock)).thenReturn(ifBlock);
+		when(ifBlock.getNextBlock()).thenReturn(actionBlock);
+		Mockito.doReturn(actionBlock).when(gc).findNextActionBlockToBeExecuted(ifBlock, actionBlock);
+		
+		assertEquals(actionBlock, gc.findNextActionBlockToBeExecuted(actionBlock, null));
 	}
-
+	
 	/**
-	 * Test method for {@link applicationLayer.GameController#performAction(domainLayer.blocks.ActionBlock)}.
+	 * Test method for {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(domainLayer.blocks.ExecutableBlock, domainLayer.blocks.ExecutableBlock)}.
 	 */
 	@Test
-	public void testPerformRobotAction() {
-		fail("Not yet implemented");
+	public void testFindNextActionBlockToBeExecuted_CurrentBlockNull_ControlBlockWhileBlock_Positive() {
+		when(programBlockRepository.getEnclosingControlBlock(actionBlock)).thenReturn(whileBlock);
+		Mockito.doReturn(actionBlock).when(gc).findNextActionBlockToBeExecuted(null, whileBlock);
+		
+		assertEquals(actionBlock, gc.findNextActionBlockToBeExecuted(actionBlock, null));
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(domainLayer.blocks.ExecutableBlock, domainLayer.blocks.ExecutableBlock)}.
+	 */
+	@Test
+	public void testFindNextActionBlockToBeExecuted_CurrentBlockNull_ControlBlockNull_Positive() {
+		when(programBlockRepository.getEnclosingControlBlock(actionBlock)).thenReturn(null);
+		
+		assertEquals(null, gc.findNextActionBlockToBeExecuted(actionBlock, null));
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(domainLayer.blocks.ExecutableBlock, domainLayer.blocks.ExecutableBlock)}.
+	 */
+	@Test
+	public void testFindNextActionBlockToBeExecuted_CurrentBlockActionBlock_Positive() {
+		assertEquals(actionBlock, gc.findNextActionBlockToBeExecuted(null, actionBlock));
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(domainLayer.blocks.ExecutableBlock, domainLayer.blocks.ExecutableBlock)}.
+	 */
+	@Test
+	public void testFindNextActionBlockToBeExecuted_CurrentBlockControlBlock_PositiveCondition_Positive() {
+		when(ifBlock.getConditionBlock()).thenReturn(assessableBlock);
+		Mockito.doReturn(true).when(gc).evaluateCondition(assessableBlock);
+		Mockito.doReturn(actionBlock).when(ifBlock).getFirstBlockOfBody();
+		Mockito.doReturn(actionBlock).when(gc).findNextActionBlockToBeExecuted(ifBlock, actionBlock);
+		
+		assertEquals(actionBlock, gc.findNextActionBlockToBeExecuted(null, ifBlock));
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#findNextActionBlockToBeExecuted(domainLayer.blocks.ExecutableBlock, domainLayer.blocks.ExecutableBlock)}.
+	 */
+	@Test
+	public void testFindNextActionBlockToBeExecuted_CurrentBlockControlBlock_NegativeCondition_Positive() {
+		when(ifBlock.getConditionBlock()).thenReturn(assessableBlock);
+		Mockito.doReturn(false).when(gc).evaluateCondition(assessableBlock);
+		Mockito.doReturn(actionBlock).when(ifBlock).getNextBlock();
+		Mockito.doReturn(actionBlock).when(gc).findNextActionBlockToBeExecuted(ifBlock, actionBlock);
+		
+		assertEquals(actionBlock, gc.findNextActionBlockToBeExecuted(null, ifBlock));
 	}
 
 	/**
@@ -168,7 +236,8 @@ public class GameControllerTest {
 	 */
 	@Test
 	public void testCheckIfValidProgram() {
-		fail("Not yet implemented");
+		gc.checkIfValidProgram();
+		verify(programBlockRepository,atLeastOnce()).checkIfValidProgram();
 	}
 
 	/**

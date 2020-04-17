@@ -41,6 +41,15 @@ public class GameController implements DomainListener, GUISubject {
 	private GameWorld gameWorld;
 	private GameWorldSnapshot initialSnapshot;
 	private CommandHandler commandHandler;
+	
+	// TODO: @Arne, geen fucking flauw idee waarom, maar hij called ALTIJD de constructor hieronder als 
+	//		ik hem zelf zijn constructor voor constructor injection laat kiezen
+	// 		dus als oplossing heb ik deze public gezet en specifiek aangeroepen in de tests.
+	//		Kheb er al veel te veel tijd aan verkloot om het beter op de lossen dan dit, maar ik geef het op.
+	// 		Fuck Mockito.
+	public GameController(BlockRepository programBlockRepository) {
+		this.programBlockRepository = programBlockRepository;
+	}
 
 	public GameController(GameWorld gameWorld, CommandHandler commandHandler) {
 		this.gameWorld = gameWorld;
@@ -56,16 +65,17 @@ public class GameController implements DomainListener, GUISubject {
 		toState(new InValidProgramState(this));
 
 	}
-	
-	// Used for mockinjection in the tests
-	private GameController(BlockRepository br) {
-		this.programBlockRepository = br;
-	}
 
 	public void handleCommand(GameWorldCommand command) {
 		this.commandHandler.handle(command);
 	}
 	
+	/**
+	 * Resets the game execution. 
+	 * 
+	 * @event UpdateHighlightingEvent
+	 * 		  Fires a UpdateHighlightingEvent if the program was in an executing state.
+	 */
 	public void resetGameExecution() {
 		GameState currentState = getCurrentState();
 		currentState.reset();
@@ -100,30 +110,48 @@ public class GameController implements DomainListener, GUISubject {
 	}
 	
 	
-	
+	/**
+	 * Returns the current state of the program.
+	 * 
+	 * @return The current state of the program.
+	 */
 	public GameState getCurrentState() {
 		return this.currentState;
 	}
 
 	/**
+	 * Sets the current state of the program to the given state.
 	 * 
-	 * @param state
+	 * @param state		The new state of the program.
 	 */
 	public void toState(GameState state) {
 		this.currentState = state;
 	}
 
+	/**
+	 * Updates the current state of the program.
+	 */
 	public void updateState() {
 		currentState.update();
 	}
 
-
-
+	/**
+	 * Executes the next block to be executed if the gamestate is in a valid state or an in execution state. 
+	 * 	If this is not the case, nothing happens.
+	 * 
+	 * @event UpdateHighlightingEvent
+	 * 		  Fires a UpdateHighlightingEvent if the program was in a valid state or an in executing state.
+	 */
 	public void executeBlock() {
 		GameState currentState = getCurrentState();
 		currentState.execute();
 	}
 
+	/**
+	 * Find the first action block that needs to be executed next.
+	 * 
+	 * @return The next actionBlock to be executed.
+	 */
 	public ActionBlock findFirstBlockToBeExecuted() {
 		ExecutableBlock firstExecutableBlock = programBlockRepository.findFirstBlockToBeExecuted();
 		if (!(firstExecutableBlock instanceof ActionBlock)) {
@@ -134,8 +162,13 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	/**
+	 * Given a block to check (currentBlock) and a block that was checked before the currentBlock (previousBlock),
+	 * 	return the first actionBlock to be executed following the rules of control- and assessable blocks by means of recursion.
 	 * 
-	 * @param block
+	 * @param previousBlock		The block that was the currentBlock in the previous recursive call of this method.
+	 * @param currentBlock		The newest possible block that needs to be checked.
+	 * 
+	 * @return The next actionBlock in the program.
 	 */
 	public ActionBlock findNextActionBlockToBeExecuted(ExecutableBlock previousBlock, ExecutableBlock currentBlock) {
 		// ExecutableBlock nextBlock = block.getNextBlock();
@@ -162,7 +195,7 @@ public class GameController implements DomainListener, GUISubject {
 		}
 	}
 
-	private boolean evaluateCondition(AssessableBlock condition) {
+	boolean evaluateCondition(AssessableBlock condition) {
 		if (condition instanceof ConditionBlock) {
 			return gameWorld.evaluate(((ConditionBlock) condition).getPredicate());
 		} else {
@@ -215,11 +248,6 @@ public class GameController implements DomainListener, GUISubject {
 			listener.onUpdateHighlightingEvent(updateHighlightingEvent);
 		}
 
-	}
-
-	private HashMap<String, Integer> findNextPosition() {
-		// TODO - implement GameController.findNextPosition
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
