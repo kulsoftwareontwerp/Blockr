@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -13,10 +14,10 @@ public class ControlShape extends Shape implements Constants {
 	public ControlShape(String id, BlockType type, int x, int y) {
 		super(id, type, x, y);
 		internals = new HashSet<Shape>(); //empty on init
-		switchCavityStatus(ConnectionType.UP);
-		switchCavityStatus(ConnectionType.DOWN);
-		switchCavityStatus(ConnectionType.CONDITION);
-		switchCavityStatus(ConnectionType.BODY);
+		switchCavityStatus(ConnectionType.UP, true);
+		switchCavityStatus(ConnectionType.DOWN, true);
+		switchCavityStatus(ConnectionType.CONDITION, true);
+		switchCavityStatus(ConnectionType.BODY, true);
 	}
 
 	@Override

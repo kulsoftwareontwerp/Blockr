@@ -2,9 +2,6 @@ package domainLayer.blocks;
 
 import com.kuleuven.swop.group17.GameWorldApi.Action;
 
-import domainLayer.elements.ElementRepository;
-import types.BlockCategory;
-
 /**
  * The abstract class for the concept of an action block.
  * 

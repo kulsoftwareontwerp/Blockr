@@ -43,8 +43,7 @@ public class MoveBlockDCTest {
 	
 	@Mock(name = "gameWorld")
 	private GameWorld gameWorld;
-	@Mock(name = "elementController")
-	private ElementController elementController;
+
 	@Mock (name = "gameController")
 	GameController gameController;
 	@Mock(name = "blockController")

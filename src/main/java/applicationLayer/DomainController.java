@@ -12,7 +12,6 @@ import commands.BlockCommand;
 import commands.CommandHandler;
 import commands.MoveBlockCommand;
 import commands.RemoveBlockCommand;
-import domainLayer.elements.ElementType;
 import events.GUIListener;
 import exceptions.InvalidBlockConnectionException;
 import exceptions.InvalidBlockTypeException;
@@ -33,9 +32,33 @@ public class DomainController {
 
 	private GameController gameController;
 	private BlockController blockController;
-	private ElementController elementController;
+
 	private GameWorld gameWorld;
 	private CommandHandler commandHandler;
+
+	private void initializeDomainController(GameController gameController, BlockController blockController,
+			 GameWorld gameWorld, CommandHandler handler) {
+		this.gameController = gameController;
+		this.blockController = blockController;
+	
+		this.blockController.addDomainListener(gameController);
+	
+		this.gameWorld = gameWorld;
+		this.commandHandler = handler;
+	
+		// fill dynamic enum with actions and predicates from GameWorldApi
+		Set<Predicate> supportedPredicates = gameWorld.getType().supportedPredicates();
+		Set<Action> supportedActions = gameWorld.getType().supportedActions();
+	
+		for (Predicate predicate : supportedPredicates) {
+			new BlockType(predicate.toString(), BlockCategory.CONDITION, predicate);
+		}
+	
+		for (Action action : supportedActions) {
+			new BlockType(action.toString(), BlockCategory.ACTION, action);
+		}
+	
+	}
 
 	/**
 	 * Construct a domainController and it's dependencies. - GameController -
@@ -46,41 +69,14 @@ public class DomainController {
 	public DomainController(GameWorld gameWorld) {
 		CommandHandler handler = new CommandHandler();
 
-		initializeDomainController(new GameController(gameWorld, handler), new BlockController(),
-				new ElementController(), gameWorld, handler);
+		initializeDomainController(new GameController(gameWorld, handler), new BlockController()
+				, gameWorld, handler);
 
 	}
 
 	@SuppressWarnings("unused")
-	private DomainController(GameController gameController, BlockController blockController,
-			ElementController elementController, GameWorld gameWorld, CommandHandler handler) {
-		initializeDomainController(gameController, blockController, elementController, gameWorld, handler);
-	}
-
-	private void initializeDomainController(GameController gameController, BlockController blockController,
-			ElementController elementController, GameWorld gameWorld, CommandHandler handler) {
-		this.gameController = gameController;
-		this.blockController = blockController;
-		this.elementController = elementController;
-
-		this.blockController.addDomainListener(gameController);
-		this.elementController.addDomainListener(gameController);
-
-		this.gameWorld = gameWorld;
-		this.commandHandler = handler;
-
-		// fill dynamic enum with actions and predicates from GameWorldApi
-		Set<Predicate> supportedPredicates = gameWorld.getType().supportedPredicates();
-		Set<Action> supportedActions = gameWorld.getType().supportedActions();
-
-		for (Predicate predicate : supportedPredicates) {
-			new BlockType(predicate.toString(), BlockCategory.CONDITION, predicate);
-		}
-
-		for (Action action : supportedActions) {
-			new BlockType(action.toString(), BlockCategory.ACTION, action);
-		}
-
+	private DomainController(GameController gameController, BlockController blockController, GameWorld gameWorld, CommandHandler handler) {
+		initializeDomainController(gameController, blockController, gameWorld, handler);
 	}
 
 	/**
@@ -143,61 +139,6 @@ public class DomainController {
 			BlockCommand command = new AddBlockCommand(blockController, blockType, connectedBlockId, connection);
 			commandHandler.handle(command);
 		}
-	}
-
-	/**
-	 * Removes a block with the given blockID from the domain.
-	 * 
-	 * @param blockID The blockID of the block to be removed.
-	 * @throws IllegalArgumentException      If the given BlockID is null or an
-	 *                                       empty String
-	 * @throws NoSuchConnectedBlockException If the given BlockID doesn't result in
-	 *                                       a block in the domain.
-	 * @event RemoveBlockEvent Fires an RemoveBlockEvent if the execution was
-	 *        successful.
-	 * @event UpdateGameStateEvent Fires an UpdateGameStateEvent if the execution
-	 *        was successful.
-	 * @event ResetExecutionEvent Fires a ResetExecutionEvent if the execution was
-	 *        successful.
-	 * @event PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
-	 *        block was reached before removing the block.
-	 */
-	public void removeBlock(String blockID) {
-		if (blockID == "" || blockID == null) {
-			throw new IllegalArgumentException("No blockType given.");
-		} else {
-			BlockCommand command = new RemoveBlockCommand(blockController, blockID);
-			commandHandler.handle(command);
-		}
-
-	}
-
-	public void resetGameExecution() {
-		gameController.resetGameExecution();
-	}
-
-	/**
-	 * Returns all the blockID's in the body of a given ControlBlock
-	 * 
-	 * @param blockID The blockID of the controlBlock of which you want to retrieve
-	 *                all Blocks in the body.
-	 * @throws IllegalArgumentException      Is thrown when the given blockID is
-	 *                                       empty or null.
-	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
-	 *                                       is not present in the domain.
-	 * @throws InvalidBlockTypeException     Is thrown when given blockID isn't the
-	 *                                       ID of a ControlBlock.
-	 * @return A set containing the blockID of the blocks in the body of the given
-	 *         ControlBlock.
-	 * 
-	 */
-	public Set<String> getAllBlockIDsInBody(String blockID) {
-		if (blockID == null || blockID == "") {
-			throw new IllegalArgumentException("No blockID given.");
-		}
-
-		return blockController.getAllBlockIDsInBody(blockID);
-
 	}
 
 	/**
@@ -282,141 +223,39 @@ public class DomainController {
 		}
 	}
 
-//	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-//		if(movedBlockId == null || movedBlockId.equals("")) {
-//			throw new IllegalArgumentException("No movedBlockID given");
-//		}
-//		else if(connectionBeforeMove == null || connectionAfterMove == null) {
-//			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
-//		}
-//		else if(connectedBeforeMoveBlockId.equals("")  && !(connectionBeforeMove == ConnectionType.NOCONNECTION)) {
-//			throw new IllegalArgumentException("No blockId given for connectedBeforeMovedBlockID");
-//			}
-//		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
-//			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
-//		}
-//		else if(movedBlockId.equals(connectedBeforeMoveBlockId) || movedBlockId.equals(connectedAfterMoveBlockId))
-//			throw new IllegalArgumentException("You can't connect a block to itself.");
-//		else {
-//			blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
-//		}
-//	}
 	/**
-	 * Adds a GUI listener for Game, this listener will be notified about all
-	 * changes for the GUI. If the given listener is already a listener for Game it
-	 * will not be added another time.
+	 * Removes a block with the given blockID from the domain.
 	 * 
-	 * @param listener The listener to be added.
-	 * @throws IllegalArgumentException Is thrown when the given listener is null.
+	 * @param blockID The blockID of the block to be removed.
+	 * @throws IllegalArgumentException      If the given BlockID is null or an
+	 *                                       empty String
+	 * @throws NoSuchConnectedBlockException If the given BlockID doesn't result in
+	 *                                       a block in the domain.
+	 * @event RemoveBlockEvent Fires an RemoveBlockEvent if the execution was
+	 *        successful.
+	 * @event UpdateGameStateEvent Fires an UpdateGameStateEvent if the execution
+	 *        was successful.
+	 * @event ResetExecutionEvent Fires a ResetExecutionEvent if the execution was
+	 *        successful.
+	 * @event PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
+	 *        block was reached before removing the block.
 	 */
-	public void addGameListener(GUIListener listener) {
-		if (listener == null) {
-			throw new IllegalArgumentException("No listener given.");
+	public void removeBlock(String blockID) {
+		if (blockID == "" || blockID == null) {
+			throw new IllegalArgumentException("No blockType given.");
+		} else {
+			BlockCommand command = new RemoveBlockCommand(blockController, blockID);
+			commandHandler.handle(command);
 		}
-		gameController.addListener(listener);
-		blockController.addListener(listener);
-		elementController.addListener(listener);
 
-	}
-
-	/**
-	 * Removes a GUI listener for Game, this listener will no longer be notified
-	 * about any changes for the GUI. If the GUI listener is no listener Game it
-	 * also won't be removed.
-	 * 
-	 * @param listener The listener to be added.
-	 * @throws IllegalArgumentException Is thrown when the given listener is null.
-	 */
-	public void removeGameListener(GUIListener listener) {
-		if (listener == null) {
-			throw new IllegalArgumentException("No listener given.");
-		}
-		gameController.removeListener(listener);
-		elementController.removeListener(listener);
-		blockController.removeListener(listener);
 	}
 
 	public void executeBlock() {
 		gameController.executeBlock();
 	}
 
-	/**
-	 * Returns all the BlockID's underneath a certain block
-	 * 
-	 * @param blockID The blockID of the Block of which you want to retrieve all
-	 *                Blocks underneath.
-	 * @throws IllegalArgumentException      Is thrown when the given blockID is
-	 *                                       empty or null.
-	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
-	 *                                       is not present in the domain.
-	 * @return A set containing the blockID's of all connected Conditions and every
-	 *         kind of block in the body of the given block or under the given
-	 *         block. The ID of the block itself is also given.
-	 */
-
-	public Set<String> getAllBlockIDsUnderneath(String blockID) {
-		if (blockID == null || blockID == "") {
-			throw new IllegalArgumentException("No blockID given.");
-		}
-
-		return blockController.getAllBlockIDsUnderneath(blockID);
-	}
-
-	/**
-	 * Add an element to the domain.
-	 * 
-	 * @param element The type of element.
-	 * @param X       The X coordinate
-	 * @param Y       The Y coordinate
-	 * @throws IllegalArgumentException Is thrown when element is null.
-	 * @event ElementAddedEvent When the operation is successful the
-	 *        ElementAddedEvent will be thrown to all the listeners.
-	 * @event RobotAddedEvent When the operation is successful and elementType is
-	 *        robot the RobotAddedEvent with an Orientation of UP will be thrown to
-	 *        all the listeners.
-	 */
-	public void addElement(ElementType element, int x, int y) {
-		if (element == null) {
-			throw new IllegalArgumentException("No elementType given.");
-		} else {
-			elementController.addElement(element, x, y);
-		}
-	}
-
-	/**
-	 * 
-	 * @param id
-	 * @return The ID of the first block below the block with the given ID, returns
-	 *         NULL if this block doesn't specify a block below.
-	 */
-	public String getFirstBlockBelow(String id) {
-		if (id == null || id == "") {
-			throw new IllegalArgumentException("No blockID given.");
-		}
-		blockController.getFirstBlockBelow(id);
-
-		return "";
-	}
-
-	// TO BE DOCUMENTED:
-	public String getEnclosingControlBlock(String id) {
-		return blockController.getEnclosingControlBlock(id);
-	}
-
-	public Set<String> getAllBlockIDsBelowCertainBlock(String blockID) {
-		if (blockID == null || blockID == "") {
-			throw new IllegalArgumentException("No blockID given.");
-		}
-
-		return blockController.getAllBlockIDsBelowCertainBlock(blockID);
-	}
-
-	public Set<String> getAllHeadControlBlocks() {
-		return blockController.getAllHeadControlBlocks();
-	}
-
-	public Set<String> getAllHeadBlocks() {
-		return blockController.getAllHeadBlocks();
+	public void resetGameExecution() {
+		gameController.resetGameExecution();
 	}
 
 	/**
@@ -435,6 +274,151 @@ public class DomainController {
 	
 	public void redo() {
 		commandHandler.redo();
+	}
+
+	public Set<String> getAllHeadBlocks() {
+		return blockController.getAllHeadBlocks();
+	}
+
+	public Set<String> getAllHeadControlBlocks() {
+		return blockController.getAllHeadControlBlocks();
+	}
+
+	/**
+	 * Returns all the BlockID's underneath a certain block
+	 * 
+	 * @param blockID The blockID of the Block of which you want to retrieve all
+	 *                Blocks underneath.
+	 * @throws IllegalArgumentException      Is thrown when the given blockID is
+	 *                                       empty or null.
+	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
+	 *                                       is not present in the domain.
+	 * @return A set containing the blockID's of all connected Conditions and every
+	 *         kind of block in the body of the given block or under the given
+	 *         block. The ID of the block itself is also given.
+	 */
+	
+	public Set<String> getAllBlockIDsUnderneath(String blockID) {
+		if (blockID == null || blockID == "") {
+			throw new IllegalArgumentException("No blockID given.");
+		}
+	
+		return blockController.getAllBlockIDsUnderneath(blockID);
+	}
+
+	public Set<String> getAllBlockIDsBelowCertainBlock(String blockID) {
+		if (blockID == null || blockID == "") {
+			throw new IllegalArgumentException("No blockID given.");
+		}
+	
+		return blockController.getAllBlockIDsBelowCertainBlock(blockID);
+	}
+
+	/**
+	 * Returns all the blockID's in the body of a given ControlBlock
+	 * 
+	 * @param blockID The blockID of the controlBlock of which you want to retrieve
+	 *                all Blocks in the body.
+	 * @throws IllegalArgumentException      Is thrown when the given blockID is
+	 *                                       empty or null.
+	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
+	 *                                       is not present in the domain.
+	 * @throws InvalidBlockTypeException     Is thrown when given blockID isn't the
+	 *                                       ID of a ControlBlock.
+	 * @return A set containing the blockID of the blocks in the body of the given
+	 *         ControlBlock.
+	 * 
+	 */
+	public Set<String> getAllBlockIDsInBody(String blockID) {
+		if (blockID == null || blockID == "") {
+			throw new IllegalArgumentException("No blockID given.");
+		}
+	
+		return blockController.getAllBlockIDsInBody(blockID);
+	
+	}
+
+	// TO BE DOCUMENTED:
+	public String getEnclosingControlBlock(String id) {
+		return blockController.getEnclosingControlBlock(id);
+	}
+
+	/**
+	 * 
+	 * @param id
+	 * @return The ID of the first block below the block with the given ID, returns
+	 *         NULL if this block doesn't specify a block below.
+	 */
+	public String getFirstBlockBelow(String id) {
+		if (id == null || id == "") {
+			throw new IllegalArgumentException("No blockID given.");
+		}
+		blockController.getFirstBlockBelow(id);
+	
+		return "";
+	}
+
+	/**
+	 * Check if the given id is present in the domain.
+	 * @param id the id to check
+	 * @return 
+	 */
+	public boolean isBlockPresent(String id) {
+		if(id==null) {
+			return false;
+		}
+		return blockController.isBlockPresent(id);
+	}
+
+	//	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
+	//		if(movedBlockId == null || movedBlockId.equals("")) {
+	//			throw new IllegalArgumentException("No movedBlockID given");
+	//		}
+	//		else if(connectionBeforeMove == null || connectionAfterMove == null) {
+	//			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
+	//		}
+	//		else if(connectedBeforeMoveBlockId.equals("")  && !(connectionBeforeMove == ConnectionType.NOCONNECTION)) {
+	//			throw new IllegalArgumentException("No blockId given for connectedBeforeMovedBlockID");
+	//			}
+	//		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
+	//			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
+	//		}
+	//		else if(movedBlockId.equals(connectedBeforeMoveBlockId) || movedBlockId.equals(connectedAfterMoveBlockId))
+	//			throw new IllegalArgumentException("You can't connect a block to itself.");
+	//		else {
+	//			blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+	//		}
+	//	}
+		/**
+		 * Adds a GUI listener for Game, this listener will be notified about all
+		 * changes for the GUI. If the given listener is already a listener for Game it
+		 * will not be added another time.
+		 * 
+		 * @param listener The listener to be added.
+		 * @throws IllegalArgumentException Is thrown when the given listener is null.
+		 */
+		public void addGameListener(GUIListener listener) {
+			if (listener == null) {
+				throw new IllegalArgumentException("No listener given.");
+			}
+			gameController.addListener(listener);
+			blockController.addListener(listener);	
+		}
+
+	/**
+	 * Removes a GUI listener for Game, this listener will no longer be notified
+	 * about any changes for the GUI. If the GUI listener is no listener Game it
+	 * also won't be removed.
+	 * 
+	 * @param listener The listener to be added.
+	 * @throws IllegalArgumentException Is thrown when the given listener is null.
+	 */
+	public void removeGameListener(GUIListener listener) {
+		if (listener == null) {
+			throw new IllegalArgumentException("No listener given.");
+		}
+		gameController.removeListener(listener);
+		blockController.removeListener(listener);
 	}
 
 

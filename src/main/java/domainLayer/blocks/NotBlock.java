@@ -1,10 +1,6 @@
 package domainLayer.blocks;
 
-
-import java.util.HashSet;
-
-import domainLayer.elements.ElementRepository;
-
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 
 /**
  * The abstract class for the concept of a Not block.
@@ -24,15 +20,8 @@ public class NotBlock extends UnaryOperatorBlock {
 	}
 
 	@Override
-	public boolean assess(ElementRepository elementsRepo) {
-		if(getOperand() instanceof NotBlock) {
-		return !((NotBlock) getOperand()).assess(elementsRepo);
-		}else {
-			
-			//TODO Refactor needed
-			return false;
-		}
-		
+	public boolean assess(GameWorld gameWorld) {		
+		return !getOperand().assess(gameWorld);
 	}
 
 

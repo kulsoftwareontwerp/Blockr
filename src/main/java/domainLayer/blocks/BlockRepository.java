@@ -111,7 +111,9 @@ public class BlockRepository {
 			// It shouldn't be possible to get here.
 			break;
 		}
-
+		if (connectedBlock != null) {
+			addBlockToAllBlocks(connectedBlock);
+		}
 		addBlockToAllBlocks(newBlock);
 		return newBlock.getBlockId();
 
@@ -634,6 +636,13 @@ public class BlockRepository {
 				}
 			}
 		}
+
+		if (afm != null) {
+			addBlockToAllBlocks(afm);
+		}
+		if (bfm != null) {
+			addBlockToAllBlocks(bfm);
+		}
 		return movedBlockID;
 	}
 
@@ -666,6 +675,7 @@ public class BlockRepository {
 				break;
 			}
 
+			addBlockToAllBlocks(parent);
 		}
 
 	}
@@ -695,36 +705,35 @@ public class BlockRepository {
 
 		return connectedBlockInfo;
 	}
-	
-	
+
 	/**
 	 * Calculate the connection before the remove happened
+	 * 
 	 * @param movedBlockId
 	 * @return
 	 */
-	public ArrayList<String> getConnectedBlockBeforeRemove(String removedBlockId){
+	public ArrayList<String> getConnectedBlockBeforeRemove(String removedBlockId) {
 		ArrayList<String> connectedBlockInfo = getConnectedParentIfExists(removedBlockId);
 		ConnectionType cbfm = ConnectionType.valueOf(connectedBlockInfo.get(0));
-		if(cbfm==ConnectionType.NOCONNECTION) {
+		if (cbfm == ConnectionType.NOCONNECTION) {
 			Block block = getBlockByID(removedBlockId);
-			if(block.getNextBlock()!=null) {
+			if (block.getNextBlock() != null) {
 				connectedBlockInfo.set(1, block.getNextBlock().getBlockId());
-				connectedBlockInfo.set(0,ConnectionType.UP.toString());
+				connectedBlockInfo.set(0, ConnectionType.UP.toString());
 			}
-			if(block.getConditionBlock()!=null) {
+			if (block.getConditionBlock() != null) {
 				connectedBlockInfo.set(1, block.getConditionBlock().getBlockId());
-				connectedBlockInfo.set(0,ConnectionType.LEFT.toString());
+				connectedBlockInfo.set(0, ConnectionType.LEFT.toString());
 			}
-			if(block.getOperand()!=null) {
+			if (block.getOperand() != null) {
 				connectedBlockInfo.set(1, block.getOperand().getBlockId());
-				connectedBlockInfo.set(0,ConnectionType.LEFT.toString());
+				connectedBlockInfo.set(0, ConnectionType.LEFT.toString());
 			}
-			
+
 		}
-		
+
 		return connectedBlockInfo;
 	}
-	
 
 	public ArrayList<String> getConnectedParentIfExists(String movedBlockId) {
 
@@ -844,7 +853,7 @@ public class BlockRepository {
 	 * @param block
 	 */
 	private void addBlockToHeadBlocks(Block block) {
-		if (allBlocks.containsKey(block.getBlockId())) {
+		if (this.headBlocks.stream().anyMatch(b -> b.getBlockId().equals(block.getBlockId()))) {
 			deepReplace(block, this.headBlocks);
 		}
 		this.headBlocks.add(block);
@@ -860,46 +869,43 @@ public class BlockRepository {
 
 	private void deepReplace(Block block, Collection<Block> collection) {
 		for (Block b : collection) {
-			Optional<Block> connectedBlock = getAllBlocksConnectedToAndAfterACertainBlock(b).stream().filter(s -> s.getBlockId().equals(block.getBlockId())).findAny();
-			if(connectedBlock.isPresent()) {
-				// index 1: ID
-				// index 0: connection
-				ArrayList<String> parentInfo = getConnectedParentIfExists(connectedBlock.get().getBlockId());
-				
-				Block parent = getBlockByID(parentInfo.get(1));
-				ConnectionType connection = ConnectionType.valueOf(parentInfo.get(0));
-				
-				switch(connection) {
-				case BODY:
-					parent.setFirstBlockOfBody(block);
-					break;
-				case CONDITION:
-					parent.setConditionBlock(block);
-					break;
-				case OPERAND:
-					parent.setOperand(block);
-					break;
-				case DOWN:
-					parent.setNextBlock(block);
-					break;
-				default:
-					break;
-				}
-				
-				
-				
-			}
+			deepReplace(block, b);
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+	private void deepReplace(Block block, Block parent) {
+		Optional<Block> connectedBlock = getAllBlocksConnectedToAndAfterACertainBlock(parent).stream()
+				.filter(s -> (s.getBlockId().equals(block.getBlockId()) && !s.getBlockId().equals(parent.getBlockId()))).findAny();
+		if (connectedBlock.isPresent()) {
+			// index 1: ID
+			// index 0: connection
+			ArrayList<String> parentInfo = getConnectedParentIfExists(connectedBlock.get().getBlockId());
+
+			Block firstParent = getBlockByID(parentInfo.get(1));
+			ConnectionType connection = ConnectionType.valueOf(parentInfo.get(0));
+
+			switch (connection) {
+			case BODY:
+				firstParent.setFirstBlockOfBody(block);
+				break;
+			case CONDITION:
+				firstParent.setConditionBlock(block);
+				break;
+			case OPERAND:
+				firstParent.setOperand(block);
+				break;
+			case DOWN:
+				firstParent.setNextBlock(block);
+				break;
+			default:
+				break;
+			}
+			
+			deepReplace(firstParent, parent);
+
+		}
+
+	}
 
 	private void removeBlockFromHeadBlocks(Block block) {
 		this.headBlocks.remove(block);
@@ -939,7 +945,7 @@ public class BlockRepository {
 	 *         kind of block in the body of the given block or under the given
 	 *         block. The ID of the block itself is also given.
 	 */
-	public Set<String> getAllBlockIDsUnderneath(Block block) {		
+	public Set<String> getAllBlockIDsUnderneath(Block block) {
 		Set<String> blockIDsUnderNeath = new HashSet<String>();
 		getAllBlocksConnectedToAndAfterACertainBlock(block).stream().map(s -> s.getBlockId())
 				.forEach(s -> blockIDsUnderNeath.add(s));
@@ -1117,12 +1123,12 @@ public class BlockRepository {
 			// removed blocks
 			if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 				Block cb = snapshot.getConnectedBlockAfterSnapshot();
-				if(getAllBlockIDsBelowCertainBlock(snapshot.getBlock()).contains(cb.getBlockId())) {
+				if (getAllBlockIDsBelowCertainBlock(snapshot.getBlock()).contains(cb.getBlockId())) {
 					removeBlockFromHeadBlocks(cb);
 					addBlockToHeadBlocks(snapshot.getBlock());
 				}
 				addBlockToAllBlocks(cb);
-				
+
 			} else {
 				addBlockToHeadBlocks(snapshot.getBlock());
 			}
@@ -1134,11 +1140,24 @@ public class BlockRepository {
 			// blocks are still present in the domain (Move)
 			if (snapshot.getConnectedBlockBeforeSnapshot() != null) {
 				Block cb = snapshot.getConnectedBlockBeforeSnapshot();
+				if (cb.getConditionBlock()!=null && cb.getConditionBlock().equals(snapshot.getBlock())) {
+					cb.setConditionBlock(null);
+				}
+				if (cb.getFirstBlockOfBody()!=null &&  cb.getFirstBlockOfBody().equals(snapshot.getBlock())) {
+					cb.setFirstBlockOfBody(null);
+				}
+				if (cb.getOperand()!=null && cb.getOperand().equals(snapshot.getBlock())) {
+					cb.setOperand(null);
+				}
+				if (cb.getNextBlock()!=null &&  cb.getNextBlock().equals(snapshot.getBlock())) {
+					cb.setNextBlock(null);
+				}
+
 				addBlockToAllBlocks(cb);
 				addBlockToHeadBlocks(snapshot.getBlock());
 			}
-			if (snapshot.getConnectedBlockBeforeSnapshot() != null) {
-				Block ab = snapshot.getConnectedBlockBeforeSnapshot();
+			if (snapshot.getConnectedBlockAfterSnapshot() != null) {
+				Block ab = snapshot.getConnectedBlockAfterSnapshot();
 				addBlockToAllBlocks(ab);
 				removeBlockFromHeadBlocks(snapshot.getBlock());
 			}

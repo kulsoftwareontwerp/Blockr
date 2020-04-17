@@ -3,14 +3,16 @@ package domainLayer.blocks;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MoveAction;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -21,7 +23,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -30,18 +31,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
-
-import applicationLayer.BlockController;
-import applicationLayer.DomainController;
-import applicationLayer.ElementController;
-import applicationLayer.GameController;
-import domainLayer.elements.ElementRepository;
-import events.BlockChangeEvent;
-import events.DomainListener;
-import events.GUIListener;
-import events.ResetExecutionEvent;
-import events.UpdateGameStateEvent;
 import exceptions.InvalidBlockConnectionException;
 import exceptions.NoSuchConnectedBlockException;
 import types.BlockType;

@@ -1,10 +1,12 @@
 /**
  * 
  */
-package guiLayer;
+package guiLayer.commands;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import guiLayer.Shape;
 
 /**
  * /** GuiAction
@@ -14,11 +16,13 @@ import java.util.Set;
  *
  */
 public class GuiSnapshot {
+	private static int count = 1;
 	private Shape connectedShapeAfterSnapshot;
 	private Boolean isDomainInvolved;
 	private Set<Shape> shapesInMovement;
 	private Shape currentShape;
 	private Shape highlightedShape;
+	private int ID;
 
 	/**
 	 * @param currentShape                 TODO
@@ -39,7 +43,8 @@ public class GuiSnapshot {
 		if (highlightedShape != null) {
 			this.highlightedShape = highlightedShape.clone();
 		}
-
+		this.ID=count;
+		count++;
 	}
 
 	public void setConnectedShapeAfterSnapshot(Shape connectedShapeAfterSnapshot) {
@@ -59,6 +64,9 @@ public class GuiSnapshot {
 	public void setShapesInMovement(Set<Shape> shapesInMovement) {
 		if (shapesInMovement != null) {
 			this.shapesInMovement = new HashSet<Shape>(shapesInMovement);
+		}
+		else {
+			this.shapesInMovement = new HashSet<Shape>();
 		}
 	}
 
@@ -89,7 +97,10 @@ public class GuiSnapshot {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("GuiSnapshot [connectedShapeAfterSnapshot=");
+		builder.append("GuiSnapshot ");
+		builder.append(ID);
+		builder.append("\n");
+		builder.append("[connectedShapeAfterSnapshot=");
 		builder.append(connectedShapeAfterSnapshot);
 		builder.append(", isDomainInvolved=");
 		builder.append(isDomainInvolved);

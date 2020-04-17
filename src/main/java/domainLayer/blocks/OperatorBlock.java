@@ -1,7 +1,7 @@
 package domainLayer.blocks;
-import java.util.HashSet;
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 
-import domainLayer.elements.ElementRepository;
+
 
 
 /**
@@ -22,6 +22,6 @@ public abstract class OperatorBlock extends AssessableBlock {
 		super(blockId);
 	}
 
-	abstract public boolean assess(ElementRepository elementsRepo);
+	abstract public boolean assess(GameWorld gameWorld);
 
 }

@@ -1,10 +1,7 @@
 package domainLayer.blocks;
 
-import java.util.HashSet;
-
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import com.kuleuven.swop.group17.GameWorldApi.Predicate;
-
-import domainLayer.elements.ElementRepository;
 
 /**
  * The abstract class for the concept of a condition block.
@@ -37,11 +34,13 @@ public class ConditionBlock extends AssessableBlock {
 	}
 
 
-//	@Override
-//	public boolean assess(ElementRepository elementsRepo) {
-//		// TODO Auto-generated method stub
-//		return false;
-//	}
+	@Override
+	public boolean assess(GameWorld gameWorld) {
+		return gameWorld.evaluate(getPredicate());
+	}
+
+
+
 
 
 

@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -11,7 +12,7 @@ public class ConditionShape extends Shape {
 
 	public ConditionShape(String id, BlockType type, int x, int y) {
 		super(id, type, x, y);
-		switchCavityStatus(ConnectionType.LEFT);
+		switchCavityStatus(ConnectionType.LEFT, true);
 	}
 
 	@Override

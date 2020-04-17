@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -12,8 +13,8 @@ public class ActionShape extends Shape {
 	public ActionShape(String id, BlockType type, int x, int y) {
 		super(id, type, x, y);
 		// TODO Auto-generated constructor stub
-		switchCavityStatus(ConnectionType.UP);
-		switchCavityStatus(ConnectionType.DOWN);
+		switchCavityStatus(ConnectionType.UP, true);
+		switchCavityStatus(ConnectionType.DOWN, true);
 	}
 
 	@Override

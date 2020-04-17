@@ -43,25 +43,4 @@ public interface GUIListener {
 	 */
 	void onUpdateHighlightingEvent(UpdateHighlightingEvent event);
 
-	/**
-	 * Perform the needed actions in the GUI after the robot changed in the domain.
-	 * @param 	event
-	 * 			A RobotChangeEvent
-	 */
-	void onRobotChangeEvent(RobotChangeEvent event);
-
-	/**
-	 * Perform the needed actions in the GUI after a robot has been added to the domain.
-	 * @param 	event
-	 * 			A RobotAddedEvent
-	 */
-	void onRobotAddedEvent(RobotAddedEvent event);
-
-	/**
-	 * Perform the needed actions in the GUI after an element has been added to the domain.
-	 * @param 	event
-	 * 			A ElementAddedEvent
-	 */
-	void onElementAddedEvent(ElementAddedEvent event);
-
 }

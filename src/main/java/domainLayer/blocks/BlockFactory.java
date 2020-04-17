@@ -1,6 +1,5 @@
 package domainLayer.blocks;
 
-import domainLayer.elements.ElementRepository;
 import types.BlockType;
 
 /**

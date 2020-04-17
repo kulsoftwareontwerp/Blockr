@@ -12,14 +12,10 @@ import commands.CommandHandler;
 import commands.GameWorldCommand;
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.AssessableBlock;
-import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
-import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.ExecutableBlock;
 import domainLayer.blocks.IfBlock;
-import domainLayer.elements.ElementRepository;
-import domainLayer.elements.Robot;
 import domainLayer.gamestates.GameState;
 import domainLayer.gamestates.InValidProgramState;
 import domainLayer.gamestates.ResettingState;
@@ -27,7 +23,6 @@ import events.DomainListener;
 import events.GUIListener;
 import events.GUISubject;
 import events.ResetExecutionEvent;
-import events.RobotChangeEvent;
 import events.UpdateGameStateEvent;
 import events.UpdateHighlightingEvent;
 import types.ExecutionSnapshot;
@@ -37,7 +32,6 @@ public class GameController implements DomainListener, GUISubject {
 	private Collection<GUIListener> guiListeners;
 	private BlockRepository programBlockRepository;
 	private GameState currentState;
-	private ElementRepository gameElementRepository;
 	private GameWorld gameWorld;
 	private GameWorldSnapshot initialSnapshot;
 	private CommandHandler commandHandler;
@@ -45,8 +39,6 @@ public class GameController implements DomainListener, GUISubject {
 	public GameController(GameWorld gameWorld, CommandHandler commandHandler) {
 		this.gameWorld = gameWorld;
 		programBlockRepository = BlockRepository.getInstance();
-		gameElementRepository = ElementRepository.getInstance();
-
 		guiListeners = new HashSet<GUIListener>();
 		
 		this.commandHandler=commandHandler;
@@ -159,11 +151,7 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	private boolean evaluateCondition(AssessableBlock condition) {
-		if (condition instanceof ConditionBlock) {
-			return gameWorld.evaluate(((ConditionBlock) condition).getPredicate());
-		} else {
-			return !evaluateCondition(condition.getOperand());
-		}
+		return condition.assess(gameWorld);
 	}
 
 	/**

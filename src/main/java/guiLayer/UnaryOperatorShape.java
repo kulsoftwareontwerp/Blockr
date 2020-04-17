@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -11,8 +12,8 @@ public class UnaryOperatorShape extends Shape {
 
 	public UnaryOperatorShape(String id, BlockType type, int x, int y) {
 		super(id, type, x, y);
-		switchCavityStatus(ConnectionType.LEFT);
-		switchCavityStatus(ConnectionType.OPERAND);	}
+		switchCavityStatus(ConnectionType.LEFT, true);
+		switchCavityStatus(ConnectionType.OPERAND, true);	}
 
 	@Override
 	public void draw(Graphics g) {

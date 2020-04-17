@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -30,6 +31,8 @@ public abstract class Shape implements Constants, Cloneable {
 	private HashMap<ConnectionType, Pair<Integer, Integer>> coordinateConnectionMap; // Plugs and Sockets
 	private HashMap<ConnectionType, Boolean> connectionStatus; // Is a connection available to add something to it or
 																// not.
+
+	private HashMap<ConnectionType, Boolean> tempConnectionStatus;
 
 	private ConnectionType connectedVia; // NOCONNECTION if solo, Connection from connectedBlock
 	private ConnectionType tempConnectedVia;
@@ -101,20 +104,65 @@ public abstract class Shape implements Constants, Cloneable {
 	public synchronized void setHasToBeRemovedOnUndo(Boolean hasToBeRemovedOnUndo) {
 		this.hasToBeRemovedOnUndo = hasToBeRemovedOnUndo;
 	}
-
+/**
+ * Check if the connection is open, takes the temporary switches into account.
+ * @param connection the connection to check the connection status. of.
+ * @return if the connection is open
+ */
 	public Boolean checkIfOpen(ConnectionType connection) {
-		if (connectionStatus.get(connection) == null) {
-			return false;
+		if (tempConnectionStatus == null) {
+			if (connectionStatus.get(connection) == null) {
+				return false;
+			} else {
+				return connectionStatus.get(connection);
+			}
 		} else {
-			return connectionStatus.get(connection);
+			if (tempConnectionStatus.get(connection) == null) {
+				return false;
+			} else {
+				return tempConnectionStatus.get(connection);
+			}
 		}
 	}
+/**
+ * Switch the cavity status of the given connection. If the switch is not persisted all changes made by the switch will be thrown away on the next persistent switch.
+ * @param connection The connection to switch
+ * @param persist Does the switch need to be persisted.
+ */
+	public void switchCavityStatus(ConnectionType connection, Boolean persist) {
+		if (persist) {
 
-	public void switchCavityStatus(ConnectionType connection) {
-		if (connectionStatus.containsKey(connection)) {
-			connectionStatus.put(connection, !connectionStatus.get(connection));
+			if (connectionStatus.containsKey(connection)) {
+				connectionStatus.put(connection, !connectionStatus.get(connection));
+			} else {
+				connectionStatus.put(connection, true);
+			}
+
 		} else {
-			connectionStatus.put(connection, true);
+			if (tempConnectionStatus == null) {
+				tempConnectionStatus = new HashMap<ConnectionType, Boolean>();
+				tempConnectionStatus.putAll(connectionStatus);
+			}
+			if (tempConnectionStatus.containsKey(connection)) {
+				tempConnectionStatus.put(connection, !tempConnectionStatus.get(connection));
+			} else {
+				tempConnectionStatus.put(connection, true);
+			}
+		}
+	}
+	
+	/**
+	 * Persist or revert the temporary CavityStatus If no temporary CavityStatus is
+	 * assigned this method will do nothing.
+	 * 
+	 * @param persist True if the temporary CavityStatus needs to be saved. False if
+	 *                the temporary CavityStatus needs to be discarded.
+	 */
+	public void persistCavityStatus(Boolean persist) {
+		if (persist && tempConnectionStatus != null) {
+			connectionStatus=tempConnectionStatus;
+		} else {
+			tempConnectionStatus = null;
 		}
 	}
 
@@ -271,7 +319,7 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 	@Override
-	protected Shape clone() {
+	public Shape clone() {
 		Shape s = null;
 		try {
 			s = (Shape) super.clone();

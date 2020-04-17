@@ -1,4 +1,4 @@
-package guiLayer;
+package guiLayer.types;
 
 public class Pair<L,R> {
 

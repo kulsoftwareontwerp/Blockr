@@ -43,7 +43,7 @@ public class BlockSnapshot {
 	}
 
 	public Block getBlock() {
-		return block;
+		return block.clone();
 	}
 
 	public Block getConnectedBlockAfterSnapshot() {
