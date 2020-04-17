@@ -87,7 +87,7 @@ public abstract class Shape implements Constants, Cloneable {
 
 	public abstract void draw(Graphics g); // Each Type of Shape implements its own method
 
-	public abstract HashSet<Pair<Integer, Integer>> createCoordinatePairs();
+	protected abstract HashSet<Pair<Integer, Integer>> createCoordinatePairs();
 
 	public void determineTotalDimensions() {
 	}
@@ -228,8 +228,8 @@ public abstract class Shape implements Constants, Cloneable {
 		return coordinatesShape;
 	}
 
-	public void setCoordinatesShape(HashSet<Pair<Integer, Integer>> coordinatesShape) {
-		this.coordinatesShape = coordinatesShape;
+	public void setCoordinatesShape() {
+		this.coordinatesShape = createCoordinatePairs();
 	}
 
 	public HashMap<ConnectionType, Pair<Integer, Integer>> getCoordinateConnectionMap() {

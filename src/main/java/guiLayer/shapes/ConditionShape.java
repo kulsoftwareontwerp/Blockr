@@ -31,7 +31,7 @@ public class ConditionShape extends Shape {
 	}
 
 	@Override
-	public HashSet<Pair<Integer, Integer>> createCoordinatePairs() {
+	protected HashSet<Pair<Integer, Integer>> createCoordinatePairs() {
 		HashSet<Pair<Integer, Integer>> set = new HashSet<Pair<Integer, Integer>>();
 		
 			for (int i = getX_coord() + 10; i < getX_coord() + getWidth()+10; i++) {

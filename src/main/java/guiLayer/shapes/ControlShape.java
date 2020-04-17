@@ -27,7 +27,7 @@ public class ControlShape extends Shape implements Constants {
 		int startY = getY_coord();
 		HashSet<Shape> internals = getInternals();
 		
-		setCoordinatesShape(createCoordinatePairs());
+		setCoordinatesShape();
 		int total = getHeight();
 
 		g.drawArc(startX + 10, startY - 10, 20, 20, 0, -180);
@@ -57,7 +57,7 @@ public class ControlShape extends Shape implements Constants {
 	}
 
 	@Override
-	public HashSet<Pair<Integer, Integer>> createCoordinatePairs() {
+	protected HashSet<Pair<Integer, Integer>> createCoordinatePairs() {
 		HashSet<Pair<Integer, Integer>> set = new HashSet<Pair<Integer, Integer>>();
 			for (int i = getX_coord(); i < getX_coord() + getWidth(); i++) {
 				for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
@@ -107,7 +107,7 @@ public class ControlShape extends Shape implements Constants {
 		
 		setHeight(totalHeight);
 		defineConnectionTypes();
-		setCoordinatesShape(createCoordinatePairs());
+		setCoordinatesShape();
 	}
 	
 	private Integer determineTotalDimensions(Shape shape) {
