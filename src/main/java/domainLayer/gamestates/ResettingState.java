@@ -44,8 +44,8 @@ public class ResettingState extends GameState {
 
 	public void reset() {
 		if(!updated) {
-		GameWorldCommand command = new ResetCommand(gameController);
-		gameController.handleCommand(command);
+			GameWorldCommand command = new ResetCommand(gameController);
+			gameController.handleCommand(command);
 		}
 		else {
 			gameController.resetGame();

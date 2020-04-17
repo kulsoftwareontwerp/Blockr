@@ -69,7 +69,6 @@ public class GameController implements DomainListener, GUISubject {
 	public void resetGameExecution() {
 		GameState currentState = getCurrentState();
 		currentState.reset();
-		
 	}
 	
 	

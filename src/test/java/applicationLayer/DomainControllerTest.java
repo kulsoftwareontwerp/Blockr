@@ -7,6 +7,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
 
 import org.junit.After;
 import org.junit.Before;
@@ -17,6 +20,8 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+
+import commands.CommandHandler;
 
 /**
  * DomainControllerTest

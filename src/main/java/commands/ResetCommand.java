@@ -32,7 +32,6 @@ public class ResetCommand implements GameWorldCommand {
 
 	@Override
 	public void execute() {
-		
 		snapshot = gameController.resetGame();
 	}
 

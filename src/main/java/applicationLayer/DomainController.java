@@ -36,7 +36,7 @@ public class DomainController {
 	private ElementController elementController;
 	private GameWorld gameWorld;
 	private CommandHandler commandHandler;
-
+	
 	/**
 	 * Construct a domainController and it's dependencies. - GameController -
 	 * BlockController - ElementController
@@ -51,11 +51,19 @@ public class DomainController {
 
 	}
 
+	// Used for mockinjection in the tests
 	@SuppressWarnings("unused")
-	private DomainController(GameController gameController, BlockController blockController,
-			ElementController elementController, GameWorld gameWorld, CommandHandler handler) {
-		initializeDomainController(gameController, blockController, elementController, gameWorld, handler);
+	private DomainController(GameWorld gw, GameController gc, BlockController bc) {
+		this.gameWorld = gw;
+		this.gameController = gc;
+		this.blockController = bc;
 	}
+	
+//	@SuppressWarnings("unused")
+//	private DomainController(GameController gameController, BlockController blockController,
+//			ElementController elementController, GameWorld gameWorld, CommandHandler handler) {
+//		initializeDomainController(gameController, blockController, elementController, gameWorld, handler);
+//	}
 
 	private void initializeDomainController(GameController gameController, BlockController blockController,
 			ElementController elementController, GameWorld gameWorld, CommandHandler handler) {
@@ -81,13 +89,6 @@ public class DomainController {
 			new BlockType(action.toString(), BlockCategory.ACTION, action);
 		}
 
-	}
-	
-	// Used for mockinjection in the tests
-	private DomainController(GameWorld gw, GameController gc, BlockController bc) {
-		this.gameWorld = gw;
-		this.gameController = gc;
-		this.blockController = bc;
 	}
 
 	/**
@@ -179,7 +180,12 @@ public class DomainController {
 
 	}
 
-	
+	/**
+	 * Resets the game execution. 
+	 * 
+	 * @event UpdateHighlightingEvent
+	 * 		  Fires a UpdateHighlightingEvent if the program was in an executing state.
+	 */
 	public void resetGameExecution() {
 		gameController.resetGameExecution();
 	}
@@ -324,7 +330,12 @@ public class DomainController {
 		blockController.removeListener(listener);
 	}
 
-	
+	/**
+	 * Executes the next block to be executed if the gamestate is in a valid state or an in execution state. If this is not the case, nothing happens.
+	 * 
+	 * @event UpdateHighlightingEvent
+	 * 		  Fires a UpdateHighlightingEvent if the program was in a valid state or an in executing state.
+	 */
 	public void executeBlock() {
 		gameController.executeBlock();
 	}
