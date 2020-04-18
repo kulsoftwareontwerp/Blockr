@@ -8,7 +8,7 @@ import domainLayer.blocks.Block;
 import types.BlockSnapshot;
 
 /**
- * /** RemoveBlockCommand
+ *  RemoveBlockCommand
  * 
  * @version 0.1
  * @author group17
