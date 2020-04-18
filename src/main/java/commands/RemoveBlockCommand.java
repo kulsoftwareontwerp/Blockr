@@ -37,7 +37,7 @@ public class RemoveBlockCommand implements BlockCommand {
 	@Override
 	public void undo() {
 		if (snapshot != null) {
-			BlockSnapshot newSnapshot = new BlockSnapshot(snapshot.getBlock(), snapshot.getConnectedBlockAfterSnapshot(), snapshot.getConnectedBlockBeforeSnapshot(), null);
+			BlockSnapshot newSnapshot = new BlockSnapshot(snapshot.getBlock(), snapshot.getConnectedBlockAfterSnapshot(), snapshot.getConnectedBlockBeforeSnapshot(), snapshot.getChangingBlocks());
 			this.snapshot=newSnapshot;
 			blockController.restoreBlockSnapshot(snapshot, true);
 			snapshot = null;

@@ -164,7 +164,7 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		HashSet<Block> addedBlocks = new HashSet<Block>();
 		addedBlocks.add(programBlockRepository.getBlockByID(newBlockId).clone());
-		BlockSnapshot snapshot = new BlockSnapshot(newBlock, null, connectedBlock,addedBlocks );
+		BlockSnapshot snapshot = new BlockSnapshot(newBlock, null, connectedBlock, addedBlocks);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
@@ -179,7 +179,8 @@ public class BlockController implements GUISubject, DomainSubject {
 		if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 			caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 		}
-		fireBlockAdded(newBlockId, caID, after, blockType, addedBlocks.stream().map(s->s.getBlockId()).collect(Collectors.toSet()));
+		fireBlockAdded(newBlockId, caID, after, blockType,
+				addedBlocks.stream().map(s -> s.getBlockId()).collect(Collectors.toSet()));
 
 		return snapshot;
 	}
@@ -222,9 +223,12 @@ public class BlockController implements GUISubject, DomainSubject {
 		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
 		Set<String> idsToBeRemoved = new HashSet<String>();
 		Block deletedBlock = programBlockRepository.getBlockByID(blockID).clone();
-		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1)).clone();
-	
-		BlockSnapshot snapshot = new BlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(deletedBlock) );
+		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1)) != null
+				? programBlockRepository.getBlockByID(previousConnection.get(1)).clone()
+				: null;
+
+		BlockSnapshot snapshot = new BlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,
+				programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(deletedBlock));
 
 		idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
 
@@ -369,8 +373,10 @@ public class BlockController implements GUISubject, DomainSubject {
 				connectionAfterMove);
 //		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
 //				connectedAfterMoveBlockId, connectionAfterMove);
-		Set<Block> movedBlocks = programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(
-				programBlockRepository.getBlockByID(topOfMovedChainBlockId)).stream().map(b->b.clone()).collect(Collectors.toSet());
+		Set<Block> movedBlocks = programBlockRepository
+				.getAllBlocksConnectedToAndAfterACertainBlock(
+						programBlockRepository.getBlockByID(topOfMovedChainBlockId))
+				.stream().map(b -> b.clone()).collect(Collectors.toSet());
 
 		ArrayList<String> previousConnection = programBlockRepository
 				.getConnectedParentIfExists(topOfMovedChainBlockId);
@@ -386,7 +392,8 @@ public class BlockController implements GUISubject, DomainSubject {
 				connectedAfterMoveBlockId, connectionAfterMove);
 
 		Block connectedBlockAfterMove = programBlockRepository.getBlockByID(connectedAfterMoveBlockId);
-		BlockSnapshot snapshot = new BlockSnapshot(movedBlock, connectedBlockBeforeMove, connectedBlockAfterMove, movedBlocks);
+		BlockSnapshot snapshot = new BlockSnapshot(movedBlock, connectedBlockBeforeMove, connectedBlockAfterMove,
+				movedBlocks);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
