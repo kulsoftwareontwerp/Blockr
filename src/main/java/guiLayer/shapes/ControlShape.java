@@ -60,7 +60,7 @@ public class ControlShape extends Shape implements Constants {
 		HashSet<Coordinate> set = new HashSet<Coordinate>();
 			for (int i = getX_coord(); i < getX_coord() + getWidth(); i++) {
 				for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
-					if (!(j > 25+getY_coord() && j <= getY_coord()+getHeight()-25 && i > getX_coord() && i <= getX_coord()+getWidth())) // to give room for the clip, otherwise it won't wrok
+					if (!(j > 25+getY_coord() && j <= getY_coord()+getHeight()-25 && i > getX_coord() && i <= getX_coord()+getWidth())) // to give room for the clip, otherwise it won't work
 						set.add(new Coordinate(i, j));
 				}
 			}

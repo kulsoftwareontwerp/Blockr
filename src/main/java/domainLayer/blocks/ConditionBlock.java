@@ -21,7 +21,7 @@ public class ConditionBlock extends AssessableBlock {
 	 */
 	public ConditionBlock(String blockId, BlockType type) {
 		super(blockId);
-
+		this.type=type;
 	}
 
 
