@@ -162,7 +162,9 @@ public class BlockController implements GUISubject, DomainSubject {
 		Block newBlock = programBlockRepository.getBlockByID(newBlockId);
 		Block connectedBlock = programBlockRepository.getBlockByID(connectedBlockId);
 
-		BlockSnapshot snapshot = new BlockSnapshot(newBlock, null, connectedBlock);
+		HashSet<Block> addedBlocks = new HashSet<Block>();
+		addedBlocks.add(programBlockRepository.getBlockByID(newBlockId).clone());
+		BlockSnapshot snapshot = new BlockSnapshot(newBlock, null, connectedBlock,addedBlocks );
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
@@ -177,9 +179,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 			caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 		}
-		HashSet<String> addedBlocks = new HashSet<String>();
-		addedBlocks.add(newBlockId);
-		fireBlockAdded(newBlockId, caID, after, blockType, addedBlocks);
+		fireBlockAdded(newBlockId, caID, after, blockType, addedBlocks.stream().map(s->s.getBlockId()).collect(Collectors.toSet()));
 
 		return snapshot;
 	}
@@ -221,9 +221,10 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
 		Set<String> idsToBeRemoved = new HashSet<String>();
-		Block deletedBlock = programBlockRepository.getBlockByID(blockID);
-		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1));
-		BlockSnapshot snapshot = new BlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null);
+		Block deletedBlock = programBlockRepository.getBlockByID(blockID).clone();
+		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1)).clone();
+	
+		BlockSnapshot snapshot = new BlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(deletedBlock) );
 
 		idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
 
@@ -253,8 +254,6 @@ public class BlockController implements GUISubject, DomainSubject {
 		ConnectionType before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
 				snapshot.getBlock());
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
-
-
 
 		if (removed) {
 			Boolean maxBlocksReached = programBlockRepository.checkIfMaxNbOfBlocksReached();
@@ -287,9 +286,9 @@ public class BlockController implements GUISubject, DomainSubject {
 			}
 
 			fireBlockChanged(snapshot.getBlock().getBlockId(), snapshot.getBlock().getBlockId(), cbID, before, caID,
-					after, programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock()));
+					after, snapshot.getChangingBlocks().stream().map(s -> s.getBlockId()).collect(Collectors.toSet()));
 		}
-		
+
 		fireUpdateGameState();
 		fireResetExecutionEvent();
 	}
@@ -308,19 +307,19 @@ public class BlockController implements GUISubject, DomainSubject {
 		Block toAdd = snapshot.getBlock();
 
 		if (toAdd.getConditionBlock() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getConditionBlock(), null, toAdd);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getConditionBlock(), null, toAdd, null);
 			fireBlockAdded(s);
 		}
 		if (toAdd.getFirstBlockOfBody() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getFirstBlockOfBody(), null, toAdd);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getFirstBlockOfBody(), null, toAdd, null);
 			fireBlockAdded(s);
 		}
 		if (toAdd.getNextBlock() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getNextBlock(), null, toAdd);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getNextBlock(), null, toAdd, null);
 			fireBlockAdded(s);
 		}
 		if (toAdd.getOperand() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getOperand(), null, toAdd);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getOperand(), null, toAdd, null);
 			fireBlockAdded(s);
 		}
 	}
@@ -370,6 +369,8 @@ public class BlockController implements GUISubject, DomainSubject {
 				connectionAfterMove);
 //		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
 //				connectedAfterMoveBlockId, connectionAfterMove);
+		Set<Block> movedBlocks = programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(
+				programBlockRepository.getBlockByID(topOfMovedChainBlockId)).stream().map(b->b.clone()).collect(Collectors.toSet());
 
 		ArrayList<String> previousConnection = programBlockRepository
 				.getConnectedParentIfExists(topOfMovedChainBlockId);
@@ -385,14 +386,14 @@ public class BlockController implements GUISubject, DomainSubject {
 				connectedAfterMoveBlockId, connectionAfterMove);
 
 		Block connectedBlockAfterMove = programBlockRepository.getBlockByID(connectedAfterMoveBlockId);
-		BlockSnapshot snapshot = new BlockSnapshot(movedBlock, connectedBlockBeforeMove, connectedBlockAfterMove);
+		BlockSnapshot snapshot = new BlockSnapshot(movedBlock, connectedBlockBeforeMove, connectedBlockAfterMove, movedBlocks);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
 
 		fireBlockChanged(movedBlockID, topOfMovedChainBlockId, previousConnection.get(1),
 				ConnectionType.valueOf(previousConnection.get(0)), connectedAfterMoveBlockId, connectionAfterMove,
-				programBlockRepository.getAllBlockIDsUnderneath(movedBlock));
+				snapshot.getChangingBlocks().stream().map(s -> s.getBlockId()).collect(Collectors.toSet()));
 
 		return snapshot;
 	}
@@ -561,7 +562,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @param changingBlocks
 	 * @return
 	 */
-	public Boolean checkIfConnectionIsOpen(String blockIdToCheck, ConnectionType connection, Set<String> changingBlocks) {
+	public Boolean checkIfConnectionIsOpen(String blockIdToCheck, ConnectionType connection,
+			Set<String> changingBlocks) {
 		Block blockToCheck = programBlockRepository.getBlockByID(blockIdToCheck);
 		if (blockToCheck == null) {
 			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
@@ -572,10 +574,10 @@ public class BlockController implements GUISubject, DomainSubject {
 		if (changingBlocks.size() == 0) {
 			return programBlockRepository.checkIfConnectionIsOpen(blockToCheck, connection, null);
 		}
-		 
+
 		for (String id : changingBlocks) {
 			Block changeBlock = programBlockRepository.getBlockByID(id);
-			if(programBlockRepository.checkIfConnectionIsOpen(blockToCheck, connection, changeBlock)) {
+			if (programBlockRepository.checkIfConnectionIsOpen(blockToCheck, connection, changeBlock)) {
 				return true;
 			}
 		}

@@ -278,7 +278,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				setCurrentShape(shape);
 
-
 				getCurrentShape().setConnectedVia(ConnectionType.NOCONNECTION, true);
 
 				var mouseOffset = calculateOffsetMouse(x, y, getCurrentShape().getX_coord(),
@@ -473,8 +472,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia(), true);
 	}
 
-
-
 	private void updateAllShapesInMovementAccordingToChangeOfLeader(int diffX, int diffy, Shape excludedShape) {
 		for (Shape shape : getShapesInMovement()) {
 
@@ -491,7 +488,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		for (ConnectionType connection : ConnectionType.values()) {
 			shapesInProgramAreaConnectionMap.put(connection, new HashMap<Shape, Coordinate>());
-			for (Shape shape : programArea.getShapesInProgramArea().stream().filter(e -> domainController.checkIfConnectionIsOpen(e.getId(), connection, getShapesInMovement().stream().map(s->s.getId()).collect(Collectors.toSet())))
+			for (Shape shape : programArea.getShapesInProgramArea().stream()
+					.filter(e -> domainController.checkIfConnectionIsOpen(e.getId(), connection,
+							getShapesInMovement().stream().map(s -> s.getId()).collect(Collectors.toSet())))
 					.collect(Collectors.toSet())) {
 				shapesInProgramAreaConnectionMap.get(connection).put(shape,
 						shape.getCoordinateConnectionMap().get(connection));
@@ -679,8 +678,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			coordinates.putAll(currentSnapshot.getSavedCoordinates());
 		}
 		for (String id : ids) {
-			BlockType type = domainController.getBlockType(id);
-			shapes.add(shapeFactory.createShape(id, type, coordinates.get(id)));
+				BlockType type = domainController.getBlockType(id);
+				shapes.add(shapeFactory.createShape(id, type, coordinates.get(id)));
 		}
 		return shapes;
 	}
@@ -929,11 +928,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					domainController.getBlockType(event.getTopOfMovedChainId()),
 					currentSnapshot.getSavedCoordinates().get(event.getTopOfMovedChainId()));
 
-
-
 			// handle add to programArea in theory
 
-			for (Shape movedShape : getShapesInMovement()) {
+			for (Shape movedShape : mapSetOfIdsToShapes(event.getChangedBlocks())) {
 
 				movedShape.setCoordinatesShape();
 				movedShape.defineConnectionTypes();
@@ -961,7 +958,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				programArea.addShapeToProgramArea(changedShape);
 			}
 
-
 			// handle add to programArea in practice, all coordinates etc are set.
 			for (Shape shape : programArea.getShapesInProgramArea()) {
 				shape.setCoordinatesShape();
@@ -987,11 +983,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 //				domainController.getBlockType(changedBlockId),
 //				currentSnapshot.getSavedCoordinates().get(changedBlockId));
 //		
-		
+
 		Shape changedShape = getShapesInMovement().stream().filter(s -> s.getId().equals(changedBlockId)).findFirst()
 				.get();
-		
-		
+
 		/**
 		 * newly connected shape
 		 */
