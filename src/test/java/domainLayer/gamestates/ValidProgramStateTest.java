@@ -4,10 +4,23 @@
 package domainLayer.gamestates;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+
+import com.kuleuven.swop.group17.GameWorldApi.Action;
+
+import applicationLayer.GameController;
+import domainLayer.blocks.ActionBlock;
 
 /**
  * ValidProgramStateTest
@@ -17,11 +30,20 @@ import org.junit.Test;
  */
 public class ValidProgramStateTest {
 
+	@Mock(name="gameController")
+	private GameController gameController;
+	@Spy @InjectMocks
+	private ValidProgramState vps;
+	
+	private ActionBlock actionBlock;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
+		actionBlock = new ActionBlock("actionBlockId", Mockito.mock(Action.class));
 	}
 
 	/**
@@ -36,7 +58,12 @@ public class ValidProgramStateTest {
 	 */
 	@Test
 	public void testExecute() {
-		fail("Not yet implemented");
+		when(gameController.findFirstBlockToBeExecuted()).thenReturn(actionBlock);
+		
+		vps.execute();
+		
+		verify(gameController,atLeastOnce()).toState(Mockito.any(InExecutionState.class));
+//		verify(Mockito.any(InExecutionState.class),atLeastOnce()).execute();
 	}
 
 	/**
