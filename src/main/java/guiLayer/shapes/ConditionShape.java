@@ -13,7 +13,6 @@ public class ConditionShape extends Shape {
 
 	public ConditionShape(String id, BlockType type,Coordinate coordinate) {
 		super(id, type, coordinate);
-		switchCavityStatus(ConnectionType.LEFT, true);
 	}
 
 	@Override

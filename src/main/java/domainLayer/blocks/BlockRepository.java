@@ -120,46 +120,86 @@ public class BlockRepository {
 	}
 
 	private void validateConnection(Block connectedBlock, ConnectionType connection, Block block) {
+		boolean connectionOpen = checkIfConnectionIsOpen(connectedBlock, connection, block);
+
+		if (!connectionOpen) {
+			throw new InvalidBlockConnectionException("Connection at connectedBlock is already occupied.");
+		}
+
+	}
+
+	/**
+	 * @param connectedBlock
+	 * @param connection
+	 * @param block
+	 * @return
+	 */
+	public boolean checkIfConnectionIsOpen(Block connectedBlock, ConnectionType connection, Block block) {
 		boolean connectionOccupied = false;
 		switch (connection) {
 		case NOCONNECTION:
 			break;
 		case UP:
 			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = block.getNextBlock() != null && !headBlocks.contains(connectedBlock);
+			connectionOccupied = !headBlocks.contains(connectedBlock);
+			
+			if(connectionOccupied && block!=null) {
+				if(block instanceof ExecutableBlock) {
+					connectionOccupied = block.getNextBlock()!=connectedBlock;					
+				}
+			}
 			break;
 		case LEFT:
 			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = (block.getOperand() != null || block.getConditionBlock() != null)
-					&& !headBlocks.contains(connectedBlock);
+			connectionOccupied = !headBlocks.contains(connectedBlock);
+			
+			if(connectionOccupied && block!=null) {
+				if(block instanceof ControlBlock) {
+					connectionOccupied = block.getConditionBlock()!=connectedBlock;					
+				}
+				if(block instanceof OperatorBlock) {
+					connectionOccupied = block.getOperand() != connectedBlock;					
+				}
+			}
 			break;
 		case DOWN:
 			validateConnectedBlockIsInDomain(connectedBlock);
 			connectionOccupied = connectedBlock.getNextBlock() != null;
+			if(connectionOccupied && block != null) {
+				connectionOccupied = !connectedBlock.getNextBlock().getBlockId().equals(block.getBlockId());
+			}
 			break;
 		case BODY:
 			validateConnectedBlockIsInDomain(connectedBlock);
 			connectionOccupied = connectedBlock.getFirstBlockOfBody() != null;
+			if(connectionOccupied && block != null) {
+				connectionOccupied = !connectedBlock.getFirstBlockOfBody().getBlockId().equals(block.getBlockId());
+			}
 			break;
 		case CONDITION:
 			validateConnectedBlockIsInDomain(connectedBlock);
 			connectionOccupied = connectedBlock.getConditionBlock() != null;
+			if(connectionOccupied && block != null) {
+				connectionOccupied = !connectedBlock.getConditionBlock().getBlockId().equals(block.getBlockId());
+			}
 			break;
 		case OPERAND:
 			validateConnectedBlockIsInDomain(connectedBlock);
 			connectionOccupied = connectedBlock.getOperand() != null;
+			if(connectionOccupied && block != null) {
+				connectionOccupied = !connectedBlock.getOperand().getBlockId().equals(block.getBlockId());
+			}
 			break;
 
 		default:
 			// It shouldn't be possible to get here.
 			break;
 		}
-
-		if (connectionOccupied) {
-			throw new InvalidBlockConnectionException("Connection at connectedBlock is already occupied.");
-		}
-
+		return !connectionOccupied;
 	}
+	
+	
+
 
 	private void validateConnectedBlockIsInDomain(Block connectedBlock) {
 		if (connectedBlock == null) {

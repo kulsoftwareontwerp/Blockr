@@ -283,7 +283,7 @@ public class BlockController implements GUISubject, DomainSubject {
 			if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 				caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 			}
-			
+
 			fireBlockChanged(snapshot.getBlock().getBlockId(), snapshot.getBlock().getBlockId(), cbID, before, caID,
 					after, programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock()));
 		}
@@ -297,7 +297,8 @@ public class BlockController implements GUISubject, DomainSubject {
 		if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 			caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 		}
-		fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType(), programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock()));
+		fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType(),
+				programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock()));
 
 		Block toAdd = snapshot.getBlock();
 
@@ -546,6 +547,35 @@ public class BlockController implements GUISubject, DomainSubject {
 			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
 		}
 		return b.getBlockType();
+	}
+
+	/**
+	 * 
+	 * @param blockIdToCheck
+	 * @param connection
+	 * @param changingBlocks
+	 * @return
+	 */
+	public Boolean checkIfConnectionIsOpen(String blockIdToCheck, ConnectionType connection, Set<String> changingBlocks) {
+		Block blockToCheck = programBlockRepository.getBlockByID(blockIdToCheck);
+		if (blockToCheck == null) {
+			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
+		}
+		if (!blockToCheck.getSupportedConnectionTypes().contains(connection)) {
+			return false;
+		}
+		if (changingBlocks.size() == 0) {
+			return programBlockRepository.checkIfConnectionIsOpen(blockToCheck, connection, null);
+		}
+		 
+		for (String id : changingBlocks) {
+			Block changeBlock = programBlockRepository.getBlockByID(id);
+			if(programBlockRepository.checkIfConnectionIsOpen(blockToCheck, connection, changeBlock)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

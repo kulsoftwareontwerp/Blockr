@@ -26,8 +26,6 @@ public abstract class Shape implements Constants, Cloneable {
 	private HashSet<Coordinate> coordinatesShape;
 
 	private HashMap<ConnectionType, Coordinate> coordinateConnectionMap; // Plugs and Sockets
-	private HashMap<ConnectionType, Boolean> connectionStatus; // Is a connection available to add something to it or
-																// not.
 
 	private HashMap<ConnectionType, Boolean> tempConnectionStatus;
 
@@ -65,7 +63,6 @@ public abstract class Shape implements Constants, Cloneable {
 		initDimensions(); // setWidth & setHeight
 		coordinatesShape = fillShapeWithCoordinates();
 		coordinateConnectionMap = new HashMap<ConnectionType,Coordinate>();
-		connectionStatus = new HashMap<ConnectionType, Boolean>();
 		defineConnectionTypes(); // setCoordinateConnectionMap, SOCKETS AND PLUGS
 	}
 
@@ -95,88 +92,11 @@ public abstract class Shape implements Constants, Cloneable {
 		this.hasToBeRemovedOnUndo = hasToBeRemovedOnUndo;
 	}
 
-	/**
-	 * Check if the connection is open, takes the temporary switches into account.
-	 * 
-	 * @param connection the connection to check the connection status. of.
-	 * @return if the connection is open
-	 */
-	public Boolean checkIfOpen(ConnectionType connection) {
-		if (tempConnectionStatus == null) {
-			if (connectionStatus.get(connection) == null) {
-				return false;
-			} else {
-				return connectionStatus.get(connection);
-			}
-		} else {
-			if (tempConnectionStatus.get(connection) == null) {
-				return false;
-			} else {
-				return tempConnectionStatus.get(connection);
-			}
-		}
-	}
-
-	/**
-	 * Switch the cavity status of the given connection. If the switch is not
-	 * persisted all changes made by the switch will be thrown away on the next
-	 * persistent switch.
-	 * 
-	 * @param connection The connection to switch
-	 * @param persist    Does the switch need to be persisted.
-	 */
-	public void switchCavityStatus(ConnectionType connection, Boolean persist) {
-		if (persist) {
-
-			if (connectionStatus.containsKey(connection)) {
-				connectionStatus.put(connection, !connectionStatus.get(connection));
-			} else {
-				connectionStatus.put(connection, true);
-			}
-
-		} else {
-			if (tempConnectionStatus == null) {
-				tempConnectionStatus = new HashMap<ConnectionType, Boolean>();
-				tempConnectionStatus.putAll(connectionStatus);
-			}
-			if (tempConnectionStatus.containsKey(connection)) {
-				tempConnectionStatus.put(connection, !tempConnectionStatus.get(connection));
-			} else {
-				tempConnectionStatus.put(connection, true);
-			}
-		}
-	}
-	
-	public void setCavityStatus(ConnectionType connection,Boolean status) {
-		connectionStatus.put(connection, status);
-	}
-	
-
-	/**
-	 * Persist or revert the temporary CavityStatus If no temporary CavityStatus is
-	 * assigned this method will do nothing.
-	 * 
-	 * @param persist True if the temporary CavityStatus needs to be saved. False if
-	 *                the temporary CavityStatus needs to be discarded.
-	 */
-	public void persistCavityStatus(Boolean persist) {
-		if (persist && tempConnectionStatus != null) {
-			connectionStatus = tempConnectionStatus;
-		} else {
-			tempConnectionStatus = null;
-		}
-	}
-
-	public void restoreCavityStatus(Shape shape) {
-		if (shape != null) {
-			this.connectionStatus = new HashMap<ConnectionType, Boolean>(shape.connectionStatus);
-		}
-	}
 
 	public HashSet<Coordinate> getTriggerSet(ConnectionType connection) {
 		HashSet<Coordinate> triggerSet = new HashSet<Coordinate>();
 
-		if (getCoordinateConnectionMap().keySet().contains(connection) && checkIfOpen(connection)) {
+		if (getCoordinateConnectionMap().keySet().contains(connection)) {
 			int x_current = getCoordinateConnectionMap().get(connection).getX();
 			int y_current = getCoordinateConnectionMap().get(connection).getY();
 
@@ -370,7 +290,6 @@ public abstract class Shape implements Constants, Cloneable {
 		Shape s = null;
 		try {
 			s = (Shape) super.clone();
-			s.connectionStatus = new HashMap<ConnectionType, Boolean>(this.connectionStatus);
 			s.coordinateConnectionMap = new HashMap<ConnectionType, Coordinate>(
 					this.coordinateConnectionMap);
 			s.coordinatesShape = new HashSet<Coordinate>(this.coordinatesShape);

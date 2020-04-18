@@ -1,6 +1,7 @@
 package applicationLayer;
 
 import java.awt.Graphics;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.kuleuven.swop.group17.GameWorldApi.Action;
@@ -343,6 +344,27 @@ public class DomainController {
 		return blockController.getEnclosingControlBlock(id);
 	}
 
+	/**
+	 * 
+	 * @param blockToCheck
+	 * @param connection
+	 * @param changingBlocks
+	 * @return
+	 */
+	public Boolean checkIfConnectionIsOpen(String blockToCheck,ConnectionType connection,Set<String> changingBlocks) {
+		if (blockToCheck == null || blockToCheck == "") {
+			throw new IllegalArgumentException("No BlockID to check given.");
+		}
+		if(connection ==null) {
+			throw new IllegalArgumentException("No connection to check given.");
+		}
+		if(changingBlocks==null) {
+			changingBlocks=new HashSet<String>();
+		}
+		
+		return blockController.checkIfConnectionIsOpen(blockToCheck,connection,changingBlocks);
+	}
+	
 	/**
 	 * 
 	 * @param id

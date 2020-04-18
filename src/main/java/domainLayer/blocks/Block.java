@@ -1,7 +1,10 @@
 package domainLayer.blocks;
 
+import java.util.Set;
+
 import exceptions.InvalidBlockConnectionException;
 import types.BlockType;
+import types.ConnectionType;
 
 /**
  * The abstract class for the concept of a program block.
@@ -78,9 +81,8 @@ public abstract class Block implements Cloneable {
 			} catch (InvalidBlockConnectionException ex) {
 				// In the unlikely case that a block has a connection but doesn't allow to set
 				// the connection, don't do anything with the exception and move on.
-			}
+			}			
 			
-
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
@@ -286,9 +288,17 @@ public abstract class Block implements Cloneable {
 	}
 	
 	/**
-	 * Retrieve the Type of the corresponding block.
-	 * @return the Type of the corresponding block.
+	 * Retrieve the Type of this block.
+	 * @return the Type of this block.
 	 */
 	public abstract BlockType getBlockType();
+	
+	
+	/**
+	 * Retrieve the supported connectionTypes for this block.
+	 * @return the supported connectionTypes for this block.
+	 */
+	public abstract Set<ConnectionType> getSupportedConnectionTypes();
+	
 
 }

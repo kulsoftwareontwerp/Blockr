@@ -15,10 +15,6 @@ public class ControlShape extends Shape implements Constants {
 
 	public ControlShape(String id, BlockType type, Coordinate coordinate) {
 		super(id, type, coordinate);
-		switchCavityStatus(ConnectionType.UP, true);
-		switchCavityStatus(ConnectionType.DOWN, true);
-		switchCavityStatus(ConnectionType.CONDITION, true);
-		switchCavityStatus(ConnectionType.BODY, true);
 	}
 
 	@Override

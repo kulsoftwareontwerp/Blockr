@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 
+import applicationLayer.DomainController;
 import guiLayer.shapes.ControlShape;
 import guiLayer.shapes.Shape;
 import guiLayer.types.Constants;
@@ -124,7 +125,7 @@ public class ProgramArea implements Constants {
 		this.highlightedShape = highlightedShape;
 	}
 
-	void draw(Graphics blockrGraphics) {
+	void draw(Graphics blockrGraphics, DomainController controller) {
 
 		// draw all shapes in shapesInProgramArea
 		if (getShapesInProgramArea() != null && !getShapesInProgramArea().isEmpty()) {
@@ -148,7 +149,9 @@ public class ProgramArea implements Constants {
 					blockrGraphics.drawOval(tempx, tempy, 6, 6);
 
 					if (DebugModus.CONNECTIONSTATUS.compareTo(CanvasWindow.debugModus) <= 0) {
-						if (shape.checkIfOpen(p.getKey())) {
+
+						if (controller.checkIfConnectionIsOpen(shape.getId(), p.getKey(), null)) {
+//						if (shape.checkIfOpen(p.getKey())) {
 							blockrGraphics.setColor(Color.green);
 						} else {
 							blockrGraphics.setColor(Color.red);

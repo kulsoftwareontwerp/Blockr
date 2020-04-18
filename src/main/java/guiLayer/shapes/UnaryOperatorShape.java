@@ -13,8 +13,7 @@ public class UnaryOperatorShape extends Shape {
 
 	public UnaryOperatorShape(String id, BlockType type, Coordinate coordinate) {
 		super(id, type, coordinate);
-		switchCavityStatus(ConnectionType.LEFT, true);
-		switchCavityStatus(ConnectionType.OPERAND, true);	}
+	}
 
 	@Override
 	public void draw(Graphics g) {

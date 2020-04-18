@@ -1,5 +1,10 @@
 package domainLayer.blocks;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import types.ConnectionType;
+
 /**
  * The abstract class for the concept of a unary operator block.
  * 
@@ -9,6 +14,7 @@ package domainLayer.blocks;
 public abstract class UnaryOperatorBlock extends OperatorBlock {
 
 	private AssessableBlock operand;
+	private HashSet<ConnectionType> supportedConnectionTypes;
 
 	/**
 	 * Create a Unary Operator Block
@@ -17,6 +23,9 @@ public abstract class UnaryOperatorBlock extends OperatorBlock {
 	 */
 	public UnaryOperatorBlock(String blockId) {
 		super(blockId);
+		this.supportedConnectionTypes=new HashSet<ConnectionType>();
+		supportedConnectionTypes.add(ConnectionType.LEFT);
+		supportedConnectionTypes.add(ConnectionType.OPERAND);
 	}
 
 	/**
@@ -34,6 +43,11 @@ public abstract class UnaryOperatorBlock extends OperatorBlock {
 	 */
 	public AssessableBlock getOperand() {
 		return this.operand;
+	}
+	
+	@Override
+	public Set<ConnectionType> getSupportedConnectionTypes() {
+		return new HashSet<ConnectionType>(supportedConnectionTypes);
 	}
 
 }

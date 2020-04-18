@@ -13,9 +13,6 @@ public class ActionShape extends Shape {
 
 	public ActionShape(String id, BlockType type, Coordinate coordinate) {
 		super(id, type, coordinate);
-		// TODO Auto-generated constructor stub
-		switchCavityStatus(ConnectionType.UP, true);
-		switchCavityStatus(ConnectionType.DOWN, true);
 	}
 
 	@Override
