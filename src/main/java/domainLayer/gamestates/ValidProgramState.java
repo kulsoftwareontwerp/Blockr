@@ -18,6 +18,9 @@ public class ValidProgramState extends GameState {
 	 * 
 	 * @Result When the program is executed for the first time (when it's in a valid state), it finds the first action block to be executed, 
 	 * 			changes the programState to an InExecutionState with that actionBlock and calls execute on the newly created InExecutedState.
+	 * 
+	 * @event UpdateHighlightingEvent
+	 * 		  Fires an UpdateHighlightingEvent.
 	 */
 	public void execute() {
 		ActionBlock firstActionBlockToBeExecuted = gameController.findFirstBlockToBeExecuted();

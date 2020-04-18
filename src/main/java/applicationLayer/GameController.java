@@ -74,7 +74,7 @@ public class GameController implements DomainListener, GUISubject {
 	 * Resets the game execution. 
 	 * 
 	 * @event UpdateHighlightingEvent
-	 * 		  Fires a UpdateHighlightingEvent if the program was in an executing state.
+	 * 		  Fires an UpdateHighlightingEvent if the program was in an executing state.
 	 */
 	public void resetGameExecution() {
 		GameState currentState = getCurrentState();
@@ -140,7 +140,7 @@ public class GameController implements DomainListener, GUISubject {
 	 * 	If this is not the case, nothing happens.
 	 * 
 	 * @event UpdateHighlightingEvent
-	 * 		  Fires a UpdateHighlightingEvent if the program was in a valid state or an in executing state.
+	 * 		  Fires an UpdateHighlightingEvent if the program was in a valid state or an in executing state.
 	 */
 	public void executeBlock() {
 		GameState currentState = getCurrentState();
