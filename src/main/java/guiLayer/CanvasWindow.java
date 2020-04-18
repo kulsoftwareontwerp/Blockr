@@ -394,9 +394,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 //							|| (getCurrentShape().getConnectedVia() == ConnectionType.NOCONNECTION
 //									&& getCurrentShape().getPreviouslyConnectedVia() != ConnectionType.NOCONNECTION)
 //									&& !domainController.getAllHeadBlocks().contains(getCurrentShape().getId())) {
-						
+
 					else if (!domainController.getAllHeadBlocks().contains(getCurrentShape().getId())) {
-					// filter out the blocks that already a headblock.
+						// filter out the blocks that already a headblock.
 						commandHandler.handle(new DomainMoveCommand(domainController, this,
 								new GuiSnapshot(getShapeClonesInMovement()), new GuiSnapshot(getShapesInMovement())));
 
@@ -945,10 +945,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 //			Shape topOfChainShape = getShapesInMovement().stream()
 //					.filter(s -> s.getId().equals(event.getTopOfMovedChainId())).findFirst().get();
 
-			Shape changedShape = shapeFactory.createShape(event.getChangedBlockId(), domainController.getBlockType(event.getChangedBlockId()), currentSnapshot.getSavedCoordinates().get(event.getChangedBlockId()));
-			Shape topOfChainShape = shapeFactory.createShape(event.getTopOfMovedChainId(), domainController.getBlockType(event.getTopOfMovedChainId()), currentSnapshot.getSavedCoordinates().get(event.getTopOfMovedChainId()));
-			
-			
+			Shape changedShape = shapeFactory.createShape(event.getChangedBlockId(),
+					domainController.getBlockType(event.getChangedBlockId()),
+					currentSnapshot.getSavedCoordinates().get(event.getChangedBlockId()));
+			Shape topOfChainShape = shapeFactory.createShape(event.getTopOfMovedChainId(),
+					domainController.getBlockType(event.getTopOfMovedChainId()),
+					currentSnapshot.getSavedCoordinates().get(event.getTopOfMovedChainId()));
+
 			/**
 			 * newly connected shape
 			 */
@@ -978,6 +981,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						getOppositeConnectionType(event.getConnectionType(), changedLinkedShape), true);
 				changedLinkedShape.setCavityStatus(event.getConnectionType(), false);
 
+				changedShape.setConnectedVia(event.getConnectionType(), true);
 				changedShape.setCavityStatus(changedLinkedShape.getConnectedVia(), false);
 			}
 			// end handle couplings
@@ -1008,6 +1012,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			// changedShape is not in the programArea at the moment.
 			if (changedShape != null) {
+				if (changedShape instanceof ControlShape) {
+					changedShape.determineTotalHeight(
+							mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(changedShape.getId())));
+				}
 				Boolean removeOnUndo = changedShape.getHasToBeRemovedOnUndo();
 				changedShape.setHasToBeRemovedOnUndo(false);
 				programArea.addShapeToProgramArea(changedShape);
