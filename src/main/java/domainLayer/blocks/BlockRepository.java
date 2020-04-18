@@ -1167,6 +1167,7 @@ public class BlockRepository {
 					removeBlockFromHeadBlocks(cb);
 					addBlockToHeadBlocks(snapshot.getBlock());
 				}
+				deepReplace(cb, headBlocks);
 				addBlockToAllBlocks(cb);
 
 			} else {

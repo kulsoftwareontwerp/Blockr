@@ -21,13 +21,9 @@ public abstract class Shape implements Constants, Cloneable {
 	private Coordinate previousCoordinate;
 	private int previousHeight;
 
-	private Boolean hasToBeRemovedOnUndo;
-
 	private HashSet<Coordinate> coordinatesShape;
 
 	private HashMap<ConnectionType, Coordinate> coordinateConnectionMap; // Plugs and Sockets
-
-	private HashMap<ConnectionType, Boolean> tempConnectionStatus;
 
 	private ConnectionType connectedVia; // NOCONNECTION if solo, Connection from connectedBlock
 	private ConnectionType tempConnectedVia;
@@ -46,8 +42,6 @@ public abstract class Shape implements Constants, Cloneable {
 	private int width = 0;
 
 	public Shape(String id, BlockType type, Coordinate coordinate) {
-		hasToBeRemovedOnUndo = false;
-
 		setId(id);
 		setType(type);
 		setCoordinate(coordinate);
@@ -82,14 +76,6 @@ public abstract class Shape implements Constants, Cloneable {
 
 	public Integer getStandardHeight() {
 		return STANDARD_HEIGHT_BLOCK;
-	}
-
-	public synchronized Boolean getHasToBeRemovedOnUndo() {
-		return hasToBeRemovedOnUndo;
-	}
-
-	public synchronized void setHasToBeRemovedOnUndo(Boolean hasToBeRemovedOnUndo) {
-		this.hasToBeRemovedOnUndo = hasToBeRemovedOnUndo;
 	}
 
 
@@ -330,8 +316,6 @@ public abstract class Shape implements Constants, Cloneable {
 		builder.append(id);
 		builder.append(", coord=");
 		builder.append(coordinate);
-		builder.append(", hasToBeRemovedOnUndo=");
-		builder.append(hasToBeRemovedOnUndo);
 		builder.append("]");
 		return builder.toString();
 	}

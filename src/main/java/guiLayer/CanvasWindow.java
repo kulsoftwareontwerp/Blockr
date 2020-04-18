@@ -145,6 +145,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 
 		}
+		super.repaint();
 	}
 
 	public void setShapesInMovement(Set<Shape> shapes) {
@@ -856,8 +857,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		// update internals of controlshapes
 		determineTotalHeightControlShapes();
 
-		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(event.getRemovedBlockId(), "",
-				event.getBeforeRemoveBlockId());
+//		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(event.getRemovedBlockId(), "",
+//				event.getBeforeRemoveBlockId());
 
 		// handle add to programArea in practice, all coordinates etc are set.
 		for (Shape shape : programArea.getShapesInProgramArea()) {
@@ -928,23 +929,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					domainController.getBlockType(event.getTopOfMovedChainId()),
 					currentSnapshot.getSavedCoordinates().get(event.getTopOfMovedChainId()));
 
-			/**
-			 * newly connected shape
-			 */
-			Shape changedLinkedShape = null;
-			/**
-			 * the previous connected shape
-			 */
-			Shape decoupledShape = null;
 
-			if (!event.getBeforeMoveBlockId().equals("")) {
-				decoupledShape = getShapeByID(event.getBeforeMoveBlockId(), programArea.getShapesInProgramArea());
-			}
-
-			if (!event.getChangedLinkedBlockId().equals("")) {
-				changedLinkedShape = getShapeByID(event.getChangedLinkedBlockId(),
-						programArea.getShapesInProgramArea());
-			}
 
 			// handle add to programArea in theory
 
@@ -952,10 +937,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				movedShape.setCoordinatesShape();
 				movedShape.defineConnectionTypes();
-				Boolean removeOnUndo = movedShape.getHasToBeRemovedOnUndo();
-				movedShape.setHasToBeRemovedOnUndo(false);
 				programArea.addShapeToProgramArea(movedShape);
-				movedShape.setHasToBeRemovedOnUndo(removeOnUndo);
 
 			}
 
@@ -967,8 +949,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			// Update the position of all blocks according to the changes of the
 			// controlshapes
 
-			updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(event.getChangedBlockId(),
-					event.getChangedLinkedBlockId(), event.getBeforeMoveBlockId());
+//			updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(event.getChangedBlockId(),
+//					event.getChangedLinkedBlockId(), event.getBeforeMoveBlockId());
 
 			// changedShape is not in the programArea at the moment.
 			if (changedShape != null) {
@@ -976,23 +958,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					changedShape.determineTotalHeight(
 							mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(changedShape.getId())));
 				}
-				Boolean removeOnUndo = changedShape.getHasToBeRemovedOnUndo();
-				changedShape.setHasToBeRemovedOnUndo(false);
 				programArea.addShapeToProgramArea(changedShape);
-				changedShape.setHasToBeRemovedOnUndo(removeOnUndo);
 			}
-			if (changedLinkedShape != null) {
-				Boolean removeOnUndo = changedLinkedShape.getHasToBeRemovedOnUndo();
-				changedLinkedShape.setHasToBeRemovedOnUndo(false);
-				programArea.addShapeToProgramArea(changedLinkedShape);
-				changedLinkedShape.setHasToBeRemovedOnUndo(removeOnUndo);
-			}
-			if (decoupledShape != null) {
-				Boolean removeOnUndo = decoupledShape.getHasToBeRemovedOnUndo();
-				decoupledShape.setHasToBeRemovedOnUndo(false);
-				programArea.addShapeToProgramArea(decoupledShape);
-				decoupledShape.setHasToBeRemovedOnUndo(removeOnUndo);
-			}
+
 
 			// handle add to programArea in practice, all coordinates etc are set.
 			for (Shape shape : programArea.getShapesInProgramArea()) {
@@ -1015,8 +983,15 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private void updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(String changedBlockId,
 			String changedConnectedBlockId, String beforeBlockId) {
 
+//		Shape changedShape = shapeFactory.createShape(changedBlockId,
+//				domainController.getBlockType(changedBlockId),
+//				currentSnapshot.getSavedCoordinates().get(changedBlockId));
+//		
+		
 		Shape changedShape = getShapesInMovement().stream().filter(s -> s.getId().equals(changedBlockId)).findFirst()
 				.get();
+		
+		
 		/**
 		 * newly connected shape
 		 */

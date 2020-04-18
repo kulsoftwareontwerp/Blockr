@@ -254,6 +254,8 @@ public class BlockController implements GUISubject, DomainSubject {
 				snapshot.getBlock());
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
 
+
+
 		if (removed) {
 			Boolean maxBlocksReached = programBlockRepository.checkIfMaxNbOfBlocksReached();
 			if (maxBlocksReached) {
@@ -287,6 +289,9 @@ public class BlockController implements GUISubject, DomainSubject {
 			fireBlockChanged(snapshot.getBlock().getBlockId(), snapshot.getBlock().getBlockId(), cbID, before, caID,
 					after, programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock()));
 		}
+		
+		fireUpdateGameState();
+		fireResetExecutionEvent();
 	}
 
 	private void fireBlockAdded(BlockSnapshot snapshot) {

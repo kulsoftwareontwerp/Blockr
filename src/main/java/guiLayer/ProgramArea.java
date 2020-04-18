@@ -37,9 +37,9 @@ public class ProgramArea implements Constants {
 			if (presentShape != null) {
 				this.shapesInProgramArea.remove(presentShape);
 			}
-			if (!shape.getHasToBeRemovedOnUndo()) {
-				this.shapesInProgramArea.add(shape);
-			}
+
+			this.shapesInProgramArea.add(shape);
+
 		}
 	}
 
