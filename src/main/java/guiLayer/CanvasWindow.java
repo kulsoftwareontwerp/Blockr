@@ -633,21 +633,22 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				commandHandler.handle(new ResetCommand(domainController));
 			}
 			if (keyCode == KeyEvent.VK_Z) {
-				try {
-					Robot robot = new Robot();
 					if (maskedKeyBag.getCtrl() && !maskedKeyBag.getShift()) {
 						commandHandler.undo();
-//						robot.keyPress(KeyEvent.VK_CONTROL);
+						if (maskedKeyTimer != null) {
+							maskedKeyTimer.cancel();
+							maskedKeyBag.setShift(false);
+						}
 					}
 					if (maskedKeyBag.getCtrl() && maskedKeyBag.getShift()) {
 						commandHandler.redo();
-						// robot.keyPress(KeyEvent.VK_CONTROL);
-//						robot.keyPress(KeyEvent.VK_SHIFT);
+						if (maskedKeyTimer != null) {
+							maskedKeyTimer.cancel();
+						}
+						maskedKeyTimer = new Timer();
+						maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, true), MASKEDKEY_DURATION);
+						maskedKeyBag.setShift(true);
 					}
-				} catch (AWTException e) {
-					throw new RuntimeException(e);
-				}
-
 			}
 
 			if (keyCode == KeyEvent.VK_U) {
@@ -656,9 +657,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			if (keyCode == KeyEvent.VK_R) {
 				commandHandler.redo();
 			}
-
-//			System.out.println((maskedKeyBag.getCtrl() ? "CONTROL" : "NO CONTROL") + "      "
-//					+ (maskedKeyBag.getShift() ? "SHIFT" : "NO SHIFT"));
 		}
 		if (id == KeyEvent.KEY_TYPED) {
 
