@@ -696,7 +696,6 @@ public class BlockRepository {
 		return connectedBlockInfo;
 	}
 	
-	
 	/**
 	 * Calculate the connection before the remove happened
 	 * @param movedBlockId
@@ -724,7 +723,6 @@ public class BlockRepository {
 		
 		return connectedBlockInfo;
 	}
-	
 
 	public ArrayList<String> getConnectedParentIfExists(String movedBlockId) {
 
@@ -831,6 +829,12 @@ public class BlockRepository {
 
 	}
 
+	/**
+	 * Method that returns the first block to be executed in the program. This method can only be called in a valid program state.
+	 * 	If that is the case, there is only one block in headBlocks and that block gets returned. 
+	 * 
+	 * @return The first block to be executed in the program.
+	 */
 	public ExecutableBlock findFirstBlockToBeExecuted() {
 		// We find the "first" item in the HashSet, that should always be the only item
 		// in the set, otherwise it would not be in an ValidState
@@ -892,15 +896,6 @@ public class BlockRepository {
 		}
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-
 	private void removeBlockFromHeadBlocks(Block block) {
 		this.headBlocks.remove(block);
 	}
@@ -1007,25 +1002,6 @@ public class BlockRepository {
 		}
 		return blocksUnderneath;
 	}
-
-//	public ControlBlock getEnclosingControlBlock(ExecutableBlock block) {
-//		// ExecutableBlock headBlock = findFirstBlockToBeExecuted();
-//		for (Block headBlock : headBlocks) {
-//			Set<ExecutableBlock> chain = new HashSet<ExecutableBlock>();
-//			if (headBlock instanceof ControlBlock) {
-//				chain = getAllBlocksInBodyTopLevel((ControlBlock) headBlock.getFirstBlockOfBody());
-//			}
-//			Set<ControlBlock> allControlBlocks = new HashSet<ControlBlock>();
-//			chain.stream().filter(s -> s instanceof ControlBlock).forEach(s -> allControlBlocks.add((ControlBlock) s));
-//			for (ControlBlock c : allControlBlocks) {
-//				if (getAllBlockIDsInBody(c).contains(block.getBlockId())) {
-//					return c;
-//				}
-//			}
-//		}
-//
-//		return null;
-//	}
 
 	public Set<ControlBlock> getAllHeadControlBlocks() {
 		Set<ControlBlock> firstControlBlocks = new HashSet<ControlBlock>();

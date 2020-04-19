@@ -4,10 +4,23 @@
 package domainLayer.blocks;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.spy;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
+
+import com.kuleuven.swop.group17.GameWorldApi.Action;
+
+import applicationLayer.GameController;
 
 /**
  * BlockRepositoryTest
@@ -17,11 +30,19 @@ import org.junit.Test;
  */
 public class BlockRepositoryTest {
 
+	@Spy
+	private BlockRepository blockRepo;
+	
+	private ActionBlock actionBlock;
+	private ControlBlock ifBlock;	
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		actionBlock = new ActionBlock("actionBlockId", Mockito.mock(Action.class));
+		ifBlock = new IfBlock("IfBlock");
 	}
 
 	/**
@@ -83,8 +104,28 @@ public class BlockRepositoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidProgram()}.
 	 */
 	@Test
-	public void testCheckIfValidProgram() {
-		fail("Not yet implemented");
+	public void testCheckIfValidProgram_OneHeadBlockTrue_Positive() {
+		HashSet<Block> headBlocks = new HashSet<Block>(Arrays.asList(actionBlock));
+		HashMap<String, Block> allBlocks = new HashMap<String, Block>();
+		allBlocks.put(actionBlock.getBlockId(), actionBlock);
+		blockRepo = new BlockRepository(headBlocks, allBlocks);
+		
+		assertTrue(blockRepo.checkIfValidProgram());
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidProgram()}.
+	 */
+	@Test
+	public void testCheckIfValidProgram_TwoHeadBlocksFalse_Positive() {
+		HashSet<Block> headBlocks = new HashSet<Block>(Arrays.asList(actionBlock, ifBlock));
+		HashMap<String, Block> allBlocks = new HashMap<String, Block>();
+		allBlocks.put(actionBlock.getBlockId(), actionBlock);
+		allBlocks.put(ifBlock.getBlockId(), ifBlock);
+		
+		blockRepo = new BlockRepository(headBlocks, allBlocks);
+		
+		assertFalse(blockRepo.checkIfValidProgram());
 	}
 
 	/**
@@ -115,8 +156,13 @@ public class BlockRepositoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockRepository#findFirstBlockToBeExecuted()}.
 	 */
 	@Test
-	public void testFindFirstBlockToBeExecuted() {
-		fail("Not yet implemented");
+	public void testFindFirstBlockToBeExecuted_Positive() {
+		HashSet<Block> headBlocks = new HashSet<Block>(Arrays.asList(actionBlock));
+		HashMap<String, Block> allBlocks = new HashMap<String, Block>();
+		allBlocks.put(actionBlock.getBlockId(), actionBlock);
+		blockRepo = new BlockRepository(headBlocks, allBlocks);
+		
+		assertEquals(actionBlock, blockRepo.findFirstBlockToBeExecuted());
 	}
 
 	/**
