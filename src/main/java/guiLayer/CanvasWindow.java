@@ -891,12 +891,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			// .filter(s ->
 			// s.getId().equals(event.getTopOfMovedChainId())).findFirst().get();
 
-			Shape changedShape = shapeFactory.createShape(event.getChangedBlockId(),
-					domainController.getBlockType(event.getChangedBlockId()),
-					currentSnapshot.getSavedCoordinates().get(event.getChangedBlockId()));
-			Shape topOfChainShape = shapeFactory.createShape(event.getTopOfMovedChainId(),
-					domainController.getBlockType(event.getTopOfMovedChainId()),
-					currentSnapshot.getSavedCoordinates().get(event.getTopOfMovedChainId()));
+//			Shape changedShape = shapeFactory.createShape(event.getChangedBlockId(),
+//					domainController.getBlockType(event.getChangedBlockId()),
+//					currentSnapshot.getSavedCoordinates().get(event.getChangedBlockId()));
+//			Shape topOfChainShape = shapeFactory.createShape(event.getTopOfMovedChainId(),
+//					domainController.getBlockType(event.getTopOfMovedChainId()),
+//					currentSnapshot.getSavedCoordinates().get(event.getTopOfMovedChainId()));
 
 			// handle add to programArea in theory
 
