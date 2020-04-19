@@ -53,6 +53,10 @@ public class CommandHandler {
 			currentlyHandledBlockCommand.setAddedID(ID);
 		}
 	}
+	
+
+	
+	
 
 	public void undo() {
 		if(executedGameWorldCommands.size()!=0) {

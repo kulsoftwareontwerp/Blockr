@@ -39,6 +39,10 @@ public abstract class BlockCommand implements Command, Constants {
 			afterSnapshot.setID(ID);
 		}
 	}
+	
+	
+	
+	
 
 	@Override
 	public void execute() {

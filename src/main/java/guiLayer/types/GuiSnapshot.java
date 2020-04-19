@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import guiLayer.shapes.ControlShape;
 import guiLayer.shapes.Shape;
 
 /**
@@ -19,6 +20,7 @@ import guiLayer.shapes.Shape;
 public class GuiSnapshot implements Constants {
 
 	private HashMap<String, Coordinate> savedCoordinates;
+	private HashMap<String, Integer> savedHeights;
 
 	/**
 	 * 
@@ -27,9 +29,13 @@ public class GuiSnapshot implements Constants {
 	public GuiSnapshot(Set<Shape> shapesInMovement) {
 		super();
 		savedCoordinates = new HashMap<String, Coordinate>();
+		savedHeights= new HashMap<String, Integer>();
 		if (shapesInMovement != null) {
 			for (Shape s : shapesInMovement) {
 				savedCoordinates.put(s.getId(), s.getCoordinate());
+				if(s instanceof ControlShape) {
+					savedHeights.put(s.getId(), s.getHeight());
+				}
 			}
 		}
 
@@ -43,6 +49,13 @@ public class GuiSnapshot implements Constants {
 	}
 	
 	/**
+	 * @return the savedHeights
+	 */
+	public HashMap<String, Integer> getSavedHeights() {
+		return new HashMap<String, Integer>(savedHeights);
+	}
+
+	/**
 	 * If there are unset ID's in this snapshot these will be replaced with the given ID.
 	 * @param ID The id to set the unset ID's to.
 	 */
@@ -54,9 +67,6 @@ public class GuiSnapshot implements Constants {
 		}
 	}
 	
-	
-	
-	
-	
+
 
 }
