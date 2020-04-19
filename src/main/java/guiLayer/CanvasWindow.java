@@ -731,6 +731,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		determineTotalHeightControlShapes();
 
+//		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+
 		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> programArea.getShapeById(e))
 				.collect(Collectors.toSet())) {
 
@@ -743,7 +745,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				shapeje.setY_coord(shapeje.getY_coord() + (shape.getHeight() - shape.getPreviousHeight()));
+				if (shapeje != null) {
+					shapeje.setY_coord(shapeje.getY_coord() + (shape.getHeight() - shape.getPreviousHeight()));
+				}
 			}
 
 		}
@@ -856,8 +860,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		// update internals of controlshapes
 		determineTotalHeightControlShapes();
 
-		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
-		
 		// handle add to programArea in practice, all coordinates etc are set.
 		for (Shape shape : programArea.getShapesInProgramArea()) {
 			shape.setCoordinatesShape();
@@ -865,6 +867,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			shape.defineConnectionTypes();
 		}
 
+		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
 		this.setCurrentShape(null);
 		this.resetShapesInMovement();
 		super.repaint();
