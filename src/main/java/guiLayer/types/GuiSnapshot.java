@@ -48,6 +48,9 @@ public class GuiSnapshot implements Constants {
 		return new HashMap<String, Coordinate>(savedCoordinates);
 	}
 	
+	
+	
+	
 	/**
 	 * @return the savedHeights
 	 */
@@ -67,6 +70,17 @@ public class GuiSnapshot implements Constants {
 		}
 	}
 	
-
+	
+	/**
+	 * Set the saved height for the given ID to the given height
+	 * @param ID The id to set the saved height for.
+	 * @param height the height to set the current ID to.
+	 */
+	public void setHeight(String ID ,int height) {
+		if(savedHeights.containsKey(ID)) {
+			savedHeights.put(ID, height);
+		}
+	}
+	
 
 }

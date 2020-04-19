@@ -54,7 +54,16 @@ public class CommandHandler {
 		}
 	}
 	
-
+	/**
+	 * Set the saved height after the action for the given ID to the given height
+	 * @param ID The id to set the saved height for.
+	 * @param height the height to set the current ID to.
+	 */
+	public void setHeight(String ID, int height) {
+		if(currentlyHandledBlockCommand!=null) {
+			currentlyHandledBlockCommand.setAfterActionHeight(ID, height);
+		}
+	}
 	
 	
 

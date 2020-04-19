@@ -793,7 +793,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				.collect(Collectors.toSet())) {
 			if (shape != null && domainController.isBlockPresent(shape.getId())) {
 				shape.determineTotalHeight(mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(shape.getId())));
-				
+				commandHandler.setHeight(shape.getId(), shape.getHeight());
 			}
 		}
 	}

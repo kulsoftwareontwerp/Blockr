@@ -41,6 +41,16 @@ public abstract class BlockCommand implements Command, Constants {
 	}
 	
 	
+	/**
+	 * Set the saved height after the action for the given ID to the given height
+	 * @param ID The id to set the saved height for.
+	 * @param height the height to set the current ID to.
+	 */
+	public void setAfterActionHeight(String ID, int height) {
+		if(afterSnapshot!=null) {
+			afterSnapshot.setHeight(ID, height);
+		}
+	}
 	
 	
 
