@@ -53,10 +53,11 @@ public class DomainController {
 
 	// Used for mockinjection in the tests
 	@SuppressWarnings("unused")
-	private DomainController(GameWorld gw, GameController gc, BlockController bc) {
+	private DomainController(GameWorld gw, GameController gc, BlockController bc, CommandHandler ch) {
 		this.gameWorld = gw;
 		this.gameController = gc;
 		this.blockController = bc;
+		this.commandHandler = ch;
 	}
 	
 //	@SuppressWarnings("unused")
@@ -396,7 +397,7 @@ public class DomainController {
 		return "";
 	}
 
-	// TO BE DOCUMENTED:
+	// TODO: TO BE DOCUMENTED
 	public String getEnclosingControlBlock(String id) {
 		return blockController.getEnclosingControlBlock(id);
 	}
