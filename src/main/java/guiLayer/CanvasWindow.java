@@ -684,88 +684,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		return shapes;
 	}
 
-	@Override
-	public void onBlockAdded(BlockAddedEvent event) {
-		Coordinate newCoordinate;
-		if (currentSnapshot.getSavedCoordinates().containsKey(event.getAddedBlockID())) {
-			newCoordinate = currentSnapshot.getSavedCoordinates().get(event.getAddedBlockID());
-		} else if (currentSnapshot.getSavedCoordinates().containsKey(PALETTE_BLOCK_IDENTIFIER)) {
-			newCoordinate = currentSnapshot.getSavedCoordinates().get(PALETTE_BLOCK_IDENTIFIER);
-		} else {
-			// If there were no mistakes in other parts of the code this doesn't happen.
-			newCoordinate = new Coordinate(0, 0);
-		}
-
-		Shape toAdd = shapeFactory.createShape(event.getAddedBlockID(), event.getAddedBlockType(), newCoordinate);
-
-		// Update the ID of the snapshot in the executionStack
-		commandHandler.setAddedId(event.getAddedBlockID());
-
-		System.out.println("Block ADDED: " + toAdd.getId());
-
-		/*
-		 * for (Pair<Integer, Integer> pair : toAdd.getCoordinatesShape()) {
-		 * this.alreadyFilledInCoordinates.remove(pair); }
-		 */
-
-		if (!event.getLinkedBlockID().equals("")) {
-			Shape linkedShape = programArea.getShapeById(event.getLinkedBlockID());
-
-			toAdd.setConnectedVia(event.getLinkedType(), true);
-			toAdd.clipOn(linkedShape, toAdd.getConnectedVia());
-			toAdd.defineConnectionTypes();
-
-			linkedShape.setConnectedVia(getOppositeConnectionType(event.getLinkedType(), linkedShape), true);
-
-			toAdd.setConnectedVia(event.getLinkedType(), false);
-
-			toAdd.setCoordinatesShape();
-			System.out.println(toAdd.getConnectedVia() + "        " + linkedShape.getId());
-
-			programArea.addShapeToProgramArea(linkedShape);
-		}
-
-		programArea.addShapeToProgramArea(toAdd);
-
-		programArea.clearAlreadyFilledInCoordinates();
-
-		determineTotalHeightControlShapes();
-
-//		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
-
-		for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> programArea.getShapeById(e))
-				.collect(Collectors.toSet())) {
-
-			HashSet<String> idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(toAdd.getId());
-
-			for (String id : idsToMove) {
-				Shape shapeje = null;
-				try {
-					shapeje = programArea.getShapeById(id);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				if (shapeje != null) {
-					shapeje.setY_coord(shapeje.getY_coord() + (shape.getHeight() - shape.getPreviousHeight()));
-				}
-			}
-
-		}
-
-		for (Shape shape : programArea.getShapesInProgramArea()) {
-			shape.setCoordinatesShape();
-			programArea.addToAlreadyFilledInCoordinates(shape);
-			shape.defineConnectionTypes();
-		}
-
-		// programArea.addToAlreadyFilledInCoordinates(toAdd);
-		programArea.setHighlightedShape(null);
-		this.setCurrentShape(null);
-
-		removeFromShapesInMovement(toAdd);
-		super.repaint();
-	}
-
 	/**
 	 * Determine the height of all the controlshapes
 	 */
@@ -846,33 +764,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 	}
 
-	@Override
-	public void onBlockRemoved(BlockRemovedEvent event) {
-		Set<Shape> shapesToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
-				.filter(s -> s.getId().equals(event.getRemovedBlockId())).collect(Collectors.toSet());
-
-		for (Shape shape : shapesToBeRemovedFromProgramArea) {
-			programArea.removeShapeFromProgramArea(shape);
-		}
-
-		programArea.clearAlreadyFilledInCoordinates();
-
-		// update internals of controlshapes
-		determineTotalHeightControlShapes();
-
-		// handle add to programArea in practice, all coordinates etc are set.
-		for (Shape shape : programArea.getShapesInProgramArea()) {
-			shape.setCoordinatesShape();
-			programArea.addToAlreadyFilledInCoordinates(shape);
-			shape.defineConnectionTypes();
-		}
-
-		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
-		this.setCurrentShape(null);
-		this.resetShapesInMovement();
-		super.repaint();
-	}
-
 	private void removeFromShapesInMovement(Shape shape) {
 
 		HashSet<Shape> newShapesInMovement = new HashSet<Shape>();
@@ -885,75 +776,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		newshapeClonesInMovement.addAll(shapeClonesInMovement.stream().filter(s -> !(s.getId().equals(shape.getId())))
 				.collect(Collectors.toSet()));
 		shapeClonesInMovement = newshapeClonesInMovement;
-	}
-
-	@Override
-	public void onBlockChangeEvent(BlockChangeEvent event) {
-
-		try {
-
-//			Shape changedShape = getShapesInMovement().stream().filter(s -> s.getId().equals(event.getChangedBlockId()))
-//					.findFirst().get();
-//
-//			Shape topOfChainShape = getShapesInMovement().stream()
-//					.filter(s -> s.getId().equals(event.getTopOfMovedChainId())).findFirst().get();
-
-			Shape changedShape = shapeFactory.createShape(event.getChangedBlockId(),
-					domainController.getBlockType(event.getChangedBlockId()),
-					currentSnapshot.getSavedCoordinates().get(event.getChangedBlockId()));
-			Shape topOfChainShape = shapeFactory.createShape(event.getTopOfMovedChainId(),
-					domainController.getBlockType(event.getTopOfMovedChainId()),
-					currentSnapshot.getSavedCoordinates().get(event.getTopOfMovedChainId()));
-
-			// handle add to programArea in theory
-
-			for (Shape movedShape : mapSetOfIdsToShapes(event.getChangedBlocks())) {
-
-				movedShape.setCoordinatesShape();
-				movedShape.defineConnectionTypes();
-				programArea.addShapeToProgramArea(movedShape);
-
-			}
-
-			programArea.clearAlreadyFilledInCoordinates();
-
-			// update internals of controlshapes
-			determineTotalHeightControlShapes();
-
-			// Update the position of all blocks according to the changes of the
-			// controlshapes
-
-//			updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(event.getChangedBlockId(),
-//					event.getChangedLinkedBlockId(), event.getBeforeMoveBlockId());
-
-			// changedShape is not in the programArea at the moment.
-			if (changedShape != null) {
-				if (changedShape instanceof ControlShape) {
-					changedShape.determineTotalHeight(
-							mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(changedShape.getId())));
-
-				}
-				programArea.addShapeToProgramArea(changedShape);
-			}
-
-			// handle add to programArea in practice, all coordinates etc are set.
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				shape.setCoordinatesShape();
-				programArea.addToAlreadyFilledInCoordinates(shape);
-				shape.defineConnectionTypes();
-			}
-
-			updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
-
-			// Reset global variables
-			programArea.setHighlightedShape(null);
-			setCurrentShape(null);
-			resetShapesInMovement();
-
-			super.repaint();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	private void updatePositionOfAllShapesAccordingToChangesOfTheControlShapes() {
@@ -972,24 +794,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 		}
 
-	}
-
-	@Override
-	public void onPanelChangedEvent(PanelChangeEvent event) {
-		paletteArea.setPaletteVisible(event.isShown());
-		super.repaint();
-	}
-
-	@Override
-	public void onUpdateHighlightingEvent(UpdateHighlightingEvent event) {
-		try {
-			programArea.setHighlightedShapeForExecution(programArea.getShapesInProgramArea().stream()
-					.filter(e -> e.getId() == event.getHighlightBlockId()).findFirst().get());
-		} catch (Exception e) {
-			programArea.setHighlightedShapeForExecution(null);
-		} finally {
-			super.repaint();
-		}
 	}
 
 	public Shape getCurrentShape() {
@@ -1027,6 +831,223 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	public void setCurrentSnapshot(GuiSnapshot snapshot) {
 		currentSnapshot = snapshot;
 
+	}
+
+	@Override
+	public void onPanelChangedEvent(PanelChangeEvent event) {
+		paletteArea.setPaletteVisible(event.isShown());
+		super.repaint();
+	}
+
+	@Override
+	public void onUpdateHighlightingEvent(UpdateHighlightingEvent event) {
+		try {
+			programArea.setHighlightedShapeForExecution(programArea.getShapesInProgramArea().stream()
+					.filter(e -> e.getId() == event.getHighlightBlockId()).findFirst().get());
+		} catch (Exception e) {
+			programArea.setHighlightedShapeForExecution(null);
+		} finally {
+			super.repaint();
+		}
+	}
+
+	@Override
+		public void onBlockAdded(BlockAddedEvent event) {
+			Coordinate newCoordinate;
+			if (currentSnapshot.getSavedCoordinates().containsKey(event.getAddedBlockID())) {
+				newCoordinate = currentSnapshot.getSavedCoordinates().get(event.getAddedBlockID());
+			} else if (currentSnapshot.getSavedCoordinates().containsKey(PALETTE_BLOCK_IDENTIFIER)) {
+				newCoordinate = currentSnapshot.getSavedCoordinates().get(PALETTE_BLOCK_IDENTIFIER);
+			} else {
+				// If there were no mistakes in other parts of the code this doesn't happen.
+				newCoordinate = new Coordinate(0, 0);
+			}
+	
+			Shape toAdd = shapeFactory.createShape(event.getAddedBlockID(), event.getAddedBlockType(), newCoordinate);
+	
+			// Update the ID of the snapshot in the executionStack
+			commandHandler.setAddedId(event.getAddedBlockID());
+	
+			System.out.println("Block ADDED: " + toAdd.getId());
+	
+			/*
+			 * for (Pair<Integer, Integer> pair : toAdd.getCoordinatesShape()) {
+			 * this.alreadyFilledInCoordinates.remove(pair); }
+			 */
+	
+			if (!event.getLinkedBlockID().equals("")) {
+				Shape linkedShape = programArea.getShapeById(event.getLinkedBlockID());
+	
+				toAdd.setConnectedVia(event.getLinkedType(), true);
+				toAdd.clipOn(linkedShape, toAdd.getConnectedVia());
+				toAdd.defineConnectionTypes();
+	
+				linkedShape.setConnectedVia(getOppositeConnectionType(event.getLinkedType(), linkedShape), true);
+	
+				toAdd.setConnectedVia(event.getLinkedType(), false);
+	
+				toAdd.setCoordinatesShape();
+				System.out.println(toAdd.getConnectedVia() + "        " + linkedShape.getId());
+	
+				programArea.addShapeToProgramArea(linkedShape);
+			}
+	
+			programArea.addShapeToProgramArea(toAdd);
+	
+			programArea.clearAlreadyFilledInCoordinates();
+	
+			determineTotalHeightControlShapes();
+	
+	//		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+	
+			Set<ControlShape> changedControlShapes = programArea.getAllChangedControlShapes();
+
+			for (ControlShape c : changedControlShapes) {
+				Set<String> idsToMove = domainController.getAllBlockIDsBelowCertainBlock(c.getId()).stream()
+						.filter(s -> !s.equals(c.getId()))
+						.collect(Collectors.toSet());
+				for (String id : idsToMove) {
+					Shape shapeje = null;
+					try {
+						shapeje = programArea.getShapeById(id);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					if (shapeje != null) {
+						shapeje.setY_coord(shapeje.getY_coord() + c.getHeightDiff());
+					}
+				}
+			}
+			
+			
+			
+//			for (Shape shape : domainController.getAllHeadControlBlocks().stream().map(e -> programArea.getShapeById(e))
+//					.collect(Collectors.toSet())) {
+//				HashSet<String> idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(toAdd.getId());
+//	
+//	
+//				for (String id : idsToMove) {
+//					Shape shapeje = null;
+//					try {
+//						shapeje = programArea.getShapeById(id);
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//					if (shapeje != null) {
+//						shapeje.setY_coord(shapeje.getY_coord() + (shape.getHeight() - shape.getPreviousHeight()));
+//					}
+//				}
+//	
+//			}
+	
+			for (Shape shape : programArea.getShapesInProgramArea()) {
+				shape.setCoordinatesShape();
+				programArea.addToAlreadyFilledInCoordinates(shape);
+				shape.defineConnectionTypes();
+			}
+	
+			// programArea.addToAlreadyFilledInCoordinates(toAdd);
+			programArea.setHighlightedShape(null);
+			this.setCurrentShape(null);
+	
+			removeFromShapesInMovement(toAdd);
+			super.repaint();
+		}
+
+	@Override
+		public void onBlockChangeEvent(BlockChangeEvent event) {
+	
+			try {
+	
+	//			Shape changedShape = getShapesInMovement().stream().filter(s -> s.getId().equals(event.getChangedBlockId()))
+	//					.findFirst().get();
+	//
+	//			Shape topOfChainShape = getShapesInMovement().stream()
+	//					.filter(s -> s.getId().equals(event.getTopOfMovedChainId())).findFirst().get();
+	
+				Shape changedShape = shapeFactory.createShape(event.getChangedBlockId(),
+						domainController.getBlockType(event.getChangedBlockId()),
+						currentSnapshot.getSavedCoordinates().get(event.getChangedBlockId()));
+				Shape topOfChainShape = shapeFactory.createShape(event.getTopOfMovedChainId(),
+						domainController.getBlockType(event.getTopOfMovedChainId()),
+						currentSnapshot.getSavedCoordinates().get(event.getTopOfMovedChainId()));
+	
+				// handle add to programArea in theory
+	
+				for (Shape movedShape : mapSetOfIdsToShapes(event.getChangedBlocks())) {
+	
+					movedShape.setCoordinatesShape();
+					movedShape.defineConnectionTypes();
+					programArea.addShapeToProgramArea(movedShape);
+	
+				}
+	
+				programArea.clearAlreadyFilledInCoordinates();
+	
+				// update internals of controlshapes
+				determineTotalHeightControlShapes();
+	
+				// Update the position of all blocks according to the changes of the
+				// controlshapes
+	
+	//			updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(event.getChangedBlockId(),
+	//					event.getChangedLinkedBlockId(), event.getBeforeMoveBlockId());
+	
+				// changedShape is not in the programArea at the moment.
+				if (changedShape != null) {
+					if (changedShape instanceof ControlShape) {
+						changedShape.determineTotalHeight(
+								mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(changedShape.getId())));
+	
+					}
+					programArea.addShapeToProgramArea(changedShape);
+				}
+	
+				// handle add to programArea in practice, all coordinates etc are set.
+				for (Shape shape : programArea.getShapesInProgramArea()) {
+					shape.setCoordinatesShape();
+					programArea.addToAlreadyFilledInCoordinates(shape);
+					shape.defineConnectionTypes();
+				}
+	
+				updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+	
+				// Reset global variables
+				programArea.setHighlightedShape(null);
+				setCurrentShape(null);
+				resetShapesInMovement();
+	
+				super.repaint();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+	@Override
+	public void onBlockRemoved(BlockRemovedEvent event) {
+		Set<Shape> shapesToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
+				.filter(s -> s.getId().equals(event.getRemovedBlockId())).collect(Collectors.toSet());
+	
+		for (Shape shape : shapesToBeRemovedFromProgramArea) {
+			programArea.removeShapeFromProgramArea(shape);
+		}
+	
+		programArea.clearAlreadyFilledInCoordinates();
+	
+		// update internals of controlshapes
+		determineTotalHeightControlShapes();
+	
+		// handle add to programArea in practice, all coordinates etc are set.
+		for (Shape shape : programArea.getShapesInProgramArea()) {
+			shape.setCoordinatesShape();
+			programArea.addToAlreadyFilledInCoordinates(shape);
+			shape.defineConnectionTypes();
+		}
+	
+		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+		this.setCurrentShape(null);
+		this.resetShapesInMovement();
+		super.repaint();
 	}
 
 }
