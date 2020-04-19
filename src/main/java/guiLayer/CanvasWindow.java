@@ -696,48 +696,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private HashSet<String> shapeIdsToBeMovedAfterUpdateOfControlShape(String changedBlockId) {
-		Set<String> ids = new HashSet<String>();
-		HashSet<String> enclosingShapes = getAllEnclosingShapeIds(changedBlockId);
-
-		for (String id : enclosingShapes) {
-			Set<String> blocksBelow = domainController.getAllBlockIDsBelowCertainBlock(id).stream()
-					.filter(s -> !s.equals(id)).collect(Collectors.toSet());
-			for (String idBlockBelow : blocksBelow) {
-				ids.addAll(domainController.getAllBlockIDsUnderneath(idBlockBelow));
-			}
-		}
-
-		Set<String> idsShapesInMovement = getShapesInMovement().stream().map(b -> b.getId())
-				.collect(Collectors.toSet());
-		ids = ids.stream().filter(s -> !idsShapesInMovement.contains(s)).collect(Collectors.toSet());
-
-		return (HashSet<String>) ids;
-	}
-
-	private HashSet<String> getAllEnclosingShapeIds(String changedBlockId) {
-		HashSet<String> ids = new HashSet<String>();
-		Shape shape = getShapeByID(changedBlockId, programArea.getShapesInProgramArea());
-		if (shape instanceof ControlShape) {
-			ids.add(shape.getId());
-		}
-		String tempId = domainController.getEnclosingControlBlock(changedBlockId);
-		while (tempId != null) {
-			ids.add(tempId);
-			tempId = domainController.getEnclosingControlBlock(tempId);
-		}
-		return ids;
-	}
-
-	private Shape getShapeByID(String id, Collection<Shape> collection) {
-		try {
-			return collection.stream().filter(e -> e.getId().equals(id)).findFirst().get();
-
-		} catch (Exception e) {
-			return null;
-		}
-	}
 
 	private void removeFromShapesInMovement(Shape shape) {
 
