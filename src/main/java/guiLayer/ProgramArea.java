@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import applicationLayer.DomainController;
 import guiLayer.shapes.ControlShape;
@@ -192,6 +194,10 @@ public class ProgramArea implements Constants {
 			return highlightedShape.clone();
 		}
 		return null;
+	}
+
+	public Set<ControlShape> getAllChangedControlShapes() {
+		return shapesInProgramArea.stream().filter(s-> (s instanceof ControlShape) && s.getHeightDiff()!=0 ).map(s->(ControlShape) s).collect(Collectors.toSet());
 	}
 
 }

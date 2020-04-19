@@ -678,8 +678,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			coordinates.putAll(currentSnapshot.getSavedCoordinates());
 		}
 		for (String id : ids) {
-				BlockType type = domainController.getBlockType(id);
-				shapes.add(shapeFactory.createShape(id, type, coordinates.get(id)));
+			BlockType type = domainController.getBlockType(id);
+			shapes.add(shapeFactory.createShape(id, type, coordinates.get(id)));
 		}
 		return shapes;
 	}
@@ -856,27 +856,14 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		// update internals of controlshapes
 		determineTotalHeightControlShapes();
 
-//		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(event.getRemovedBlockId(), "",
-//				event.getBeforeRemoveBlockId());
-
+		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+		
 		// handle add to programArea in practice, all coordinates etc are set.
 		for (Shape shape : programArea.getShapesInProgramArea()) {
 			shape.setCoordinatesShape();
 			programArea.addToAlreadyFilledInCoordinates(shape);
 			shape.defineConnectionTypes();
 		}
-
-//		System.out.println("\n\n\n\n\n\n\n\n\n\n\n\nSHAPES IN MOVEMENT");
-//		System.out.println(toRemove.getId());
-//		for(Shape s: getShapesInMovement()) {
-//			System.out.println(s.getId());
-//		}
-//		removeFromShapesInMovement(toRemove);
-
-//		System.out.println("\n\n\n\n\n\n\n\n\n\n\n\nSHAPES IN MOVEMENT AFTER REMOVE");
-//		for(Shape s: getShapesInMovement()) {
-//			System.out.println(s.getId());
-//		}
 
 		this.setCurrentShape(null);
 		this.resetShapesInMovement();
@@ -895,19 +882,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		newshapeClonesInMovement.addAll(shapeClonesInMovement.stream().filter(s -> !(s.getId().equals(shape.getId())))
 				.collect(Collectors.toSet()));
 		shapeClonesInMovement = newshapeClonesInMovement;
-
-//		Optional<Shape> ms = shapesInMovement.stream().filter(s->s.getId().equals(shape.getId())).findAny();
-//		
-//		if(ms.isPresent()) {
-//			shapesInMovement.remove(ms.get());
-//		}
-//		
-//		 ms = shapeClonesInMovement.stream().filter(s->s.getId().equals(shape.getId())).findAny();
-//		
-//		if(ms.isPresent()) {
-//			shapeClonesInMovement.remove(ms.get());
-//			
-//		}
 	}
 
 	@Override
@@ -954,6 +928,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				if (changedShape instanceof ControlShape) {
 					changedShape.determineTotalHeight(
 							mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(changedShape.getId())));
+
 				}
 				programArea.addShapeToProgramArea(changedShape);
 			}
@@ -964,6 +939,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				programArea.addToAlreadyFilledInCoordinates(shape);
 				shape.defineConnectionTypes();
 			}
+
+			updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
 
 			// Reset global variables
 			programArea.setHighlightedShape(null);
@@ -976,240 +953,22 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 	}
 
-	private void updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(String changedBlockId,
-			String changedConnectedBlockId, String beforeBlockId) {
+	private void updatePositionOfAllShapesAccordingToChangesOfTheControlShapes() {
+		Set<ControlShape> changedControlShapes = programArea.getAllChangedControlShapes();
 
-//		Shape changedShape = shapeFactory.createShape(changedBlockId,
-//				domainController.getBlockType(changedBlockId),
-//				currentSnapshot.getSavedCoordinates().get(changedBlockId));
-//		
-
-		Shape changedShape = getShapesInMovement().stream().filter(s -> s.getId().equals(changedBlockId)).findFirst()
-				.get();
-
-		/**
-		 * newly connected shape
-		 */
-		Shape changedLinkedShape = null;
-		/**
-		 * the previous connected shape
-		 */
-		Shape decoupledShape = null;
-
-		// begin handle couplings
-		if (!beforeBlockId.equals("")) {
-			decoupledShape = getShapeByID(beforeBlockId, programArea.getShapesInProgramArea());
-		}
-
-		if (!changedConnectedBlockId.equals("")) {
-			changedLinkedShape = getShapeByID(changedConnectedBlockId, programArea.getShapesInProgramArea());
-		}
-
-		Set<Shape> allTopLevelControlBlocks = domainController.getAllHeadControlBlocks().stream()
-				.map(e -> getShapeByID(e, programArea.getShapesInProgramArea())).collect(Collectors.toSet());
-		Set<Shape> allHeadControlBlocks = new HashSet<Shape>(allTopLevelControlBlocks);
-
-		// use only the controlblocks that are the top of the chain, no controlblocks
-		// above them in any way.
-		for (Iterator<Shape> it = allHeadControlBlocks.iterator(); it.hasNext();) {
-			Shape head = it.next();
-			boolean remove = false;
-			for (Shape shape : allHeadControlBlocks.stream().filter(s -> s != head).collect(Collectors.toSet())) {
-				if (domainController.getAllBlockIDsUnderneath(shape.getId()).contains(head.getId())) {
-					remove = true;
-					break;
-				}
+		for (ControlShape c : changedControlShapes) {
+			Set<Shape> shapesToMove = domainController.getAllBlockIDsBelowCertainBlock(c.getId()).stream()
+					.filter(s -> !s.equals(c.getId())).map(s -> programArea.getShapeById(s))
+					.collect(Collectors.toSet());
+			for (Shape shape : shapesToMove) {
+				programArea.removeFromAlreadyFilledInCoordinates(shape);
+				shape.setY_coord(shape.getY_coord() + c.getHeightDiff());
+				shape.setCoordinatesShape();
+				shape.defineConnectionTypes();
+				programArea.addToAlreadyFilledInCoordinates(shape);
 			}
-			if (remove) {
-				it.remove();
-			}
-
 		}
 
-		for (Shape shape : allHeadControlBlocks) {
-			HashSet<String> idsToMove = new HashSet<String>();
-
-			int diffYPosition = shape.getHeight() - shape.getPreviousHeight();
-			Set<String> idsUnderneathShape = domainController.getAllBlockIDsUnderneath(shape.getId()).stream()
-					.filter(s -> !s.equals(shape.getId())).collect(Collectors.toSet());
-
-			// does this movement affect the height of the current stack?
-			if (idsUnderneathShape.contains(changedShape.getId())) {
-
-				if (shape.getHeight() == shape.getPreviousHeight()) {
-					HashSet<String> idsToMoveUnderneath = new HashSet<String>();
-					// no, it does not affect the height of the current stack
-
-					if (changedLinkedShape != null && decoupledShape != null) {
-
-						// going up or down?
-						if (changedShape.getY_coord() < changedShape.getPreviousY_coord()) {
-							// up
-							idsToMoveUnderneath
-									.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(changedLinkedShape.getId()));
-
-							Shape decoupledControlShape = getShapeByID(
-									domainController.getEnclosingControlBlock(decoupledShape.getId()),
-									programArea.getShapesInProgramArea());
-							if (decoupledControlShape == null || decoupledControlShape == shape) {
-								decoupledControlShape = decoupledShape;
-							}
-
-							if (decoupledControlShape.getHeight() != decoupledControlShape.getPreviousHeight()) {
-								final String decoupledControlShapeId = decoupledControlShape.getId();
-								idsToMoveUnderneath.removeAll(domainController
-										.getAllBlockIDsBelowCertainBlock(decoupledControlShape.getId()).stream()
-										.filter(s -> !s.equals(decoupledControlShapeId)).collect(Collectors.toSet()));
-							}
-
-							Shape linkedControlShape = getShapeByID(
-									domainController.getEnclosingControlBlock(changedLinkedShape.getId()),
-									programArea.getShapesInProgramArea());
-							if (linkedControlShape == null || linkedControlShape == shape) {
-								linkedControlShape = changedLinkedShape;
-							}
-							diffYPosition = linkedControlShape.getHeight() - linkedControlShape.getPreviousHeight();
-						} else {
-							// down
-							idsToMoveUnderneath
-									.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
-							idsToMoveUnderneath.addAll(
-									getShapesInMovement().stream().map(s -> s.getId()).collect(Collectors.toSet()));
-
-							Shape linkedControlShape = getShapeByID(
-									domainController.getEnclosingControlBlock(changedLinkedShape.getId()),
-									programArea.getShapesInProgramArea());
-//							if (linkedControlShape != shape) {
-//								// linkedControlShape = changedLinkedShape;
-//
-//								if (linkedControlShape.getHeight() != linkedControlShape.getPreviousHeight()) {
-//									final String linkedControlShapeId = linkedControlShape.getId();
-//									idsToMoveUnderneath.removeAll(domainController
-//											.getAllBlockIDsBelowCertainBlock(linkedControlShape.getId()).stream()
-//											.filter(s -> !s.equals(linkedControlShapeId)).collect(Collectors.toSet()));
-//								}
-//							}
-
-							Shape decoupledControlShape = getShapeByID(
-									domainController.getEnclosingControlBlock(decoupledShape.getId()),
-									programArea.getShapesInProgramArea());
-							if (decoupledControlShape == null || decoupledControlShape == shape) {
-								decoupledControlShape = decoupledShape;
-							}
-							diffYPosition = decoupledControlShape.getHeight()
-									- decoupledControlShape.getPreviousHeight();
-
-						}
-
-						// if the height of the shape did not change, none of the shapes below height
-						// should be moved
-						idsToMoveUnderneath.removeAll(shapeIdsToBeMovedAfterUpdateOfControlShape(shape.getId()));
-
-						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
-					}
-					// add from move
-					else if (changedLinkedShape != null) {
-						Shape linkedControlShape = getShapeByID(
-								domainController.getEnclosingControlBlock(changedLinkedShape.getId()),
-								programArea.getShapesInProgramArea());
-						if (linkedControlShape == null || linkedControlShape == shape) {
-							linkedControlShape = changedLinkedShape;
-						}
-						diffYPosition = linkedControlShape.getHeight() - linkedControlShape.getPreviousHeight();
-
-						idsToMoveUnderneath
-								.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(changedLinkedShape.getId()));
-
-						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
-
-					}
-					// remove from move
-					else if (decoupledShape != null) {
-						Shape decoupledControlShape = getShapeByID(
-								domainController.getEnclosingControlBlock(decoupledShape.getId()),
-								programArea.getShapesInProgramArea());
-						if (decoupledControlShape == null || decoupledControlShape == shape) {
-							decoupledControlShape = decoupledShape;
-						}
-						diffYPosition = decoupledControlShape.getHeight() - decoupledControlShape.getPreviousHeight();
-
-						idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
-
-						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath, diffYPosition);
-					}
-
-				} else {
-					// yes
-
-					if (domainController.getAllBlockIDsBelowCertainBlock(shape.getId())
-							.contains(changedLinkedShape.getId())) {
-						// yes
-						HashSet<String> idsToMoveUnderneath = new HashSet<String>();
-						idsToMoveUnderneath.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(shape.getId()));
-
-						if ((idsUnderneathShape.contains(beforeBlockId) || shape.getId().equals(beforeBlockId))
-								&& changedShape.getY_coord() > changedShape.getPreviousY_coord()) {
-
-							Shape decoupledControlShape = getShapeByID(
-									domainController.getEnclosingControlBlock(decoupledShape.getId()),
-									programArea.getShapesInProgramArea());
-							if (decoupledControlShape == null || decoupledControlShape == shape) {
-								decoupledControlShape = decoupledShape;
-							}
-							idsToMoveUnderneath
-									.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledControlShape.getId()));
-
-							idsToMoveUnderneath.addAll(
-									getShapesInMovement().stream().map(s -> s.getId()).collect(Collectors.toSet()));
-						}
-
-						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMoveUnderneath,
-								shape.getHeight() - shape.getPreviousHeight());
-					} else {
-						// no
-						idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(changedShape.getId());
-						moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMove, diffYPosition);
-					}
-
-				}
-			} else {
-				// idsToMove = shapeIdsToBeMovedAfterUpdateOfControlShape(beforeBlockId);
-
-				if (decoupledShape != null) {
-					Shape decoupledControlShape = getShapeByID(
-							domainController.getEnclosingControlBlock(decoupledShape.getId()),
-							programArea.getShapesInProgramArea());
-					if (decoupledControlShape == null || decoupledControlShape == shape) {
-						decoupledControlShape = decoupledShape;
-					}
-//					diffYPosition = decoupledControlShape.getHeight()
-//							- decoupledControlShape.getPreviousHeight();
-
-					diffYPosition = shape.getHeight() - shape.getPreviousHeight();
-
-					idsToMove.addAll(shapeIdsToBeMovedAfterUpdateOfControlShape(decoupledShape.getId()));
-
-					moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMove, diffYPosition);
-				}
-
-			}
-
-//			moveAllGivenShapesVerticallyWithTheGivenOffset(idsToMove, diffYPosition);
-		}
-	}
-
-	private void moveAllGivenShapesVerticallyWithTheGivenOffset(Set<String> set, int diffYPosition) {
-		for (String id : set) {
-			Shape shape = null;
-			try {
-				shape = programArea.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id)).findFirst()
-						.get();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			shape.setY_coord(shape.getY_coord() + diffYPosition);
-			shape.setCoordinatesShape();
-		}
 	}
 
 	@Override

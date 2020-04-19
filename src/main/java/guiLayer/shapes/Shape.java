@@ -324,4 +324,14 @@ public abstract class Shape implements Constants, Cloneable {
 		return coordinate;
 	}
 
+	/**
+	 * Retrieve the height difference between the previous height and the current height.
+	 * @return the height difference between the previous height and the current height.
+	 */
+	public int getHeightDiff() {
+		return getHeight()-getPreviousHeight();
+	}
+	
+
+
 }
