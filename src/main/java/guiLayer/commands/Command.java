@@ -4,14 +4,20 @@
 package guiLayer.commands;
 
 /**
-/**
- * Command
+ * /** Command
  * 
  * @version 0.1
  * @author group17
  *
  */
 public interface Command {
-public void execute();
-public void undo();
+	/**
+	 * Execute this command.
+	 */
+	public void execute();
+
+	/**
+	 * Undo this command.
+	 */
+	public void undo();
 }

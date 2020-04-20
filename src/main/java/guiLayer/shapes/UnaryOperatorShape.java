@@ -5,12 +5,25 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import guiLayer.types.Coordinate;
-import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 
+/**
+ * UnaryOperatorShape
+ * 
+ * @version 0.1
+ * @author group17
+ *
+ */
 public class UnaryOperatorShape extends Shape {
 
+	/**
+	 * Create a new shape with the given id, type and coordinate
+	 * 
+	 * @param id         the id for the shape
+	 * @param type       the type of the shape
+	 * @param coordinate the coordinate for the shape.
+	 */
 	public UnaryOperatorShape(String id, BlockType type, Coordinate coordinate) {
 		super(id, type, coordinate);
 	}
@@ -19,7 +32,7 @@ public class UnaryOperatorShape extends Shape {
 	public void draw(Graphics g) {
 		int startX = getX_coord();
 		int startY = getY_coord();
-		
+
 		g.drawArc(startX + 80, startY + 5, 20, 20, -90, -180);
 		g.drawArc(startX, startY + 5, 20, 20, -90, -180);
 		g.drawLine(startX + 10, startY, startX + 90, startY);
@@ -29,35 +42,34 @@ public class UnaryOperatorShape extends Shape {
 		g.drawLine(startX + 10, startY + 25, startX + 10, startY + 30);
 		g.drawLine(startX + 10, startY + 30, startX + 90, startY + 30);
 		g.drawString(getType().toString() + idForDisplay(), startX + 35, startY + 19);
-		
-		
+
 	}
 
 	@Override
-	protected HashSet<Coordinate> fillShapeWithCoordinates() {
+	HashSet<Coordinate> fillShapeWithCoordinates() {
 		HashSet<Coordinate> set = new HashSet<Coordinate>();
 
-			for (int i = getX_coord()+10; i < getX_coord() + getWidth()+10; i++) {
-				for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
-						set.add(new Coordinate(i, j));
-				}
+		for (int i = getX_coord() + 10; i < getX_coord() + getWidth() + 10; i++) {
+			for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
+				set.add(new Coordinate(i, j));
 			}
+		}
 		return set;
 	}
 
 	@Override
 	public void defineConnectionTypes() {
-		HashMap<ConnectionType,Coordinate> connectionMap = new HashMap<ConnectionType,Coordinate>();
-		connectionMap.put(ConnectionType.LEFT, new Coordinate(this.getX_coord()+10, this.getY_coord()+15));
-		connectionMap.put(ConnectionType.OPERAND, new Coordinate(this.getX_coord()+90, this.getY_coord()+15));
+		HashMap<ConnectionType, Coordinate> connectionMap = new HashMap<ConnectionType, Coordinate>();
+		connectionMap.put(ConnectionType.LEFT, new Coordinate(this.getX_coord() + 10, this.getY_coord() + 15));
+		connectionMap.put(ConnectionType.OPERAND, new Coordinate(this.getX_coord() + 90, this.getY_coord() + 15));
 		this.setCoordinateConnectionMap(connectionMap);
 	}
 
 	@Override
-	public void initDimensions() {
+	void initDimensions() {
 		setHeight(30);
 		setWidth(80);
-		
+
 	}
 
 	@Override
