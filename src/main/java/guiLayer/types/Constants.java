@@ -1,6 +1,16 @@
 package guiLayer.types;
 
+/**
+ * Constants, This interface contains all the constants used in the GUI layer of the blockr application.
+ * 
+ * @version 0.1
+ * @author group17
+ *
+ */
 public interface Constants {
+	
+	public static final int MASKEDKEY_DURATION = 500;
+
 	
 	public final static int HEIGHT = 600;
 	public final static int WIDTH = 1000;

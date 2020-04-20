@@ -5,13 +5,15 @@ package guiLayer.types;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import guiLayer.shapes.ControlShape;
 import guiLayer.shapes.Shape;
 
 /**
- * /** GuiAction
+ * GuiSnapshot, a dataBag containing all info regarding the Gui to restore a set of blocks to a previous state
+ * The position of the shapes in movement and the height of all controlShapes in movement is saved in this snapshot. 
  * 
  * @version 0.1
  * @author group17
@@ -23,8 +25,8 @@ public class GuiSnapshot implements Constants {
 	private HashMap<String, Integer> savedHeights;
 
 	/**
-	 * 
-	 * @param shapesInMovement
+	 * Create a new GuiSnapshot with a set of shapes in movement.
+	 * @param shapesInMovement the set of shapes in movement to save
 	 */
 	public GuiSnapshot(Set<Shape> shapesInMovement) {
 		super();
@@ -42,7 +44,8 @@ public class GuiSnapshot implements Constants {
 	}
 
 	/**
-	 * @return the savedCoordinates
+	 * Retrieve a Map with all id's of all shapes in movement and their position
+	 * @return  a Map with all id's of all shapes in movement and their position
 	 */
 	public HashMap<String, Coordinate> getSavedCoordinates() {
 		return new HashMap<String, Coordinate>(savedCoordinates);
@@ -52,9 +55,10 @@ public class GuiSnapshot implements Constants {
 	
 	
 	/**
-	 * @return the savedHeights
+	 * Retrieve a Map with all id's of controlShapes in movement and their saved Height
+	 * @return a Map with all id's of controlShapes in movement and their saved Height
 	 */
-	public HashMap<String, Integer> getSavedHeights() {
+	public Map<String, Integer> getSavedHeights() {
 		return new HashMap<String, Integer>(savedHeights);
 	}
 

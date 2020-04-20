@@ -124,7 +124,7 @@ public abstract class Shape implements Constants, Cloneable {
 	 * @param connection the connection to get the triggerSet of
 	 * @return a Set of Coordinates containing all the coordinates associated with the given connection's Trigger
 	 */
-	public HashSet<Coordinate> getTriggerSet(ConnectionType connection) {
+	public Set<Coordinate> getTriggerSet(ConnectionType connection) {
 		HashSet<Coordinate> triggerSet = new HashSet<Coordinate>();
 
 		if (getCoordinateConnectionMap().keySet().contains(connection)) {

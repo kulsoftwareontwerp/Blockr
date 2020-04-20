@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import guiLayer.types.Coordinate;
-import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 

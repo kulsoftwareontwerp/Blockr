@@ -37,7 +37,6 @@ import types.BlockType;
 import types.ConnectionType;
 
 public class CanvasWindow extends CanvasResource implements GUIListener, Constants {
-	private static final int MASKEDKEY_DURATION = 500;
 
 	private CommandHandler commandHandler;
 
@@ -672,8 +671,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 *                                         one of the shapes in the programArea.
 	 * @return a flag indicating if there is a connection between 2 triggerSets.
 	 */
-	private boolean isConnectionPresent(HashMap<Shape, Coordinate> shapesInProgramAreaConnectionMap,
-			HashSet<Coordinate> connectionTriggerSet) {
+	private boolean isConnectionPresent(Map<Shape, Coordinate> shapesInProgramAreaConnectionMap,
+			Set<Coordinate> connectionTriggerSet) {
 		for (Map.Entry<Shape, Coordinate> s : shapesInProgramAreaConnectionMap.entrySet()) {
 			if (connectionTriggerSet.contains(s.getValue())) {
 				return true;
@@ -715,11 +714,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			if (keyCode == KeyEvent.VK_CONTROL) {
 				if (maskedKeyTimer != null) {
 					maskedKeyTimer.cancel();
-					maskedKeyBag.setShift(false);
+					maskedKeyBag.pressShift(false);
 				}
 				maskedKeyTimer = new Timer();
 				maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, false), MASKEDKEY_DURATION);
-				maskedKeyBag.setCtrl(true);
+				maskedKeyBag.pressCtrl(true);
 			}
 			if (keyCode == KeyEvent.VK_SHIFT) {
 				if (maskedKeyTimer != null) {
@@ -727,7 +726,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				}
 				maskedKeyTimer = new Timer();
 				maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, true), MASKEDKEY_DURATION);
-				maskedKeyBag.setShift(true);
+				maskedKeyBag.pressShift(true);
 			}
 			if (keyCode == KeyEvent.VK_F5) {
 				// F5-Key
@@ -742,21 +741,21 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				}
 			}
 			if (keyCode == KeyEvent.VK_Z) {
-				if (maskedKeyBag.getCtrl() && !maskedKeyBag.getShift()) {
+				if (maskedKeyBag.isCtrlPressed() && !maskedKeyBag.isShiftPressed()) {
 					commandHandler.undo();
 					if (maskedKeyTimer != null) {
 						maskedKeyTimer.cancel();
-						maskedKeyBag.setShift(false);
+						maskedKeyBag.pressShift(false);
 					}
 				}
-				if (maskedKeyBag.getCtrl() && maskedKeyBag.getShift()) {
+				if (maskedKeyBag.isCtrlPressed() && maskedKeyBag.isShiftPressed()) {
 					commandHandler.redo();
 					if (maskedKeyTimer != null) {
 						maskedKeyTimer.cancel();
 					}
 					maskedKeyTimer = new Timer();
 					maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, true), MASKEDKEY_DURATION);
-					maskedKeyBag.setShift(true);
+					maskedKeyBag.pressShift(true);
 				}
 			}
 	
