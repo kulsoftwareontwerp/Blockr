@@ -82,24 +82,29 @@ public class GameController implements DomainListener, GUISubject {
 	public ExecutionSnapshot resetGame() {
 		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
 		ActionBlock nextBlockToBeExecuted = getCurrentState().getNextActionBlockToBeExecuted();
-		ExecutionSnapshot snapshot = new ExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot,getCurrentState());
+		ExecutionSnapshot snapshot = createNewExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState());
 		gameWorld.restoreState(initialSnapshot);
 		fireUpdateHighlightingEvent(null);
-		
 		
 		try {
 			if(getCurrentState().getNextState()==null) {
 				//This is not a resettingState.
 				toState(new ResettingState(this));
+			} else {
+				Constructor<? extends GameState> constructor = getCurrentState().getNextState().getConstructor(GameController.class);
+				GameState newState = (GameState) constructor.newInstance(this);
+				toState(newState);
 			}
-			Constructor<? extends GameState> constructor = getCurrentState().getNextState().getConstructor(GameController.class);
-			GameState newState = (GameState) constructor.newInstance(this);
-			toState(newState);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
 		return snapshot;
+	}
+	
+	// For testing purposes
+	ExecutionSnapshot createNewExecutionSnapshot(ActionBlock actionBlock, GameWorldSnapshot snapshot, GameState state) {
+		return new ExecutionSnapshot(actionBlock, snapshot, state);
 	}
 	
 	

@@ -21,6 +21,7 @@ import org.mockito.internal.matchers.Any;
 
 import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
 import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
 import domainLayer.blocks.ActionBlock;
@@ -30,10 +31,12 @@ import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.IfBlock;
 import domainLayer.blocks.WhileBlock;
+import domainLayer.gamestates.GameState;
 import domainLayer.gamestates.InExecutionState;
 import domainLayer.gamestates.ValidProgramState;
 import types.BlockCategory;
 import types.BlockType;
+import types.ExecutionSnapshot;
 
 /**
  * GameControllerTest
@@ -47,6 +50,8 @@ public class GameControllerTest {
 	private BlockRepository programBlockRepository;
 	@Mock(name="gameWorld")
 	private GameWorld gameWorld;
+	@Mock
+	private GameWorldSnapshot snapshotMock;
 	// Voor uitleg waarom hier specifiek een constructor wordt gecalled, zie comments boven constructor in kwestie.
 	@Spy @InjectMocks
 	private GameController gc = new GameController(programBlockRepository, gameWorld);
@@ -57,6 +62,7 @@ public class GameControllerTest {
 	private ControlBlock ifBlock;
 	private ControlBlock whileBlock;
 	private AssessableBlock assessableBlock;
+	private ExecutionSnapshot snapshot;
 	
 	/**
 	 * @throws java.lang.Exception
@@ -70,6 +76,7 @@ public class GameControllerTest {
 		assessableBlock = spy(new ConditionBlock("ConditionBlock", new BlockType("ConditionBlock", BlockCategory.CONDITION)));
 		inExecutionState = spy(new InExecutionState(gc, actionBlock));
 		validProgramState = spy(new ValidProgramState(gc));
+		snapshot = new ExecutionSnapshot(actionBlock, snapshotMock, inExecutionState);
 	}
 
 	/**
@@ -107,6 +114,25 @@ public class GameControllerTest {
 		
 		verify(inExecutionState,atLeastOnce()).reset();
 	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#resetGame()}.
+	 */
+	@Test
+	public void testResetGame_NextStateNull_Positive() {
+		when(gameWorld.saveState()).thenReturn(snapshotMock);
+		Mockito.doReturn(inExecutionState).when(gc).getCurrentState();
+		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(actionBlock);
+		Mockito.doReturn(snapshot).when(gc).createNewExecutionSnapshot(actionBlock, snapshotMock, inExecutionState);
+		Mockito.doNothing().when(gc).fireUpdateHighlightingEvent(null);
+		when(inExecutionState.getNextState()).thenReturn(null);
+		
+		assertEquals(snapshot, gc.resetGame());
+		
+		verify(gc,atLeastOnce()).fireUpdateHighlightingEvent(null);
+	}
+	// TODO: Test resetGame when nextState is not null
+	
 
 	/**
 	 * Test method for {@link applicationLayer.GameController#getCurrentState()}.

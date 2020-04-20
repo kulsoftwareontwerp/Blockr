@@ -84,10 +84,10 @@ public class DomainController {
 
 	}
 
-	@SuppressWarnings("unused")
-	private DomainController(GameController gameController, BlockController blockController, GameWorld gameWorld, CommandHandler handler) {
-		initializeDomainController(gameController, blockController, gameWorld, handler);
-	}
+//	@SuppressWarnings("unused")
+//	private DomainController(GameController gameController, BlockController blockController, GameWorld gameWorld, CommandHandler handler) {
+//		initializeDomainController(gameController, blockController, gameWorld, handler);
+//	}
 
 	/**
 	 * Add a block of the given blockType to the domain and connect it with the
@@ -260,7 +260,8 @@ public class DomainController {
 	}
 
 	/**
-	 * Executes the next block to be executed if the gamestate is in a valid state or an in execution state. If this is not the case, nothing happens.
+	 * Executes the next block to be executed if the gamestate is in a valid state or an in execution state. 
+	 * 	If this is not the case, nothing happens.
 	 * 
 	 * @event UpdateHighlightingEvent
 	 * 		  Fires a UpdateHighlightingEvent if the program was in a valid state or an in executing state.
@@ -270,7 +271,7 @@ public class DomainController {
 	}
 
 	/**
-	 * Resets the game execution. 
+	 * Resets the game execution.
 	 * 
 	 * @event UpdateHighlightingEvent
 	 * 		  Fires a UpdateHighlightingEvent if the program was in an executing state.

@@ -185,14 +185,6 @@ public class DomainControllerTest {
 	}
 
 	/**
-	 * Test method for {@link applicationLayer.DomainController#addElement(domainLayer.elements.ElementType, int, int)}.
-	 */
-	@Test
-	public void testAddElement() {
-		fail("Not yet implemented");
-	}
-
-	/**
 	 * Test method for {@link applicationLayer.DomainController#getFirstBlockBelow(java.lang.String)}.
 	 */
 	@Test
