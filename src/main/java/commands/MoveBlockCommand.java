@@ -24,7 +24,8 @@ public class MoveBlockCommand implements BlockCommand {
 
 	/**
 	 * 
-	 * @param blockController
+	 * @param blockController           The blockController to perform this
+	 *                                  MoveBlockCommand on.
 	 * @param topOfMovedChainBlockId    The Id of block to be moved, if you move a
 	 *                                  chain of blocks this will be the first block
 	 *                                  in the chain, this parameter is required.

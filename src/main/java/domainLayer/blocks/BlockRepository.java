@@ -864,8 +864,8 @@ public class BlockRepository {
 	/**
 	 * method used to check if a chain of operand finishes with a conditionBlock.
 	 * 
-	 * @param block
-	 * @return
+	 * @param block the block to check if it's valid
+	 * @return a flag indicating if a chain of operand finishes with a conditionBlock.
 	 */
 	public boolean checkIfValidStatement(Block block) {
 		if (block != null) {
@@ -880,14 +880,14 @@ public class BlockRepository {
 	public ExecutableBlock findFirstBlockToBeExecuted() {
 		// We find the "first" item in the HashSet, that should always be the only item
 		// in the set, otherwise it would not be in an ValidState
-		Iterator iter = headBlocks.iterator();
+		Iterator<Block> iter = headBlocks.iterator();
 		ExecutableBlock firstExecutableBlock = (ExecutableBlock) iter.next();
 		return firstExecutableBlock;
 	}
 
 	/**
-	 * 
-	 * @param block
+	 * Add a block to the headBlocks 
+	 * @param block the block to add to the headBlocks
 	 */
 	private void addBlockToHeadBlocks(Block block) {
 		if (this.headBlocks.stream().anyMatch(b -> b.getBlockId().equals(block.getBlockId()))) {
@@ -962,7 +962,7 @@ public class BlockRepository {
 	/**
 	 * Checks if the maximum number of blocks has been reached.
 	 * 
-	 * @return getMaxNbOfBlocks() <= totalNumberOfBlocks
+	 * @return getMaxNbOfBlocks() =< totalNumberOfBlocks
 	 */
 	public boolean checkIfMaxNbOfBlocksReached() {
 		return this.getMaxNbOfBlocks() <= this.allBlocks.size();

@@ -331,7 +331,7 @@ public abstract class Shape implements Constants, Cloneable {
 	/**
 	 * Retrieve the height of this shape
 	 * 
-	 * @return
+	 * @return the height of this shape
 	 */
 	public int getHeight() {
 		return height;

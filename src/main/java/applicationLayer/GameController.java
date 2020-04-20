@@ -63,7 +63,7 @@ public class GameController implements DomainListener, GUISubject {
 	/**
 	 * ResetGame is only allowed to be called from the resettingState class.
 	 * 
-	 * @return
+	 * @return The ExecutionSnapshot describing the state before the reset.
 	 */
 	public ExecutionSnapshot resetGame() {
 		GameWorldSnapshot gameSnapshot = gameWorld.saveState();

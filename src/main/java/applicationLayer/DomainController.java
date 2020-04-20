@@ -272,7 +272,7 @@ public class DomainController {
 	/**
 	 * Paint the gameWorld on a given graphics object.
 	 * 
-	 * @param gameAreaGraphics
+	 * @param gameWorldGraphics The graphics object to paint the gameWorld on.
 	 */
 	public void paint(Graphics gameWorldGraphics) {
 		gameWorld.paint(gameWorldGraphics);
