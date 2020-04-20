@@ -6,10 +6,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
+
+import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.ExecutableBlock;
+import domainLayer.gamestates.GameState;
 import events.BlockAddedEvent;
 import events.BlockChangeEvent;
 import events.BlockRemovedEvent;
@@ -27,6 +31,7 @@ import exceptions.NoSuchConnectedBlockException;
 import types.BlockSnapshot;
 import types.BlockType;
 import types.ConnectionType;
+import types.ExecutionSnapshot;
 
 /**
  * The BlockController orchestrates Create, Update, Delete and Retrieve
@@ -48,7 +53,6 @@ public class BlockController implements GUISubject, DomainSubject {
 		guiListeners = new HashSet<GUIListener>();
 		domainListeners = new HashSet<DomainListener>();
 		programBlockRepository = BlockRepository.getInstance();
-
 	}
 
 	@SuppressWarnings("unused")
@@ -221,16 +225,15 @@ public class BlockController implements GUISubject, DomainSubject {
 			previousConnection = programBlockRepository.getConnectedBlockBeforeRemove(blockID);
 		}
 		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
-		Set<String> idsToBeRemoved = new HashSet<String>();
 		Block deletedBlock = programBlockRepository.getBlockByID(blockID).clone();
 		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1)) != null
 				? programBlockRepository.getBlockByID(previousConnection.get(1)).clone()
 				: null;
 
-		BlockSnapshot snapshot = new BlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,
+		BlockSnapshot snapshot = createNewBlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,
 				programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(deletedBlock));
 
-		idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
+		Set<String> idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
@@ -240,6 +243,12 @@ public class BlockController implements GUISubject, DomainSubject {
 		fireBlockRemoved(idsToBeRemoved, previousConnection.get(1), ConnectionType.valueOf(previousConnection.get(0)));
 
 		return snapshot;
+	}
+	
+	// For testing purposes
+	BlockSnapshot createNewBlockSnapshot(Block block, Block connectedBlockBeforeSnapshot, Block connectedBlockAfterSnapshot,
+			Set<Block> changingBlocks) {
+		return new BlockSnapshot(block, connectedBlockBeforeSnapshot, connectedBlockAfterSnapshot, changingBlocks);
 	}
 
 	/**

@@ -91,6 +91,7 @@ public class GameController implements DomainListener, GUISubject {
 				//This is not a resettingState.
 				toState(new ResettingState(this));
 			} else {
+				// TODO: How to test this?
 				Constructor<? extends GameState> constructor = getCurrentState().getNextState().getConstructor(GameController.class);
 				GameState newState = (GameState) constructor.newInstance(this);
 				toState(newState);
