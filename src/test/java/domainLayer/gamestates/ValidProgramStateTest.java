@@ -21,6 +21,8 @@ import com.kuleuven.swop.group17.GameWorldApi.Action;
 
 import applicationLayer.GameController;
 import domainLayer.blocks.ActionBlock;
+import types.BlockCategory;
+import types.BlockType;
 
 /**
  * ValidProgramStateTest
@@ -43,7 +45,7 @@ public class ValidProgramStateTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		actionBlock = new ActionBlock("actionBlockId", Mockito.mock(Action.class));
+		actionBlock = new ActionBlock("actionBlockId", new BlockType("Action", BlockCategory.ACTION));
 	}
 
 	/**
@@ -63,7 +65,6 @@ public class ValidProgramStateTest {
 		vps.execute();
 		
 		verify(gameController,atLeastOnce()).toState(Mockito.any(InExecutionState.class));
-//		verify(Mockito.any(InExecutionState.class),atLeastOnce()).execute();
 	}
 
 	/**

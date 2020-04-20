@@ -21,6 +21,8 @@ import org.mockito.Spy;
 import com.kuleuven.swop.group17.GameWorldApi.Action;
 
 import applicationLayer.GameController;
+import types.BlockCategory;
+import types.BlockType;
 
 /**
  * BlockRepositoryTest
@@ -41,7 +43,7 @@ public class BlockRepositoryTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		actionBlock = new ActionBlock("actionBlockId", Mockito.mock(Action.class));
+		actionBlock = new ActionBlock("actionBlockId", new BlockType("Action", BlockCategory.ACTION));
 		ifBlock = new IfBlock("IfBlock");
 	}
 

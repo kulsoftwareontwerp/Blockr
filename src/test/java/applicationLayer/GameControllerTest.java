@@ -32,6 +32,8 @@ import domainLayer.blocks.IfBlock;
 import domainLayer.blocks.WhileBlock;
 import domainLayer.gamestates.InExecutionState;
 import domainLayer.gamestates.ValidProgramState;
+import types.BlockCategory;
+import types.BlockType;
 
 /**
  * GameControllerTest
@@ -43,9 +45,11 @@ public class GameControllerTest {
 
 	@Mock(name="programBlockRepository")
 	private BlockRepository programBlockRepository;
+	@Mock(name="gameWorld")
+	private GameWorld gameWorld;
 	// Voor uitleg waarom hier specifiek een constructor wordt gecalled, zie comments boven constructor in kwestie.
 	@Spy @InjectMocks
-	private GameController gc = new GameController(programBlockRepository);
+	private GameController gc = new GameController(programBlockRepository, gameWorld);
 	
 	private InExecutionState inExecutionState;
 	private ValidProgramState validProgramState;
@@ -60,10 +64,10 @@ public class GameControllerTest {
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		actionBlock = new ActionBlock("actionBlockId", Mockito.mock(Action.class));
+		actionBlock = new ActionBlock("actionBlockId", new BlockType("Action", BlockCategory.ACTION));
 		ifBlock = spy(new IfBlock("IfBlock"));
 		whileBlock = spy(new WhileBlock("WhileBlock"));
-		assessableBlock = spy(new ConditionBlock("ConditionBlock", Mockito.mock(Predicate.class)));
+		assessableBlock = spy(new ConditionBlock("ConditionBlock", new BlockType("ConditionBlock", BlockCategory.CONDITION)));
 		inExecutionState = spy(new InExecutionState(gc, actionBlock));
 		validProgramState = spy(new ValidProgramState(gc));
 	}
@@ -211,7 +215,7 @@ public class GameControllerTest {
 	@Test
 	public void testFindNextActionBlockToBeExecuted_CurrentBlockControlBlock_PositiveCondition_Positive() {
 		when(ifBlock.getConditionBlock()).thenReturn(assessableBlock);
-		Mockito.doReturn(true).when(gc).evaluateCondition(assessableBlock);
+		when(assessableBlock.assess(gameWorld)).thenReturn(true);
 		Mockito.doReturn(actionBlock).when(ifBlock).getFirstBlockOfBody();
 		Mockito.doReturn(actionBlock).when(gc).findNextActionBlockToBeExecuted(ifBlock, actionBlock);
 		
@@ -224,7 +228,7 @@ public class GameControllerTest {
 	@Test
 	public void testFindNextActionBlockToBeExecuted_CurrentBlockControlBlock_NegativeCondition_Positive() {
 		when(ifBlock.getConditionBlock()).thenReturn(assessableBlock);
-		Mockito.doReturn(false).when(gc).evaluateCondition(assessableBlock);
+		when(assessableBlock.assess(gameWorld)).thenReturn(false);
 		Mockito.doReturn(actionBlock).when(ifBlock).getNextBlock();
 		Mockito.doReturn(actionBlock).when(gc).findNextActionBlockToBeExecuted(ifBlock, actionBlock);
 		

@@ -41,8 +41,9 @@ public class GameController implements DomainListener, GUISubject {
 	// 		dus als oplossing heb ik deze public gezet en specifiek aangeroepen in de tests.
 	//		Kheb er al veel te veel tijd aan verkloot om het beter op de lossen dan dit, maar ik geef het op.
 	// 		Fuck Mockito.
-	public GameController(BlockRepository programBlockRepository) {
+	public GameController(BlockRepository programBlockRepository, GameWorld gameWorld) {
 		this.programBlockRepository = programBlockRepository;
+		this.gameWorld = gameWorld;
 	}
 
 	public GameController(GameWorld gameWorld, CommandHandler commandHandler) {
@@ -179,18 +180,14 @@ public class GameController implements DomainListener, GUISubject {
 			// If or while block
 			AssessableBlock condition = currentBlock.getConditionBlock();
 
-			if (evaluateCondition(condition)) {
+			if (condition.assess(gameWorld)) {
 				return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getFirstBlockOfBody());
 			} else {
 				return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getNextBlock());
 			}
 		}
 	}
-
-	private boolean evaluateCondition(AssessableBlock condition) {
-		return condition.assess(gameWorld);
-	}
-
+	
 	/**
 	 * 
 	 * @param block
