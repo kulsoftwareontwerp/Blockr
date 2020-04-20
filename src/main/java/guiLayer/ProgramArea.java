@@ -200,4 +200,15 @@ public class ProgramArea implements Constants {
 		return shapesInProgramArea.stream().filter(s-> (s instanceof ControlShape) && s.getHeightDiff()!=0 ).map(s->(ControlShape) s).collect(Collectors.toSet());
 	}
 
+	/**
+	 * Set the shapes in the programArea, all shapes without coordinates are set correctly, all connectionTypes are updated correctly.
+	 */
+	void placeShapes() {
+		for (Shape shape : getShapesInProgramArea()) {
+			shape.setCoordinatesShape();
+			addToAlreadyFilledInCoordinates(shape);
+			shape.defineConnectionTypes();
+		}
+	}
+
 }
