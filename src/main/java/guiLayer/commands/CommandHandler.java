@@ -36,7 +36,7 @@ public class CommandHandler {
 
 	/**
 	 * Execute a BlockCommand and put it on the stack, all undone BlockCommands will be cleared as well as all GameWorldCommands, executed and undone alike.
-	 * @param command
+	 * @param command the blockCommand to handle
 	 */
 	public void handle(BlockCommand command) {
 		// no undo operations for gameWorld possible anymore

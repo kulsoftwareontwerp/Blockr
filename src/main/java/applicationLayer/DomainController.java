@@ -152,7 +152,11 @@ public class DomainController {
 	 * @param topOfMovedChainBlockId    The Id of block to be moved, if you move a
 	 *                                  chain of blocks this will be the first block
 	 *                                  in the chain, this parameter is required.
-	 * @param movedBlockId              TODO
+	 * @param movedBlockId              The Id of block that's actually being moved,
+	 *                                  this might be the same as the
+	 *                                  topOfMovedChainBlockId, if the movedBlockId
+	 *                                  is empty the topOfMovedChainBlockId will be
+	 *                                  used in any way.
 	 * @param connectedAfterMoveBlockId The Id of the block you wish to connect the
 	 *                                  block you are moving to. This parameter is
 	 *                                  Required. If there's no connected block
