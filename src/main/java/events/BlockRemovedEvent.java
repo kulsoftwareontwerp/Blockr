@@ -17,6 +17,7 @@ public class BlockRemovedEvent implements EventObject {
 	private String beforeRemoveBlockId;
 	private ConnectionType beforeRemoveConnection;
 	private Set<String> changedBlocks;
+
 	/**
 	 * Create the blockRemovedEvent
 	 * 
@@ -25,7 +26,7 @@ public class BlockRemovedEvent implements EventObject {
 	 *                               connected before it was removed.
 	 * @param beforeRemoveConnection The connection on which the removed block was
 	 *                               connected before it was removed.
-	 * @param changedBlocks TODO
+	 * @param changedBlocks 		 The id's of all blocks associated with the remove operation.
 	 */
 	public BlockRemovedEvent(String removedBlockId, String beforeRemoveBlockId, ConnectionType beforeRemoveConnection, Set<String> changedBlocks) {
 		this.removedBlockId = removedBlockId;
@@ -38,7 +39,8 @@ public class BlockRemovedEvent implements EventObject {
 	}
 	
 	/**
-	 * @return the changedBlocks
+	 * Retrieve the id's of all blocks associated with the remove operation
+	 * @return a set with the id's of all blocks associated with the remove operation.
 	 */
 	public Set<String> getChangedBlocks() {
 		return changedBlocks;
