@@ -10,9 +10,10 @@ public abstract class BlockCommand implements Command, Constants {
 	private GuiSnapshot afterSnapshot;
 
 	/**
-	 * @param canvas
-	 * @param beforeSnapshot
-	 * @param afterSnapshot
+	 * Create a new BlockCommand
+	 * @param canvas the canvas to perform this command on
+	 * @param beforeSnapshot The snapshot before this command was executed.
+	 * @param afterSnapshot The snapshot after this command was executed.
 	 */
 	public BlockCommand(CanvasWindow canvas, GuiSnapshot beforeSnapshot, GuiSnapshot afterSnapshot) {
 		super();

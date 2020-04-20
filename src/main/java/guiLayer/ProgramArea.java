@@ -3,7 +3,7 @@ package guiLayer;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.HashSet;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,24 +15,56 @@ import guiLayer.types.Coordinate;
 import guiLayer.types.DebugModus;
 import types.BlockType;
 
+/**
+ * ProgramArea, the programArea describes the area where all blocks are placed
+ * for the execution of the game.
+ * 
+ * @version 0.1
+ * @author group17
+ *
+ */
 public class ProgramArea implements Constants {
 
 	private HashSet<Coordinate> alreadyFilledInCoordinates;
 	private Shape highlightedShape = null;
 
-	private HashSet<Shape> shapesInProgramArea; // shapes with Id == null SHOULDN'T exist!!!!, only if dragged from
-	// Palette, Id == "PALETTE"
+	private HashSet<Shape> shapesInProgramArea;
 	private Shape highlightedShapeForExecution;
 
-	public HashSet<Shape> getShapesInProgramArea() {
+	/**
+	 * Create a new ProgramArea
+	 */
+	public ProgramArea() {
+		alreadyFilledInCoordinates = new HashSet<Coordinate>();
+		shapesInProgramArea = new HashSet<Shape>();
+	}
+
+	/**
+	 * Retrieve a set with all the shapes in the programArea
+	 * 
+	 * @return a set with all the shapes in the programArea
+	 */
+	public Set<Shape> getShapesInProgramArea() {
 		HashSet<Shape> copy = new HashSet<Shape>(shapesInProgramArea);
 		return copy;
 	}
 
+	/**
+	 * Remove all alreadyFilledCoordinates
+	 */
 	public void clearAlreadyFilledInCoordinates() {
 		alreadyFilledInCoordinates.clear();
 	}
 
+	/**
+	 * Add a shape to the programArea, if the id of the given shape is already
+	 * present in the programArea that shape will be replaced with the given shape.
+	 * If a shape is added to the programArea it's not yet added to the set of
+	 * AlreadyFilledCoordinates
+	 * 
+	 * @param shape the shape to add to the programArea. If the shape is null
+	 *              nothing happens.
+	 */
 	public void addShapeToProgramArea(Shape shape) {
 		if (shape != null) {
 			Shape presentShape = getShapeById(shape.getId());
@@ -45,6 +77,12 @@ public class ProgramArea implements Constants {
 		}
 	}
 
+	/**
+	 * Remove the given shape from the programArea and from the
+	 * alreadyFilledCoordinates.
+	 * 
+	 * @param shape
+	 */
 	public void removeShapeFromProgramArea(Shape shape) {
 		this.shapesInProgramArea.remove(shape);
 		for (Coordinate pair : shape.getCoordinatesShape()) {
@@ -52,61 +90,92 @@ public class ProgramArea implements Constants {
 		}
 	}
 
-	public ProgramArea() {
-		alreadyFilledInCoordinates = new HashSet<Coordinate>();
-		shapesInProgramArea = new HashSet<Shape>();
-	}
-
+	/**
+	 * Check if the given x coordinate is present in the programArea.
+	 * 
+	 * @param x the x coordinate to check
+	 * @return a flag indicating if the given x coordinate is present in the
+	 *         programArea.
+	 */
 	public boolean checkIfInProgramArea(int x) {
 		return x > PROGRAM_START_X && x < PROGRAM_END_X;
 	}
 
+	/**
+	 * Retrieve a shape from the given coordinates, return null if no shape is
+	 * present at these coordinates.
+	 * 
+	 * @param x The x coordinate of the shape
+	 * @param y The y coordinate of the shape
+	 * @return The shape on the given coordinate or null if there is no shape at
+	 *         those coordinates.
+	 */
 	public Shape getShapeFromCoordinate(int x, int y) {
+		Optional<Shape> shape = this.getShapesInProgramArea().stream()
+				.filter(e -> e.getCoordinatesShape().contains(new Coordinate(x, y))).findFirst();
 
-		try {
-			return this.getShapesInProgramArea().stream()
-					.filter(e -> e.getCoordinatesShape().contains(new Coordinate(x, y))).findFirst().get();
-		} catch (NoSuchElementException e) {
+		if (shape.isPresent()) {
+			return shape.get();
+		} else {
 			return null;
-
 		}
 	}
 
 	/**
 	 * Retrieve a shape by its ID
 	 * 
-	 * @param id
-	 * @return
+	 * @param id the id to get the associated shape of
+	 * @return The shape associated with the given ID or null if no shape with the
+	 *         given ID was found.
 	 */
 	public Shape getShapeById(String id) {
-
-		try {
-			return this.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id)).findFirst().get();
-		} catch (NoSuchElementException e) {
+		Optional<Shape> shape = this.getShapesInProgramArea().stream().filter(e -> e.getId().equals(id)).findFirst();
+		if (shape.isPresent()) {
+			return shape.get();
+		} else {
 			return null;
 		}
 	}
 
-	public boolean checkIfPlaceable(HashSet<Coordinate> hashSet, Shape currentShape) {
-		boolean placeable = !((hashSet.stream().anyMatch(i -> this.alreadyFilledInCoordinates.contains(i))))
-				&& currentShape.getX_coord() + currentShape.getWidth() < PROGRAM_END_X;
+	/**
+	 * Check if the given shape can be placed in the programArea.
+	 * 
+	 * @param shapeToPlace the shape to place in the programArea
+	 * @return a flag indicating if the shape can be placed in the programArea.
+	 */
+	public boolean checkIfPlaceable(Shape shapeToPlace) {
+		boolean placeable = !((shapeToPlace.getCoordinatesShape().stream()
+				.anyMatch(i -> this.alreadyFilledInCoordinates.contains(i))))
+				&& shapeToPlace.getX_coord() + shapeToPlace.getWidth() < PROGRAM_END_X;
 
-		if ((currentShape.getType() == BlockType.valueOf("If") || currentShape.getType() == BlockType.valueOf("While"))
-				&& (getHighlightedShape() != null && (getHighlightedShape().getType() == BlockType.valueOf("If")
-						|| getHighlightedShape().getType() == BlockType.valueOf("While")))) {
+		if ((shapeToPlace.getType() == BlockType.IF || shapeToPlace.getType() == BlockType.WHILE)
+				&& (getHighlightedShapeForConnections() != null
+						&& (getHighlightedShapeForConnections().getType() == BlockType.IF
+								|| getHighlightedShapeForConnections().getType() == BlockType.WHILE))) {
 			placeable = true;
 		}
-		// TODO Hotfix needed
-		if (currentShape instanceof ControlShape && checkIfInProgramArea(currentShape.getX_coord())) {
+		if (shapeToPlace instanceof ControlShape && checkIfInProgramArea(shapeToPlace.getX_coord())) {
 			placeable = true;
 		}
 		return placeable;
 	}
 
-	public HashSet<Coordinate> getAlreadyFilledInCoordinates() {
+	/**
+	 * Retrieve a set with all the coordinates that are already occupied by another shape.
+	 * 
+	 * @return a set with all the coordinates that are already occupied by another shape
+	 */
+	public Set<Coordinate> getAlreadyFilledInCoordinates() {
 		return alreadyFilledInCoordinates;
 	}
 
+	/**
+	 * Add the coordinates of the shape to the already filled coordinates, if the id
+	 * of the given shape is already present the coordinates of that shape will be
+	 * replaced with the coordinates of the given shape.
+	 * 
+	 * @param shape
+	 */
 	public void addToAlreadyFilledInCoordinates(Shape shape) {
 		Shape presentShape = getShapeById(shape.getId());
 		if (presentShape != null) {
@@ -115,18 +184,45 @@ public class ProgramArea implements Constants {
 		getAlreadyFilledInCoordinates().addAll(shape.getCoordinatesShape());
 	}
 
+	/**
+	 * Remove all coordinates from the given shape from the already filled
+	 * Coordinates in the programArea
+	 * 
+	 * @param shape the shape to remove the coordinates from.
+	 */
 	public void removeFromAlreadyFilledInCoordinates(Shape shape) {
 		getAlreadyFilledInCoordinates().removeAll(shape.getCoordinatesShape());
 	}
 
-	public Shape getHighlightedShape() {
+	/**
+	 * Retrieve the highlighted shape for connections
+	 * 
+	 * @return The highlighted shape for connections
+	 */
+	public Shape getHighlightedShapeForConnections() {
 		return highlightedShape;
 	}
 
-	public void setHighlightedShape(Shape highlightedShape) {
+	/**
+	 * Set the Highlighted shape to which another shape is trying to connect.
+	 * 
+	 * @param highlightedShape The shape that needs to be the highlighted shape for
+	 *                         connections.
+	 */
+	public void setHighlightedShapeForConnections(Shape highlightedShape) {
 		this.highlightedShape = highlightedShape;
 	}
 
+	/**
+	 * Draw the programArea
+	 * 
+	 * @param blockrGraphics The graphics object to draw the programArea on
+	 * @param controller     the domainController, this controller is only used to
+	 *                       ask the connectionStatus to show the correct
+	 *                       debugInformation, if the controller is null, the
+	 *                       debugInformation regarding the status of a connection
+	 *                       won't be available
+	 */
 	void draw(Graphics blockrGraphics, DomainController controller) {
 
 		// draw all shapes in shapesInProgramArea
@@ -138,8 +234,8 @@ public class ProgramArea implements Constants {
 			drawHighlightedBLUE(blockrGraphics, getHighlightedShapeForExecution());
 		}
 
-		if (getHighlightedShape() != null) {
-			drawHighlightedGREEN(blockrGraphics, getHighlightedShape());
+		if (getHighlightedShapeForConnections() != null) {
+			drawHighlightedGREEN(blockrGraphics, getHighlightedShapeForConnections());
 		}
 		// only for debugging purposes
 		if (DebugModus.CONNECTIONS.compareTo(CanvasWindow.debugModus) <= 0) {
@@ -150,10 +246,9 @@ public class ProgramArea implements Constants {
 					blockrGraphics.setColor(Color.black);
 					blockrGraphics.drawOval(tempx, tempy, 6, 6);
 
-					if (DebugModus.CONNECTIONSTATUS.compareTo(CanvasWindow.debugModus) <= 0) {
+					if (DebugModus.CONNECTIONSTATUS.compareTo(CanvasWindow.debugModus) <= 0 && controller != null) {
 
 						if (controller.checkIfConnectionIsOpen(shape.getId(), p.getKey(), null)) {
-//						if (shape.checkIfOpen(p.getKey())) {
 							blockrGraphics.setColor(Color.green);
 						} else {
 							blockrGraphics.setColor(Color.red);
@@ -168,40 +263,65 @@ public class ProgramArea implements Constants {
 		}
 	}
 
-	void drawHighlightedBLUE(Graphics g, Shape shape) {
+	/**
+	 * Draw a shape in blue
+	 * 
+	 * @param g     The graphics object to draw on
+	 * @param shape the shape to draw
+	 */
+	private void drawHighlightedBLUE(Graphics g, Shape shape) {
 		g.setColor(Color.BLUE);
 		shape.draw(g);
 		g.setColor(Color.BLACK);
 	}
 
-	void drawHighlightedGREEN(Graphics g, Shape shape) {
+	/**
+	 * Draw a shape in green.
+	 * 
+	 * @param g     The graphics object to draw on
+	 * @param shape the shape to draw
+	 */
+	private void drawHighlightedGREEN(Graphics g, Shape shape) {
 		g.setColor(Color.GREEN);
 		shape.draw(g);
 		g.setColor(Color.BLACK);
 	}
 
+	/**
+	 * Retrieve the shape that's highlighted for execution
+	 * 
+	 * @return the shape that's highlighted for execution
+	 */
 	private Shape getHighlightedShapeForExecution() {
 		return highlightedShapeForExecution;
 	}
 
+	/**
+	 * Set the shape highlighted for execution
+	 * 
+	 * @param shape The shape highlighted for execution, if the given shape is null
+	 *              the highlighting will be cleared.
+	 */
 	public void setHighlightedShapeForExecution(Shape shape) {
 		this.highlightedShapeForExecution = shape;
 
 	}
 
-	public Shape getClonedHighlightedShape() {
-		if (highlightedShape != null) {
-			return highlightedShape.clone();
-		}
-		return null;
-	}
-
+	/**
+	 * Retrieve a all ControlShapes in the programArea of which the height has
+	 * changed.
+	 * 
+	 * @return a set with all ControlShapes in the programArea of which the height
+	 *         has changed.
+	 */
 	public Set<ControlShape> getAllChangedControlShapes() {
-		return shapesInProgramArea.stream().filter(s-> (s instanceof ControlShape) && s.getHeightDiff()!=0 ).map(s->(ControlShape) s).collect(Collectors.toSet());
+		return shapesInProgramArea.stream().filter(s -> (s instanceof ControlShape) && s.getHeightDiff() != 0)
+				.map(s -> (ControlShape) s).collect(Collectors.toSet());
 	}
 
 	/**
-	 * Set the shapes in the programArea, all shapes without coordinates are set correctly, all connectionTypes are updated correctly.
+	 * Set the shapes in the programArea, all shapes without coordinates are set
+	 * correctly, all connectionTypes are updated correctly.
 	 */
 	void placeShapes() {
 		for (Shape shape : getShapesInProgramArea()) {

@@ -259,7 +259,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 * Reset all global variables
 	 */
 	private void resetGlobalVariables() {
-		programArea.setHighlightedShape(null);
+		programArea.setHighlightedShapeForConnections(null);
 		this.setCurrentShape(null);
 		this.resetShapesInMovement();
 	}
@@ -336,7 +336,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shapeIM.defineConnectionTypes();
 			}
 
-			programArea.setHighlightedShape(determineHighlightShape());
+			programArea.setHighlightedShapeForConnections(determineHighlightShape());
 
 			updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy, getCurrentShape());
 
@@ -384,16 +384,16 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					domainController.removeBlock(getCurrentShape().getId());
 				}
 			} else if (programArea.checkIfInProgramArea(x) && getCurrentShape() != null) {
-				if (programArea.getHighlightedShape() != null) {
+				if (programArea.getHighlightedShapeForConnections() != null) {
 					// connectedVia of highlightedshape must be persisted.
-					programArea.getHighlightedShape().persistConnectedVia(true);
+					programArea.getHighlightedShapeForConnections().persistConnectedVia(true);
 
 					if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
 						// persist the connectedVia.
 						getCurrentShape().persistConnectedVia(true);
 
 						// ADD
-						getCurrentShape().clipOn(programArea.getHighlightedShape(),
+						getCurrentShape().clipOn(programArea.getHighlightedShapeForConnections(),
 								getCurrentShape().getConnectedVia());
 
 					} else {
@@ -411,7 +411,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							int originalChangedShapeX = movedShape.getX_coord();
 							int originalChangedShapeY = movedShape.getY_coord();
 
-							movedShape.clipOn(programArea.getHighlightedShape(), movedShape.getConnectedVia());
+							movedShape.clipOn(programArea.getHighlightedShapeForConnections(), movedShape.getConnectedVia());
 
 							// Only if the shape that's being dragged is the moved shape than it should
 							// be decoupled from the chain it's in
@@ -425,30 +425,29 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					}
 				}
 				getCurrentShape().setCoordinatesShape();
-				boolean placeable = programArea.checkIfPlaceable(getCurrentShape().getCoordinatesShape(),
-						getCurrentShape());
+				boolean placeable = programArea.checkIfPlaceable(getCurrentShape());
 
 				if (placeable) {
 					if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
 						commandHandler.handle(new DomainMoveCommand(domainController, this,
 								new GuiSnapshot(getShapeClonesInMovement()), new GuiSnapshot(getShapesInMovement())));
 
-						if (programArea.getHighlightedShape() != null) {
+						if (programArea.getHighlightedShapeForConnections() != null) {
 							domainController.addBlock(getCurrentShape().getType(),
-									programArea.getHighlightedShape().getId(), getCurrentShape().getConnectedVia());
+									programArea.getHighlightedShapeForConnections().getId(), getCurrentShape().getConnectedVia());
 						} else {
 
 							domainController.addBlock(getCurrentShape().getType(), "", ConnectionType.NOCONNECTION);
 						}
-					} else if (programArea.getHighlightedShape() != null) {
+					} else if (programArea.getHighlightedShapeForConnections() != null) {
 						commandHandler.handle(new DomainMoveCommand(domainController, this,
 								new GuiSnapshot(getShapeClonesInMovement()), new GuiSnapshot(getShapesInMovement())));
 
-						if (programArea.getHighlightedShape().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
+						if (programArea.getHighlightedShapeForConnections().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
 							domainController.moveBlock(getCurrentShape().getId(), "", "", ConnectionType.NOCONNECTION);
 						} else {
 							domainController.moveBlock(getCurrentShape().getId(), movedShape.getId(),
-									programArea.getHighlightedShape().getId(), movedShape.getConnectedVia());
+									programArea.getHighlightedShapeForConnections().getId(), movedShape.getConnectedVia());
 						}
 					}
 					// decouple chain of blocks from a block
@@ -478,7 +477,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					revertMove();
 				}
 				setCurrentShape(null);
-				programArea.setHighlightedShape(null);
+				programArea.setHighlightedShapeForConnections(null);
 				movedShape = null;
 				offsetCurrentShape = new Coordinate(0,0);
 
@@ -492,7 +491,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					revertMove();
 				}
 				setCurrentShape(null);
-				programArea.setHighlightedShape(null);
+				programArea.setHighlightedShapeForConnections(null);
 				movedShape = null;
 				offsetCurrentShape = new Coordinate(0,0);
 				resetShapesInMovement();
