@@ -7,10 +7,11 @@ import applicationLayer.DomainControllerTest;
 import applicationLayer.GameControllerTest;
 import domainLayer.gamestates.InExecutionStateTest;
 import domainLayer.gamestates.ResettingStateTest;
+import domainLayer.gamestates.ValidProgramStateTest;
 
 @RunWith(Suite.class)
 @SuiteClasses({ DomainControllerTest.class, GameControllerTest.class, BlockControllerTest.class, InExecutionStateTest.class,
-	ResettingStateTest.class})
+	ResettingStateTest.class, ValidProgramStateTest.class})
 
 public class TestSuite {
 	
