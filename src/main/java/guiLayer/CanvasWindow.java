@@ -124,6 +124,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 */
 	public void placeShapes() {
 		if (currentSnapshot != null) {
+			programArea.setHighlightedShapeForExecution(null);
 			for (Map.Entry<String, Coordinate> IdAndCoordinate : currentSnapshot.getSavedCoordinates().entrySet()) {
 
 				BlockType type = domainController.getBlockType(IdAndCoordinate.getKey());
@@ -637,11 +638,15 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 			if (keyCode == KeyEvent.VK_F5) {
 				// F5-Key
+				if(domainController.isGameExecutionUseful()) {
 				commandHandler.handle(new ExecuteBlockCommand(domainController));
+				}
 			}
 			if (keyCode == KeyEvent.VK_ESCAPE) {
 				// ESC-Key
+				if(domainController.isGameResetUseful()) {
 				commandHandler.handle(new ResetCommand(domainController));
+				}
 			}
 			if (keyCode == KeyEvent.VK_Z) {
 				if (maskedKeyBag.getCtrl() && !maskedKeyBag.getShift()) {

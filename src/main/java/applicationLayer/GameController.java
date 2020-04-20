@@ -17,8 +17,10 @@ import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.ExecutableBlock;
 import domainLayer.blocks.IfBlock;
 import domainLayer.gamestates.GameState;
+import domainLayer.gamestates.InExecutionState;
 import domainLayer.gamestates.InValidProgramState;
 import domainLayer.gamestates.ResettingState;
+import domainLayer.gamestates.ValidProgramState;
 import events.DomainListener;
 import events.GUIListener;
 import events.GUISubject;
@@ -40,10 +42,9 @@ public class GameController implements DomainListener, GUISubject {
 		this.gameWorld = gameWorld;
 		programBlockRepository = BlockRepository.getInstance();
 		guiListeners = new HashSet<GUIListener>();
-		
-		this.commandHandler=commandHandler;
+
+		this.commandHandler = commandHandler;
 		initialSnapshot = gameWorld.saveState();
-		
 
 		toState(new InValidProgramState(this));
 
@@ -52,43 +53,41 @@ public class GameController implements DomainListener, GUISubject {
 	public void handleCommand(GameWorldCommand command) {
 		this.commandHandler.handle(command);
 	}
-	
+
 	public void resetGameExecution() {
 		GameState currentState = getCurrentState();
 		currentState.reset();
-		
+
 	}
-	
-	
+
 	/**
 	 * ResetGame is only allowed to be called from the resettingState class.
+	 * 
 	 * @return
 	 */
 	public ExecutionSnapshot resetGame() {
 		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
 		ActionBlock nextBlockToBeExecuted = getCurrentState().getNextActionBlockToBeExecuted();
-		ExecutionSnapshot snapshot = new ExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot,getCurrentState());
+		ExecutionSnapshot snapshot = new ExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState());
 		gameWorld.restoreState(initialSnapshot);
 		fireUpdateHighlightingEvent(null);
-		
-		
+
 		try {
-			if(getCurrentState().getNextState()==null) {
-				//This is not a resettingState.
+			if (getCurrentState().getNextState() == null) {
+				// This is not a resettingState.
 				toState(new ResettingState(this));
 			}
-			Constructor<? extends GameState> constructor = getCurrentState().getNextState().getConstructor(GameController.class);
+			Constructor<? extends GameState> constructor = getCurrentState().getNextState()
+					.getConstructor(GameController.class);
 			GameState newState = (GameState) constructor.newInstance(this);
 			toState(newState);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return snapshot;
 	}
-	
-	
-	
+
 	public GameState getCurrentState() {
 		return this.currentState;
 	}
@@ -104,8 +103,6 @@ public class GameController implements DomainListener, GUISubject {
 	public void updateState() {
 		currentState.update();
 	}
-
-
 
 	public void executeBlock() {
 		GameState currentState = getCurrentState();
@@ -161,11 +158,12 @@ public class GameController implements DomainListener, GUISubject {
 	public ExecutionSnapshot performAction(ActionBlock block) {
 		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
 		ActionBlock nextBlockToBeExecuted = getCurrentState().getNextActionBlockToBeExecuted();
-		ExecutionSnapshot snapshot = new ExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot,getCurrentState());
+		ExecutionSnapshot snapshot = new ExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState());
 		gameWorld.performAction(block.getAction());
-		
+
 		ActionBlock newNextActionBlockToBeExecuted = findNextActionBlockToBeExecuted(block, block.getNextBlock());
 		getCurrentState().setNextActionBlockToBeExecuted(newNextActionBlockToBeExecuted);
+
 		if (getCurrentState().getNextActionBlockToBeExecuted() != null) {
 			fireUpdateHighlightingEvent(getCurrentState().getNextActionBlockToBeExecuted().getBlockId());
 		} else {
@@ -173,7 +171,7 @@ public class GameController implements DomainListener, GUISubject {
 		}
 		return snapshot;
 	}
-	
+
 	public void restoreExecutionSnapshot(ExecutionSnapshot snapshot) {
 		getCurrentState().setNextActionBlockToBeExecuted(snapshot.getNextActionBlockToBeExecuted());
 		gameWorld.restoreState(snapshot.getGameSnapshot());
@@ -226,6 +224,27 @@ public class GameController implements DomainListener, GUISubject {
 	@Override
 	public void onUpdateGameStateEvent(UpdateGameStateEvent event) {
 		updateState();
+	}
+	
+	/**
+	 * Is it useful to perform a gameAction at the moment. An action is useful if it
+	 * changes anything, otherwise it's just a waste of time and resources.
+	 * 
+	 * @return if it's useful to perform a gameAction at the moment.
+	 */
+	public boolean isGameExecutionUseful() {
+		return (getCurrentState() instanceof ValidProgramState) || (getCurrentState() instanceof InExecutionState && getCurrentState().getNextActionBlockToBeExecuted()!=null) ;
+	}
+
+	/**
+	 * Is it useful to perform a reset of the gameWorld at the moment. A reset of the gameWorld is useful if it
+	 * changes anything, otherwise it's just a waste of time and resources.
+	 * 
+	 * @return if it's useful to perform a reset of the gameWorld at the moment.
+	 */
+	public boolean isGameResetUseful() {
+		return getCurrentState() instanceof InExecutionState  ;
+
 	}
 
 }

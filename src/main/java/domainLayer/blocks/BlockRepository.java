@@ -673,7 +673,7 @@ public class BlockRepository {
 				}
 			}
 		}
-		
+
 		if (afm != null) {
 			addBlockToAllBlocks(afm);
 		}
@@ -893,16 +893,20 @@ public class BlockRepository {
 		if (this.headBlocks.stream().anyMatch(b -> b.getBlockId().equals(block.getBlockId()))) {
 			deepReplace(block, this.headBlocks);
 		}
+		Optional<Block> b = this.headBlocks.stream().filter(s -> s.getBlockId().equals(block.getBlockId())).findAny();
+		if (b.isPresent()) {
+			this.headBlocks.remove(b.get());
+		}
 		this.headBlocks.add(block);
 	}
 
 	private void addBlockToAllBlocks(Block block) {
-		for(Block b:getAllBlocksConnectedToAndAfterACertainBlock(block)) {
-		if (allBlocks.containsKey(b.getBlockId())) {
-			deepReplace(b, this.allBlocks.values());
-		}
+		for (Block b : getAllBlocksConnectedToAndAfterACertainBlock(block)) {
+			if (allBlocks.containsKey(b.getBlockId())) {
+				deepReplace(b, this.allBlocks.values());
+			}
 
-		this.allBlocks.put(b.getBlockId(), b);
+			this.allBlocks.put(b.getBlockId(), b);
 		}
 	}
 
@@ -1168,6 +1172,9 @@ public class BlockRepository {
 					addBlockToHeadBlocks(snapshot.getBlock());
 				} else {
 					deepReplace(cb, headBlocks);
+					if (getAllHeadBlocks().stream().anyMatch(s -> s.getBlockId().equals(cb.getBlockId()))) {
+						addBlockToHeadBlocks(cb);
+					}
 				}
 				addBlockToAllBlocks(cb);
 
@@ -1182,11 +1189,11 @@ public class BlockRepository {
 			// blocks are still present in the domain (Move)
 			Block b = snapshot.getBlock();
 			if (snapshot.getConnectedBlockBeforeSnapshot() != null) {
-				
+
 				Block cb = snapshot.getConnectedBlockBeforeSnapshot();
 				if (cb.getConditionBlock() != null && cb.getConditionBlock().equals(b)) {
 					cb.setConditionBlock(null);
-					
+
 				}
 				if (cb.getFirstBlockOfBody() != null && cb.getFirstBlockOfBody().equals(b)) {
 					cb.setFirstBlockOfBody(null);
@@ -1197,7 +1204,7 @@ public class BlockRepository {
 				if (cb.getNextBlock() != null && cb.getNextBlock().equals(b)) {
 					cb.setNextBlock(null);
 				}
-				
+
 				if (b.getConditionBlock() != null && b.getConditionBlock().equals(cb)) {
 					b.setConditionBlock(null);
 				}
@@ -1211,13 +1218,11 @@ public class BlockRepository {
 					b.setNextBlock(null);
 				}
 
-				
-				
-				if(getAllBlockIDsUnderneath(getBlockByID(b.getBlockId())).contains(cb.getBlockId())) {
+				if (getAllBlockIDsUnderneath(getBlockByID(b.getBlockId())).contains(cb.getBlockId())) {
 					addBlockToHeadBlocks(cb);
 //					addBlockToHeadBlocks(b);					
-				}else {
-					addBlockToHeadBlocks(b);					
+				} else {
+					addBlockToHeadBlocks(b);
 				}
 				addBlockToAllBlocks(cb);
 				addBlockToAllBlocks(b);

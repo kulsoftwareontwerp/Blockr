@@ -38,27 +38,27 @@ public class DomainController {
 	private CommandHandler commandHandler;
 
 	private void initializeDomainController(GameController gameController, BlockController blockController,
-			 GameWorld gameWorld, CommandHandler handler) {
+			GameWorld gameWorld, CommandHandler handler) {
 		this.gameController = gameController;
 		this.blockController = blockController;
-	
+
 		this.blockController.addDomainListener(gameController);
-	
+
 		this.gameWorld = gameWorld;
 		this.commandHandler = handler;
-	
+
 		// fill dynamic enum with actions and predicates from GameWorldApi
 		Set<Predicate> supportedPredicates = gameWorld.getType().supportedPredicates();
 		Set<Action> supportedActions = gameWorld.getType().supportedActions();
-	
+
 		for (Predicate predicate : supportedPredicates) {
 			new BlockType(predicate.toString(), BlockCategory.CONDITION, predicate);
 		}
-	
+
 		for (Action action : supportedActions) {
 			new BlockType(action.toString(), BlockCategory.ACTION, action);
 		}
-	
+
 	}
 
 	/**
@@ -70,13 +70,13 @@ public class DomainController {
 	public DomainController(GameWorld gameWorld) {
 		CommandHandler handler = new CommandHandler();
 
-		initializeDomainController(new GameController(gameWorld, handler), new BlockController()
-				, gameWorld, handler);
+		initializeDomainController(new GameController(gameWorld, handler), new BlockController(), gameWorld, handler);
 
 	}
 
 	@SuppressWarnings("unused")
-	private DomainController(GameController gameController, BlockController blockController, GameWorld gameWorld, CommandHandler handler) {
+	private DomainController(GameController gameController, BlockController blockController, GameWorld gameWorld,
+			CommandHandler handler) {
 		initializeDomainController(gameController, blockController, gameWorld, handler);
 	}
 
@@ -268,11 +268,11 @@ public class DomainController {
 		gameWorld.paint(gameWorldGraphics);
 
 	}
-	
+
 	public void undo() {
 		commandHandler.undo();
 	}
-	
+
 	public void redo() {
 		commandHandler.redo();
 	}
@@ -298,12 +298,12 @@ public class DomainController {
 	 *         kind of block in the body of the given block or under the given
 	 *         block. The ID of the block itself is also given.
 	 */
-	
+
 	public Set<String> getAllBlockIDsUnderneath(String blockID) {
 		if (blockID == null || blockID == "") {
 			throw new IllegalArgumentException("No blockID given.");
 		}
-	
+
 		return blockController.getAllBlockIDsUnderneath(blockID);
 	}
 
@@ -311,7 +311,7 @@ public class DomainController {
 		if (blockID == null || blockID == "") {
 			throw new IllegalArgumentException("No blockID given.");
 		}
-	
+
 		return blockController.getAllBlockIDsBelowCertainBlock(blockID);
 	}
 
@@ -334,9 +334,9 @@ public class DomainController {
 		if (blockID == null || blockID == "") {
 			throw new IllegalArgumentException("No blockID given.");
 		}
-	
+
 		return blockController.getAllBlockIDsInBody(blockID);
-	
+
 	}
 
 	// TO BE DOCUMENTED:
@@ -351,20 +351,20 @@ public class DomainController {
 	 * @param changingBlocks
 	 * @return
 	 */
-	public Boolean checkIfConnectionIsOpen(String blockToCheck,ConnectionType connection,Set<String> changingBlocks) {
+	public Boolean checkIfConnectionIsOpen(String blockToCheck, ConnectionType connection, Set<String> changingBlocks) {
 		if (blockToCheck == null || blockToCheck == "") {
 			throw new IllegalArgumentException("No BlockID to check given.");
 		}
-		if(connection ==null) {
+		if (connection == null) {
 			throw new IllegalArgumentException("No connection to check given.");
 		}
-		if(changingBlocks==null) {
-			changingBlocks=new HashSet<String>();
+		if (changingBlocks == null) {
+			changingBlocks = new HashSet<String>();
 		}
-		
-		return blockController.checkIfConnectionIsOpen(blockToCheck,connection,changingBlocks);
+
+		return blockController.checkIfConnectionIsOpen(blockToCheck, connection, changingBlocks);
 	}
-	
+
 	/**
 	 * 
 	 * @param id
@@ -377,8 +377,10 @@ public class DomainController {
 		}
 		return blockController.getFirstBlockBelow(id);
 	}
+
 	/**
 	 * Retrieve the blockType of the block associated with the given id;
+	 * 
 	 * @param id The id of the block to retrieve the Blocktype from.
 	 * @return the blockType associated with the given block
 	 */
@@ -388,54 +390,63 @@ public class DomainController {
 		}
 		return blockController.getBlockType(id);
 	}
-	
 
 	/**
 	 * Check if the given id is present in the domain.
+	 * 
 	 * @param id the id to check
-	 * @return 
+	 * @return
 	 */
 	public boolean isBlockPresent(String id) {
-		if(id==null) {
+		if (id == null) {
 			return false;
 		}
 		return blockController.isBlockPresent(id);
 	}
 
-	//	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-	//		if(movedBlockId == null || movedBlockId.equals("")) {
-	//			throw new IllegalArgumentException("No movedBlockID given");
-	//		}
-	//		else if(connectionBeforeMove == null || connectionAfterMove == null) {
-	//			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
-	//		}
-	//		else if(connectedBeforeMoveBlockId.equals("")  && !(connectionBeforeMove == ConnectionType.NOCONNECTION)) {
-	//			throw new IllegalArgumentException("No blockId given for connectedBeforeMovedBlockID");
-	//			}
-	//		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
-	//			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
-	//		}
-	//		else if(movedBlockId.equals(connectedBeforeMoveBlockId) || movedBlockId.equals(connectedAfterMoveBlockId))
-	//			throw new IllegalArgumentException("You can't connect a block to itself.");
-	//		else {
-	//			blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
-	//		}
-	//	}
-		/**
-		 * Adds a GUI listener for Game, this listener will be notified about all
-		 * changes for the GUI. If the given listener is already a listener for Game it
-		 * will not be added another time.
-		 * 
-		 * @param listener The listener to be added.
-		 * @throws IllegalArgumentException Is thrown when the given listener is null.
-		 */
-		public void addGameListener(GUIListener listener) {
-			if (listener == null) {
-				throw new IllegalArgumentException("No listener given.");
-			}
-			gameController.addListener(listener);
-			blockController.addListener(listener);	
+	// public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId,
+	// ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId,
+	// ConnectionType connectionAfterMove) {
+	// if(movedBlockId == null || movedBlockId.equals("")) {
+	// throw new IllegalArgumentException("No movedBlockID given");
+	// }
+	// else if(connectionBeforeMove == null || connectionAfterMove == null) {
+	// throw new IllegalArgumentException("Null given as connection, use
+	// ConnectionType.NOCONNECTION.");
+	// }
+	// else if(connectedBeforeMoveBlockId.equals("") && !(connectionBeforeMove ==
+	// ConnectionType.NOCONNECTION)) {
+	// throw new IllegalArgumentException("No blockId given for
+	// connectedBeforeMovedBlockID");
+	// }
+	// else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove ==
+	// ConnectionType.NOCONNECTION)) {
+	// throw new IllegalArgumentException("No blockId given for
+	// connectedAfterMovedBlockID");
+	// }
+	// else if(movedBlockId.equals(connectedBeforeMoveBlockId) ||
+	// movedBlockId.equals(connectedAfterMoveBlockId))
+	// throw new IllegalArgumentException("You can't connect a block to itself.");
+	// else {
+	// blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId,
+	// connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
+	// }
+	// }
+	/**
+	 * Adds a GUI listener for Game, this listener will be notified about all
+	 * changes for the GUI. If the given listener is already a listener for Game it
+	 * will not be added another time.
+	 * 
+	 * @param listener The listener to be added.
+	 * @throws IllegalArgumentException Is thrown when the given listener is null.
+	 */
+	public void addGameListener(GUIListener listener) {
+		if (listener == null) {
+			throw new IllegalArgumentException("No listener given.");
 		}
+		gameController.addListener(listener);
+		blockController.addListener(listener);
+	}
 
 	/**
 	 * Removes a GUI listener for Game, this listener will no longer be notified
@@ -453,6 +464,24 @@ public class DomainController {
 		blockController.removeListener(listener);
 	}
 
+	/**
+	 * Is it useful to perform an execution step at the moment. An execution step is useful if it
+	 * changes anything, otherwise it's just a waste of time and resources.
+	 * 
+	 * @return if it's useful to perform an execution step at the moment.
+	 */
+	public boolean isGameExecutionUseful() {
+		return gameController.isGameExecutionUseful();
+	}
 
+	/**
+	 * Is it useful to perform a reset of the gameWorld at the moment. A reset of the gameWorld is useful if it
+	 * changes anything, otherwise it's just a waste of time and resources.
+	 * 
+	 * @return if it's useful to perform a reset of the gameWorld at the moment.
+	 */
+	public boolean isGameResetUseful() {
+		return gameController.isGameResetUseful();
+	}
 
 }
