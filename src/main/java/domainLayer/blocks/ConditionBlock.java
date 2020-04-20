@@ -1,10 +1,13 @@
 package domainLayer.blocks;
 
 import java.util.HashSet;
+import java.util.Set;
 
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
-import domainLayer.elements.ElementRepository;
+import types.BlockType;
+import types.ConnectionType;
 
 /**
  * The abstract class for the concept of a condition block.
@@ -13,35 +16,47 @@ import domainLayer.elements.ElementRepository;
  * @author group17
  */
 public class ConditionBlock extends AssessableBlock {
-	
-	private Predicate predicate;
-	
+		private BlockType type;
+		private HashSet<ConnectionType> supportedConnectionTypes;
+
 	/**
 	 * Create a Condition Block
 	 * @param 	blockId
 	 * 			The ID for the block.
 	 */
-	public ConditionBlock(String blockId, Predicate predicate) {
+	public ConditionBlock(String blockId, BlockType type) {
 		super(blockId);
-		setPredicate(predicate);
+		this.type=type;
+		this.supportedConnectionTypes=new HashSet<ConnectionType>();
+		supportedConnectionTypes.add(ConnectionType.LEFT);
+	
 	}
 
 
 	public Predicate getPredicate() {
-		return predicate;
+		return type.predicate();
 	}
 
 
-	private void setPredicate(Predicate predicate) {
-		this.predicate = predicate;
+
+
+
+	@Override
+	public boolean assess(GameWorld gameWorld) {
+		return gameWorld.evaluate(getPredicate());
 	}
 
 
-//	@Override
-//	public boolean assess(ElementRepository elementsRepo) {
-//		// TODO Auto-generated method stub
-//		return false;
-//	}
+	@Override
+	public BlockType getBlockType() {
+		return type;
+	}
+
+
+	@Override
+	public Set<ConnectionType> getSupportedConnectionTypes() {
+		return new HashSet<ConnectionType>(supportedConnectionTypes);
+	}
 
 
 

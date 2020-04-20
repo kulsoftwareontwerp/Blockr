@@ -1,9 +1,12 @@
 package domainLayer.blocks;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.kuleuven.swop.group17.GameWorldApi.Action;
 
-import domainLayer.elements.ElementRepository;
-import types.BlockCategory;
+import types.BlockType;
+import types.ConnectionType;
 
 /**
  * The abstract class for the concept of an action block.
@@ -12,26 +15,37 @@ import types.BlockCategory;
  * @author group17
  */
 public class ActionBlock extends ExecutableBlock {
-	
-	private Action action;
+
+	private BlockType type;
+	private HashSet<ConnectionType> supportedConnectionTypes;
 
 	/**
 	 * Create an Action Block
-	 * @param 	blockId
-	 * 			The ID for the block.
+	 * 
+	 * @param blockId The ID for the block.
 	 */
-	public ActionBlock(String blockId, Action action) {
+	public ActionBlock(String blockId, BlockType type) {
 		super(blockId);
-		setAction(action);
+		this.type = type;
+		
+		this.supportedConnectionTypes=new HashSet<ConnectionType>();
+		supportedConnectionTypes.add(ConnectionType.UP);
+		supportedConnectionTypes.add(ConnectionType.DOWN);
 		
 	}
 
 	public Action getAction() {
-		return action;
+		return type.action();
 	}
 
-	private void setAction(Action action) {
-		this.action = action;
+	@Override
+	public BlockType getBlockType() {
+		return type;
+	}
+
+	@Override
+	public Set<ConnectionType> getSupportedConnectionTypes() {
+		return new HashSet<ConnectionType>(supportedConnectionTypes);
 	}
 
 }

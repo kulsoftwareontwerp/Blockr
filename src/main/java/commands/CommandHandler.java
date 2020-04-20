@@ -29,6 +29,7 @@ public class CommandHandler {
 		//no undo operations for gameWorld possible anymore
 		executedGameWorldCommands.clear();
 		undoneGameWorldCommands.clear();
+		undoneBlockCommands.clear();
 		
 		command.execute();
 		
@@ -38,6 +39,7 @@ public class CommandHandler {
 
 	public void handle(GameWorldCommand command) {
 		command.execute();
+		undoneGameWorldCommands.clear();
 		executedGameWorldCommands.push(command);
 	}
 
@@ -48,6 +50,8 @@ public class CommandHandler {
 			undoneGameWorldCommands.push(c);
 		}
 		else if(executedBlockCommands.size()!=0){
+			executedGameWorldCommands.clear();
+			undoneGameWorldCommands.clear();
 			Command c = executedBlockCommands.pop();
 			c.undo();
 			undoneBlockCommands.push(c);
@@ -61,6 +65,8 @@ public class CommandHandler {
 			executedGameWorldCommands.push(c);
 		}
 		else if(undoneBlockCommands.size()!=0){
+			executedGameWorldCommands.clear();
+			undoneGameWorldCommands.clear();
 			Command c = undoneBlockCommands.pop();
 			c.execute();
 			executedBlockCommands.push(c);

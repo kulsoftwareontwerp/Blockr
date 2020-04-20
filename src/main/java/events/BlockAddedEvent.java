@@ -1,5 +1,9 @@
 package events;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import types.BlockType;
 import types.ConnectionType;
 
 /**
@@ -12,7 +16,9 @@ public class BlockAddedEvent implements EventObject {
 
 	private String addedBlockID;
 	private String linkedBlockID;
+	private BlockType type;
 	private ConnectionType linkedType;
+	private Set<String> changedBlocks;
 
 	/**
 	 * Create the blockAddedEvent
@@ -20,12 +26,36 @@ public class BlockAddedEvent implements EventObject {
 	 * @param addedBlockID the ID of the block that has been added.
 	 * @param linkedBlock TODO
 	 * @param linkedType TODO
+	 * @param type TODO
+	 * @param changedBlocks TODO
 	 */
-	public BlockAddedEvent(String addedBlockID, String linkedBlock, ConnectionType linkedType) {
+	public BlockAddedEvent(String addedBlockID, String linkedBlock, ConnectionType linkedType, BlockType type, Set<String> changedBlocks) {
 		this.addedBlockID = addedBlockID;
 		this.linkedBlockID=linkedBlock;
 		this.linkedType=linkedType;
+		this.type=type;
+		if(changedBlocks==null) {
+			changedBlocks=new HashSet<String>();
+		}
+		this.changedBlocks=changedBlocks;
 	}
+
+	
+	
+	
+	
+	
+	/**
+	 * @return the changedBlocks
+	 */
+	public Set<String> getChangedBlocks() {
+		return changedBlocks;
+	}
+
+
+
+
+
 
 	/**
 	 * Retrieve the ID of the block that has been added.
@@ -50,5 +80,13 @@ public class BlockAddedEvent implements EventObject {
 	 */
 	public String getLinkedBlockID() {
 		return linkedBlockID;
+	}
+
+	/**
+	 * Retrieve the BlockType of the added block.
+	 * @return the BlockType of the added block.
+	 */
+	public BlockType getAddedBlockType() {
+		return type;
 	}
 }

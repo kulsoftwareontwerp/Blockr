@@ -49,9 +49,6 @@ public class AddBlockCommand implements BlockCommand {
 	@Override
 	public void undo() {
 		blockController.removeBlock(snapshot.getBlock().getBlockId(), false);
-//		BlockSnapshot newSnapshot = new BlockSnapshot(snapshot.getBlock(), snapshot.getConnectedBlockAfterSnapshot(), snapshot.getConnectedBlockBeforeSnapshot());
-//		
-//		this.snapshot=newSnapshot;
 	}
 
 }

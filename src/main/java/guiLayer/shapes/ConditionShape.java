@@ -1,17 +1,18 @@
-package guiLayer;
+package guiLayer.shapes;
 
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import guiLayer.types.Coordinate;
+import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 
 public class ConditionShape extends Shape {
 
-	public ConditionShape(String id, BlockType type, int x, int y) {
-		super(id, type, x, y);
-		switchCavityStatus(ConnectionType.LEFT);
+	public ConditionShape(String id, BlockType type,Coordinate coordinate) {
+		super(id, type, coordinate);
 	}
 
 	@Override
@@ -30,12 +31,12 @@ public class ConditionShape extends Shape {
 	}
 
 	@Override
-	public HashSet<Pair<Integer, Integer>> createCoordinatePairs(int x, int y) {
-		HashSet<Pair<Integer, Integer>> set = new HashSet<Pair<Integer, Integer>>();
+	protected HashSet<Coordinate> fillShapeWithCoordinates() {
+		HashSet<Coordinate> set = new HashSet<Coordinate>();
 		
-			for (int i = x + 10; i < x + getWidth()+10; i++) {
-				for (int j = y; j < y + getHeight(); j++) {
-					set.add(new Pair<Integer, Integer>(i, j));
+			for (int i = getX_coord() + 10; i < getX_coord() + getWidth()+10; i++) {
+				for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
+					set.add(new Coordinate(i, j));
 				}
 			}
 
@@ -44,8 +45,8 @@ public class ConditionShape extends Shape {
 
 	@Override
 	public void defineConnectionTypes() {
-		HashMap<ConnectionType, Pair<Integer, Integer>> connectionMap = new HashMap<ConnectionType, Pair<Integer,Integer>>();
-		connectionMap.put(ConnectionType.LEFT, new Pair<Integer, Integer>(this.getX_coord()+10, this.getY_coord()+15));
+		HashMap<ConnectionType, Coordinate> connectionMap = new HashMap<ConnectionType, Coordinate>();
+		connectionMap.put(ConnectionType.LEFT, new Coordinate(this.getX_coord()+10, this.getY_coord()+15));
 		this.setCoordinateConnectionMap(connectionMap);
 		
 	}

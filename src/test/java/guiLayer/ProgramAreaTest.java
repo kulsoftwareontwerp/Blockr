@@ -9,6 +9,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import applicationLayer.DomainController;
+
 /**
  * ProgramAreaTest
  *
@@ -136,7 +138,7 @@ public class ProgramAreaTest {
 	}
 
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#draw(java.awt.Graphics)}.
+	 * Test method for {@link guiLayer.ProgramArea#draw(java.awt.Graphics, DomainController)}.
 	 */
 	@Test
 	public void testDraw() {

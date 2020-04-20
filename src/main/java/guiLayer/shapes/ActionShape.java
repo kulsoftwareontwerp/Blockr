@@ -1,19 +1,18 @@
-package guiLayer;
+package guiLayer.shapes;
 
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import guiLayer.types.Coordinate;
+import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 
 public class ActionShape extends Shape {
 
-	public ActionShape(String id, BlockType type, int x, int y) {
-		super(id, type, x, y);
-		// TODO Auto-generated constructor stub
-		switchCavityStatus(ConnectionType.UP);
-		switchCavityStatus(ConnectionType.DOWN);
+	public ActionShape(String id, BlockType type, Coordinate coordinate) {
+		super(id, type, coordinate);
 	}
 
 	@Override
@@ -39,11 +38,11 @@ public class ActionShape extends Shape {
 	}
 
 	@Override
-	public HashSet<Pair<Integer, Integer>> createCoordinatePairs(int x, int y) {
-		HashSet<Pair<Integer, Integer>> set = new HashSet<Pair<Integer, Integer>>();
-			for (int i = x; i < x + getWidth(); i++) {
-				for (int j = y; j < y + getHeight(); j++) {
-					set.add(new Pair<Integer, Integer>(i, j));
+	protected HashSet<Coordinate> fillShapeWithCoordinates() {
+		HashSet<Coordinate> set = new HashSet<Coordinate>();
+			for (int i = getX_coord(); i < getX_coord() + getWidth(); i++) {
+				for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
+					set.add(new Coordinate(i, j));
 				}
 			}
 		return set;
@@ -51,9 +50,9 @@ public class ActionShape extends Shape {
 
 	@Override
 	public void defineConnectionTypes() {
-		HashMap<ConnectionType, Pair<Integer, Integer>> connectionMap = new HashMap<ConnectionType, Pair<Integer,Integer>>();
-		connectionMap.put(ConnectionType.UP, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()));
-		connectionMap.put(ConnectionType.DOWN, new Pair<Integer, Integer>(this.getX_coord()+20, this.getY_coord()+30));
+		HashMap<ConnectionType, Coordinate> connectionMap = new HashMap<ConnectionType, Coordinate>();
+		connectionMap.put(ConnectionType.UP, new Coordinate(this.getX_coord()+20, this.getY_coord()));
+		connectionMap.put(ConnectionType.DOWN, new Coordinate(this.getX_coord()+20, this.getY_coord()+30));
 		this.setCoordinateConnectionMap(connectionMap);
 	}
 

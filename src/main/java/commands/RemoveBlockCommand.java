@@ -8,7 +8,7 @@ import domainLayer.blocks.Block;
 import types.BlockSnapshot;
 
 /**
- * /** RemoveBlockCommand
+ *  RemoveBlockCommand
  * 
  * @version 0.1
  * @author group17
@@ -37,7 +37,7 @@ public class RemoveBlockCommand implements BlockCommand {
 	@Override
 	public void undo() {
 		if (snapshot != null) {
-			BlockSnapshot newSnapshot = new BlockSnapshot(snapshot.getBlock(), snapshot.getConnectedBlockAfterSnapshot(), snapshot.getConnectedBlockBeforeSnapshot());
+			BlockSnapshot newSnapshot = new BlockSnapshot(snapshot.getBlock(), snapshot.getConnectedBlockAfterSnapshot(), snapshot.getConnectedBlockBeforeSnapshot(), snapshot.getChangingBlocks());
 			this.snapshot=newSnapshot;
 			blockController.restoreBlockSnapshot(snapshot, true);
 			snapshot = null;

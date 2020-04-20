@@ -1,5 +1,8 @@
 package events;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import types.ConnectionType;
 
 /**
@@ -13,7 +16,7 @@ public class BlockRemovedEvent implements EventObject {
 	private String removedBlockId;
 	private String beforeRemoveBlockId;
 	private ConnectionType beforeRemoveConnection;
-
+	private Set<String> changedBlocks;
 	/**
 	 * Create the blockRemovedEvent
 	 * 
@@ -22,11 +25,23 @@ public class BlockRemovedEvent implements EventObject {
 	 *                               connected before it was removed.
 	 * @param beforeRemoveConnection The connection on which the removed block was
 	 *                               connected before it was removed.
+	 * @param changedBlocks TODO
 	 */
-	public BlockRemovedEvent(String removedBlockId, String beforeRemoveBlockId, ConnectionType beforeRemoveConnection) {
+	public BlockRemovedEvent(String removedBlockId, String beforeRemoveBlockId, ConnectionType beforeRemoveConnection, Set<String> changedBlocks) {
 		this.removedBlockId = removedBlockId;
 		this.beforeRemoveBlockId=beforeRemoveBlockId;
 		this.beforeRemoveConnection=beforeRemoveConnection;
+		if(changedBlocks==null) {
+			changedBlocks=new HashSet<String>();
+		}
+		this.changedBlocks=changedBlocks;
+	}
+	
+	/**
+	 * @return the changedBlocks
+	 */
+	public Set<String> getChangedBlocks() {
+		return changedBlocks;
 	}
 
 	/**

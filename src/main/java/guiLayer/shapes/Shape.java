@@ -1,14 +1,14 @@
-package guiLayer;
+package guiLayer.shapes;
 
 import java.awt.Graphics;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import guiLayer.CanvasWindow;
+import guiLayer.types.Constants;
+import guiLayer.types.Coordinate;
+import guiLayer.types.DebugModus;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -16,20 +16,14 @@ public abstract class Shape implements Constants, Cloneable {
 
 	private String id;
 	private BlockType type;
-	private int x_coord;
-	private int y_coord;
+	private Coordinate coordinate;
 
-	private int previousX_coord;
-	private int previousY_coord;
+	private Coordinate previousCoordinate;
 	private int previousHeight;
 
-	private Boolean hasToBeRemovedOnUndo;
+	private HashSet<Coordinate> coordinatesShape;
 
-	private HashSet<Pair<Integer, Integer>> coordinatesShape;
-
-	private HashMap<ConnectionType, Pair<Integer, Integer>> coordinateConnectionMap; // Plugs and Sockets
-	private HashMap<ConnectionType, Boolean> connectionStatus; // Is a connection available to add something to it or
-																// not.
+	private HashMap<ConnectionType, Coordinate> coordinateConnectionMap; // Plugs and Sockets
 
 	private ConnectionType connectedVia; // NOCONNECTION if solo, Connection from connectedBlock
 	private ConnectionType tempConnectedVia;
@@ -47,13 +41,10 @@ public abstract class Shape implements Constants, Cloneable {
 	private int height = 0;
 	private int width = 0;
 
-	public Shape(String id, BlockType type, int x, int y) {
-		hasToBeRemovedOnUndo = false;
-
+	public Shape(String id, BlockType type, Coordinate coordinate) {
 		setId(id);
 		setType(type);
-		setX_coord(x);
-		setY_coord(y);
+		setCoordinate(coordinate);
 
 		setPreviousX_coord(INVALID_COORDINATE);
 		setPreviousY_coord(INVALID_COORDINATE);
@@ -64,76 +55,40 @@ public abstract class Shape implements Constants, Cloneable {
 		setPreviouslyConnectedVia(ConnectionType.NOCONNECTION);
 
 		initDimensions(); // setWidth & setHeight
-		coordinatesShape = createCoordinatePairs(getX_coord(), getY_coord());
-		coordinateConnectionMap = new HashMap<ConnectionType, Pair<Integer, Integer>>();
-		connectionStatus = new HashMap<ConnectionType, Boolean>();
+		coordinatesShape = fillShapeWithCoordinates();
+		coordinateConnectionMap = new HashMap<ConnectionType,Coordinate>();
 		defineConnectionTypes(); // setCoordinateConnectionMap, SOCKETS AND PLUGS
 	}
 
 	// shape = static shape on which it will be clipped
 	public abstract void clipOn(Shape shape, ConnectionType connection);
 
-	public void addInternal(Shape shape) {
-	}
 
-	public void removeInternal(Shape shape) {
-	}
 
 	public abstract void draw(Graphics g); // Each Type of Shape implements its own method
 
-	public abstract HashSet<Pair<Integer, Integer>> createCoordinatePairs(int x, int y);
+	protected abstract HashSet<Coordinate> fillShapeWithCoordinates();
 
-	public void determineTotalDimensions() {
+
+	public void determineTotalHeight(Set<Shape> internals) {
+		
 	}
 
 	public Integer getStandardHeight() {
 		return STANDARD_HEIGHT_BLOCK;
 	}
 
-	public HashSet<Shape> getInternals() {
-		return new HashSet<Shape>();
-	}
 
-	public synchronized Boolean getHasToBeRemovedOnUndo() {
-		return hasToBeRemovedOnUndo;
-	}
+	public HashSet<Coordinate> getTriggerSet(ConnectionType connection) {
+		HashSet<Coordinate> triggerSet = new HashSet<Coordinate>();
 
-	public synchronized void setHasToBeRemovedOnUndo(Boolean hasToBeRemovedOnUndo) {
-		this.hasToBeRemovedOnUndo = hasToBeRemovedOnUndo;
-	}
-
-	public Boolean checkIfOpen(ConnectionType connection) {
-		if (connectionStatus.get(connection) == null) {
-			return false;
-		} else {
-			return connectionStatus.get(connection);
-		}
-	}
-
-	public void switchCavityStatus(ConnectionType connection) {
-		if (connectionStatus.containsKey(connection)) {
-			connectionStatus.put(connection, !connectionStatus.get(connection));
-		} else {
-			connectionStatus.put(connection, true);
-		}
-	}
-
-	public void restoreCavityStatus(Shape shape) {
-		if (shape != null) {
-			this.connectionStatus = new HashMap<ConnectionType, Boolean>(shape.connectionStatus);
-		}
-	}
-
-	public HashSet<Pair<Integer, Integer>> getTriggerSet(ConnectionType connection) {
-		HashSet<Pair<Integer, Integer>> triggerSet = new HashSet<Pair<Integer, Integer>>();
-
-		if (getCoordinateConnectionMap().keySet().contains(connection) && checkIfOpen(connection)) {
-			int x_current = getCoordinateConnectionMap().get(connection).getLeft();
-			int y_current = getCoordinateConnectionMap().get(connection).getRight();
+		if (getCoordinateConnectionMap().keySet().contains(connection)) {
+			int x_current = getCoordinateConnectionMap().get(connection).getX();
+			int y_current = getCoordinateConnectionMap().get(connection).getY();
 
 			for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
 				for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-					triggerSet.add(new Pair<Integer, Integer>(i, j));
+					triggerSet.add(new Coordinate(i, j));
 				}
 			}
 		}
@@ -158,34 +113,57 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 	public int getX_coord() {
-		return x_coord;
+		if (coordinate == null) {
+			return 0;
+		}
+		return coordinate.getX();
 	}
 
-	public void setX_coord(int x_coord) {
-		this.x_coord = x_coord;
+	public void setX_coord(int x) {
+		if (coordinate == null) {
+			this.coordinate = new Coordinate(x, 0);
+		} else {
+			this.coordinate = this.coordinate.setX(x);
+		}
 	}
 
 	public int getY_coord() {
-		return y_coord;
+		if (coordinate == null) {
+			return 0;
+		}
+		return coordinate.getY();
 	}
 
-	public void setY_coord(int y_coord) {
-		this.y_coord = y_coord;
+	public void setY_coord(int y) {
+		if (coordinate == null) {
+			this.coordinate = new Coordinate(0, y);
+		} else {
+			this.coordinate = this.coordinate.setY(y);
+		}
+	}
+	
+	public void setCoordinate(Coordinate coordinate) {
+		if(coordinate == null) {
+			this.coordinate=new Coordinate(0, 0);
+		}
+		else {
+			this.coordinate=coordinate;
+		}
 	}
 
-	public HashSet<Pair<Integer, Integer>> getCoordinatesShape() {
+	public HashSet<Coordinate> getCoordinatesShape() {
 		return coordinatesShape;
 	}
 
-	public void setCoordinatesShape(HashSet<Pair<Integer, Integer>> coordinatesShape) {
-		this.coordinatesShape = coordinatesShape;
+	public void setCoordinatesShape() {
+		this.coordinatesShape = fillShapeWithCoordinates();
 	}
 
-	public HashMap<ConnectionType, Pair<Integer, Integer>> getCoordinateConnectionMap() {
+	public HashMap<ConnectionType, Coordinate> getCoordinateConnectionMap() {
 		return coordinateConnectionMap;
 	}
 
-	public void setCoordinateConnectionMap(HashMap<ConnectionType, Pair<Integer, Integer>> coordinateConnectionMap) {
+	public void setCoordinateConnectionMap(HashMap<ConnectionType, Coordinate> coordinateConnectionMap) {
 		this.coordinateConnectionMap = coordinateConnectionMap;
 	}
 
@@ -250,19 +228,42 @@ public abstract class Shape implements Constants, Cloneable {
 	public abstract void initDimensions();
 
 	public int getPreviousX_coord() {
-		return previousX_coord;
+		if (previousCoordinate == null) {
+			return 0;
+		}
+		return previousCoordinate.getX();
 	}
 
-	public void setPreviousX_coord(int previousX_coord) {
-		this.previousX_coord = previousX_coord;
+	public void setPreviousX_coord(int x) {
+		if (previousCoordinate == null) {
+			this.previousCoordinate = new Coordinate(x, 0);
+		} else {
+			this.previousCoordinate = this.previousCoordinate.setX(x);
+		}
 	}
 
 	public int getPreviousY_coord() {
-		return previousY_coord;
+		if (previousCoordinate == null) {
+			return 0;
+		}
+		return previousCoordinate.getY();
 	}
 
-	public void setPreviousY_coord(int previousY_coord) {
-		this.previousY_coord = previousY_coord;
+	public void setPreviousY_coord(int y) {
+		if (previousCoordinate == null) {
+			this.previousCoordinate = new Coordinate(0,y);
+		} else {
+			this.previousCoordinate = this.previousCoordinate.setY(y);
+		}
+	}
+	
+	public void setPreviousCoordinate(Coordinate coordinate) {
+		if(coordinate == null) {
+			this.previousCoordinate=new Coordinate(0, 0);
+		}
+		else {
+			this.previousCoordinate=coordinate;
+		}
 	}
 
 	@Override
@@ -271,14 +272,13 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 	@Override
-	protected Shape clone() {
+	public Shape clone() {
 		Shape s = null;
 		try {
 			s = (Shape) super.clone();
-			s.connectionStatus = new HashMap<ConnectionType, Boolean>(this.connectionStatus);
-			s.coordinateConnectionMap = new HashMap<ConnectionType, Pair<Integer, Integer>>(
+			s.coordinateConnectionMap = new HashMap<ConnectionType, Coordinate>(
 					this.coordinateConnectionMap);
-			s.coordinatesShape = new HashSet<Pair<Integer, Integer>>(this.coordinatesShape);
+			s.coordinatesShape = new HashSet<Coordinate>(this.coordinatesShape);
 		} catch (CloneNotSupportedException e) {
 			new RuntimeException(e);
 		}
@@ -314,14 +314,24 @@ public abstract class Shape implements Constants, Cloneable {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Shape [id=");
 		builder.append(id);
-		builder.append(", x_coord=");
-		builder.append(x_coord);
-		builder.append(", y_coord=");
-		builder.append(y_coord);
-		builder.append(", hasToBeRemovedOnUndo=");
-		builder.append(hasToBeRemovedOnUndo);
+		builder.append(", coord=");
+		builder.append(coordinate);
 		builder.append("]");
 		return builder.toString();
 	}
+
+	public Coordinate getCoordinate() {
+		return coordinate;
+	}
+
+	/**
+	 * Retrieve the height difference between the previous height and the current height.
+	 * @return the height difference between the previous height and the current height.
+	 */
+	public int getHeightDiff() {
+		return getHeight()-getPreviousHeight();
+	}
+	
+
 
 }

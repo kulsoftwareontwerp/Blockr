@@ -2,17 +2,22 @@ package guiLayer;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import applicationLayer.DomainController;
+import guiLayer.shapes.ControlShape;
+import guiLayer.shapes.Shape;
+import guiLayer.types.Constants;
+import guiLayer.types.Coordinate;
+import guiLayer.types.DebugModus;
 import types.BlockType;
 
 public class ProgramArea implements Constants {
 
-	private HashSet<Pair<Integer, Integer>> alreadyFilledInCoordinates;
+	private HashSet<Coordinate> alreadyFilledInCoordinates;
 	private Shape highlightedShape = null;
 
 	private HashSet<Shape> shapesInProgramArea; // shapes with Id == null SHOULDN'T exist!!!!, only if dragged from
@@ -34,21 +39,21 @@ public class ProgramArea implements Constants {
 			if (presentShape != null) {
 				this.shapesInProgramArea.remove(presentShape);
 			}
-			if (!shape.getHasToBeRemovedOnUndo()) {
-				this.shapesInProgramArea.add(shape);
-			}
+
+			this.shapesInProgramArea.add(shape);
+
 		}
 	}
 
 	public void removeShapeFromProgramArea(Shape shape) {
 		this.shapesInProgramArea.remove(shape);
-		for (Pair<Integer, Integer> pair : shape.getCoordinatesShape()) {
+		for (Coordinate pair : shape.getCoordinatesShape()) {
 			alreadyFilledInCoordinates.remove(pair);
 		}
 	}
 
 	public ProgramArea() {
-		alreadyFilledInCoordinates = new HashSet<Pair<Integer, Integer>>();
+		alreadyFilledInCoordinates = new HashSet<Coordinate>();
 		shapesInProgramArea = new HashSet<Shape>();
 	}
 
@@ -60,7 +65,7 @@ public class ProgramArea implements Constants {
 
 		try {
 			return this.getShapesInProgramArea().stream()
-					.filter(e -> e.getCoordinatesShape().contains(new Pair<Integer, Integer>(x, y))).findFirst().get();
+					.filter(e -> e.getCoordinatesShape().contains(new Coordinate(x, y))).findFirst().get();
 		} catch (NoSuchElementException e) {
 			return null;
 
@@ -82,8 +87,8 @@ public class ProgramArea implements Constants {
 		}
 	}
 
-	public boolean checkIfPlaceable(HashSet<Pair<Integer, Integer>> currentCoordinates, Shape currentShape) {
-		boolean placeable = !((currentCoordinates.stream().anyMatch(i -> this.alreadyFilledInCoordinates.contains(i))))
+	public boolean checkIfPlaceable(HashSet<Coordinate> hashSet, Shape currentShape) {
+		boolean placeable = !((hashSet.stream().anyMatch(i -> this.alreadyFilledInCoordinates.contains(i))))
 				&& currentShape.getX_coord() + currentShape.getWidth() < PROGRAM_END_X;
 
 		if ((currentShape.getType() == BlockType.valueOf("If") || currentShape.getType() == BlockType.valueOf("While"))
@@ -98,7 +103,7 @@ public class ProgramArea implements Constants {
 		return placeable;
 	}
 
-	public HashSet<Pair<Integer, Integer>> getAlreadyFilledInCoordinates() {
+	public HashSet<Coordinate> getAlreadyFilledInCoordinates() {
 		return alreadyFilledInCoordinates;
 	}
 
@@ -122,7 +127,7 @@ public class ProgramArea implements Constants {
 		this.highlightedShape = highlightedShape;
 	}
 
-	void draw(Graphics blockrGraphics) {
+	void draw(Graphics blockrGraphics, DomainController controller) {
 
 		// draw all shapes in shapesInProgramArea
 		if (getShapesInProgramArea() != null && !getShapesInProgramArea().isEmpty()) {
@@ -140,13 +145,15 @@ public class ProgramArea implements Constants {
 		if (DebugModus.CONNECTIONS.compareTo(CanvasWindow.debugModus) <= 0) {
 			for (Shape shape : getShapesInProgramArea()) {
 				for (var p : shape.getCoordinateConnectionMap().entrySet()) {
-					int tempx = p.getValue().getLeft() - 3;
-					int tempy = p.getValue().getRight();
+					int tempx = p.getValue().getX() - 3;
+					int tempy = p.getValue().getY();
 					blockrGraphics.setColor(Color.black);
 					blockrGraphics.drawOval(tempx, tempy, 6, 6);
 
 					if (DebugModus.CONNECTIONSTATUS.compareTo(CanvasWindow.debugModus) <= 0) {
-						if (shape.checkIfOpen(p.getKey())) {
+
+						if (controller.checkIfConnectionIsOpen(shape.getId(), p.getKey(), null)) {
+//						if (shape.checkIfOpen(p.getKey())) {
 							blockrGraphics.setColor(Color.green);
 						} else {
 							blockrGraphics.setColor(Color.red);
@@ -187,6 +194,10 @@ public class ProgramArea implements Constants {
 			return highlightedShape.clone();
 		}
 		return null;
+	}
+
+	public Set<ControlShape> getAllChangedControlShapes() {
+		return shapesInProgramArea.stream().filter(s-> (s instanceof ControlShape) && s.getHeightDiff()!=0 ).map(s->(ControlShape) s).collect(Collectors.toSet());
 	}
 
 }

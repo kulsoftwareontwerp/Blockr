@@ -1,7 +1,7 @@
 /**
  * 
  */
-package guiLayer;
+package guiLayer.types;
 
 import java.util.TimerTask;
 
