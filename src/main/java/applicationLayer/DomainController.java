@@ -62,10 +62,10 @@ public class DomainController {
 	}
 
 	/**
-	 * Construct a domainController and it's dependencies. - GameController -
-	 * BlockController - ElementController
+	 * Construct a domainController and it's dependencies. 
+	 * The commandHandler,  GameController and the BlockController
 	 * 
-	 * @param gameWorld TODO
+	 * @param gameWorld The GameWorld to work with.
 	 */
 	public DomainController(GameWorld gameWorld) {
 		CommandHandler handler = new CommandHandler();
@@ -255,10 +255,16 @@ public class DomainController {
 
 	}
 
+	/**
+	 * Execute the next block to be executed
+	 */
 	public void executeBlock() {
 		gameController.executeBlock();
 	}
 
+	/**
+	 * Reset the game execution
+	 */
 	public void resetGameExecution() {
 		gameController.resetGameExecution();
 	}
@@ -273,20 +279,27 @@ public class DomainController {
 
 	}
 
+	/**
+	 * Undo the last executed domain command
+	 */
 	public void undo() {
 		commandHandler.undo();
 	}
 
+	/**
+	 * Redo the last undone domain command
+	 */
 	public void redo() {
 		commandHandler.redo();
 	}
 
+	/**
+	 * Retrieve a set containing the id's of all headBlocks
+	 * 
+	 * @return a set with the id's of all the headblocks
+	 */
 	public Set<String> getAllHeadBlocks() {
 		return blockController.getAllHeadBlocks();
-	}
-
-	public Set<String> getAllHeadControlBlocks() {
-		return blockController.getAllHeadControlBlocks();
 	}
 
 	/**
@@ -302,7 +315,6 @@ public class DomainController {
 	 *         kind of block in the body of the given block or under the given
 	 *         block. The ID of the block itself is also given.
 	 */
-
 	public Set<String> getAllBlockIDsUnderneath(String blockID) {
 		if (blockID == null || blockID == "") {
 			throw new IllegalArgumentException("No blockID given.");
@@ -311,6 +323,18 @@ public class DomainController {
 		return blockController.getAllBlockIDsUnderneath(blockID);
 	}
 
+	/**
+	 * Returns all the BlockID's below a certain block
+	 * 
+	 * @param blockID The blockID of the Block of which you want to retrieve all
+	 *                Blocks below.
+	 * @throws IllegalArgumentException      Is thrown when the given blockID is
+	 *                                       empty or null.
+	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
+	 *                                       is not present in the domain.
+	 * @return A set containing the blockID's of every kind of block under the given
+	 *         block. The ID of the block itself is also given.
+	 */
 	public Set<String> getAllBlockIDsBelowCertainBlock(String blockID) {
 		if (blockID == null || blockID == "") {
 			throw new IllegalArgumentException("No blockID given.");
@@ -343,17 +367,24 @@ public class DomainController {
 
 	}
 
-	// TO BE DOCUMENTED:
-	public String getEnclosingControlBlock(String id) {
-		return blockController.getEnclosingControlBlock(id);
-	}
-
 	/**
+	 * Check if the connection is open and can be used to perform a move or add on.
 	 * 
-	 * @param blockToCheck
-	 * @param connection
-	 * @param changingBlocks
-	 * @return
+	 * @param blockToCheck   The id of the block to check the connection from
+	 * @param connection     The connection to check on the given block
+	 * @param changingBlocks A set with the id's of all blocks that are changing at
+	 *                       the moment as to keep in measure that if the
+	 *                       blockToCheck is connected to one of the blocks in this
+	 *                       set that connection will be removed after the operation
+	 *                       and hence can be ignored. If this parameter is null an
+	 *                       empty set will be used and the method won't keep in
+	 *                       mind any possible changed blocks.
+	 * @throws IllegalArgumentException      when the blockToCheck is null
+	 * @throws IllegalArgumentException      when the Connection is null
+	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
+	 *                                       is not present in the domain.
+	 * @return A flag indicating if the given connection for the given block is
+	 *         open.
 	 */
 	public Boolean checkIfConnectionIsOpen(String blockToCheck, ConnectionType connection, Set<String> changingBlocks) {
 		if (blockToCheck == null || blockToCheck == "") {
@@ -367,19 +398,6 @@ public class DomainController {
 		}
 
 		return blockController.checkIfConnectionIsOpen(blockToCheck, connection, changingBlocks);
-	}
-
-	/**
-	 * 
-	 * @param id
-	 * @return The ID of the first block below the block with the given ID, returns
-	 *         NULL if this block doesn't specify a block below.
-	 */
-	public String getFirstBlockBelow(String id) {
-		if (id == null || id == "") {
-			throw new IllegalArgumentException("No blockID given.");
-		}
-		return blockController.getFirstBlockBelow(id);
 	}
 
 	/**
@@ -399,7 +417,7 @@ public class DomainController {
 	 * Check if the given id is present in the domain.
 	 * 
 	 * @param id the id to check
-	 * @return
+	 * @return a flag indication if a block is present in the domain.
 	 */
 	public boolean isBlockPresent(String id) {
 		if (id == null) {
@@ -408,34 +426,6 @@ public class DomainController {
 		return blockController.isBlockPresent(id);
 	}
 
-	// public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId,
-	// ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId,
-	// ConnectionType connectionAfterMove) {
-	// if(movedBlockId == null || movedBlockId.equals("")) {
-	// throw new IllegalArgumentException("No movedBlockID given");
-	// }
-	// else if(connectionBeforeMove == null || connectionAfterMove == null) {
-	// throw new IllegalArgumentException("Null given as connection, use
-	// ConnectionType.NOCONNECTION.");
-	// }
-	// else if(connectedBeforeMoveBlockId.equals("") && !(connectionBeforeMove ==
-	// ConnectionType.NOCONNECTION)) {
-	// throw new IllegalArgumentException("No blockId given for
-	// connectedBeforeMovedBlockID");
-	// }
-	// else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove ==
-	// ConnectionType.NOCONNECTION)) {
-	// throw new IllegalArgumentException("No blockId given for
-	// connectedAfterMovedBlockID");
-	// }
-	// else if(movedBlockId.equals(connectedBeforeMoveBlockId) ||
-	// movedBlockId.equals(connectedAfterMoveBlockId))
-	// throw new IllegalArgumentException("You can't connect a block to itself.");
-	// else {
-	// blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId,
-	// connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
-	// }
-	// }
 	/**
 	 * Adds a GUI listener for Game, this listener will be notified about all
 	 * changes for the GUI. If the given listener is already a listener for Game it
@@ -469,8 +459,9 @@ public class DomainController {
 	}
 
 	/**
-	 * Is it useful to perform an execution step at the moment. An execution step is useful if it
-	 * changes anything, otherwise it's just a waste of time and resources.
+	 * Is it useful to perform an execution step at the moment. An execution step is
+	 * useful if it changes anything, otherwise it's just a waste of time and
+	 * resources.
 	 * 
 	 * @return if it's useful to perform an execution step at the moment.
 	 */
@@ -479,8 +470,9 @@ public class DomainController {
 	}
 
 	/**
-	 * Is it useful to perform a reset of the gameWorld at the moment. A reset of the gameWorld is useful if it
-	 * changes anything, otherwise it's just a waste of time and resources.
+	 * Is it useful to perform a reset of the gameWorld at the moment. A reset of
+	 * the gameWorld is useful if it changes anything, otherwise it's just a waste
+	 * of time and resources.
 	 * 
 	 * @return if it's useful to perform a reset of the gameWorld at the moment.
 	 */

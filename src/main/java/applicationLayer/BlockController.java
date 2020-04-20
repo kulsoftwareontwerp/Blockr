@@ -563,11 +563,21 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	/**
+	 * Check if the connection is open and can be used to perform a move or add on.
 	 * 
-	 * @param blockIdToCheck
-	 * @param connection
-	 * @param changingBlocks
-	 * @return
+	 * @param blockToCheck   The id of the block to check the connection from
+	 * @param connection     The connection to check on the given block
+	 * @param changingBlocks A set with the id's of all blocks that are changing at
+	 *                       the moment as to keep in measure that if the
+	 *                       blockToCheck is connected to one of the blocks in this
+	 *                       set that connection will be removed after the operation
+	 *                       and hence can be ignored. If this parameter is null an
+	 *                       empty set will be used and the method won't keep in
+	 *                       mind any possible changed blocks.
+	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
+	 *                                       is not present in the domain.
+	 * @return A flag indicating if the given connection for the given block is
+	 *         open.
 	 */
 	public Boolean checkIfConnectionIsOpen(String blockIdToCheck, ConnectionType connection,
 			Set<String> changingBlocks) {
