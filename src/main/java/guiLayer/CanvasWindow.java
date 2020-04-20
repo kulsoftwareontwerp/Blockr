@@ -500,13 +500,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		Shape shape = null;
 
-
 		for (Shape shapeInMovement : getShapesInMovement()) {
 			// The setConnectedVia of all shapes in movement will be reverted
 			shapeInMovement.persistConnectedVia(false);
 
-			if (isConnectionOpen(shapeInMovement, ConnectionType.DOWN) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.UP),
-					shapeInMovement.getTriggerSet(ConnectionType.DOWN))) {
+			if (isConnectionOpen(shapeInMovement, ConnectionType.DOWN)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.UP),
+							shapeInMovement.getTriggerSet(ConnectionType.DOWN))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.UP).entrySet().stream()
 						.filter(e -> shapeInMovement.getTriggerSet(ConnectionType.DOWN).contains(e.getValue()))
 						.findFirst().get().getKey();
@@ -516,8 +516,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shapeInMovement.setConnectedVia(ConnectionType.UP, false);
 				shape.setConnectedVia(ConnectionType.DOWN, false);
 				movedShape = shapeInMovement;
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.UP) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.DOWN),
-					shapeInMovement.getTriggerSet(ConnectionType.UP))) {
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.UP)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.DOWN),
+							shapeInMovement.getTriggerSet(ConnectionType.UP))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.DOWN).entrySet().stream()
 						.filter(p -> shapeInMovement.getTriggerSet(ConnectionType.UP).contains(p.getValue()))
 						.findFirst().get().getKey();
@@ -528,8 +529,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
 
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.UP) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.BODY),
-					shapeInMovement.getTriggerSet(ConnectionType.UP))) {
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.UP)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.BODY),
+							shapeInMovement.getTriggerSet(ConnectionType.UP))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.BODY).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.UP).contains(q.getValue()))
 						.findFirst().get().getKey();
@@ -540,8 +542,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
 
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION),
-					shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION),
+							shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.LEFT).contains(q.getValue()))
 						.findFirst().get().getKey();
@@ -552,8 +555,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shape.setConnectedVia(ConnectionType.LEFT, false);
 				movedShape = shapeInMovement;
 
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND),
-					shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND),
+							shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.LEFT).contains(q.getValue()))
 						.findFirst().get().getKey();
@@ -563,8 +567,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shapeInMovement.setConnectedVia(ConnectionType.OPERAND, false);
 				shape.setConnectedVia(ConnectionType.LEFT, false);
 				movedShape = shapeInMovement;
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.CONDITION) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
-					shapeInMovement.getTriggerSet(ConnectionType.CONDITION))) {
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.CONDITION)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
+							shapeInMovement.getTriggerSet(ConnectionType.CONDITION))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.CONDITION).contains(q.getValue()))
 						.findFirst().get().getKey();
@@ -574,8 +579,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shapeInMovement.setConnectedVia(ConnectionType.LEFT, false);
 				shape.setConnectedVia(ConnectionType.CONDITION, false);
 				movedShape = shapeInMovement;
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.OPERAND) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
-					shapeInMovement.getTriggerSet(ConnectionType.OPERAND))) {
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.OPERAND)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
+							shapeInMovement.getTriggerSet(ConnectionType.OPERAND))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.OPERAND).contains(q.getValue()))
 						.findFirst().get().getKey();
@@ -595,9 +601,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 * @param handledShapesInMovement
 	 */
 	private Boolean isConnectionOpen(Shape shape, ConnectionType connection) {
-
 		return shape.getId().equals(PALETTE_BLOCK_IDENTIFIER)
-				|| domainController.checkIfConnectionIsOpen(shape.getId(), connection, null);
+				|| domainController.checkIfConnectionIsOpen(shape.getId(), connection, null) || (shape == getCurrentShape() && (connection==ConnectionType.UP ||connection == ConnectionType.LEFT));
 	}
 
 	private boolean isConnectionPresent(HashMap<Shape, Coordinate> shapesInProgramAreaUpMap,
@@ -638,14 +643,14 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 			if (keyCode == KeyEvent.VK_F5) {
 				// F5-Key
-				if(domainController.isGameExecutionUseful()) {
-				commandHandler.handle(new ExecuteBlockCommand(domainController));
+				if (domainController.isGameExecutionUseful()) {
+					commandHandler.handle(new ExecuteBlockCommand(domainController));
 				}
 			}
 			if (keyCode == KeyEvent.VK_ESCAPE) {
 				// ESC-Key
-				if(domainController.isGameResetUseful()) {
-				commandHandler.handle(new ResetCommand(domainController));
+				if (domainController.isGameResetUseful()) {
+					commandHandler.handle(new ResetCommand(domainController));
 				}
 			}
 			if (keyCode == KeyEvent.VK_Z) {
