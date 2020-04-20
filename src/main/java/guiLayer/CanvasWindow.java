@@ -71,8 +71,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	/**
 	 * Create a new canvasWindow
 	 * 
-	 * @param title
-	 * @param dc
+	 * @param title the title of the canvasWindow
+	 * @param dc the domainController to perform actions on
 	 */
 	public CanvasWindow(String title, DomainController dc) {
 		super(title);

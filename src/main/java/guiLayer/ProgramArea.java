@@ -174,7 +174,7 @@ public class ProgramArea implements Constants {
 	 * of the given shape is already present the coordinates of that shape will be
 	 * replaced with the coordinates of the given shape.
 	 * 
-	 * @param shape
+	 * @param shape the shape to add to the already filled coordinates
 	 */
 	public void addToAlreadyFilledInCoordinates(Shape shape) {
 		Shape presentShape = getShapeById(shape.getId());
