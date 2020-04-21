@@ -4,13 +4,16 @@
 package domainLayer.blocks;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -46,6 +49,7 @@ public class BlockRepositoryTest {
 	private ActionBlock actionBlock;
 	private ControlBlock ifBlock;	
 	private OperatorBlock notBlock;
+	private ActionBlock actionBlockNotInHeadBlocks;
 	
 	/**
 	 * @throws java.lang.Exception
@@ -57,10 +61,13 @@ public class BlockRepositoryTest {
 		actionBlock = spy(new ActionBlock("actionBlockId", new BlockType("Action", BlockCategory.ACTION)));
 		ifBlock = spy(new IfBlock("ifBlock"));
 		notBlock = spy(new NotBlock("notBlockId"));
+		actionBlockNotInHeadBlocks = spy(new ActionBlock("actionBlockNotInHeadBlocksId", new BlockType("Action", BlockCategory.ACTION)));
 		
 		allBlocks.put(actionBlock.getBlockId(), actionBlock);
 		allBlocks.put(ifBlock.getBlockId(), ifBlock);
 		allBlocks.put(notBlock.getBlockId(), notBlock);
+		
+		headBlocks.add(actionBlock);
 		
 		blockRepo = spy(new BlockRepository(headBlocks, allBlocks));
 	}
@@ -92,10 +99,138 @@ public class BlockRepositoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockRepository#removeBlock(java.lang.String, Boolean)}.
 	 */
 	@Test
-	public void testRemoveBlock() {
-		fail("Not yet implemented");
+	public void testRemoveBlock_IsChainTrue_HeadBlocksContainsBlock_Positive() {
+		String removedBlockId = "removedBlockId";
+		boolean isChain = true;
+		Mockito.doReturn(actionBlock).when(blockRepo).getBlockByID(removedBlockId);
+		Set<Block> blocksToBeRemoved = new HashSet<Block>();
+		blocksToBeRemoved.add(actionBlock);
+		Mockito.doReturn(blocksToBeRemoved).when(blockRepo).getAllBlocksConnectedToAndAfterACertainBlock(actionBlock);
+		
+		Set<String> expectedResult = new HashSet<String>();
+		expectedResult.add(actionBlock.getBlockId());
+		
+		assertEquals(expectedResult, blockRepo.removeBlock(removedBlockId, isChain));		
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#removeBlock(java.lang.String, Boolean)}.
+	 */
+	@Test
+	public void testRemoveBlock_IsChainFalse_HeadBlocksContainsBlock_GettersNotNull_Positive() {
+		String removedBlockId = "removedBlockId";
+		boolean isChain = false;
+		
+		Mockito.doReturn(actionBlock).when(blockRepo).getBlockByID(removedBlockId);
+		when(actionBlock.getNextBlock()).thenReturn(ifBlock);
+		when(actionBlock.getConditionBlock()).thenReturn(notBlock);
+		when(actionBlock.getOperand()).thenReturn(notBlock);
+		
+		Set<String> expectedResult = new HashSet<String>();
+		expectedResult.add(actionBlock.getBlockId());
+		assertEquals(expectedResult, blockRepo.removeBlock(removedBlockId, isChain));		
 	}
 
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#removeBlock(java.lang.String, Boolean)}.
+	 */
+	@Test
+	public void testRemoveBlock_HeadBlocksDoesNotContainBlock_Body_Positive() {
+		String removedBlockId = "removedBlockId";
+		boolean isChain = true;
+		Mockito.doReturn(actionBlockNotInHeadBlocks).when(blockRepo).getBlockByID(removedBlockId);
+		Set<Block> blocksToBeRemoved = new HashSet<Block>();
+		blocksToBeRemoved.add(actionBlockNotInHeadBlocks);
+		Mockito.doReturn(blocksToBeRemoved).when(blockRepo).getAllBlocksConnectedToAndAfterACertainBlock(actionBlockNotInHeadBlocks);
+		
+		ArrayList<String> parentIdentifiers = new ArrayList<String>();
+		parentIdentifiers.add("BODY");
+		parentIdentifiers.add("parentId");
+		Mockito.doReturn(parentIdentifiers).when(blockRepo).getConnectedParentIfExists("actionBlockNotInHeadBlocksId");
+		Mockito.doReturn(ifBlock).when(blockRepo).getBlockByID("parentId");	
+		
+		Set<String> expectedResult = new HashSet<String>();
+		expectedResult.add(actionBlockNotInHeadBlocks.getBlockId());
+		
+		assertEquals(expectedResult, blockRepo.removeBlock(removedBlockId, isChain));		
+		verify(ifBlock,atLeastOnce()).setFirstBlockOfBody(null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#removeBlock(java.lang.String, Boolean)}.
+	 */
+	@Test
+	public void testRemoveBlock_HeadBlocksDoesNotContainBlock_Condition_Positive() {
+		String removedBlockId = "removedBlockId";
+		boolean isChain = true;
+		Mockito.doReturn(actionBlockNotInHeadBlocks).when(blockRepo).getBlockByID(removedBlockId);
+		Set<Block> blocksToBeRemoved = new HashSet<Block>();
+		blocksToBeRemoved.add(actionBlockNotInHeadBlocks);
+		Mockito.doReturn(blocksToBeRemoved).when(blockRepo).getAllBlocksConnectedToAndAfterACertainBlock(actionBlockNotInHeadBlocks);
+		
+		ArrayList<String> parentIdentifiers = new ArrayList<String>();
+		parentIdentifiers.add("CONDITION");
+		parentIdentifiers.add("parentId");
+		Mockito.doReturn(parentIdentifiers).when(blockRepo).getConnectedParentIfExists("actionBlockNotInHeadBlocksId");
+		Mockito.doReturn(ifBlock).when(blockRepo).getBlockByID("parentId");	
+		
+		Set<String> expectedResult = new HashSet<String>();
+		expectedResult.add(actionBlockNotInHeadBlocks.getBlockId());
+		
+		assertEquals(expectedResult, blockRepo.removeBlock(removedBlockId, isChain));		
+		verify(ifBlock,atLeastOnce()).setConditionBlock(null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#removeBlock(java.lang.String, Boolean)}.
+	 */
+	@Test
+	public void testRemoveBlock_HeadBlocksDoesNotContainBlock_Down_Positive() {
+		String removedBlockId = "removedBlockId";
+		boolean isChain = true;
+		Mockito.doReturn(actionBlockNotInHeadBlocks).when(blockRepo).getBlockByID(removedBlockId);
+		Set<Block> blocksToBeRemoved = new HashSet<Block>();
+		blocksToBeRemoved.add(actionBlockNotInHeadBlocks);
+		Mockito.doReturn(blocksToBeRemoved).when(blockRepo).getAllBlocksConnectedToAndAfterACertainBlock(actionBlockNotInHeadBlocks);
+		
+		ArrayList<String> parentIdentifiers = new ArrayList<String>();
+		parentIdentifiers.add("DOWN");
+		parentIdentifiers.add("parentId");
+		Mockito.doReturn(parentIdentifiers).when(blockRepo).getConnectedParentIfExists("actionBlockNotInHeadBlocksId");
+		Mockito.doReturn(ifBlock).when(blockRepo).getBlockByID("parentId");	
+		
+		Set<String> expectedResult = new HashSet<String>();
+		expectedResult.add(actionBlockNotInHeadBlocks.getBlockId());
+		
+		assertEquals(expectedResult, blockRepo.removeBlock(removedBlockId, isChain));		
+		verify(ifBlock,atLeastOnce()).setNextBlock(null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#removeBlock(java.lang.String, Boolean)}.
+	 */
+	@Test
+	public void testRemoveBlock_HeadBlocksDoesNotContainBlock_Operand_Positive() {
+		String removedBlockId = "removedBlockId";
+		boolean isChain = true;
+		Mockito.doReturn(actionBlockNotInHeadBlocks).when(blockRepo).getBlockByID(removedBlockId);
+		Set<Block> blocksToBeRemoved = new HashSet<Block>();
+		blocksToBeRemoved.add(actionBlockNotInHeadBlocks);
+		Mockito.doReturn(blocksToBeRemoved).when(blockRepo).getAllBlocksConnectedToAndAfterACertainBlock(actionBlockNotInHeadBlocks);
+		
+		ArrayList<String> parentIdentifiers = new ArrayList<String>();
+		parentIdentifiers.add("OPERAND");
+		parentIdentifiers.add("parentId");
+		Mockito.doReturn(parentIdentifiers).when(blockRepo).getConnectedParentIfExists("actionBlockNotInHeadBlocksId");
+		Mockito.doReturn(notBlock).when(blockRepo).getBlockByID("parentId");	
+		
+		Set<String> expectedResult = new HashSet<String>();
+		expectedResult.add(actionBlockNotInHeadBlocks.getBlockId());
+		
+		assertEquals(expectedResult, blockRepo.removeBlock(removedBlockId, isChain));		
+		verify(notBlock,atLeastOnce()).setOperand(null);
+	}
+	
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#moveBlock(java.lang.String, java.lang.String, types.ConnectionType)}.
 	 */
