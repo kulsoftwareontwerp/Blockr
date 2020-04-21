@@ -7,12 +7,24 @@ import java.util.Set;
 
 import guiLayer.types.Constants;
 import guiLayer.types.Coordinate;
-import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 
+/**
+ * ControlShape
+ * 
+ * @version 0.1
+ * @author group17
+ *
+ */
 public class ControlShape extends Shape implements Constants {
-
+	/**
+	 * Create a new shape with the given id, type and coordinate
+	 * 
+	 * @param id         the id for the shape
+	 * @param type       the type of the shape
+	 * @param coordinate the coordinate for the shape.
+	 */
 	public ControlShape(String id, BlockType type, Coordinate coordinate) {
 		super(id, type, coordinate);
 	}
@@ -21,7 +33,7 @@ public class ControlShape extends Shape implements Constants {
 	public void draw(Graphics g) {
 		int startX = getX_coord();
 		int startY = getY_coord();
-		
+
 		setCoordinatesShape();
 		int total = getHeight();
 
@@ -37,55 +49,55 @@ public class ControlShape extends Shape implements Constants {
 
 		g.drawLine(startX + 10, startY + 30, startX + 10, startY + total - 30);
 		g.drawLine(startX + 30, startY, startX + getWidth(), startY);
-		g.drawLine(startX + getWidth() - 50, startY + total - 30, startX + getWidth(),
-				startY + total - 30);
+		g.drawLine(startX + getWidth() - 50, startY + total - 30, startX + getWidth(), startY + total - 30);
 		g.drawLine(startX + getWidth(), startY, startX + getWidth(), startY + 5);
 		g.drawLine(startX + getWidth(), startY + 25, startX + getWidth(), startY + 30);
-		g.drawLine(startX + getWidth(), startY + total - 30, startX + getWidth(),
-				startY + total);
+		g.drawLine(startX + getWidth(), startY + total - 30, startX + getWidth(), startY + total);
 		g.drawLine(startX + 10, startY + total - 30, startX + getWidth() - 70, startY + total - 30);
 		g.drawLine(startX + 10, startY + 30, startX + getWidth() - 70, startY + 30);
 		g.drawLine(startX + getWidth() - 50, startY + 30, startX + getWidth(), startY + 30);
 		g.drawLine(startX + 30, startY + total, startX + getWidth(), startY + total);
 
-		g.drawString(getType().toString()+ idForDisplay(), startX + 10, startY + 23);
+		g.drawString(getType().toString() + idForDisplay(), startX + 10, startY + 23);
 	}
 
 	@Override
-	protected HashSet<Coordinate> fillShapeWithCoordinates() {
+	HashSet<Coordinate> fillShapeWithCoordinates() {
 		HashSet<Coordinate> set = new HashSet<Coordinate>();
-			for (int i = getX_coord(); i < getX_coord() + getWidth(); i++) {
-				for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
-					if (!(j > 25+getY_coord() && j <= getY_coord()+getHeight()-25 && i > getX_coord() && i <= getX_coord()+getWidth())) // to give room for the clip, otherwise it won't work
-						set.add(new Coordinate(i, j));
-				}
+		for (int i = getX_coord(); i < getX_coord() + getWidth(); i++) {
+			for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
+				if (!(j > 25 + getY_coord() && j <= getY_coord() + getHeight() - 25 && i > getX_coord()
+						&& i <= getX_coord() + getWidth())) // to give room for the clip, otherwise it won't work
+					set.add(new Coordinate(i, j));
 			}
+		}
 		return set;
 	}
 
 	@Override
 	public void defineConnectionTypes() {
-		HashMap<ConnectionType, Coordinate> connectionMap = new HashMap<ConnectionType,Coordinate>();
-			connectionMap.put(ConnectionType.UP, new Coordinate(this.getX_coord()+20, this.getY_coord()));
-			connectionMap.put(ConnectionType.CONDITION, new Coordinate(this.getX_coord()+(getWidth()-10), this.getY_coord()+15));
-			connectionMap.put(ConnectionType.BODY, new Coordinate(this.getX_coord()+30, this.getY_coord()+30));
-			connectionMap.put(ConnectionType.DOWN, new Coordinate(this.getX_coord()+20, this.getY_coord()+(getHeight())));
+		HashMap<ConnectionType, Coordinate> connectionMap = new HashMap<ConnectionType, Coordinate>();
+		connectionMap.put(ConnectionType.UP, new Coordinate(this.getX_coord() + 20, this.getY_coord()));
+		connectionMap.put(ConnectionType.CONDITION,
+				new Coordinate(this.getX_coord() + (getWidth() - 10), this.getY_coord() + 15));
+		connectionMap.put(ConnectionType.BODY, new Coordinate(this.getX_coord() + 30, this.getY_coord() + 30));
+		connectionMap.put(ConnectionType.DOWN,
+				new Coordinate(this.getX_coord() + 20, this.getY_coord() + (getHeight())));
 		this.setCoordinateConnectionMap(connectionMap);
-		
+
 	}
 
 	@Override
-	public void initDimensions() {
+	void initDimensions() {
 		setHeight(90);
 		setWidth(90);
-		
-	}	
-	
-	
+
+	}
+
 	@Override
 	public void determineTotalHeight(Set<Shape> mapSetOfIdsToShapes) {
 		int tempHeight = getStandardHeight();
-		for(Shape shape:mapSetOfIdsToShapes) {
+		for (Shape shape : mapSetOfIdsToShapes) {
 			tempHeight += shape.getStandardHeight();
 		}
 		setHeight(tempHeight);
@@ -93,9 +105,8 @@ public class ControlShape extends Shape implements Constants {
 		setCoordinatesShape();
 	}
 
-	
 	@Override
-	public Integer getStandardHeight() {
+	protected Integer getStandardHeight() {
 		return STANDARD_HEIGHT_CONTROL_BLOCK;
 	}
 
@@ -105,24 +116,23 @@ public class ControlShape extends Shape implements Constants {
 		case UP:
 			setX_coord(shapeToClipTo.getX_coord());
 			setY_coord(shapeToClipTo.getY_coord() - getHeight());
-		break;
+			break;
 		case DOWN:
 			setX_coord(shapeToClipTo.getX_coord());
 			setY_coord(shapeToClipTo.getY_coord() + shapeToClipTo.getHeight());
-		break;
+			break;
 		case BODY:
 			setX_coord(shapeToClipTo.getX_coord() + 10);
 			setY_coord(shapeToClipTo.getY_coord() + 30);
 			break;
 		case LEFT:
-			setX_coord(shapeToClipTo.getX_coord() -getWidth()+10);
+			setX_coord(shapeToClipTo.getX_coord() - getWidth() + 10);
 			setY_coord(shapeToClipTo.getY_coord());
 			break;
 		default:
 			; // Do nothing
 		}
-		
+
 	}
-	
-	
+
 }

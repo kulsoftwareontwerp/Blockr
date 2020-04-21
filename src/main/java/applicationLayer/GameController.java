@@ -17,8 +17,10 @@ import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.ExecutableBlock;
 import domainLayer.blocks.IfBlock;
 import domainLayer.gamestates.GameState;
+import domainLayer.gamestates.InExecutionState;
 import domainLayer.gamestates.InValidProgramState;
 import domainLayer.gamestates.ResettingState;
+import domainLayer.gamestates.ValidProgramState;
 import events.DomainListener;
 import events.GUIListener;
 import events.GUISubject;
@@ -40,8 +42,8 @@ public class GameController implements DomainListener, GUISubject {
 		this.gameWorld = gameWorld;
 		programBlockRepository = BlockRepository.getInstance();
 		guiListeners = new HashSet<GUIListener>();
-		
-		this.commandHandler=commandHandler;
+
+		this.commandHandler = commandHandler;
 		initialSnapshot = gameWorld.saveState();
 
 		toState(new InValidProgramState(this));
@@ -71,14 +73,13 @@ public class GameController implements DomainListener, GUISubject {
 		GameState currentState = getCurrentState();
 		currentState.reset();
 	}
-	
-	
+
 	/**
 	 * Restores the gameworld back to its initial state, changes the current state of the program to its correct nextState and
 	 *  returns the state of the program before the reset. ResetGame is only allowed to be called from the resettingState class.
 	 * 
 	 * @event fireUpdateHighlightingEvent Fires an UpdateHighlightingEvent.
-	 * @return a snapshot containing all the information regarding the state of the program before the reset.
+	 * @return The ExecutionSnapshot describing the state before the reset.
 	 */
 	public ExecutionSnapshot resetGame() {
 		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
@@ -88,8 +89,8 @@ public class GameController implements DomainListener, GUISubject {
 		fireUpdateHighlightingEvent(null);
 		
 		try {
-			if(getCurrentState().getNextState()==null) {
-				//This is not a resettingState.
+			if (getCurrentState().getNextState() == null) {
+				// This is not a resettingState.
 				toState(new ResettingState(this));
 			} else {
 				// TODO: How to test this?
@@ -100,7 +101,7 @@ public class GameController implements DomainListener, GUISubject {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return snapshot;
 	}
 	
@@ -108,7 +109,6 @@ public class GameController implements DomainListener, GUISubject {
 	ExecutionSnapshot createNewExecutionSnapshot(ActionBlock actionBlock, GameWorldSnapshot snapshot, GameState state) {
 		return new ExecutionSnapshot(actionBlock, snapshot, state);
 	}
-	
 	
 	/**
 	 * Returns the current state of the program.
@@ -208,9 +208,10 @@ public class GameController implements DomainListener, GUISubject {
 		ActionBlock nextBlockToBeExecuted = getCurrentState().getNextActionBlockToBeExecuted();
 		ExecutionSnapshot snapshot = createNewExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState());
 		gameWorld.performAction(block.getAction());
-		
+
 		ActionBlock newNextActionBlockToBeExecuted = findNextActionBlockToBeExecuted(block, block.getNextBlock());
 		getCurrentState().setNextActionBlockToBeExecuted(newNextActionBlockToBeExecuted);
+
 		if (getCurrentState().getNextActionBlockToBeExecuted() != null) {
 			fireUpdateHighlightingEvent(getCurrentState().getNextActionBlockToBeExecuted().getBlockId());
 		} else {
@@ -218,7 +219,7 @@ public class GameController implements DomainListener, GUISubject {
 		}
 		return snapshot;
 	}
-	
+
 	public void restoreExecutionSnapshot(ExecutionSnapshot snapshot) {
 		getCurrentState().setNextActionBlockToBeExecuted(snapshot.getNextActionBlockToBeExecuted());
 		gameWorld.restoreState(snapshot.getGameSnapshot());
@@ -270,6 +271,27 @@ public class GameController implements DomainListener, GUISubject {
 	@Override
 	public void onUpdateGameStateEvent(UpdateGameStateEvent event) {
 		updateState();
+	}
+	
+	/**
+	 * Is it useful to perform a gameAction at the moment. An action is useful if it
+	 * changes anything, otherwise it's just a waste of time and resources.
+	 * 
+	 * @return if it's useful to perform a gameAction at the moment.
+	 */
+	public boolean isGameExecutionUseful() {
+		return (getCurrentState() instanceof ValidProgramState) || (getCurrentState() instanceof InExecutionState && getCurrentState().getNextActionBlockToBeExecuted()!=null) ;
+	}
+
+	/**
+	 * Is it useful to perform a reset of the gameWorld at the moment. A reset of the gameWorld is useful if it
+	 * changes anything, otherwise it's just a waste of time and resources.
+	 * 
+	 * @return if it's useful to perform a reset of the gameWorld at the moment.
+	 */
+	public boolean isGameResetUseful() {
+		return getCurrentState() instanceof InExecutionState  ;
+
 	}
 
 }

@@ -19,7 +19,8 @@ public class ResetCommand extends GameWorldCommand {
 	private Boolean executed;
 
 	/**
-	 * @param controller
+	 * Create a new ResetCommand
+	 * @param controller The controller to perform this command on.
 	 */
 	public ResetCommand(DomainController controller) {
 		super(controller);

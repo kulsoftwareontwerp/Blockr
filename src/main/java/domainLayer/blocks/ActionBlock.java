@@ -23,6 +23,7 @@ public class ActionBlock extends ExecutableBlock {
 	 * Create an Action Block
 	 * 
 	 * @param blockId The ID for the block.
+	 * @param type The BlockType of the ActionBlock
 	 */
 	public ActionBlock(String blockId, BlockType type) {
 		super(blockId);
@@ -34,6 +35,10 @@ public class ActionBlock extends ExecutableBlock {
 		
 	}
 
+	/**
+	 * Retrieve the action associated with this actionBlock
+	 * @return the action associated with this actionBlock
+	 */
 	public Action getAction() {
 		return type.action();
 	}

@@ -1,14 +1,10 @@
-/**
- * 
- */
 package commands;
 
 import applicationLayer.BlockController;
-import domainLayer.blocks.Block;
 import types.BlockSnapshot;
 
 /**
- *  RemoveBlockCommand
+ *  RemoveBlockCommand, The command to remove a block from the domain.
  * 
  * @version 0.1
  * @author group17
@@ -19,8 +15,11 @@ public class RemoveBlockCommand implements BlockCommand {
 	private String blockIdToBeRemoved;
 	private BlockSnapshot snapshot;
 
+
 	/**
-	 * @param blockIdToBeRemoved
+	 * Create a new RemoveblockCommand
+	 * @param blockController	The blockController to perform the remove on
+	 * @param blockIdToBeRemoved The ID of the block to be removed.
 	 */
 	public RemoveBlockCommand(BlockController blockController, String blockIdToBeRemoved) {
 		super();

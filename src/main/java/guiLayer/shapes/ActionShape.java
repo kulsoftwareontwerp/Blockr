@@ -5,12 +5,24 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import guiLayer.types.Coordinate;
-import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 
+/**
+ * ActionShape
+ * 
+ * @version 0.1
+ * @author group17
+ *
+ */
 public class ActionShape extends Shape {
 
+	/**
+	 * Create a new ActionShape
+	 * @param id the id of the actionShape
+	 * @param type the type of the actionShape
+	 * @param coordinate the coordinate of the actionShape.
+	 */
 	public ActionShape(String id, BlockType type, Coordinate coordinate) {
 		super(id, type, coordinate);
 	}
@@ -37,8 +49,7 @@ public class ActionShape extends Shape {
 		
 	}
 
-	@Override
-	protected HashSet<Coordinate> fillShapeWithCoordinates() {
+	@Override HashSet<Coordinate> fillShapeWithCoordinates() {
 		HashSet<Coordinate> set = new HashSet<Coordinate>();
 			for (int i = getX_coord(); i < getX_coord() + getWidth(); i++) {
 				for (int j = getY_coord(); j < getY_coord() + getHeight(); j++) {
@@ -57,7 +68,7 @@ public class ActionShape extends Shape {
 	}
 
 	@Override
-	public void initDimensions() {
+	void initDimensions() {
 		setHeight(30);
 		setWidth(80);
 	}

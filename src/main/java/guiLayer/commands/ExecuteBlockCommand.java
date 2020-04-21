@@ -6,7 +6,7 @@ package guiLayer.commands;
 import applicationLayer.DomainController;
 
 /**
- * /** ExecuteBlockCommand
+ * ExecuteBlockCommand
  * 
  * @version 0.1
  * @author group17
@@ -17,7 +17,8 @@ public class ExecuteBlockCommand extends GameWorldCommand {
 	private Boolean executed;
 
 	/**
-	 * @param controller
+	 * Create a new ExecuteBlockCommand
+	 * @param controller The DomainController to perform this command on.
 	 */
 	public ExecuteBlockCommand(DomainController controller) {
 		super(controller);

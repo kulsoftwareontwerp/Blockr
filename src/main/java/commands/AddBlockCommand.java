@@ -9,7 +9,7 @@ import types.BlockType;
 import types.ConnectionType;
 
 /**
- * /** AddBlockCommand
+ * AddBlockCommand, The command to add a block.
  * 
  * @version 0.1
  * @author group17
@@ -23,10 +23,16 @@ public class AddBlockCommand implements BlockCommand {
 	private BlockSnapshot snapshot;
 
 	/**
-	 * @param blockController
-	 * @param type
-	 * @param connectedBlockId
-	 * @param connection
+	 * Create a new addBlockCommand
+	 * 
+	 * @param blockController  The blockController to perform the add on
+	 * @param type             The type of the block to add
+	 * @param connectedBlockId The Id of the block to connect the added block to, an
+	 *                         empty string if the block won't be connected to any
+	 *                         other block on add.
+	 * @param connection       The connection to connect the added block to on the
+	 *                         connectedBlock, NOCONNECTION if the added block won't
+	 *                         be connected to any other block.
 	 */
 	public AddBlockCommand(BlockController blockController, BlockType type, String connectedBlockId,
 			ConnectionType connection) {
@@ -42,7 +48,7 @@ public class AddBlockCommand implements BlockCommand {
 		if (snapshot == null) {
 			snapshot = blockController.addBlock(blockType, connectedBlockId, connection);
 		} else {
-			 blockController.restoreBlockSnapshot(snapshot, false);
+			blockController.restoreBlockSnapshot(snapshot, false);
 		}
 	}
 

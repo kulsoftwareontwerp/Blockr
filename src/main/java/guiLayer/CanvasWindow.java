@@ -1,18 +1,14 @@
 package guiLayer;
 
-import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Robot;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.Timer;
 import java.util.stream.Collectors;
 
@@ -23,31 +19,24 @@ import events.BlockRemovedEvent;
 import events.GUIListener;
 import events.PanelChangeEvent;
 import events.UpdateHighlightingEvent;
-import guiLayer.commands.BlockCommand;
 import guiLayer.commands.CommandHandler;
 import guiLayer.commands.DomainMoveCommand;
 import guiLayer.commands.ExecuteBlockCommand;
-import guiLayer.commands.GameWorldCommand;
 import guiLayer.commands.GuiMoveCommand;
 import guiLayer.commands.ResetCommand;
-import guiLayer.shapes.ActionShape;
-import guiLayer.shapes.ConditionShape;
 import guiLayer.shapes.ControlShape;
 import guiLayer.shapes.Shape;
 import guiLayer.shapes.ShapeFactory;
-import guiLayer.shapes.UnaryOperatorShape;
 import guiLayer.types.Constants;
 import guiLayer.types.Coordinate;
 import guiLayer.types.DebugModus;
 import guiLayer.types.GuiSnapshot;
 import guiLayer.types.MaskedKeyBag;
 import guiLayer.types.MaskedKeyPressed;
-import guiLayer.types.Pair;
 import types.BlockType;
 import types.ConnectionType;
 
 public class CanvasWindow extends CanvasResource implements GUIListener, Constants {
-	private static final int MASKEDKEY_DURATION = 500;
 
 	private CommandHandler commandHandler;
 
@@ -65,17 +54,32 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private Shape currentShape = null;
 	private Shape movedShape = null;
 
-	private int x_offsetCurrentShape = 0;
-	private int y_offsetCurrentShape = 0;
-
 	private MaskedKeyBag maskedKeyBag;
+	private Timer maskedKeyTimer = null;
 
+	private GuiSnapshot currentSnapshot;
+
+	private boolean undoMode;
+
+	private Coordinate offsetCurrentShape;
+
+	/**
+	 * The debugModus of this canvasWindow.
+	 */
 	public static DebugModus debugModus = DebugModus.NONE;
 
-	// methods of CanvasResource that need to be overridden:
-
+	/**
+	 * Create a new canvasWindow
+	 * 
+	 * @param title the title of the canvasWindow
+	 * @param dc the domainController to perform actions on
+	 */
 	public CanvasWindow(String title, DomainController dc) {
 		super(title);
+
+		offsetCurrentShape = new Coordinate(0, 0);
+
+		this.undoMode = false;
 
 		// Calculate Total Height of the CanvasWindow based on the different type of
 		// blocks
@@ -101,7 +105,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		totalHeight += 25; // Padding at the bottom
 
-		commandHandler = new CommandHandler();
+		commandHandler = new CommandHandler(this);
 
 		maskedKeyBag = new MaskedKeyBag(false, false);
 
@@ -124,6 +128,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 */
 	public void placeShapes() {
 		if (currentSnapshot != null) {
+			programArea.setHighlightedShapeForExecution(null);
 			for (Map.Entry<String, Coordinate> IdAndCoordinate : currentSnapshot.getSavedCoordinates().entrySet()) {
 
 				BlockType type = domainController.getBlockType(IdAndCoordinate.getKey());
@@ -138,37 +143,125 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			programArea.clearAlreadyFilledInCoordinates();
 
 			determineTotalHeightControlShapes();
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				shape.setCoordinatesShape();
-				programArea.addToAlreadyFilledInCoordinates(shape);
-				shape.defineConnectionTypes();
-			}
+			programArea.placeShapes();
 
 		}
 		super.repaint();
 	}
 
-	public void setShapesInMovement(Set<Shape> shapes) {
-		shapesInMovement = shapes;
-		shapeClonesInMovement = new HashSet<Shape>(shapes);
+	/**
+	 * Set the undo flag of this canvasWindow
+	 * 
+	 * @param undo the undo flag of this canvaswinow
+	 */
+	public void setUndoMode(boolean undo) {
+		undoMode = undo;
 	}
 
+	/**
+	 * Set the currently used snapshot.
+	 * 
+	 * @param snapshot The snapshot in use.
+	 */
+	public void setCurrentSnapshot(GuiSnapshot snapshot) {
+		currentSnapshot = snapshot;
+
+	}
+
+	/**
+	 * Retrieve the shapeFactory
+	 * 
+	 * @return the shapeFactory of this canvasWindow
+	 */
+	private ShapeFactory getShapeFactory() {
+		return shapeFactory;
+	}
+
+	/**
+	 * Retrieve the currentShape used in this canvasWindow, the currentShape is the
+	 * shape that's currently being dragged or clicked on by the user.
+	 * 
+	 * @return the currentShape used in this canvasWindow
+	 */
+	private Shape getCurrentShape() {
+		return this.currentShape;
+	}
+
+	/**
+	 * Retrieve the latest clone of the shapes in movement.
+	 * 
+	 * @return the latest clone of the shapes in movement.
+	 */
 	private Set<Shape> getShapeClonesInMovement() {
 		return shapeClonesInMovement;
 	}
 
-	public Set<Shape> getShapesInMovement() {
+	/**
+	 * Retrieve all shapes in movement
+	 * 
+	 * @return the shapes in movement.
+	 */
+	private Set<Shape> getShapesInMovement() {
 		return shapesInMovement;
 	}
 
-	public void addToShapesInMovement(Shape shape) {
+	/**
+	 * Set the shapeFactory
+	 * 
+	 * @param shapeFactory The shapeFactory to use in this canvasWindow
+	 */
+	private void setShapeFactory(ShapeFactory shapeFactory) {
+		this.shapeFactory = shapeFactory;
+	}
+
+	/**
+	 * Set the currentShape used in this canvasWindow, the currentShape is the shape
+	 * that's currently being dragged or clicked on by the user.
+	 * 
+	 * @param shape The shape to use as currentShape
+	 */
+	private void setCurrentShape(Shape shape) {
+		this.currentShape = shape;
+	}
+
+	/**
+	 * Add a shape to the shapes in movement and also to the clone of the shapes in
+	 * movement.
+	 * 
+	 * @param shape
+	 */
+	private void addToShapesInMovement(Shape shape) {
 		shapesInMovement.add(shape);
 		shapeClonesInMovement.add(shape.clone());
 	}
 
-	public void resetShapesInMovement() {
+	/**
+	 * Reset the shapes in movement and also the clone of the shapes in movement.
+	 */
+	private void resetShapesInMovement() {
 		this.shapesInMovement = new HashSet<Shape>();
 		this.shapeClonesInMovement = new HashSet<Shape>();
+	}
+
+	/**
+	 * Set the field offsetCurrentShape with offset between the mouse and the left
+	 * upper corner of the currentShape.
+	 * 
+	 * @param x_Mouse The x position of the mouse.
+	 * @param y_Mouse The y position of the mouse.
+	 */
+	private void setOffsetMouseAndCurrentShape(int x_Mouse, int y_Mouse) {
+		this.offsetCurrentShape = new Coordinate(x_Mouse - getCurrentShape().getX_coord(),
+				y_Mouse - getCurrentShape().getY_coord());
+	}
+
+	/**
+	 * Reset all global variables
+	 */
+	private void resetGlobalVariables() {
+		programArea.setHighlightedShapeForConnections(null);
+		this.setCurrentShape(null);
+		this.resetShapesInMovement();
 	}
 
 	@Override
@@ -189,7 +282,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		paletteArea.paint(blockrGraphics);
 
 		domainController.paint(gameAreaGraphics);
-//		gameArea.draw(gameAreaGraphics);
 
 		programArea.draw(blockrGraphics, domainController);
 
@@ -216,43 +308,35 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	}
 
-	private int[] calculateOffsetMouse(int x_Mouse, int y_Mouse, int x_Shape, int y_Shape) {
-		int[] returnValue = new int[2];
-		returnValue[0] = x_Mouse - x_Shape;
-		returnValue[1] = y_Mouse - y_Shape;
-		return returnValue;
-	}
-
 	@Override
 	protected void handleMouseEvent(int id, int x, int y, int clickCount) {
 
 		if (paletteArea.checkIfInPalette(x) && id == MouseEvent.MOUSE_PRESSED) {
 			setCurrentShape(paletteArea.getShapeFromCoordinate(x, y));
 			if (getCurrentShape() != null) {
-				var temp = calculateOffsetMouse(x, y, getCurrentShape().getX_coord(), getCurrentShape().getY_coord());
-				this.x_offsetCurrentShape = temp[0];
-				this.y_offsetCurrentShape = temp[1];
+				setOffsetMouseAndCurrentShape(x, y);
+
 				addToShapesInMovement(getCurrentShape());
 			}
 		}
 
 		if ((id == MouseEvent.MOUSE_DRAGGED || id == MouseEvent.MOUSE_PRESSED) && getCurrentShape() != null) {
 
-			int offsetX = x - x_offsetCurrentShape;
-			int offsetY = y - y_offsetCurrentShape;
+			int offsetX = x - offsetCurrentShape.getX();
+			int offsetY = y - offsetCurrentShape.getY();
 
 			int diffX = offsetX - getCurrentShape().getX_coord();
 			int diffy = offsetY - getCurrentShape().getY_coord();
 
-			getCurrentShape().setX_coord(x - x_offsetCurrentShape);
-			getCurrentShape().setY_coord(y - y_offsetCurrentShape);
+			getCurrentShape().setX_coord(x - offsetCurrentShape.getX());
+			getCurrentShape().setY_coord(y - offsetCurrentShape.getY());
 			getCurrentShape().defineConnectionTypes();
 
 			for (Shape shapeIM : getShapesInMovement()) {
 				shapeIM.defineConnectionTypes();
 			}
 
-			programArea.setHighlightedShape(determineHighlightShape());
+			programArea.setHighlightedShapeForConnections(determineHighlightShape());
 
 			updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy, getCurrentShape());
 
@@ -280,12 +364,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				getCurrentShape().setConnectedVia(ConnectionType.NOCONNECTION, true);
 
-				var mouseOffset = calculateOffsetMouse(x, y, getCurrentShape().getX_coord(),
-						getCurrentShape().getY_coord());
+				setOffsetMouseAndCurrentShape(x, y);
 
-				setX_offsetCurrentShape(mouseOffset[0]);
-
-				setY_offsetCurrentShape(mouseOffset[1]);
 				for (Shape shapeIM : getShapesInMovement()) {
 					programArea.removeShapeFromProgramArea(shapeIM);
 				}
@@ -304,16 +384,16 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					domainController.removeBlock(getCurrentShape().getId());
 				}
 			} else if (programArea.checkIfInProgramArea(x) && getCurrentShape() != null) {
-				if (programArea.getHighlightedShape() != null) {
+				if (programArea.getHighlightedShapeForConnections() != null) {
 					// connectedVia of highlightedshape must be persisted.
-					programArea.getHighlightedShape().persistConnectedVia(true);
+					programArea.getHighlightedShapeForConnections().persistConnectedVia(true);
 
 					if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
 						// persist the connectedVia.
 						getCurrentShape().persistConnectedVia(true);
 
 						// ADD
-						getCurrentShape().clipOn(programArea.getHighlightedShape(),
+						getCurrentShape().clipOn(programArea.getHighlightedShapeForConnections(),
 								getCurrentShape().getConnectedVia());
 
 					} else {
@@ -323,74 +403,54 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						if (movedShape != null) {
 							// movedShape connectevia must be persisted, currentshape connectedvia reverted
 							// if they are different shapes
-							// this order is important.
+							// this order is important because movedShape and currentshape might be the
+							// same.
 							movedShape.persistConnectedVia(true);
 							getCurrentShape().persistConnectedVia(false);
 
 							int originalChangedShapeX = movedShape.getX_coord();
 							int originalChangedShapeY = movedShape.getY_coord();
-//							System.out.println("BeforeClipon X: " + originalChangedShapeX);
-//							System.out.println("BeforeClipon Y: " + originalChangedShapeY);
 
-							movedShape.clipOn(programArea.getHighlightedShape(), movedShape.getConnectedVia());
-//							System.out.println("AfterClipon X: " + movedShape.getX_coord());
-//							System.out.println("AfterClipon Y: " + movedShape.getY_coord());
+							movedShape.clipOn(programArea.getHighlightedShapeForConnections(), movedShape.getConnectedVia());
 
 							// Only if the shape that's being dragged is the moved shape than it should
 							// be decoupled from the chain it's in
 							if (movedShape == getCurrentShape()) {
-								// decoupleFromShape(movedShape);
 							}
 
 							int diffX = movedShape.getX_coord() - originalChangedShapeX;
 							int diffy = movedShape.getY_coord() - originalChangedShapeY;
-//							System.out.println("diffX: " + diffX);
-//							System.out.println("diffY: " + diffy);
-
 							updateAllShapesInMovementAccordingToChangeOfLeader(diffX, diffy, movedShape);
 						}
-
 					}
 				}
-
 				getCurrentShape().setCoordinatesShape();
-				boolean placeable = programArea.checkIfPlaceable(getCurrentShape().getCoordinatesShape(),
-						getCurrentShape());
+				boolean placeable = programArea.checkIfPlaceable(getCurrentShape());
 
 				if (placeable) {
 					if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
 						commandHandler.handle(new DomainMoveCommand(domainController, this,
 								new GuiSnapshot(getShapeClonesInMovement()), new GuiSnapshot(getShapesInMovement())));
 
-						if (programArea.getHighlightedShape() != null) {
+						if (programArea.getHighlightedShapeForConnections() != null) {
 							domainController.addBlock(getCurrentShape().getType(),
-									programArea.getHighlightedShape().getId(), getCurrentShape().getConnectedVia());
+									programArea.getHighlightedShapeForConnections().getId(), getCurrentShape().getConnectedVia());
 						} else {
 
 							domainController.addBlock(getCurrentShape().getType(), "", ConnectionType.NOCONNECTION);
 						}
-					}
-
-					// DOMAIN MOVEMENT, IF THERE IS A CHANGE IN CURRENTSHAPE.GETCONNECTIONVIA,
-					// EXCEPTIONS CATCHEN!!
-					else if (programArea.getHighlightedShape() != null) {
+					} else if (programArea.getHighlightedShapeForConnections() != null) {
 						commandHandler.handle(new DomainMoveCommand(domainController, this,
 								new GuiSnapshot(getShapeClonesInMovement()), new GuiSnapshot(getShapesInMovement())));
 
-						if (programArea.getHighlightedShape().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
+						if (programArea.getHighlightedShapeForConnections().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
 							domainController.moveBlock(getCurrentShape().getId(), "", "", ConnectionType.NOCONNECTION);
 						} else {
 							domainController.moveBlock(getCurrentShape().getId(), movedShape.getId(),
-									programArea.getHighlightedShape().getId(), movedShape.getConnectedVia());
+									programArea.getHighlightedShapeForConnections().getId(), movedShape.getConnectedVia());
 						}
 					}
 					// decouple chain of blocks from a block
-					// Wanneer is decouple chain nodig?
-
-//					else if (getCurrentShape().getConnectedVia() != ConnectionType.NOCONNECTION
-//							|| (getCurrentShape().getConnectedVia() == ConnectionType.NOCONNECTION
-//									&& getCurrentShape().getPreviouslyConnectedVia() != ConnectionType.NOCONNECTION)
-//									&& !domainController.getAllHeadBlocks().contains(getCurrentShape().getId())) {
 
 					else if (!domainController.getAllHeadBlocks().contains(getCurrentShape().getId())) {
 						// filter out the blocks that already a headblock.
@@ -398,9 +458,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 								new GuiSnapshot(getShapeClonesInMovement()), new GuiSnapshot(getShapesInMovement())));
 
 						domainController.moveBlock(getCurrentShape().getId(), "", "", ConnectionType.NOCONNECTION);
-
 					}
-
 					// ONLY GRAPHICAL MOVEMENT:
 					else {
 						commandHandler.handle(new GuiMoveCommand(this, new GuiSnapshot(getShapeClonesInMovement()),
@@ -411,22 +469,17 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							shape.setCoordinatesShape();
 							programArea.addShapeToProgramArea(shape);
 							programArea.addToAlreadyFilledInCoordinates(shape);
-
 						}
-
 					}
-
 					// NOT PLACEABLE =>
 				} else {
 
 					revertMove();
 				}
-
 				setCurrentShape(null);
-				programArea.setHighlightedShape(null);
+				programArea.setHighlightedShapeForConnections(null);
 				movedShape = null;
-				setX_offsetCurrentShape(0);
-				setY_offsetCurrentShape(0);
+				offsetCurrentShape = new Coordinate(0,0);
 
 				resetShapesInMovement();
 				blocksUnderneath = new HashSet<String>();
@@ -437,12 +490,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				} else {
 					revertMove();
 				}
-
 				setCurrentShape(null);
-				programArea.setHighlightedShape(null);
+				programArea.setHighlightedShapeForConnections(null);
 				movedShape = null;
-				setX_offsetCurrentShape(0);
-				setY_offsetCurrentShape(0);
+				offsetCurrentShape = new Coordinate(0,0);
 				resetShapesInMovement();
 				blocksUnderneath = new HashSet<String>();
 			}
@@ -451,41 +502,37 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		repaint();
 	}
 
-	private void revertMove() {
-		for (Iterator<Shape> iterator = getShapesInMovement().iterator(); iterator.hasNext();) {
-			Shape shape = (Shape) iterator.next();
-
-			if (shape.getPreviousX_coord() == INVALID_COORDINATE || shape.getPreviousY_coord() == INVALID_COORDINATE) {
-				iterator.remove();
-			} else {
-				shape.setX_coord(shape.getPreviousX_coord());
-				shape.setY_coord(shape.getPreviousY_coord());
-
-				shape.setCoordinatesShape();
-				programArea.addToAlreadyFilledInCoordinates(shape);
-				shape.defineConnectionTypes();
-				programArea.addShapeToProgramArea(shape);
-			}
-
-		}
-
-		getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia(), true);
-	}
-
+	/**
+	 * Change the position of all shapes in movement all shapes in movement
+	 * according to the given difference in x and y, the leader will be excluded
+	 * from the position changes.
+	 * 
+	 * @param diffX         the difference in the x value.
+	 * @param diffy         the difference in the y value.
+	 * @param excludedShape The shape to be excluded from the changes in position.
+	 */
 	private void updateAllShapesInMovementAccordingToChangeOfLeader(int diffX, int diffy, Shape excludedShape) {
 		for (Shape shape : getShapesInMovement()) {
-
+	
 			if (shape != excludedShape) {
 				shape.setX_coord(shape.getX_coord() + diffX);
 				shape.setY_coord(shape.getY_coord() + diffy);
 			}
 		}
-
+	
 	}
 
+	/**
+	 * Determine the shape to be highlighted while dragging, this method also
+	 * determines which shape connects to the highlighted shape and sets this to
+	 * movedShape, this method also sets the correct connection correlated to the
+	 * highlighted connection.
+	 * 
+	 * @return The shape to be highlighted while dragging.
+	 */
 	private Shape determineHighlightShape() {
 		HashMap<ConnectionType, HashMap<Shape, Coordinate>> shapesInProgramAreaConnectionMap = new HashMap<ConnectionType, HashMap<Shape, Coordinate>>();
-
+	
 		for (ConnectionType connection : ConnectionType.values()) {
 			shapesInProgramAreaConnectionMap.put(connection, new HashMap<Shape, Coordinate>());
 			for (Shape shape : programArea.getShapesInProgramArea().stream()
@@ -496,136 +543,181 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						shape.getCoordinateConnectionMap().get(connection));
 			}
 		}
-
+	
 		Shape shape = null;
-
-
+	
 		for (Shape shapeInMovement : getShapesInMovement()) {
 			// The setConnectedVia of all shapes in movement will be reverted
 			shapeInMovement.persistConnectedVia(false);
-
-			if (isConnectionOpen(shapeInMovement, ConnectionType.DOWN) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.UP),
-					shapeInMovement.getTriggerSet(ConnectionType.DOWN))) {
+	
+			if (isConnectionOpen(shapeInMovement, ConnectionType.DOWN)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.UP),
+							shapeInMovement.getTriggerSet(ConnectionType.DOWN))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.UP).entrySet().stream()
 						.filter(e -> shapeInMovement.getTriggerSet(ConnectionType.DOWN).contains(e.getValue()))
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-
+	
 				shapeInMovement.setConnectedVia(ConnectionType.UP, false);
 				shape.setConnectedVia(ConnectionType.DOWN, false);
 				movedShape = shapeInMovement;
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.UP) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.DOWN),
-					shapeInMovement.getTriggerSet(ConnectionType.UP))) {
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.UP)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.DOWN),
+							shapeInMovement.getTriggerSet(ConnectionType.UP))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.DOWN).entrySet().stream()
 						.filter(p -> shapeInMovement.getTriggerSet(ConnectionType.UP).contains(p.getValue()))
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-
+	
 				shapeInMovement.setConnectedVia(ConnectionType.DOWN, false);
 				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
-
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.UP) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.BODY),
-					shapeInMovement.getTriggerSet(ConnectionType.UP))) {
+	
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.UP)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.BODY),
+							shapeInMovement.getTriggerSet(ConnectionType.UP))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.BODY).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.UP).contains(q.getValue()))
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-
+	
 				shapeInMovement.setConnectedVia(ConnectionType.BODY, false);
 				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
-
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION),
-					shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
+	
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION),
+							shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.LEFT).contains(q.getValue()))
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-
+	
 				shapeInMovement.setConnectedVia(ConnectionType.CONDITION, false);
 				shape.setConnectedVia(ConnectionType.LEFT, false);
 				movedShape = shapeInMovement;
-
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND),
-					shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
+	
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND),
+							shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.LEFT).contains(q.getValue()))
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-
+	
 				shapeInMovement.setConnectedVia(ConnectionType.OPERAND, false);
 				shape.setConnectedVia(ConnectionType.LEFT, false);
 				movedShape = shapeInMovement;
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.CONDITION) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
-					shapeInMovement.getTriggerSet(ConnectionType.CONDITION))) {
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.CONDITION)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
+							shapeInMovement.getTriggerSet(ConnectionType.CONDITION))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.CONDITION).contains(q.getValue()))
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-
+	
 				shapeInMovement.setConnectedVia(ConnectionType.LEFT, false);
 				shape.setConnectedVia(ConnectionType.CONDITION, false);
 				movedShape = shapeInMovement;
-			} else if (isConnectionOpen(shapeInMovement, ConnectionType.OPERAND) && isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
-					shapeInMovement.getTriggerSet(ConnectionType.OPERAND))) {
+			} else if (isConnectionOpen(shapeInMovement, ConnectionType.OPERAND)
+					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT),
+							shapeInMovement.getTriggerSet(ConnectionType.OPERAND))) {
 				shape = shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT).entrySet().stream()
 						.filter(q -> shapeInMovement.getTriggerSet(ConnectionType.OPERAND).contains(q.getValue()))
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-
+	
 				shapeInMovement.setConnectedVia(ConnectionType.LEFT, false);
 				shape.setConnectedVia(ConnectionType.OPERAND, false);
 				movedShape = shapeInMovement;
 			}
 		}
-
+	
 		return shape;
 	}
 
 	/**
-	 * @param handledShapesInMovement
+	 * Check if a connection is open.
+	 * 
+	 * @param shape      The shape to check if it's connection is open.
+	 * @param connection The connection to check if it's open.
+	 * @return a flag indicating if a connection is open and can be used to try and
+	 *         make a connection.
 	 */
 	private Boolean isConnectionOpen(Shape shape, ConnectionType connection) {
-
 		return shape.getId().equals(PALETTE_BLOCK_IDENTIFIER)
-				|| domainController.checkIfConnectionIsOpen(shape.getId(), connection, null);
+				|| domainController.checkIfConnectionIsOpen(shape.getId(), connection, null)
+				|| (shape == getCurrentShape()
+						&& (connection == ConnectionType.UP || connection == ConnectionType.LEFT));
 	}
 
-	private boolean isConnectionPresent(HashMap<Shape, Coordinate> shapesInProgramAreaUpMap,
-			HashSet<Coordinate> connectionTriggerSetDOWN) {
-		for (Map.Entry<Shape, Coordinate> s : shapesInProgramAreaUpMap.entrySet()) {
-			if (connectionTriggerSetDOWN.contains(s.getValue())) {
+	/**
+	 * Check if there is an overlap between a triggerSet of a certain connection and
+	 * a triggerSet of a shape in the programArea on another connection.
+	 * 
+	 * @param shapesInProgramAreaConnectionMap A Map where all shapes and their
+	 *                                         coordinate are set, this map contains
+	 *                                         all triggers of a certain connection.
+	 * @param connectionTriggerSet             a set with all coordinates of a
+	 *                                         certain connection to try and fit to
+	 *                                         one of the shapes in the programArea.
+	 * @return a flag indicating if there is a connection between 2 triggerSets.
+	 */
+	private boolean isConnectionPresent(Map<Shape, Coordinate> shapesInProgramAreaConnectionMap,
+			Set<Coordinate> connectionTriggerSet) {
+		for (Map.Entry<Shape, Coordinate> s : shapesInProgramAreaConnectionMap.entrySet()) {
+			if (connectionTriggerSet.contains(s.getValue())) {
 				return true;
 			}
-
+	
 		}
 		return false;
 	}
 
-	private Timer maskedKeyTimer = null;
-
-	private GuiSnapshot currentSnapshot;
+	/**
+	 * Revert a move in the GUI. The shapes will be placed on their last recorded
+	 * position.
+	 */
+	private void revertMove() {
+		for (Iterator<Shape> iterator = getShapesInMovement().iterator(); iterator.hasNext();) {
+			Shape shape = (Shape) iterator.next();
+	
+			if (shape.getPreviousX_coord() == INVALID_COORDINATE || shape.getPreviousY_coord() == INVALID_COORDINATE) {
+				iterator.remove();
+			} else {
+				shape.setX_coord(shape.getPreviousX_coord());
+				shape.setY_coord(shape.getPreviousY_coord());
+	
+				shape.setCoordinatesShape();
+				programArea.addToAlreadyFilledInCoordinates(shape);
+				shape.defineConnectionTypes();
+				programArea.addShapeToProgramArea(shape);
+			}
+	
+		}
+	
+		getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia(), true);
+	}
 
 	@Override
 	protected void handleKeyEvent(int id, int keyCode, char keyChar) {
 		if (id == KeyEvent.KEY_PRESSED) {
-
+	
 			if (keyCode == KeyEvent.VK_CONTROL) {
 				if (maskedKeyTimer != null) {
 					maskedKeyTimer.cancel();
-					maskedKeyBag.setShift(false);
+					maskedKeyBag.pressShift(false);
 				}
 				maskedKeyTimer = new Timer();
 				maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, false), MASKEDKEY_DURATION);
-				maskedKeyBag.setCtrl(true);
+				maskedKeyBag.pressCtrl(true);
 			}
 			if (keyCode == KeyEvent.VK_SHIFT) {
 				if (maskedKeyTimer != null) {
@@ -633,35 +725,39 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				}
 				maskedKeyTimer = new Timer();
 				maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, true), MASKEDKEY_DURATION);
-				maskedKeyBag.setShift(true);
+				maskedKeyBag.pressShift(true);
 			}
 			if (keyCode == KeyEvent.VK_F5) {
 				// F5-Key
-				commandHandler.handle(new ExecuteBlockCommand(domainController));
+				if (domainController.isGameExecutionUseful()) {
+					commandHandler.handle(new ExecuteBlockCommand(domainController));
+				}
 			}
 			if (keyCode == KeyEvent.VK_ESCAPE) {
 				// ESC-Key
-				commandHandler.handle(new ResetCommand(domainController));
+				if (domainController.isGameResetUseful()) {
+					commandHandler.handle(new ResetCommand(domainController));
+				}
 			}
 			if (keyCode == KeyEvent.VK_Z) {
-				if (maskedKeyBag.getCtrl() && !maskedKeyBag.getShift()) {
+				if (maskedKeyBag.isCtrlPressed() && !maskedKeyBag.isShiftPressed()) {
 					commandHandler.undo();
 					if (maskedKeyTimer != null) {
 						maskedKeyTimer.cancel();
-						maskedKeyBag.setShift(false);
+						maskedKeyBag.pressShift(false);
 					}
 				}
-				if (maskedKeyBag.getCtrl() && maskedKeyBag.getShift()) {
+				if (maskedKeyBag.isCtrlPressed() && maskedKeyBag.isShiftPressed()) {
 					commandHandler.redo();
 					if (maskedKeyTimer != null) {
 						maskedKeyTimer.cancel();
 					}
 					maskedKeyTimer = new Timer();
 					maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, true), MASKEDKEY_DURATION);
-					maskedKeyBag.setShift(true);
+					maskedKeyBag.pressShift(true);
 				}
 			}
-
+	
 			if (keyCode == KeyEvent.VK_U) {
 				commandHandler.undo();
 			}
@@ -670,110 +766,23 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 		}
 		if (id == KeyEvent.KEY_TYPED) {
-
+	
 			if (keyChar == 'd') {
 				// d key 68
 				debugModus = debugModus.getNext();
 				repaint();
 			}
 		}
-
+	
 	}
 
-	private ConnectionType getOppositeConnectionType(ConnectionType connection, Shape parent) {
-		switch (connection) {
-		case BODY:
-			return ConnectionType.UP;
-		case CONDITION:
-			return ConnectionType.LEFT;
-		case DOWN:
-			return ConnectionType.UP;
-		case LEFT:
-			if (parent instanceof ControlShape) {
-				return ConnectionType.CONDITION;
-			} else {
-				return ConnectionType.OPERAND;
-			}
-		case NOCONNECTION:
-			return ConnectionType.NOCONNECTION;
-		case OPERAND:
-			return ConnectionType.LEFT;
-		case UP:
-			return ConnectionType.DOWN;
-		default:
-			return ConnectionType.NOCONNECTION;
-		}
-	}
-
-	private void removeFromShapesInMovement(Shape shape) {
-
-		HashSet<Shape> newShapesInMovement = new HashSet<Shape>();
-
-		newShapesInMovement.addAll(
-				shapesInMovement.stream().filter(s -> !(s.getId().equals(shape.getId()))).collect(Collectors.toSet()));
-		shapesInMovement = newShapesInMovement;
-
-		HashSet<Shape> newshapeClonesInMovement = new HashSet<Shape>();
-		newshapeClonesInMovement.addAll(shapeClonesInMovement.stream().filter(s -> !(s.getId().equals(shape.getId())))
-				.collect(Collectors.toSet()));
-		shapeClonesInMovement = newshapeClonesInMovement;
-	}
-
-	public Shape getCurrentShape() {
-		return this.currentShape;
-	}
-
-	private void setCurrentShape(Shape shape) {
-		this.currentShape = shape;
-	}
-
-	public int getX_offsetCurrentShape() {
-		return x_offsetCurrentShape;
-	}
-
-	public void setX_offsetCurrentShape(int x_offsetCurrentShape) {
-		this.x_offsetCurrentShape = x_offsetCurrentShape;
-	}
-
-	public int getY_offsetCurrentShape() {
-		return y_offsetCurrentShape;
-	}
-
-	public void setY_offsetCurrentShape(int y_offsetCurrentShape) {
-		this.y_offsetCurrentShape = y_offsetCurrentShape;
-	}
-
-	public ShapeFactory getShapeFactory() {
-		return shapeFactory;
-	}
-
-	public void setShapeFactory(ShapeFactory shapeFactory) {
-		this.shapeFactory = shapeFactory;
-	}
-
-	public void setCurrentSnapshot(GuiSnapshot snapshot) {
-		currentSnapshot = snapshot;
-
-	}
-
-	@Override
-	public void onPanelChangedEvent(PanelChangeEvent event) {
-		paletteArea.setPaletteVisible(event.isShown());
-		super.repaint();
-	}
-
-	@Override
-	public void onUpdateHighlightingEvent(UpdateHighlightingEvent event) {
-		try {
-			programArea.setHighlightedShapeForExecution(programArea.getShapesInProgramArea().stream()
-					.filter(e -> e.getId() == event.getHighlightBlockId()).findFirst().get());
-		} catch (Exception e) {
-			programArea.setHighlightedShapeForExecution(null);
-		} finally {
-			super.repaint();
-		}
-	}
-
+	/**
+	 * Map a set of ids to a set of new shapes with coordinates and height taken
+	 * from the currentSnapshot.
+	 * 
+	 * @param ids the id's to map to shapes
+	 * @return All the ids mapped to shapes.
+	 */
 	private Set<Shape> mapSetOfIdsToShapes(Set<String> ids) {
 		HashSet<Shape> shapes = new HashSet<Shape>();
 		HashMap<String, Coordinate> coordinates = new HashMap<String, Coordinate>();
@@ -806,6 +815,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 	}
 
+	/**
+	 * Update the position of all shapes after the height of controlshapes has been
+	 * changed.
+	 */
 	private void updatePositionOfAllShapesAccordingToChangesOfTheControlShapes() {
 		Set<ControlShape> changedControlShapes = programArea.getAllChangedControlShapes();
 
@@ -813,17 +826,36 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			Set<Shape> shapesToMove = domainController.getAllBlockIDsBelowCertainBlock(c.getId()).stream()
 					.filter(s -> !s.equals(c.getId())).map(s -> programArea.getShapeById(s))
 					.collect(Collectors.toSet());
+			if (c.getHeightDiff() < 0 && undoMode) {
+				shapesToMove.removeIf(s -> currentSnapshot.getSavedCoordinates().containsKey(s.getId()));
+			}
+
 			for (Shape shape : shapesToMove) {
 				if (shape != null) {
 					programArea.removeFromAlreadyFilledInCoordinates(shape);
 					shape.setY_coord(shape.getY_coord() + c.getHeightDiff());
-					shape.setCoordinatesShape();
-					shape.defineConnectionTypes();
-					programArea.addToAlreadyFilledInCoordinates(shape);
 				}
 			}
 		}
 
+	}
+
+	@Override
+	public void onPanelChangedEvent(PanelChangeEvent event) {
+		paletteArea.setPaletteVisible(event.isShown());
+		super.repaint();
+	}
+
+	@Override
+	public void onUpdateHighlightingEvent(UpdateHighlightingEvent event) {
+		try {
+			programArea.setHighlightedShapeForExecution(programArea.getShapesInProgramArea().stream()
+					.filter(e -> e.getId() == event.getHighlightBlockId()).findFirst().get());
+		} catch (Exception e) {
+			programArea.setHighlightedShapeForExecution(null);
+		} finally {
+			super.repaint();
+		}
 	}
 
 	@Override
@@ -845,118 +877,43 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		System.out.println("Block ADDED: " + toAdd.getId());
 
-		/*
-		 * for (Pair<Integer, Integer> pair : toAdd.getCoordinatesShape()) {
-		 * this.alreadyFilledInCoordinates.remove(pair); }
-		 */
-
-		if (!event.getLinkedBlockID().equals("")) {
-			Shape linkedShape = programArea.getShapeById(event.getLinkedBlockID());
-
-			toAdd.setConnectedVia(event.getLinkedType(), true);
-			toAdd.clipOn(linkedShape, toAdd.getConnectedVia());
-			toAdd.defineConnectionTypes();
-
-			linkedShape.setConnectedVia(getOppositeConnectionType(event.getLinkedType(), linkedShape), true);
-
-			toAdd.setConnectedVia(event.getLinkedType(), false);
-
-			toAdd.setCoordinatesShape();
-			System.out.println(toAdd.getConnectedVia() + "        " + linkedShape.getId());
-
-			programArea.addShapeToProgramArea(linkedShape);
-		}
-
 		programArea.addShapeToProgramArea(toAdd);
-
 		programArea.clearAlreadyFilledInCoordinates();
 
 		determineTotalHeightControlShapes();
 		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
 
-		for (Shape shape : programArea.getShapesInProgramArea()) {
-			shape.setCoordinatesShape();
-			programArea.addToAlreadyFilledInCoordinates(shape);
-			shape.defineConnectionTypes();
-		}
+		programArea.placeShapes();
 
-		// programArea.addToAlreadyFilledInCoordinates(toAdd);
-		programArea.setHighlightedShape(null);
-		this.setCurrentShape(null);
-
-		removeFromShapesInMovement(toAdd);
+		// Reset global variables
+		resetGlobalVariables();
 		super.repaint();
 	}
 
 	@Override
 	public void onBlockChangeEvent(BlockChangeEvent event) {
+		// handle add to programArea in theory
+		for (Shape movedShape : mapSetOfIdsToShapes(event.getChangedBlocks())) {
 
-		try {
+			movedShape.setCoordinatesShape();
+			movedShape.defineConnectionTypes();
+			programArea.addShapeToProgramArea(movedShape);
 
-			// Shape changedShape = getShapesInMovement().stream().filter(s ->
-			// s.getId().equals(event.getChangedBlockId()))
-			// .findFirst().get();
-			//
-			// Shape topOfChainShape = getShapesInMovement().stream()
-			// .filter(s ->
-			// s.getId().equals(event.getTopOfMovedChainId())).findFirst().get();
-
-//			Shape changedShape = shapeFactory.createShape(event.getChangedBlockId(),
-//					domainController.getBlockType(event.getChangedBlockId()),
-//					currentSnapshot.getSavedCoordinates().get(event.getChangedBlockId()));
-//			Shape topOfChainShape = shapeFactory.createShape(event.getTopOfMovedChainId(),
-//					domainController.getBlockType(event.getTopOfMovedChainId()),
-//					currentSnapshot.getSavedCoordinates().get(event.getTopOfMovedChainId()));
-
-			// handle add to programArea in theory
-
-			for (Shape movedShape : mapSetOfIdsToShapes(event.getChangedBlocks())) {
-
-				movedShape.setCoordinatesShape();
-				movedShape.defineConnectionTypes();
-				programArea.addShapeToProgramArea(movedShape);
-
-			}
-
-			programArea.clearAlreadyFilledInCoordinates();
-
-			// update internals of controlshapes
-			determineTotalHeightControlShapes();
-
-			// Update the position of all blocks according to the changes of the
-			// controlshapes
-
-			// updatePositionOfAllShapesAccordingToChangesOfTheControlShapes(event.getChangedBlockId(),
-			// event.getChangedLinkedBlockId(), event.getBeforeMoveBlockId());
-
-			// changedShape is not in the programArea at the moment.
-//			if (changedShape != null) {
-//				if (changedShape instanceof ControlShape) {
-//					changedShape.determineTotalHeight(
-//							mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(changedShape.getId())));
-//
-//				}
-//				programArea.addShapeToProgramArea(changedShape);
-//			}
-//
-//			// handle add to programArea in practice, all coordinates etc are set.
-
-			updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
-			for (Shape shape : programArea.getShapesInProgramArea()) {
-				shape.setCoordinatesShape();
-				programArea.addToAlreadyFilledInCoordinates(shape);
-				shape.defineConnectionTypes();
-			}
-
-			// Reset global variables
-			programArea.setHighlightedShape(null);
-			setCurrentShape(null);
-			resetShapesInMovement();
-
-			super.repaint();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
+
+		programArea.clearAlreadyFilledInCoordinates();
+
+		// update internals of controlshapes
+		determineTotalHeightControlShapes();
+		// handle add to programArea in practice, all coordinates etc are set.
+
+		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+
+		programArea.placeShapes();
+
+		resetGlobalVariables();
+
+		super.repaint();
 	}
 
 	@Override
@@ -967,22 +924,16 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		for (Shape shape : shapesToBeRemovedFromProgramArea) {
 			programArea.removeShapeFromProgramArea(shape);
 		}
-
 		programArea.clearAlreadyFilledInCoordinates();
 
 		// update internals of controlshapes
 		determineTotalHeightControlShapes();
+		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
 
 		// handle add to programArea in practice, all coordinates etc are set.
-		for (Shape shape : programArea.getShapesInProgramArea()) {
-			shape.setCoordinatesShape();
-			programArea.addToAlreadyFilledInCoordinates(shape);
-			shape.defineConnectionTypes();
-		}
+		programArea.placeShapes();
 
-		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
-		this.setCurrentShape(null);
-		this.resetShapesInMovement();
+		resetGlobalVariables();
 		super.repaint();
 	}
 

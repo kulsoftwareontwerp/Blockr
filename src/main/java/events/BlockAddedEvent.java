@@ -24,10 +24,10 @@ public class BlockAddedEvent implements EventObject {
 	 * Create the blockAddedEvent
 	 * 
 	 * @param addedBlockID the ID of the block that has been added.
-	 * @param linkedBlock TODO
-	 * @param linkedType TODO
-	 * @param type TODO
-	 * @param changedBlocks TODO
+	 * @param linkedBlock The ID of the block that's linked to the addedBlock after the add
+	 * @param linkedType The connection on which the added block is connected to the linkedBlock.
+	 * @param type The BlockType of the added Block
+	 * @param changedBlocks a set with the ID's of all blocks that were involved in this add.
 	 */
 	public BlockAddedEvent(String addedBlockID, String linkedBlock, ConnectionType linkedType, BlockType type, Set<String> changedBlocks) {
 		this.addedBlockID = addedBlockID;
@@ -46,7 +46,8 @@ public class BlockAddedEvent implements EventObject {
 	
 	
 	/**
-	 * @return the changedBlocks
+	 * Retrieve the id's of all blocks that were added during the operation.
+	 * @return the changedBlocks a set with all id's of the added blocks
 	 */
 	public Set<String> getChangedBlocks() {
 		return changedBlocks;

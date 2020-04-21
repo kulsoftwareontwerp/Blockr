@@ -39,7 +39,6 @@ public abstract class UnaryOperatorBlock extends OperatorBlock {
 	
 	/**
 	 * Retrieve the operand.
-	 * @param 	The assessableBlock to be set as operand.
 	 */
 	public AssessableBlock getOperand() {
 		return this.operand;

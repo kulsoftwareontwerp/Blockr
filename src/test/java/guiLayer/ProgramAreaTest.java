@@ -90,7 +90,7 @@ public class ProgramAreaTest {
 	}
 
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(java.util.HashSet, guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape)}.
 	 */
 	@Test
 	public void testCheckIfPlaceable() {
@@ -122,7 +122,7 @@ public class ProgramAreaTest {
 	}
 
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#getHighlightedShape()}.
+	 * Test method for {@link guiLayer.ProgramArea#getHighlightedShapeForConnections()}.
 	 */
 	@Test
 	public void testGetHighlightedShape() {
@@ -130,7 +130,7 @@ public class ProgramAreaTest {
 	}
 
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#setHighlightedShape(guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#setHighlightedShapeForConnections(guiLayer.Shape)}.
 	 */
 	@Test
 	public void testSetHighlightedShape() {
