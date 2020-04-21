@@ -5,6 +5,8 @@ package events;
 
 import static org.junit.Assert.*;
 
+import java.util.Set;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +34,7 @@ public class BlockRemovedEventTest {
 	}
 
 	/**
-	 * Test method for {@link events.BlockRemovedEvent#BlockRemovedEvent(java.lang.String, java.lang.String, types.ConnectionType)}.
+	 * Test method for {@link events.BlockRemovedEvent#BlockRemovedEvent(java.lang.String, java.lang.String, types.ConnectionType, Set)}.
 	 */
 	@Test
 	public void testBlockRemovedEvent() {
