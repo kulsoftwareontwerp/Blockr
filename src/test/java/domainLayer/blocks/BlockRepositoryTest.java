@@ -25,6 +25,7 @@ import com.kuleuven.swop.group17.GameWorldApi.Action;
 import applicationLayer.GameController;
 import types.BlockCategory;
 import types.BlockType;
+import types.ConnectionType;
 
 /**
  * BlockRepositoryTest
@@ -107,8 +108,74 @@ public class BlockRepositoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectedBlockBeforeMove(java.lang.String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
-	public void testGetConnectedBlockBeforeMove() {
-		fail("Not yet implemented");
+	public void testGetConnectedBlockBeforeMove_NoNoConnection_Positive() {
+		String removedblockIdParam = "removedActionBlockId";
+		ArrayList<String> connectedBlockInfo = new ArrayList<String>();
+		connectedBlockInfo.add("DOWN");
+		connectedBlockInfo.add("SomeId");
+		Mockito.doReturn(connectedBlockInfo).when(blockRepo).getConnectedParentIfExists(removedblockIdParam);
+		
+		assertEquals(connectedBlockInfo, blockRepo.getConnectedBlockBeforeRemove(removedblockIdParam));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectedBlockBeforeMove(java.lang.String, java.lang.String, types.ConnectionType)}.
+	 */
+	@Test
+	public void testGetConnectedBlockBeforeMove_NoConnection_NextBlockNotNull_Positive() {
+		String removedblockIdParam = "removedActionBlockId";
+		ArrayList<String> connectedBlockInfo = new ArrayList<String>();
+		connectedBlockInfo.add("NOCONNECTION");
+		connectedBlockInfo.add("");
+		Mockito.doReturn(connectedBlockInfo).when(blockRepo).getConnectedParentIfExists(removedblockIdParam);
+		Mockito.doReturn(movedActionBlock).when(blockRepo).getBlockByID(removedblockIdParam);
+		when(movedActionBlock.getNextBlock()).thenReturn(actionBlock);
+		
+		ArrayList<String> expectedConnectedBlockInfo = new ArrayList<String>();
+		expectedConnectedBlockInfo.add("UP");
+		expectedConnectedBlockInfo.add(actionBlock.getBlockId());
+		
+		assertEquals(connectedBlockInfo, blockRepo.getConnectedBlockBeforeRemove(removedblockIdParam));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectedBlockBeforeMove(java.lang.String, java.lang.String, types.ConnectionType)}.
+	 */
+	@Test
+	public void testGetConnectedBlockBeforeMove_NoConnection_ConditionBlockNotNull_Positive() {
+		String removedblockIdParam = "ifBlock";
+		ArrayList<String> connectedBlockInfo = new ArrayList<String>();
+		connectedBlockInfo.add("NOCONNECTION");
+		connectedBlockInfo.add("");
+		Mockito.doReturn(connectedBlockInfo).when(blockRepo).getConnectedParentIfExists(removedblockIdParam);
+		Mockito.doReturn(ifBlock).when(blockRepo).getBlockByID(removedblockIdParam);
+		when(ifBlock.getConditionBlock()).thenReturn(notBlock);
+		
+		ArrayList<String> expectedConnectedBlockInfo = new ArrayList<String>();
+		expectedConnectedBlockInfo.add("LEFT");
+		expectedConnectedBlockInfo.add(notBlock.getBlockId());
+		
+		assertEquals(connectedBlockInfo, blockRepo.getConnectedBlockBeforeRemove(removedblockIdParam));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectedBlockBeforeMove(java.lang.String, java.lang.String, types.ConnectionType)}.
+	 */
+	@Test
+	public void testGetConnectedBlockBeforeMove_NoConnection_OperandNotNull_Positive() {
+		String removedblockIdParam = "notBlock";
+		ArrayList<String> connectedBlockInfo = new ArrayList<String>();
+		connectedBlockInfo.add("NOCONNECTION");
+		connectedBlockInfo.add("");
+		Mockito.doReturn(connectedBlockInfo).when(blockRepo).getConnectedParentIfExists(removedblockIdParam);
+		Mockito.doReturn(notBlock).when(blockRepo).getBlockByID(removedblockIdParam);
+		when(notBlock.getOperand()).thenReturn(movedConditionBlock);
+		
+		ArrayList<String> expectedConnectedBlockInfo = new ArrayList<String>();
+		expectedConnectedBlockInfo.add("LEFT");
+		expectedConnectedBlockInfo.add(movedConditionBlock.getBlockId());
+		
+		assertEquals(connectedBlockInfo, blockRepo.getConnectedBlockBeforeRemove(removedblockIdParam));
 	}
 
 	/**
