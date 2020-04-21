@@ -38,6 +38,7 @@ public class BlockRepository {
 		blockFactory = new BlockFactory();
 	}
 
+	// For testing purposes
 	BlockRepository(HashSet<Block> headBlocks, HashMap<String, Block> allBlocks) {
 		this.headBlocks = headBlocks;
 		this.allBlocks = allBlocks;
@@ -744,10 +745,11 @@ public class BlockRepository {
 	}
 
 	/**
-	 * Calculate the connection before the remove happened
+	 * Determine the connection before the remove happened.
 	 * 
-	 * @param movedBlockId
-	 * @return
+	 * @param movedBlockId The ID of the block that will be removed.
+	 * @return A list with 2 elements, the first the ConnectionType in String form 
+	 * 		   and the second the ID of the block with wich the connection was had.
 	 */
 	public ArrayList<String> getConnectedBlockBeforeRemove(String removedBlockId) {
 		ArrayList<String> connectedBlockInfo = getConnectedParentIfExists(removedBlockId);
@@ -772,8 +774,14 @@ public class BlockRepository {
 		return connectedBlockInfo;
 	}
 
+	/**
+	 * Find the connection the given block had before he is moved.
+	 * 
+	 * @param movedBlockId The ID of the block that will be moved.
+	 * @return A list with 2 elements, the first the ConnectionType in String form 
+	 * 		   and the second the ID of the block with wich the connection was had.
+	 */
 	public ArrayList<String> getConnectedParentIfExists(String movedBlockId) {
-
 		Block movedBlock = getBlockByID(movedBlockId);
 		Iterator itAllBlocks = allBlocks.entrySet().iterator();
 		ArrayList<String> connectedBlockInfo = new ArrayList<String>();
@@ -892,8 +900,9 @@ public class BlockRepository {
 	}
 
 	/**
+	 * Adds the given block to the list of headBlocks.
 	 * 
-	 * @param block
+	 * @param block The block that needs to be added to the list of headBlocks.
 	 */
 	private void addBlockToHeadBlocks(Block block) {
 		if (this.headBlocks.stream().anyMatch(b -> b.getBlockId().equals(block.getBlockId()))) {
@@ -998,6 +1007,12 @@ public class BlockRepository {
 		return blockIDsUnderNeath;
 	}
 
+	/**
+	 * Returns all the blocks that are connected to the given block in every direction except for up.
+	 * 
+	 * @param block The block for which this method returns its connected blocks.
+	 * @return A set of all the blocks that are connected to the given block in every direction except for up.
+	 */
 	public Set<Block> getAllBlocksConnectedToAndAfterACertainBlock(Block block) {
 		Set<Block> allBlocksInBody = new HashSet<Block>();
 

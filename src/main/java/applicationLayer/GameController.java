@@ -74,8 +74,11 @@ public class GameController implements DomainListener, GUISubject {
 	
 	
 	/**
-	 * ResetGame is only allowed to be called from the resettingState class.
-	 * @return
+	 * Restores the gameworld back to its initial state, changes the current state of the program to its correct nextState and
+	 *  returns the state of the program before the reset. ResetGame is only allowed to be called from the resettingState class.
+	 * 
+	 * @event fireUpdateHighlightingEvent Fires an UpdateHighlightingEvent.
+	 * @return a snapshot containing all the information regarding the state of the program before the reset.
 	 */
 	public ExecutionSnapshot resetGame() {
 		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
@@ -193,8 +196,12 @@ public class GameController implements DomainListener, GUISubject {
 	}
 	
 	/**
+	 * Asks the gameWorld to perform the action of the given block and find the next block to be executed and
+	 *  set it in the current execution state.
 	 * 
-	 * @param block
+	 * @param block The block which action needs to be performed.
+	 * @event fireUpdateHighlightingEvent Fires an UpdateHighlightingEvent.
+	 * @return a snapshot containing all the information regarding the state of the program before the action was performed.
 	 */
 	public ExecutionSnapshot performAction(ActionBlock block) {
 		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
