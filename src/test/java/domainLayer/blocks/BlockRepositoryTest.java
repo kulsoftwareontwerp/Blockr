@@ -85,7 +85,7 @@ public class BlockRepositoryTest {
 	 */
 	@Test
 	public void testGetBlockByID() {
-		fail("Not yet implemented");
+		assertEquals(actionBlock, blockRepo.getBlockByID(actionBlock.getBlockId()));
 	}
 
 	/**
@@ -336,8 +336,20 @@ public class BlockRepositoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfMaxNbOfBlocksReached()}.
 	 */
 	@Test
-	public void testCheckIfMaxNbOfBlocksReached() {
-		fail("Not yet implemented");
+	public void testCheckIfMaxNbOfBlocksReached_False_Positive() {
+		assertFalse(blockRepo.checkIfMaxNbOfBlocksReached());
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfMaxNbOfBlocksReached()}.
+	 */
+	@Test
+	public void testCheckIfMaxNbOfBlocksReached_True_Positive() {
+		for (int i = 0; i < blockRepo.getMaxNbOfBlocks(); i++) {
+			allBlocks.put(Integer.toString(i)+"_CheckMaxNumberOfBlocks", actionBlock);
+		}
+		blockRepo = spy(new BlockRepository(headBlocks, allBlocks));
+		assertTrue(blockRepo.checkIfMaxNbOfBlocksReached());
 	}
 
 	/**
@@ -396,6 +408,25 @@ public class BlockRepositoryTest {
 		fail("Not yet implemented");
 	}
 
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getAllBlocksConnectedToAndAfterACertainBlock(domainLayer.blocks.Block)}.
+	 */
+	@Test
+	public void testGetAllBlocksConnectedToAndAfterACertainBlock_BlockNotNull_Positive() {
+		HashSet<Block> expectedResult = new HashSet<Block>();
+		expectedResult.add(actionBlock);
+		
+		assertEquals(expectedResult, blockRepo.getAllBlocksConnectedToAndAfterACertainBlock(actionBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getAllBlocksConnectedToAndAfterACertainBlock(domainLayer.blocks.Block)}.
+	 */
+	@Test
+	public void testGetAllBlocksConnectedToAndAfterACertainBlock_BlockNull_Positive() {
+		assertEquals(new HashSet<Block>(), blockRepo.getAllBlocksConnectedToAndAfterACertainBlock(null));
+	}
+	
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getAllBlockIDsBelowCertainBlock(domainLayer.blocks.Block)}.
 	 */
