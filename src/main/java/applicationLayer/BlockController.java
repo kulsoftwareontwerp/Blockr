@@ -259,11 +259,6 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @param isChain  TODO
 	 */
 	public void restoreBlockSnapshot(BlockSnapshot snapshot, Boolean isChain) {
-//		ConnectionType before = ConnectionType.NOCONNECTION;
-//		if(snapshot.getConnectedBlockBeforeSnapshot()!=null) {
-//			before = programBlockRepository.getConnectionType(programBlockRepository.getBlockByID(snapshot.getConnectedBlockBeforeSnapshot().getBlockId()),
-//					snapshot.getBlock());
-//		}
 		ConnectionType before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
 				snapshot.getBlock());
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
@@ -380,8 +375,6 @@ public class BlockController implements GUISubject, DomainSubject {
 			ConnectionType connectionAfterMove) {
 		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId,
 				connectionAfterMove);
-//		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
-//				connectedAfterMoveBlockId, connectionAfterMove);
 		Set<Block> movedBlocks = programBlockRepository
 				.getAllBlocksConnectedToAndAfterACertainBlock(
 						programBlockRepository.getBlockByID(topOfMovedChainBlockId))

@@ -35,16 +35,6 @@ public class GameController implements DomainListener, GUISubject {
 	private GameWorld gameWorld;
 	private GameWorldSnapshot initialSnapshot;
 	private CommandHandler commandHandler;
-	
-	// TODO: @Arne, geen fucking flauw idee waarom, maar hij called ALTIJD de constructor hieronder als 
-	//		ik hem zelf zijn constructor voor constructor injection laat kiezen
-	// 		dus als oplossing heb ik deze public gezet en specifiek aangeroepen in de tests.
-	//		Kheb er al veel te veel tijd aan verkloot om het beter op de lossen dan dit, maar ik geef het op.
-	// 		Fuck Mockito.
-	public GameController(BlockRepository programBlockRepository, GameWorld gameWorld) {
-		this.programBlockRepository = programBlockRepository;
-		this.gameWorld = gameWorld;
-	}
 
 	public GameController(GameWorld gameWorld, CommandHandler commandHandler) {
 		this.gameWorld = gameWorld;
@@ -53,10 +43,18 @@ public class GameController implements DomainListener, GUISubject {
 		
 		this.commandHandler=commandHandler;
 		initialSnapshot = gameWorld.saveState();
-		
 
 		toState(new InValidProgramState(this));
-
+	}
+	
+	// TODO: @Arne, geen fucking flauw idee waarom, maar hij called ALTIJD de constructor hieronder als 
+	//		ik hem zelf zijn constructor voor constructor injection laat kiezen
+	// 		dus als oplossing heb ik deze public gezet en specifiek aangeroepen in de tests.
+	//		Kheb er al veel te veel tijd aan verkloot om het beter op de lossen dan dit, maar ik geef het op.
+	// 		Fuck Mockito.
+	GameController(BlockRepository programBlockRepository, GameWorld gameWorld) {
+		this.programBlockRepository = programBlockRepository;
+		this.gameWorld = gameWorld;
 	}
 
 	public void handleCommand(GameWorldCommand command) {
@@ -225,6 +223,11 @@ public class GameController implements DomainListener, GUISubject {
 		}
 	}
 
+	/**
+	 * Checks if the current program is valid.
+	 * 
+	 * @return true if the current program is valid.
+	 */
 	public boolean checkIfValidProgram() {
 		return programBlockRepository.checkIfValidProgram();
 	}

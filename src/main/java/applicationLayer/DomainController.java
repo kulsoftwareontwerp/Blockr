@@ -37,15 +37,6 @@ public class DomainController {
 	private GameWorld gameWorld;
 	private CommandHandler commandHandler;
 
-	//Used for mockinjection in the tests
-	@SuppressWarnings("unused")
-	private DomainController(GameWorld gw, GameController gc, BlockController bc, CommandHandler ch) {
-		this.gameWorld = gw;
-		this.gameController = gc;
-		this.blockController = bc;
-		this.commandHandler = ch;
-	}
-
 	private void initializeDomainController(GameController gameController, BlockController blockController,
 			 GameWorld gameWorld, CommandHandler handler) {
 		this.gameController = gameController;
@@ -78,11 +69,17 @@ public class DomainController {
 	 */
 	public DomainController(GameWorld gameWorld) {
 		CommandHandler handler = new CommandHandler();
-
-		initializeDomainController(new GameController(gameWorld, handler), new BlockController()
-				, gameWorld, handler);
-
+		initializeDomainController(new GameController(gameWorld, handler), new BlockController(), gameWorld, handler);
 	}
+	
+	// Used for mockinjection in the tests
+	@SuppressWarnings("unused")
+	private DomainController(GameWorld gw, GameController gc, BlockController bc, CommandHandler ch) {
+		this.gameWorld = gw;
+		this.gameController = gc;
+		this.blockController = bc;
+		this.commandHandler = ch;
+	}	
 
 //	@SuppressWarnings("unused")
 //	private DomainController(GameController gameController, BlockController blockController, GameWorld gameWorld, CommandHandler handler) {
@@ -359,7 +356,6 @@ public class DomainController {
 	
 	}
 
-	// TO BE DOCUMENTED:
 	public String getEnclosingControlBlock(String id) {
 		return blockController.getEnclosingControlBlock(id);
 	}
@@ -386,6 +382,7 @@ public class DomainController {
 	}
 	
 	/**
+	 * Retrieve the ID of the first block below the block with the given ID.
 	 * 
 	 * @param id
 	 * @return The ID of the first block below the block with the given ID, returns
@@ -399,7 +396,8 @@ public class DomainController {
 	}
 	
 	/**
-	 * Retrieve the blockType of the block associated with the given id;
+	 * Retrieve the blockType of the block associated with the given id.
+	 * 
 	 * @param id The id of the block to retrieve the Blocktype from.
 	 * @return the blockType associated with the given block
 	 */
@@ -413,8 +411,9 @@ public class DomainController {
 
 	/**
 	 * Check if the given id is present in the domain.
+	 * 
 	 * @param id the id to check
-	 * @return 
+	 * @return if the given id is present in the domain.
 	 */
 	public boolean isBlockPresent(String id) {
 		if(id==null) {
@@ -423,40 +422,21 @@ public class DomainController {
 		return blockController.isBlockPresent(id);
 	}
 
-	//	public void moveBlock(String movedBlockId, String connectedBeforeMoveBlockId, ConnectionType connectionBeforeMove, String connectedAfterMoveBlockId, ConnectionType connectionAfterMove) {
-	//		if(movedBlockId == null || movedBlockId.equals("")) {
-	//			throw new IllegalArgumentException("No movedBlockID given");
-	//		}
-	//		else if(connectionBeforeMove == null || connectionAfterMove == null) {
-	//			throw new IllegalArgumentException("Null given as connection, use ConnectionType.NOCONNECTION.");
-	//		}
-	//		else if(connectedBeforeMoveBlockId.equals("")  && !(connectionBeforeMove == ConnectionType.NOCONNECTION)) {
-	//			throw new IllegalArgumentException("No blockId given for connectedBeforeMovedBlockID");
-	//			}
-	//		else if(connectedAfterMoveBlockId.equals("") && !(connectionAfterMove == ConnectionType.NOCONNECTION)) {
-	//			throw new IllegalArgumentException("No blockId given for connectedAfterMovedBlockID");
-	//		}
-	//		else if(movedBlockId.equals(connectedBeforeMoveBlockId) || movedBlockId.equals(connectedAfterMoveBlockId))
-	//			throw new IllegalArgumentException("You can't connect a block to itself.");
-	//		else {
-	//			blockController.moveBlock(movedBlockId, connectedBeforeMoveBlockId, connectionBeforeMove, connectedAfterMoveBlockId, connectionAfterMove);
-	//		}
-	//	}
-		/**
-		 * Adds a GUI listener for Game, this listener will be notified about all
-		 * changes for the GUI. If the given listener is already a listener for Game it
-		 * will not be added another time.
-		 * 
-		 * @param listener The listener to be added.
-		 * @throws IllegalArgumentException Is thrown when the given listener is null.
-		 */
-		public void addGameListener(GUIListener listener) {
-			if (listener == null) {
-				throw new IllegalArgumentException("No listener given.");
-			}
-			gameController.addListener(listener);
-			blockController.addListener(listener);	
+	/**
+	 * Adds a GUI listener for Game, this listener will be notified about all
+	 * changes for the GUI. If the given listener is already a listener for Game it
+	 * will not be added another time.
+	 * 
+	 * @param listener The listener to be added.
+	 * @throws IllegalArgumentException Is thrown when the given listener is null.
+	 */
+	public void addGameListener(GUIListener listener) {
+		if (listener == null) {
+			throw new IllegalArgumentException("No listener given.");
 		}
+		gameController.addListener(listener);
+		blockController.addListener(listener);	
+	}
 
 	/**
 	 * Removes a GUI listener for Game, this listener will no longer be notified
