@@ -900,14 +900,9 @@ public class BlockRepository {
 	}
 
 	/**
-<<<<<<< HEAD
 	 * Adds the given block to the list of headBlocks.
 	 * 
 	 * @param block The block that needs to be added to the list of headBlocks.
-=======
-	 * Add a block to the headBlocks 
-	 * @param block the block to add to the headBlocks
->>>>>>> master
 	 */
 	private void addBlockToHeadBlocks(Block block) {
 		if (this.headBlocks.stream().anyMatch(b -> b.getBlockId().equals(block.getBlockId()))) {
