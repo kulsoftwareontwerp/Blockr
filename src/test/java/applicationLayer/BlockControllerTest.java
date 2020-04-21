@@ -26,6 +26,8 @@ import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
+import events.DomainListener;
+import events.GUIListener;
 import types.BlockCategory;
 import types.BlockSnapshot;
 import types.BlockType;
@@ -45,6 +47,11 @@ public class BlockControllerTest {
 	
 	private ActionBlock actionBlock0;
 	private ActionBlock actionBlock1;
+	
+	@Mock
+	private GUIListener mockGuiListener;
+	@Mock
+	private DomainListener mockDomainListener;
 
 	/**
 	 * @throws java.lang.Exception
@@ -54,6 +61,8 @@ public class BlockControllerTest {
 		actionBlock0 = new ActionBlock("0", new BlockType("Action", BlockCategory.ACTION));
 		actionBlock1 = new ActionBlock("1", new BlockType("Action", BlockCategory.ACTION));
 		MockitoAnnotations.initMocks(this);
+		bc.addListener(mockGuiListener);
+		bc.addDomainListener(mockDomainListener);
 	}
 
 	/**
@@ -128,7 +137,9 @@ public class BlockControllerTest {
 		when(blockRepository.getBlockByID("1")).thenReturn(null);
 		when(blockRepository.getAllBlocksConnectedToAndAfterACertainBlock(actionBlock0)).thenReturn(new HashSet<Block>());
 		when(bc.createNewBlockSnapshot(actionBlock0, null, null, new HashSet<Block>())).thenReturn(blockSnapShot);
-		when(blockRepository.removeBlock(blockIDParam, isChainParam)).thenReturn(new HashSet<String>());
+		HashSet<String> idsToBeRemoved = new HashSet<String>();
+		idsToBeRemoved.add("idToBeRemoved");
+		when(blockRepository.removeBlock(blockIDParam, isChainParam)).thenReturn(idsToBeRemoved);
 		
 		assertEquals(blockSnapShot, bc.removeBlock(blockIDParam, isChainParam));
 	}
