@@ -1,5 +1,10 @@
 package domainLayer.blocks;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import types.ConnectionType;
+
 /**
  * The abstract class for the concept of a control block.
  * 
@@ -10,6 +15,7 @@ public abstract class ControlBlock extends ExecutableBlock {
 
 	private ExecutableBlock firstBlockOfBody;
 	private AssessableBlock conditionBlock;
+	private HashSet<ConnectionType> supportedConnectionTypes;
 
 
 	/**
@@ -19,6 +25,11 @@ public abstract class ControlBlock extends ExecutableBlock {
 	 */
 	public ControlBlock(String blockId) {
 		super(blockId);
+		this.supportedConnectionTypes=new HashSet<ConnectionType>();
+		supportedConnectionTypes.add(ConnectionType.UP);
+		supportedConnectionTypes.add(ConnectionType.DOWN);
+		supportedConnectionTypes.add(ConnectionType.BODY);
+		supportedConnectionTypes.add(ConnectionType.CONDITION);
 	}
 
 	@Override
@@ -41,6 +52,11 @@ public abstract class ControlBlock extends ExecutableBlock {
 	@Override
 	public AssessableBlock getConditionBlock() {
 		return this.conditionBlock;
+	}
+	
+	@Override
+	public Set<ConnectionType> getSupportedConnectionTypes() {
+		return new HashSet<ConnectionType>(supportedConnectionTypes);
 	}
 
 

@@ -70,6 +70,11 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.7</version>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<executions>
@@ -80,7 +85,7 @@
 						</goals>
 					</execution>
 				</executions>
-									<!--Only while in development, comment out for releases -->
+				<!--Only while in development, comment out for releases -->
 				<configuration>
 					<additionalparam>-Xdoclint:all -Xdoclint:-missing</additionalparam>
 					<additionalOptions>-Xdoclint:all -Xdoclint:-missing</additionalOptions>
@@ -127,3 +132,4 @@
 	</dependencies>
 
 </project>
+

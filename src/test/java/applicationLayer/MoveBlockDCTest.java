@@ -24,6 +24,7 @@ import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+import com.kuleuven.swop.group17.GameWorldApi.GameWorldType;
 
 import domainLayer.blocks.IfBlock;
 import domainLayer.blocks.NotBlock;
@@ -41,20 +42,25 @@ public class MoveBlockDCTest {
 	private ArrayList<BlockType> assessableBlockTypes = new ArrayList<BlockType>();
 	private Set<String> blockIdsInRepository = new HashSet<String>();
 	
-	@Mock(name = "gameWorld")
-	private GameWorld gameWorld;
-	@Mock(name = "elementController")
-	private ElementController elementController;
-	@Mock (name = "gameController")
-	GameController gameController;
+//	@Mock
+//	private GameWorldType type;
+//	@Mock(name = "gameWorld")
+//	private GameWorld gameWorld;
+//	@Mock (name = "gameController")
+//	GameController gameController;
 	@Mock(name = "blockController")
 	private BlockController mockBlockController;
+	@Spy
 	@InjectMocks
 	private DomainController dc;
 	
 	
 	@Before
 	public void setUp() throws Exception {
+//		when(gameWorld.getType()).thenReturn(type);
+//		when(type.supportedActions()).thenReturn(null);
+//		when(type.supportedPredicates()).thenReturn(null);
+		
 		connectionTypes.add(ConnectionType.BODY);
 		connectionTypes.add(ConnectionType.CONDITION);
 		connectionTypes.add(ConnectionType.LEFT);
@@ -177,6 +183,11 @@ public class MoveBlockDCTest {
 		
 		dc.moveBlock("1", "", "", ConnectionType.NOCONNECTION);
 		verify(mockBlockController,times(2)).moveBlock("1", "", "", ConnectionType.NOCONNECTION);
+	}
+	
+	@Test
+	public void testDcCommand() {
+		
 	}
 
 		

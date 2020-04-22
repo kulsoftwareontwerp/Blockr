@@ -7,7 +7,7 @@ package types;
  * @version 0.1
  * @author group17
  */
-public enum ConnectionType {
+public enum ConnectionType{
 	UP,
 	DOWN,
 	OPERAND,

@@ -22,7 +22,7 @@ public class ValidProgramState extends GameState {
 	/**
 	 * Update of the "Game State".
 	 * 
-	 * @Result This update method of the CalidProgramState will, once called, check either the program is in a valid state or not.
+	 * @Result This update method of the ValidProgramState will, once called, check either the program is in a valid state or not.
 	 * 			If the program is not in a valid state the gameState will be changed to a "InValidProgramState".
 	 * 			
 	 */

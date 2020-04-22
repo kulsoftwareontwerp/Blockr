@@ -48,7 +48,7 @@ public class BlockRepositoryTest {
 	}
 
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#removeBlock(java.lang.String)}.
+	 * Test method for {@link domainLayer.blocks.BlockRepository#removeBlock(java.lang.String, Boolean)}.
 	 */
 	@Test
 	public void testRemoveBlock() {

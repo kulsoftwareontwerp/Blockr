@@ -40,7 +40,7 @@ public class PaletteAreaTest {
 	}
 
 	/**
-	 * Test method for {@link guiLayer.PaletteArea#getPaletteVisible()}.
+	 * Test method for {@link guiLayer.PaletteArea#isPaletteVisible()}.
 	 */
 	@Test
 	public void testGetPaletteVisible() {

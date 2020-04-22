@@ -1,6 +1,6 @@
 package domainLayer.blocks;
 
-import domainLayer.elements.ElementRepository;
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 
 /**
  * The abstract class for the concept of an assessable block.
@@ -19,5 +19,7 @@ public abstract class AssessableBlock extends Block {
 	public AssessableBlock(String blockId) {
 		super(blockId);
 	}
+	
+	public abstract boolean assess(GameWorld gameWorld);
 
 }

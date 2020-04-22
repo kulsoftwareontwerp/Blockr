@@ -1,67 +1,91 @@
 package applicationLayer;
 
-import java.util.*;
+import java.lang.reflect.Constructor;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
 
+import commands.CommandHandler;
+import commands.GameWorldCommand;
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.AssessableBlock;
 import domainLayer.blocks.BlockRepository;
-import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.ExecutableBlock;
 import domainLayer.blocks.IfBlock;
-import domainLayer.elements.ElementRepository;
-import domainLayer.elements.Robot;
 import domainLayer.gamestates.GameState;
+import domainLayer.gamestates.InExecutionState;
 import domainLayer.gamestates.InValidProgramState;
+import domainLayer.gamestates.ResettingState;
+import domainLayer.gamestates.ValidProgramState;
 import events.DomainListener;
 import events.GUIListener;
 import events.GUISubject;
 import events.ResetExecutionEvent;
-import events.RobotChangeEvent;
 import events.UpdateGameStateEvent;
 import events.UpdateHighlightingEvent;
+import types.ExecutionSnapshot;
 
 public class GameController implements DomainListener, GUISubject {
 
 	private Collection<GUIListener> guiListeners;
 	private BlockRepository programBlockRepository;
 	private GameState currentState;
-	private ElementRepository gameElementRepository;
 	private GameWorld gameWorld;
+	private GameWorldSnapshot initialSnapshot;
+	private CommandHandler commandHandler;
 
-	public GameController(GameWorld gameWorld) {
+	public GameController(GameWorld gameWorld, CommandHandler commandHandler) {
 		this.gameWorld = gameWorld;
 		programBlockRepository = BlockRepository.getInstance();
-		gameElementRepository = ElementRepository.getInstance();
-
 		guiListeners = new HashSet<GUIListener>();
+
+		this.commandHandler = commandHandler;
+		initialSnapshot = gameWorld.saveState();
 
 		toState(new InValidProgramState(this));
 
 	}
 
-
-	public void fireRobotChangeEvent() {
-		Robot robot = gameElementRepository.getRobot();
-		RobotChangeEvent robotChangeEvent = new RobotChangeEvent(robot.getXCoordinate(), robot.getYCoordinate(),
-				robot.getOrientation());
-		for (GUIListener listener : guiListeners) {
-			listener.onRobotChangeEvent(robotChangeEvent);
-		}
-	}
-
-	private boolean isMaxNbOfBlocksReached() {
-		// TODO - implement GameController.isMaxNbOfBlocksReached
-		throw new UnsupportedOperationException();
+	public void handleCommand(GameWorldCommand command) {
+		this.commandHandler.handle(command);
 	}
 
 	public void resetGameExecution() {
 		GameState currentState = getCurrentState();
 		currentState.reset();
+
+	}
+
+	/**
+	 * ResetGame is only allowed to be called from the resettingState class.
+	 * 
+	 * @return The ExecutionSnapshot describing the state before the reset.
+	 */
+	public ExecutionSnapshot resetGame() {
+		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
+		ActionBlock nextBlockToBeExecuted = getCurrentState().getNextActionBlockToBeExecuted();
+		ExecutionSnapshot snapshot = new ExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState());
+		gameWorld.restoreState(initialSnapshot);
 		fireUpdateHighlightingEvent(null);
-		fireRobotChangeEvent();
+
+		try {
+			if (getCurrentState().getNextState() == null) {
+				// This is not a resettingState.
+				toState(new ResettingState(this));
+			}
+			Constructor<? extends GameState> constructor = getCurrentState().getNextState()
+					.getConstructor(GameController.class);
+			GameState newState = (GameState) constructor.newInstance(this);
+			toState(newState);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return snapshot;
 	}
 
 	public GameState getCurrentState() {
@@ -78,12 +102,6 @@ public class GameController implements DomainListener, GUISubject {
 
 	public void updateState() {
 		currentState.update();
-	}
-
-	public void resetRobot() {
-		gameElementRepository.removeRobot();
-		gameElementRepository.initializeRobot();
-		fireRobotChangeEvent();
 	}
 
 	public void executeBlock() {
@@ -115,13 +133,12 @@ public class GameController implements DomainListener, GUISubject {
 			} else {
 				return findNextActionBlockToBeExecuted(currentBlock, cb);
 			}
-		}
-		else if (currentBlock instanceof ActionBlock) {
+		} else if (currentBlock instanceof ActionBlock) {
 			return (ActionBlock) currentBlock;
 		} else {
 			// If or while block
 			AssessableBlock condition = currentBlock.getConditionBlock();
-			
+
 			if (evaluateCondition(condition)) {
 				return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getFirstBlockOfBody());
 			} else {
@@ -129,22 +146,41 @@ public class GameController implements DomainListener, GUISubject {
 			}
 		}
 	}
-	
-	private boolean evaluateCondition(AssessableBlock condition){
-		if(condition instanceof ConditionBlock){
-			return gameWorld.evaluate(((ConditionBlock) condition).getPredicate());
-		}else {
-			return !evaluateCondition(condition.getOperand());
-		}
+
+	private boolean evaluateCondition(AssessableBlock condition) {
+		return condition.assess(gameWorld);
 	}
 
 	/**
 	 * 
 	 * @param block
 	 */
-	public void performRobotAction(ActionBlock block) {
+	public ExecutionSnapshot performAction(ActionBlock block) {
+		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
+		ActionBlock nextBlockToBeExecuted = getCurrentState().getNextActionBlockToBeExecuted();
+		ExecutionSnapshot snapshot = new ExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState());
 		gameWorld.performAction(block.getAction());
-		fireRobotChangeEvent();
+
+		ActionBlock newNextActionBlockToBeExecuted = findNextActionBlockToBeExecuted(block, block.getNextBlock());
+		getCurrentState().setNextActionBlockToBeExecuted(newNextActionBlockToBeExecuted);
+
+		if (getCurrentState().getNextActionBlockToBeExecuted() != null) {
+			fireUpdateHighlightingEvent(getCurrentState().getNextActionBlockToBeExecuted().getBlockId());
+		} else {
+			fireUpdateHighlightingEvent(null);
+		}
+		return snapshot;
+	}
+
+	public void restoreExecutionSnapshot(ExecutionSnapshot snapshot) {
+		getCurrentState().setNextActionBlockToBeExecuted(snapshot.getNextActionBlockToBeExecuted());
+		gameWorld.restoreState(snapshot.getGameSnapshot());
+		toState(snapshot.getState());
+		if (getCurrentState().getNextActionBlockToBeExecuted() != null) {
+			fireUpdateHighlightingEvent(getCurrentState().getNextActionBlockToBeExecuted().getBlockId());
+		} else {
+			fireUpdateHighlightingEvent(null);
+		}
 	}
 
 	public boolean checkIfValidProgram() {
@@ -155,8 +191,8 @@ public class GameController implements DomainListener, GUISubject {
 	 * 
 	 * @param highlightedBlockId
 	 */
-public void fireUpdateHighlightingEvent(String highlightedBlockId) {
-	
+	public void fireUpdateHighlightingEvent(String highlightedBlockId) {
+
 		UpdateHighlightingEvent updateHighlightingEvent = new UpdateHighlightingEvent(highlightedBlockId);
 		for (GUIListener listener : guiListeners) {
 			listener.onUpdateHighlightingEvent(updateHighlightingEvent);
@@ -188,6 +224,27 @@ public void fireUpdateHighlightingEvent(String highlightedBlockId) {
 	@Override
 	public void onUpdateGameStateEvent(UpdateGameStateEvent event) {
 		updateState();
+	}
+	
+	/**
+	 * Is it useful to perform a gameAction at the moment. An action is useful if it
+	 * changes anything, otherwise it's just a waste of time and resources.
+	 * 
+	 * @return if it's useful to perform a gameAction at the moment.
+	 */
+	public boolean isGameExecutionUseful() {
+		return (getCurrentState() instanceof ValidProgramState) || (getCurrentState() instanceof InExecutionState && getCurrentState().getNextActionBlockToBeExecuted()!=null) ;
+	}
+
+	/**
+	 * Is it useful to perform a reset of the gameWorld at the moment. A reset of the gameWorld is useful if it
+	 * changes anything, otherwise it's just a waste of time and resources.
+	 * 
+	 * @return if it's useful to perform a reset of the gameWorld at the moment.
+	 */
+	public boolean isGameResetUseful() {
+		return getCurrentState() instanceof InExecutionState  ;
+
 	}
 
 }

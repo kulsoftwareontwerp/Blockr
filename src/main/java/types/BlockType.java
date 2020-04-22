@@ -9,14 +9,6 @@ public class BlockType extends DynaEnum<BlockType>{
 	public final static BlockType WHILE = new BlockType("While", BlockCategory.CONTROL);
 	public final static BlockType NOT = new BlockType("Not", BlockCategory.OPERATOR);
 	
-	//TODO ffkes flexen
-	
-//	public final static BlockType BANAAN = new BlockType("BANAAN", BlockCategory.CONDITION);
-//	public final static BlockType PEER = new BlockType("PEER", BlockCategory.CONTROL);
-//	public final static BlockType KIWI = new BlockType("KIWI", BlockCategory.ACTION);
-//	public final static BlockType APPEL = new BlockType("APPEL", BlockCategory.OPERATOR);
-
-	
 	public BlockType(String type, BlockCategory cat) {
 		
 		this(type, cat, null, null);

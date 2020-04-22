@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"applicationLayer"},{"l":"domainLayer.blocks"},{"l":"domainLayer.elements"},{"l":"domainLayer.gamestates"},{"l":"events"},{"l":"exceptions"},{"l":"guiLayer"}]
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"commands"},{"l":"exceptions"},{"l":"guiLayer.commands"},{"l":"guiLayer.shapes"},{"l":"guiLayer.types"},{"l":"types"}]

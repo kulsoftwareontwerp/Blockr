@@ -1,4 +1,7 @@
 package domainLayer.blocks;
+
+import types.BlockType;
+
 /**
  * The concrete class for the concept of a while block.
  * 
@@ -14,6 +17,11 @@ public class WhileBlock extends ControlBlock {
 	 */
 	public WhileBlock(String blockId) {
 		super(blockId);
+	}
+	
+	@Override
+	public BlockType getBlockType() {
+		return BlockType.WHILE;
 	}
 
 }

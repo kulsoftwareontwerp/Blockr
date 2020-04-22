@@ -36,9 +36,9 @@ import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
 import applicationLayer.BlockController;
 import applicationLayer.DomainController;
-import applicationLayer.ElementController;
+//import applicationLayer.ElementController;
 import applicationLayer.GameController;
-import domainLayer.elements.ElementRepository;
+//import domainLayer.elements.ElementRepository;
 import events.BlockChangeEvent;
 import events.DomainListener;
 import events.GUIListener;
@@ -101,7 +101,7 @@ public class MoveBlockBRTest {
 	private WhileBlock connectedWhileBlockA;
 	private WhileBlock connectedWhileBlockB;
 
-	private Action action;
+	private BlockType type;
 	private Predicate predicate;
 
 	@BeforeClass
@@ -136,10 +136,10 @@ public class MoveBlockBRTest {
 		connectionTypes.add(ConnectionType.UP);
 
 		// Mulptiple head block reprository
-		movedActionBlock = spy(new ActionBlock("1", action));
-		connectedMoveForwardBlockA = spy(new ActionBlock("2", action));
-		connectedMoveForwardBlockB = spy(new ActionBlock("3", action));
-		connectedMoveForwardBlockC = spy(new ActionBlock("16", action));
+		movedActionBlock = spy(new ActionBlock("1", type ));
+		connectedMoveForwardBlockA = spy(new ActionBlock("2", type));
+		connectedMoveForwardBlockB = spy(new ActionBlock("3", type));
+		connectedMoveForwardBlockC = spy(new ActionBlock("16", type));
 
 		connectedIfBlockA = spy(new IfBlock("4"));
 		connectedIfBlockB = spy(new IfBlock("5"));
@@ -149,9 +149,9 @@ public class MoveBlockBRTest {
 		connectedWhileBlockB = spy(new WhileBlock("8"));
 		movedWhileBlock = spy(new WhileBlock("9"));
 
-		WallInFrontBlockA = spy(new ConditionBlock("10", predicate));
-		WallInFrontBlockB = spy(new ConditionBlock("11", predicate));
-		movedWallInFrontBlock = spy(new ConditionBlock("12", predicate));
+		WallInFrontBlockA = spy(new ConditionBlock("10", type));
+		WallInFrontBlockB = spy(new ConditionBlock("11", type));
+		movedWallInFrontBlock = spy(new ConditionBlock("12", type));
 		movedNotBlock = spy(new NotBlock("13"));
 		connectedNotBlockA = spy(new NotBlock("14"));
 		connectedNotBlockB = spy(new NotBlock("15"));
@@ -708,7 +708,7 @@ public class MoveBlockBRTest {
 
 		assertEquals(movedNotBlock.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),
 				movedNotBlock.getBlockId(), connectedNotBlockB.getBlockId(), ConnectionType.LEFT));
-		verify(connectedNotBlockA).setOperand(null);
+		verify(connectedNotBlockA,times(2)).setOperand(null);
 		verify(movedNotBlock).setOperand(connectedNotBlockB);
 		verify(mockHeadBlocks).add(movedNotBlock);
 		verify(mockHeadBlocks).remove(connectedNotBlockB);
@@ -1161,7 +1161,7 @@ public class MoveBlockBRTest {
 		// effective moved block determined by getBlockIdToPerformMoveOn
 		assertEquals(connectedNotBlockB.getBlockId(), blockRepository.moveBlock(movedNotBlock.getBlockId(),
 				connectedNotBlockB.getBlockId(), movedWallInFrontBlock.getBlockId(), ConnectionType.LEFT));
-		verify(connectedNotBlockA).setOperand(null);
+		verify(connectedNotBlockA,times(2)).setOperand(null);
 		verify(connectedNotBlockB).setOperand(movedWallInFrontBlock);
 
 	}
@@ -1659,8 +1659,8 @@ public class MoveBlockBRTest {
 	@Test
 	public void testBRParentIfExtistsPositive() {
 
-		movedMoveForwardBlock = Mockito.spy(new ActionBlock("17", action));
-		ActionBlock movedMoveForwardBlockB = Mockito.spy(new ActionBlock("18", action));
+		movedMoveForwardBlock = Mockito.spy(new ActionBlock("17", type));
+		ActionBlock movedMoveForwardBlockB = Mockito.spy(new ActionBlock("18", type));
 		HashMap<String, Block> allBlocks = new HashMap<String, Block>();
 		allBlocks.put(movedActionBlock.getBlockId(), movedActionBlock);
 		allBlocks.put(connectedMoveForwardBlockA.getBlockId(), connectedMoveForwardBlockA);

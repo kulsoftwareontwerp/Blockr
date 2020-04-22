@@ -56,7 +56,7 @@ public class BlockControllerTest {
 	}
 
 	/**
-	 * Test method for {@link applicationLayer.BlockController#removeBlock(java.lang.String)}.
+	 * Test method for {@link applicationLayer.BlockController#removeBlock(java.lang.String, Boolean)}.
 	 */
 	@Test
 	public void testRemoveBlock() {
