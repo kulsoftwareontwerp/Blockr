@@ -25,7 +25,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 
+import domainLayer.blocks.ActionBlock;
+import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
+import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.IfBlock;
 import domainLayer.blocks.NotBlock;
 import domainLayer.blocks.WhileBlock;
@@ -58,9 +61,38 @@ public class MoveBlockBCTest {
 	@InjectMocks
 	private BlockController bc;
 	
+	@Mock
+	private ActionBlock movedActionBlock;
+	@Mock
+	private ActionBlock movedMoveForwardBlock;
+	@Mock
+	private ConditionBlock movedWallInFrontBlock;
+	@Mock
+	private NotBlock movedNotBlock;
+	@Mock
+	private WhileBlock movedWhileBlock;
+	@Mock
+	private IfBlock movedIfBlock;
+	
 	
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() throws Exception {	
+		when(mockBlockReprository.getBlockByID("1")).thenReturn(movedActionBlock);
+		when(mockBlockReprository.getBlockByID("3")).thenReturn(movedWhileBlock);
+		
+		when(movedActionBlock.clone()).thenReturn(movedActionBlock);
+		when(movedMoveForwardBlock.clone()).thenReturn(movedMoveForwardBlock);
+		when(movedWhileBlock.clone()).thenReturn(movedWhileBlock);
+		
+		Set<Block> blocksUnderneath = new HashSet<Block>();
+		blocksUnderneath.add(movedMoveForwardBlock);
+		
+		when(mockBlockReprository.getAllBlocksConnectedToAndAfterACertainBlock(movedActionBlock)).thenReturn(blocksUnderneath);
+		
+		ArrayList<String> infoParent = new ArrayList<String>();
+		infoParent.add("DOWN");
+		infoParent.add("3");
+		when(mockBlockReprository.getConnectedParentIfExists("1")).thenReturn(infoParent);
 		connectionTypes.add(ConnectionType.BODY);
 		connectionTypes.add(ConnectionType.CONDITION);
 		connectionTypes.add(ConnectionType.LEFT);
@@ -100,8 +132,7 @@ public class MoveBlockBCTest {
 		parentInfo.add("2");
 	
 
-		when(mockBlockReprository.getConnectedBlockBeforeMove(any(String.class), any(String.class), any(ConnectionType.class))).thenReturn(parentInfo);
-		when(mockBlockReprository.moveBlock(any(String.class), any(String.class),any(String.class), any(ConnectionType.class))).thenReturn("1");
+	
 		when(mockBlockReprository.getBlockIdToPerformMoveOn(any(String.class), any(String.class), any(ConnectionType.class))).thenReturn("1");
 
 		for (ConnectionType connectionType : ConnectionsWithoutNoConnection) {

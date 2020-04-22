@@ -390,6 +390,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		Block movedBlock = programBlockRepository.getBlockByID(movedID) != null
 				? programBlockRepository.getBlockByID(movedID).clone()
 				: null;
+				
 		Block connectedBlockBeforeMove = programBlockRepository.getBlockByID(previousConnection.get(1)) != null
 				? programBlockRepository.getBlockByID(previousConnection.get(1)).clone()
 				: null;
