@@ -127,6 +127,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(commandHandler);
+		
+		dc.removeBlock("");
 	}
 	
 	/**
@@ -145,6 +147,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(commandHandler);
+		
+		dc.removeBlock(null);
 	}
 	
 	/**
@@ -239,6 +243,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(blockController);
+		
+		dc.getAllBlockIDsUnderneath(null);
 	}
 	
 	/**
@@ -257,6 +263,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(blockController);
+		
+		dc.getAllBlockIDsUnderneath("");
 	}
 
 	/**
@@ -286,6 +294,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(blockController);
+		
+		dc.getAllBlockIDsBelowCertainBlock(null);
 	}
 	
 	/**
@@ -304,6 +314,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(blockController);
+		
+		dc.getAllBlockIDsBelowCertainBlock("");
 	}
 	
 	/**
@@ -332,6 +344,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(blockController);
+		
+		dc.getAllBlockIDsInBody(null);
 	}
 	
 	/**
@@ -350,6 +364,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(blockController);
+		
+		dc.getAllBlockIDsInBody("");
 	}
 
 	/**
@@ -378,6 +394,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(blockController);
+		
+		dc.checkIfConnectionIsOpen(null, ConnectionType.BODY, new HashSet<String>());
 	}
 	
 	/**
@@ -396,6 +414,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(blockController);
+		
+		dc.checkIfConnectionIsOpen("", ConnectionType.BODY, new HashSet<String>());
 	}
 	
 	/**
@@ -414,6 +434,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(blockController);
+		
+		dc.checkIfConnectionIsOpen("SomeBlockId", null, new HashSet<String>());
 	}
 	
 	/**
@@ -452,6 +474,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(blockController);
+		
+		dc.getBlockType(null);
 	}
 	
 	/**
@@ -470,6 +494,8 @@ public class DomainControllerTest {
 		}
 		
 		Mockito.verifyNoInteractions(blockController);
+		
+		dc.getBlockType("");
 	}
 	
 	/**
@@ -518,6 +544,8 @@ public class DomainControllerTest {
 		
 		Mockito.verifyNoInteractions(blockController);	
 		Mockito.verifyNoInteractions(gameController);
+		
+		dc.addGameListener(null);
 	}
 
 	/**
@@ -548,6 +576,8 @@ public class DomainControllerTest {
 		
 		Mockito.verifyNoInteractions(blockController);	
 		Mockito.verifyNoInteractions(gameController);
+		
+		dc.removeGameListener(null);
 	}
 
 	/**
