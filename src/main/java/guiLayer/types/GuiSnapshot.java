@@ -30,19 +30,28 @@ public class GuiSnapshot implements Constants {
 	 */
 	public GuiSnapshot(Set<Shape> shapesInMovement) {
 		super();
-		savedCoordinates = new HashMap<String, Coordinate>();
-		savedHeights= new HashMap<String, Integer>();
+		createGuiSnapshot(new HashMap<String, Coordinate>(), new HashMap<String, Integer>(), shapesInMovement);
+
+	}
+	
+	@SuppressWarnings("unused")
+	private GuiSnapshot(HashMap<String, Coordinate> savedCoordinates,HashMap<String, Integer> savedHeights,Set<Shape> shapesInMovement) {
+		createGuiSnapshot(savedCoordinates, savedHeights, shapesInMovement);
+	}
+	
+	private void createGuiSnapshot(HashMap<String, Coordinate> savedCoordinates,HashMap<String, Integer> savedHeights,Set<Shape> shapesInMovement) {
+		this.savedCoordinates=savedCoordinates;
+		this.savedHeights= savedHeights;
+		
 		if (shapesInMovement != null) {
 			for (Shape s : shapesInMovement) {
-				savedCoordinates.put(s.getId(), s.getCoordinate());
+				this.savedCoordinates.put(s.getId(), s.getCoordinate());
 				if(s instanceof ControlShape) {
-					savedHeights.put(s.getId(), s.getHeight());
+					this.savedHeights.put(s.getId(), s.getHeight());
 				}
 			}
 		}
-
 	}
-
 	/**
 	 * Retrieve a Map with all id's of all shapes in movement and their position
 	 * @return  a Map with all id's of all shapes in movement and their position
