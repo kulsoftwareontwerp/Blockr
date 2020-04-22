@@ -378,7 +378,7 @@ public class BlockRepository {
 			throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
 		ArrayList<String> beforeMoveTopBlock = getConnectedParentIfExists(topOfMovedChainBlockId);
-		beforeMove = getConnectedBlockBeforeMove(movedBlockId, connectedAfterMoveBlockId, connectionAfterMove);// TODO
+		beforeMove = getConnectedParentIfExists(topOfMovedChainBlockId);
 
 		connectionBeforeMove = ConnectionType.valueOf(beforeMove.get(0));
 		String bfmBlockId = beforeMove.get(1);
@@ -483,9 +483,7 @@ public class BlockRepository {
 				if (connectionAfterMove == ConnectionType.NOCONNECTION) {
 					bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
 					addBlockToHeadBlocks(movedBlock);
-				}
-
-				else {
+				} else {
 					if (afm == null)
 						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
@@ -494,9 +492,7 @@ public class BlockRepository {
 							throw new InvalidBlockConnectionException("This socket is not free");
 						bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
 						afm.setNextBlock(movedBlock);
-					}
-
-					else if (connectionAfterMove == ConnectionType.UP) {
+					} else if (connectionAfterMove == ConnectionType.UP) {
 						if (!headBlocks.contains(afm))
 							throw new InvalidBlockConnectionException("This socket is not free");
 
@@ -521,6 +517,24 @@ public class BlockRepository {
 
 						bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
 						afm.setFirstBlockOfBody(movedBlock);
+					} else if (connectionAfterMove == ConnectionType.LEFT) {
+						if (!headBlocks.contains(afm))
+							throw new InvalidBlockConnectionException("This socket is not free");
+
+						//
+
+						addBlockToHeadBlocks(movedBlock);
+						removeBlockFromHeadBlocks(afm);
+						if (movedBlock.getOperand() != null) {
+							Block nextChainBlock = movedBlock;
+							while (nextChainBlock.getOperand() != null) {
+								nextChainBlock = nextChainBlock.getOperand();
+							}
+							nextChainBlock.setOperand(afm);
+							movedBlockID = nextChainBlock.getBlockId();
+						} else {
+							movedBlock.setOperand(afm);
+						}
 					}
 				}
 				// conditionBlock is hier niet mogelijk aangezien we met een UP connectie zaten.
@@ -625,6 +639,11 @@ public class BlockRepository {
 					throw new InvalidBlockConnectionException(
 							"The moved block is not connected to this block or socket");
 
+				
+				
+				
+				
+				
 				if (connectionAfterMove == ConnectionType.LEFT) {
 					if (!headBlocks.contains(afm))
 						throw new InvalidBlockConnectionException("This socket is not free");
@@ -632,6 +651,7 @@ public class BlockRepository {
 					// The before move does not change anything here.
 					removeBlockFromHeadBlocks(afm);
 					movedBlock.setConditionBlock(afm);
+					addBlockToHeadBlocks(movedBlock);
 
 				} else {
 					bfm.setFirstBlockOfBody(null);
@@ -748,8 +768,8 @@ public class BlockRepository {
 	 * Determine the connection before the remove happened.
 	 * 
 	 * @param movedBlockId The ID of the block that will be removed.
-	 * @return A list with 2 elements, the first the ConnectionType in String form 
-	 * 		   and the second the ID of the block with wich the connection was had.
+	 * @return A list with 2 elements, the first the ConnectionType in String form
+	 *         and the second the ID of the block with wich the connection was had.
 	 */
 	public ArrayList<String> getConnectedBlockBeforeRemove(String removedBlockId) {
 		ArrayList<String> connectedBlockInfo = getConnectedParentIfExists(removedBlockId);
@@ -778,8 +798,8 @@ public class BlockRepository {
 	 * Find the connection the given block had before he is moved.
 	 * 
 	 * @param movedBlockId The ID of the block that will be moved.
-	 * @return A list with 2 elements, the first the ConnectionType in String form 
-	 * 		   and the second the ID of the block with wich the connection was had.
+	 * @return A list with 2 elements, the first the ConnectionType in String form
+	 *         and the second the ID of the block with wich the connection was had.
 	 */
 	public ArrayList<String> getConnectedParentIfExists(String movedBlockId) {
 		Block movedBlock = getBlockByID(movedBlockId);
@@ -873,7 +893,8 @@ public class BlockRepository {
 	 * method used to check if a chain of operand finishes with a conditionBlock.
 	 * 
 	 * @param block the block to check if it's valid
-	 * @return a flag indicating if a chain of operand finishes with a conditionBlock.
+	 * @return a flag indicating if a chain of operand finishes with a
+	 *         conditionBlock.
 	 */
 	public boolean checkIfValidStatement(Block block) {
 		if (block != null) {
@@ -886,8 +907,9 @@ public class BlockRepository {
 	}
 
 	/**
-	 * Method that returns the first block to be executed in the program. This method can only be called in a valid program state.
-	 * 	If that is the case, there is only one block in headBlocks and that block gets returned. 
+	 * Method that returns the first block to be executed in the program. This
+	 * method can only be called in a valid program state. If that is the case,
+	 * there is only one block in headBlocks and that block gets returned.
 	 * 
 	 * @return The first block to be executed in the program.
 	 */
@@ -1012,10 +1034,12 @@ public class BlockRepository {
 	}
 
 	/**
-	 * Returns all the blocks that are connected to the given block in every direction except for up.
+	 * Returns all the blocks that are connected to the given block in every
+	 * direction except for up.
 	 * 
 	 * @param block The block for which this method returns its connected blocks.
-	 * @return A set of all the blocks that are connected to the given block in every direction except for up.
+	 * @return A set of all the blocks that are connected to the given block in
+	 *         every direction except for up.
 	 */
 	public Set<Block> getAllBlocksConnectedToAndAfterACertainBlock(Block block) {
 		Set<Block> allBlocksInBody = new HashSet<Block>();
