@@ -24,6 +24,7 @@ import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
 import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
+import commands.CommandHandler;
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.AssessableBlock;
 import domainLayer.blocks.BlockRepository;
@@ -50,11 +51,13 @@ public class GameControllerTest {
 	private BlockRepository programBlockRepository;
 	@Mock(name="gameWorld")
 	private GameWorld gameWorld;
+	@Mock(name="commandHandler")
+	private CommandHandler commandHandler;
 	@Mock
 	private GameWorldSnapshot snapshotMock;
-	// Voor uitleg waarom hier specifiek een constructor wordt gecalled, zie comments boven constructor in kwestie.
 	@Spy @InjectMocks
-	private GameController gc = new GameController(programBlockRepository, gameWorld);
+	private GameController gc;
+//	private GameController gc = new GameController(programBlockRepository, gameWorld);
 	
 	private InExecutionState inExecutionState;
 	private ValidProgramState validProgramState;
@@ -133,8 +136,6 @@ public class GameControllerTest {
 		
 		verify(gc,atLeastOnce()).fireUpdateHighlightingEvent(null);
 	}
-	// TODO: Test resetGame when nextState is not null
-	
 
 	/**
 	 * Test method for {@link applicationLayer.GameController#getCurrentState()}.

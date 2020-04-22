@@ -49,14 +49,11 @@ public class GameController implements DomainListener, GUISubject {
 		toState(new InValidProgramState(this));
 	}
 	
-	// TODO: @Arne, geen fucking flauw idee waarom, maar hij called ALTIJD de constructor hieronder als 
-	//		ik hem zelf zijn constructor voor constructor injection laat kiezen
-	// 		dus als oplossing heb ik deze public gezet en specifiek aangeroepen in de tests.
-	//		Kheb er al veel te veel tijd aan verkloot om het beter op de lossen dan dit, maar ik geef het op.
-	// 		Fuck Mockito.
-	GameController(BlockRepository programBlockRepository, GameWorld gameWorld) {
+	@SuppressWarnings("unused")
+	private GameController(BlockRepository programBlockRepository, GameWorld gameWorld, CommandHandler commandHandler) {
 		this.programBlockRepository = programBlockRepository;
 		this.gameWorld = gameWorld;
+		this.commandHandler = commandHandler;
 	}
 
 	public void handleCommand(GameWorldCommand command) {
