@@ -4,10 +4,40 @@
 package guiLayer;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+
+import applicationLayer.DomainController;
+import applicationLayer.GameController;
+import events.BlockAddedEvent;
+import events.BlockRemovedEvent;
+import guiLayer.commands.CommandHandler;
+import guiLayer.shapes.ActionShape;
+import guiLayer.shapes.ControlShape;
+import guiLayer.shapes.Shape;
+import guiLayer.shapes.ShapeFactory;
+import guiLayer.types.Constants;
+import guiLayer.types.Coordinate;
+import guiLayer.types.GuiSnapshot;
+import types.BlockType;
+import types.ConnectionType;
 
 /**
  * CanvasWindowTest
@@ -15,13 +45,68 @@ import org.junit.Test;
  * @version 0.1
  * @author group17
  */
-public class CanvasWindowTest {
+public class CanvasWindowTest implements Constants {
+	
+	@Mock(name="currentSnapshot")
+	private GuiSnapshot currentSnapshot;
+	
+	@Mock(name="shapeFactory")
+	private ShapeFactory shapeFactory;
+	
+	@Mock(name="commandHandler")
+	private CommandHandler commandHandler;
+	
+	@Mock(name="programArea")
+	private ProgramArea programArea;
+	
+	@Mock(name="domainController")
+	private DomainController domainController;
+	
+	@Spy @InjectMocks
+	private CanvasWindow canvasWindow = new CanvasWindow(currentSnapshot, shapeFactory, commandHandler, programArea, domainController);
+	
+	private int initX;
+	private int initY;
+	private Coordinate coordinate;
+	private Coordinate zeroCoordinate;
+	
+	private BlockAddedEvent blockAddedEvent;
+	private BlockAddedEvent blockAddedEventWithLinkedShape;
+	private BlockRemovedEvent blockRemovedEvent;
+	
+	private HashMap<String, Coordinate> coordinates;
+	
+	private Shape testActionShape;
+	private Shape testActionShapeWithZeroCoordinate;
+	
+	private ControlShape testControlShape;
+	
+	private HashSet<Shape> shapesInProgramArea;
+	
 
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
+		initX = 5;
+		initY = 5;
+		coordinate = new Coordinate(initX, initY);
+		zeroCoordinate = new Coordinate(0,0);
+		
+		blockAddedEvent = new BlockAddedEvent("0", "", null, BlockType.NOT, null);
+		blockAddedEventWithLinkedShape = new BlockAddedEvent("0", "1", ConnectionType.UP , BlockType.NOT, null);
+		blockRemovedEvent = new BlockRemovedEvent("0", "", ConnectionType.NOCONNECTION, null);
+		
+		coordinates = new HashMap<String, Coordinate>();
+		
+		
+		testActionShape = Mockito.spy(new ActionShape(blockAddedEvent.getAddedBlockID(), blockAddedEvent.getAddedBlockType(), coordinate));
+		testActionShapeWithZeroCoordinate = Mockito.spy(new ActionShape(blockAddedEvent.getAddedBlockID(), blockAddedEvent.getAddedBlockType(), zeroCoordinate));
+
+		shapesInProgramArea = new HashSet<Shape>();
+		
 	}
 
 	/**
@@ -75,16 +160,164 @@ public class CanvasWindowTest {
 	 * Test method for {@link guiLayer.CanvasWindow#onBlockAdded(events.BlockAddedEvent)}.
 	 */
 	@Test
-	public void testOnBlockAdded() {
-		fail("Not yet implemented");
-	}
+	public void testOnBlockAdded_ContainsKeyNotPaletteBlockIdentifier_LinkedBlockIDEmpty_Positive() {
+		
+		coordinates.put("0", coordinate);
+		shapesInProgramArea.add(testActionShape);
+		
+		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
+		when(shapeFactory.createShape(blockAddedEvent.getAddedBlockID(), blockAddedEvent.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
+		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
+		
+		canvasWindow.onBlockAdded(blockAddedEvent);
+		
+		verify(commandHandler,atLeastOnce()).setAddedId(blockAddedEvent.getAddedBlockID());
+		verify(programArea,atLeastOnce()).addShapeToProgramArea(testActionShape);
+		verify(programArea,atLeastOnce()).clearAlreadyFilledInCoordinates();
+		verify(testActionShape, atLeastOnce()).setCoordinatesShape();
+		verify(programArea, atLeastOnce()).addToAlreadyFilledInCoordinates(testActionShape);
+		verify(testActionShape, atLeastOnce()).defineConnectionTypes();
+		
+		}
+	
+	/**
+	 * Test method for {@link guiLayer.CanvasWindow#onBlockAdded(events.BlockAddedEvent)}.
+	 */
+	@Test
+	public void testOnBlockAdded_ContainsKeyNotPaletteBlockIdentifier_LinkedBlockIDNotEmpty_Positive() {
+		
+		coordinates.put("0", coordinate);
+		shapesInProgramArea.add(testActionShape);
+		
+		Shape linkedShape = Mockito.spy(new ActionShape(blockAddedEventWithLinkedShape.getLinkedBlockID(), null, coordinate));
+		
+		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
+		when(shapeFactory.createShape(blockAddedEventWithLinkedShape.getAddedBlockID(), blockAddedEventWithLinkedShape.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
+		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
+		when(programArea.getShapeById("1")).thenReturn(linkedShape);
+	
+		canvasWindow.onBlockAdded(blockAddedEventWithLinkedShape);
+		
+		verify(commandHandler,atLeastOnce()).setAddedId(blockAddedEventWithLinkedShape.getAddedBlockID());
+		verify(programArea,atLeastOnce()).addShapeToProgramArea(testActionShape);
+		verify(programArea,atLeastOnce()).clearAlreadyFilledInCoordinates();
+		verify(testActionShape, atLeastOnce()).setCoordinatesShape();
+		verify(programArea, atLeastOnce()).addToAlreadyFilledInCoordinates(testActionShape);
+		verify(testActionShape, atLeastOnce()).defineConnectionTypes();
+		
+		verify(testActionShape, atLeastOnce()).setConnectedVia( ConnectionType.UP , true);
+		verify(testActionShape, atLeastOnce()).clipOn(linkedShape, ConnectionType.UP);
+		verify(linkedShape, atLeastOnce()).setConnectedVia(ConnectionType.DOWN, true);
+		verify(testActionShape, atLeastOnce()).setConnectedVia( ConnectionType.UP , false);
+		verify(testActionShape, atLeastOnce()).setCoordinatesShape();
+		verify(programArea , atLeastOnce()).addShapeToProgramArea(linkedShape);
+		}
+	
+	/**
+	 * Test method for {@link guiLayer.CanvasWindow#onBlockAdded(events.BlockAddedEvent)}.
+	 */
+	@Test
+	public void testOnBlockAdded_ContainsKeyPaletteBlockIdentifier_LinkedBlockIDEmpty_Positive() {
+		
+		coordinates.put(PALETTE_BLOCK_IDENTIFIER, coordinate);
+		shapesInProgramArea.add(testActionShape);
+		
+		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
+		when(shapeFactory.createShape(blockAddedEvent.getAddedBlockID(), blockAddedEvent.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
+		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
+		
+		canvasWindow.onBlockAdded(blockAddedEvent);
+		
+		verify(commandHandler,atLeastOnce()).setAddedId(blockAddedEvent.getAddedBlockID());
+		verify(programArea,atLeastOnce()).addShapeToProgramArea(testActionShape);
+		verify(programArea,atLeastOnce()).clearAlreadyFilledInCoordinates();
+		verify(testActionShape, atLeastOnce()).setCoordinatesShape();
+		verify(programArea, atLeastOnce()).addToAlreadyFilledInCoordinates(testActionShape);
+		verify(testActionShape, atLeastOnce()).defineConnectionTypes();
+		
+		}
+	
+	/**
+	 * Test method for {@link guiLayer.CanvasWindow#onBlockAdded(events.BlockAddedEvent)}.
+	 */
+	@Test
+	public void testOnBlockAdded_ContainsKeyElse_LinkedBlockIDEmpty_Positive() {
+		
+		coordinates.put("NOT EXIST", zeroCoordinate);
+		shapesInProgramArea.add(testActionShapeWithZeroCoordinate);
+		
+		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
+		when(shapeFactory.createShape(blockAddedEvent.getAddedBlockID(), blockAddedEvent.getAddedBlockType(), zeroCoordinate )).thenReturn(testActionShapeWithZeroCoordinate);
+		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
+		
+		canvasWindow.onBlockAdded(blockAddedEvent);
+		
+		assertEquals(false, currentSnapshot.getSavedCoordinates().containsKey(PALETTE_BLOCK_IDENTIFIER));
+		verify(commandHandler,atLeastOnce()).setAddedId(blockAddedEvent.getAddedBlockID());
+		verify(programArea,atLeastOnce()).addShapeToProgramArea(testActionShapeWithZeroCoordinate);
+		verify(programArea,atLeastOnce()).clearAlreadyFilledInCoordinates();
+		verify(testActionShapeWithZeroCoordinate, atLeastOnce()).setCoordinatesShape();
+		verify(programArea, atLeastOnce()).addToAlreadyFilledInCoordinates(testActionShapeWithZeroCoordinate);
+		verify(testActionShapeWithZeroCoordinate, atLeastOnce()).defineConnectionTypes();
+		
+		}
+	
+	
 
 	/**
 	 * Test method for {@link guiLayer.CanvasWindow#onBlockRemoved(events.BlockRemovedEvent)}.
 	 */
 	@Test
-	public void testOnBlockRemoved() {
-		fail("Not yet implemented");
+	public void testOnBlockRemovedWithControlShape_WithoutInternals() {
+		shapesInProgramArea.add(testControlShape);
+		Set<Shape> shapesToBeRemovedFromProgramArea = new HashSet<Shape>();
+		shapesToBeRemovedFromProgramArea.add(testControlShape);
+		
+		Set<ControlShape> changedControlShapes = new HashSet<ControlShape>();
+		changedControlShapes.add(testControlShape);
+		
+		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
+		when(domainController.isBlockPresent(testControlShape.getId())).thenReturn(false);
+		when(programArea.getAllChangedControlShapes()).thenReturn(changedControlShapes);
+		
+		canvasWindow.onBlockRemoved(blockRemovedEvent);
+		
+		for (Shape shape2 : shapesToBeRemovedFromProgramArea) {
+			verify(programArea,atLeastOnce()).removeShapeFromProgramArea(shape2);
+		}
+		verify(programArea, atLeastOnce()).clearAlreadyFilledInCoordinates();
+		
+		for (Shape shape : shapesInProgramArea) {
+			verify(shape,atLeastOnce()).setCoordinatesShape();
+			verify(programArea,atLeastOnce()).addToAlreadyFilledInCoordinates(shape);
+			verify(shape,atLeastOnce()).defineConnectionTypes();
+		}
+		
+		verify(canvasWindow, atLeastOnce()).resetShapesInMovement();
+		
+		
+		
+		
+		
+		//updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+		
+
+
+		for (ControlShape c : changedControlShapes) {
+			Set<Shape> shapesToMove = domainController.getAllBlockIDsBelowCertainBlock(c.getId()).stream()
+					.filter(s -> !s.equals(c.getId())).map(s -> programArea.getShapeById(s))
+					.collect(Collectors.toSet());
+			for (Shape shape : shapesToMove) {
+				if (shape != null) {
+					programArea.removeFromAlreadyFilledInCoordinates(shape);
+					shape.setY_coord(shape.getY_coord() + c.getHeightDiff());
+					shape.setCoordinatesShape();
+					shape.defineConnectionTypes();
+					programArea.addToAlreadyFilledInCoordinates(shape);
+				}
+			}
+		}
+		
 	}
 
 	/**
