@@ -3,7 +3,10 @@
  */
 package applicationLayer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -17,12 +20,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.internal.matchers.Any;
 
-import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
-import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
 import commands.CommandHandler;
 import commands.GameWorldCommand;
@@ -33,12 +33,9 @@ import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.IfBlock;
 import domainLayer.blocks.WhileBlock;
-import domainLayer.gamestates.GameState;
 import domainLayer.gamestates.InExecutionState;
 import domainLayer.gamestates.InValidProgramState;
-import domainLayer.gamestates.ResettingStateTest;
 import domainLayer.gamestates.ValidProgramState;
-import events.DomainListener;
 import events.GUIListener;
 import events.ResetExecutionEvent;
 import events.UpdateGameStateEvent;
