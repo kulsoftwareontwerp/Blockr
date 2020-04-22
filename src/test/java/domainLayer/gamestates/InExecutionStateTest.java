@@ -4,10 +4,21 @@
 package domainLayer.gamestates;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import java.lang.reflect.Field;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import applicationLayer.GameController;
+import commands.GameWorldCommand;
+import domainLayer.blocks.ActionBlock;
 
 /**
  * InExecutionStateTest
@@ -15,8 +26,15 @@ import org.junit.Test;
  * @version 0.1
  * @author group17
  */
+@RunWith(MockitoJUnitRunner.class)
 public class InExecutionStateTest {
 
+	@Mock
+	private ActionBlock block;
+	@Mock
+	private GameController gameController;
+	@InjectMocks
+	private InExecutionState gameState;
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -36,7 +54,8 @@ public class InExecutionStateTest {
 	 */
 	@Test
 	public void testReset() {
-		fail("Not yet implemented");
+		gameState.reset();
+		verify(gameController).toState(any(ResettingState.class));
 	}
 
 	/**
@@ -44,7 +63,8 @@ public class InExecutionStateTest {
 	 */
 	@Test
 	public void testExecute() {
-		fail("Not yet implemented");
+		gameState.execute();
+		verify(gameController).handleCommand(any(GameWorldCommand.class));
 	}
 
 	/**
@@ -52,7 +72,8 @@ public class InExecutionStateTest {
 	 */
 	@Test
 	public void testUpdate() {
-		fail("Not yet implemented");
+		gameState.update();
+		verify(gameController).toState(any(GameState.class));
 	}
 
 	/**
@@ -60,7 +81,19 @@ public class InExecutionStateTest {
 	 */
 	@Test
 	public void testInExecutionState() {
-		fail("Not yet implemented");
+		InExecutionState state = new InExecutionState(gameController, block);
+		try {
+			Field gameController = InExecutionState.class.getSuperclass().getDeclaredField("gameController");
+			gameController.setAccessible(true);
+			assertTrue("gameController was not initialised", gameController.get(state) != null);
+			
+			Field actionBlock = InExecutionState.class.getDeclaredField("nextActionBlockToBeExecuted");
+			actionBlock.setAccessible(true);
+			assertTrue("ActionBlock was not initialised", actionBlock.get(state) != null);
+			
+		} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+			fail("One or more of the required fields were not declared.");
+		}
 	}
 
 	/**
@@ -68,7 +101,7 @@ public class InExecutionStateTest {
 	 */
 	@Test
 	public void testGetNextActionBlockToBeExecuted() {
-		fail("Not yet implemented");
+		assertEquals(block,gameState.getNextActionBlockToBeExecuted());
 	}
 
 	/**
@@ -76,7 +109,14 @@ public class InExecutionStateTest {
 	 */
 	@Test
 	public void testSetNextActionBlockToBeExecuted() {
-		fail("Not yet implemented");
+		gameState.setNextActionBlockToBeExecuted(block);
+		try {
+			Field ActionBlock = InExecutionState.class.getDeclaredField("nextActionBlockToBeExecuted");
+			ActionBlock.setAccessible(true);
+			assertTrue("ActionBlock was not initialised", ActionBlock.get(gameState) != null);
+		}catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+			fail("One or more of the required fields were not declared.");
+		}
 	}
 
 }
