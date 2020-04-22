@@ -57,7 +57,6 @@ public class GameControllerTest {
 	private GameWorldSnapshot snapshotMock;
 	@Spy @InjectMocks
 	private GameController gc;
-//	private GameController gc = new GameController(programBlockRepository, gameWorld);
 	
 	private InExecutionState inExecutionState;
 	private ValidProgramState validProgramState;
