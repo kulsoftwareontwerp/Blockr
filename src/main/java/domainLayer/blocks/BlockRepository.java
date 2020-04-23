@@ -391,16 +391,14 @@ public class BlockRepository {
 		if (connectionBeforeMove == ConnectionType.NOCONNECTION) {
 			// indien no connection dan is er hier geen nood aan verandering
 			if (afm == null)
-				throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+				throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain.");
 
-			
 			addBlockToHeadBlocks(topMovedBlock);
-			
+
 			if (connectionAfterMove == ConnectionType.DOWN) {
 				if (afm.getNextBlock() != null)
 					throw new InvalidBlockConnectionException("This socket is not free");
 
-				
 				removeBlockFromHeadBlocks(movedBlock);
 
 				afm.setNextBlock(movedBlock);
@@ -443,7 +441,6 @@ public class BlockRepository {
 				if (!headBlocks.contains(afm))
 					throw new InvalidBlockConnectionException("This socket is not free");
 
-				
 				removeBlockFromHeadBlocks(afm);
 
 				if (movedBlock.getConditionBlock() != null) {
@@ -735,7 +732,7 @@ public class BlockRepository {
 			}
 
 			addBlockToAllBlocks(parent);
-			if(headBlocks.stream().anyMatch(s->s.getBlockId().equals(parent.getBlockId()))) {
+			if (headBlocks.stream().anyMatch(s -> s.getBlockId().equals(parent.getBlockId()))) {
 				addBlockToHeadBlocks(parent);
 			}
 		}
@@ -759,8 +756,8 @@ public class BlockRepository {
 		ArrayList<String> connectedBlockInfo = getConnectedParentIfExists(movedBlockId);
 		ConnectionType cbfm = ConnectionType.valueOf(connectedBlockInfo.get(0));
 //		cbfm == ConnectionType.BODY ||
-		if (( cbfm == ConnectionType.DOWN || cbfm == ConnectionType.CONDITION
-				|| cbfm == ConnectionType.OPERAND) && cafm == ConnectionType.LEFT) {
+		if ((cbfm == ConnectionType.DOWN || cbfm == ConnectionType.CONDITION || cbfm == ConnectionType.OPERAND)
+				&& cafm == ConnectionType.LEFT) {
 			connectedBlockInfo.set(0, ConnectionType.NOCONNECTION.toString());
 			connectedBlockInfo.set(1, "");
 		}
@@ -959,7 +956,7 @@ public class BlockRepository {
 
 	private void deepReplace(Block block, Block parent) {
 		Optional<Block> connectedBlock = getAllBlocksConnectedToAndAfterACertainBlock(parent).stream()
-				.filter(s -> (s.getBlockId().equals(block.getBlockId()) && !s.getBlockId().equals(parent.getBlockId())))
+				.filter(s -> (block!=null && s.getBlockId().equals(block.getBlockId()) && parent != null && !s.getBlockId().equals(parent.getBlockId())))
 				.findAny();
 		if (connectedBlock.isPresent()) {
 			// index 1: ID
@@ -993,7 +990,7 @@ public class BlockRepository {
 	}
 
 	private void removeBlockFromHeadBlocks(Block block) {
-		this.headBlocks.remove(block);
+		this.headBlocks.removeIf(s -> s.getBlockId().equals(block.getBlockId()));
 	}
 
 	private void removeBlockFromAllBlocks(Block block) {
@@ -1261,7 +1258,48 @@ public class BlockRepository {
 			if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 				Block ab = snapshot.getConnectedBlockAfterSnapshot();
 				addBlockToAllBlocks(ab);
-				removeBlockFromHeadBlocks(b);
+				if (headBlocks.stream().anyMatch(s -> s.getBlockId().equals(ab.getBlockId()))) {
+
+					headBlocks.removeIf(s -> s.getBlockId().equals(ab.getBlockId()));
+					addBlockToHeadBlocks(ab);
+				} else {
+					deepReplace(ab, headBlocks);
+				}
+				if (headBlocks.stream().anyMatch(s -> s.getBlockId().equals(b.getBlockId()))) {
+					removeBlockFromHeadBlocks(b);
+				} else {
+					/**
+					 * This part of the code looks for the top of a chain within the changed blocks of a snapshot.
+					 */
+
+//					boolean foundParent = true;
+//					Block topOfMoveBlock=b;
+//					String topOfMoveBlockId = b.getBlockId();
+//					while (foundParent) {
+//						Optional<Block> topOfMoveBlockCheck = snapshot.getChangingBlocks().stream()
+//								.filter(s -> (s.getConditionBlock() != null
+//										&& s.getConditionBlock().getBlockId().equals(topOfMoveBlockId))
+//										|| (s.getNextBlock() != null
+//												&& s.getNextBlock().getBlockId().equals(topOfMoveBlockId))
+//										|| (s.getFirstBlockOfBody() != null
+//												&& s.getFirstBlockOfBody().getBlockId().equals(topOfMoveBlockId))
+//										|| (s.getConditionBlock() != null
+//												&& s.getConditionBlock().getBlockId().equals(topOfMoveBlockId))
+//										|| (s.getOperand() != null
+//												&& s.getOperand().getBlockId().equals(topOfMoveBlockId)))
+//								.findFirst();
+//						foundParent=topOfMoveBlockCheck.isPresent();
+//						if(foundParent) {
+//							topOfMoveBlock=topOfMoveBlockCheck.get();
+//							topOfMoveBlockId=topOfMoveBlock.getBlockId();
+//						}
+//					}
+					Optional<Block> topOfMoveBlock = snapshot.getChangingBlocks().stream().filter(s->headBlocks.stream().anyMatch(d->d.getBlockId().equals(s.getBlockId()))).findFirst();
+					if(topOfMoveBlock.isPresent()) {
+						removeBlockFromHeadBlocks(topOfMoveBlock.get());
+					}
+
+				}
 			}
 		}
 
