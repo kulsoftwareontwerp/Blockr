@@ -475,20 +475,19 @@ public class BlockRepository {
 				afm.setOperand(movedBlock);
 			}
 		} else {
-			if (bfm == null)
-				throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+//			if (bfm == null)
+//				throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain.");
 
 			if (connectionBeforeMove == ConnectionType.DOWN) {
-				if (bfm.getNextBlock() != null && !bfm.getNextBlock().equals(movedBlock))
-					throw new InvalidBlockConnectionException(
-							"The moved block is not connected to this block or socket");
+//				if (bfm.getNextBlock() != null && !bfm.getNextBlock().equals(movedBlock))
+//					throw new InvalidBlockConnectionException(
+//							"The moved block is not connected to this block or socket");
 
 				if (connectionAfterMove == ConnectionType.NOCONNECTION) {
-					bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
 					addBlockToHeadBlocks(movedBlock);
 				} else {
-					if (afm == null)
-						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+//					if (afm == null)
+//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
 					if (connectionAfterMove == ConnectionType.DOWN) {
 						if (afm.getNextBlock() != null)
@@ -597,7 +596,6 @@ public class BlockRepository {
 							"The moved block is not connected to this block or socket");
 
 				if (connectionAfterMove == ConnectionType.NOCONNECTION) {
-					bfm.setOperand(null);
 					addBlockToHeadBlocks(movedBlock);
 				} else {
 					if (afm == null)
