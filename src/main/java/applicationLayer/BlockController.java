@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.mockito.exceptions.misusing.NullInsteadOfMockException;
 
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
@@ -50,7 +49,6 @@ public class BlockController implements GUISubject, DomainSubject {
 		guiListeners = new HashSet<GUIListener>();
 		domainListeners = new HashSet<DomainListener>();
 		programBlockRepository = BlockRepository.getInstance();
-
 	}
 
 	@SuppressWarnings("unused")
@@ -221,16 +219,15 @@ public class BlockController implements GUISubject, DomainSubject {
 			previousConnection = programBlockRepository.getConnectedBlockBeforeRemove(blockID);
 		}
 		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
-		Set<String> idsToBeRemoved = new HashSet<String>();
 		Block deletedBlock = programBlockRepository.getBlockByID(blockID).clone();
 		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1)) != null
 				? programBlockRepository.getBlockByID(previousConnection.get(1)).clone()
 				: null;
 
-		BlockSnapshot snapshot = new BlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,
+		BlockSnapshot snapshot = createNewBlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,
 				programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(deletedBlock));
 
-		idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
+		Set<String> idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
@@ -241,6 +238,12 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		return snapshot;
 	}
+	
+	// For testing purposes
+	BlockSnapshot createNewBlockSnapshot(Block block, Block connectedBlockBeforeSnapshot, Block connectedBlockAfterSnapshot,
+			Set<Block> changingBlocks) {
+		return new BlockSnapshot(block, connectedBlockBeforeSnapshot, connectedBlockAfterSnapshot, changingBlocks);
+	}
 
 	/**
 	 * Restore a given BlockSnapshot and send the needed events according to the
@@ -249,13 +252,24 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @param snapshot the snapshot to restore
 	 * @param isChain  a flag indicating if a chain of blocks need to be restored
 	 */
+
 	public void restoreBlockSnapshot(BlockSnapshot snapshot, boolean isChain) {
 		if (snapshot == null) {
 			throw new NullPointerException("No snapshot given");
 		}
 
-		ConnectionType before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
-				snapshot.getBlock());
+		ConnectionType before;
+
+		if(programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId())!=null) {
+			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
+					programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId()));
+			
+		}else {
+			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
+					snapshot.getBlock());
+		}
+		
+		
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
 
 		if (removed) {
@@ -377,8 +391,6 @@ public class BlockController implements GUISubject, DomainSubject {
 			ConnectionType connectionAfterMove) {
 		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId,
 				connectionAfterMove);
-//		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
-//				connectedAfterMoveBlockId, connectionAfterMove);
 		Set<Block> movedBlocks = programBlockRepository
 				.getAllBlocksConnectedToAndAfterACertainBlock(
 						programBlockRepository.getBlockByID(topOfMovedChainBlockId))

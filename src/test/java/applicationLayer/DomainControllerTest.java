@@ -4,10 +4,28 @@
 package applicationLayer;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+
+import commands.CommandHandler;
+import commands.RemoveBlockCommand;
 
 /**
  * DomainControllerTest
@@ -16,12 +34,27 @@ import org.junit.Test;
  * @author group17
  */
 public class DomainControllerTest {
+	
+	@Rule
+	public ExpectedException exceptionRule = ExpectedException.none();
 
+	@Mock(name="gameWorld")
+	private GameWorld gameWorld;
+	@Mock(name="gameController")
+	private GameController gameController;
+	@Mock(name="blockController")
+	private BlockController blockController;
+	@Mock(name="commandHandler")
+	private CommandHandler commandHandler;
+	@Spy @InjectMocks
+	private DomainController dc;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
 	}
 
 	/**
@@ -51,16 +84,55 @@ public class DomainControllerTest {
 	 * Test method for {@link applicationLayer.DomainController#removeBlock(java.lang.String)}.
 	 */
 	@Test
-	public void testRemoveBlock() {
-		fail("Not yet implemented");
+	public void testRemoveBlock_BlockIdEmptyString_IllegalArgumentException() {
+		String excMessage = "No blockType given.";
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage(excMessage);
+		
+		try {
+			dc.removeBlock("");
+		} catch (IllegalArgumentException e) {
+			assertEquals(excMessage, e.getMessage());
+		}
+		
+		Mockito.verifyNoInteractions(commandHandler);
 	}
-
+	
+	/**
+	 * Test method for {@link applicationLayer.DomainController#removeBlock(java.lang.String)}.
+	 */
+	@Test
+	public void testRemoveBlock_BlockIdNull_IllegalArgumentException() {
+		String excMessage = "No blockType given.";
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage(excMessage);
+		
+		try {
+			dc.removeBlock(null);
+		} catch (IllegalArgumentException e) {
+			assertEquals(excMessage, e.getMessage());
+		}
+		
+		Mockito.verifyNoInteractions(commandHandler);
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.DomainController#removeBlock(java.lang.String)}.
+	 */
+	@Test
+	public void testRemoveBlock_Positive() {
+		dc.removeBlock("AnyBlockId");
+		
+		verify(commandHandler, atLeastOnce()).handle(Mockito.any(RemoveBlockCommand.class));
+	}
+	
 	/**
 	 * Test method for {@link applicationLayer.DomainController#resetGameExecution()}.
 	 */
 	@Test
-	public void testResetGameExecution() {
-		fail("Not yet implemented");
+	public void testResetGameExecution_Positive() {
+		dc.resetGameExecution();
+		verify(gameController,atLeastOnce()).resetGameExecution();
 	}
 
 	/**
@@ -99,8 +171,9 @@ public class DomainControllerTest {
 	 * Test method for {@link applicationLayer.DomainController#executeBlock()}.
 	 */
 	@Test
-	public void testExecuteBlock() {
-		fail("Not yet implemented");
+	public void testExecuteBlock_Positive() {
+		dc.executeBlock();
+		verify(gameController,atLeastOnce()).executeBlock();
 	}
 
 	/**
@@ -108,14 +181,6 @@ public class DomainControllerTest {
 	 */
 	@Test
 	public void testGetAllBlockIDsUnderneath() {
-		fail("Not yet implemented");
-	}
-
-	/**
-	 * Test method for {@link applicationLayer.DomainController#addElement(domainLayer.elements.ElementType, int, int)}.
-	 */
-	@Test
-	public void testAddElement() {
 		fail("Not yet implemented");
 	}
 

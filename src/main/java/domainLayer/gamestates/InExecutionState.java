@@ -1,4 +1,10 @@
+
 package domainLayer.gamestates;
+
+import applicationLayer.GameController;
+import commands.ExecuteBlockCommand;
+import commands.GameWorldCommand;
+import domainLayer.blocks.ActionBlock;
 
 import applicationLayer.GameController;
 import commands.ExecuteBlockCommand;
@@ -19,6 +25,14 @@ public class InExecutionState extends GameState {
 		setNextActionBlockToBeExecuted(nextBlock);
 	}
 
+	/**
+	 * Resets the program execution.
+	 * 
+	 * @Result The gameState becomes a resettingState on which the reset method gets called.
+	 * 
+	 * @event UpdateHighlightingEvent
+	 * 			Fires an UpdateHighlightingEvent.
+	 */
 	@Override
 	public void reset() {
 		ResettingState resettingState = new ResettingState(gameController);
@@ -26,6 +40,15 @@ public class InExecutionState extends GameState {
 		resettingState.reset();
 	}
 
+	/**
+	 * Executes the next block to be executed in the program.
+	 * 
+	 * @Result If there is a nextActionBlockToBeExecuted, a new ExecuteBlockCommand gets created with that actionBlock and
+	 * 			the gameController handles the newly created  ExecuteBlockCommand.
+	 *
+	 * @event UpdateHighlightingEvent
+	 * 			Fires an UpdateHighlightingEvent.
+	 */
 	@Override
 	public void execute() {
 		ActionBlock currentActionBlockToBeExecuted = getNextActionBlockToBeExecuted();

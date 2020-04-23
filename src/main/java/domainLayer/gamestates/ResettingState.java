@@ -1,7 +1,5 @@
 package domainLayer.gamestates;
 
-import java.lang.reflect.Constructor;
-
 import applicationLayer.GameController;
 import commands.GameWorldCommand;
 import commands.ResetCommand;
@@ -41,11 +39,21 @@ public class ResettingState extends GameState {
 		}
 	}
 
-
+	/**
+	 * Resets the program execution.
+	 * 
+	 * @Result If the program is not updated, a new ResetCommand gets created and
+	 * 			the gameController handles the newly created ResetCommand.
+	 * 			Otherwise the resetGame method of the gameController gets called directly
+	 * 			and the updated flag gets set to false. 
+	 * 
+	 * @event UpdateHighlightingEvent
+	 * 			Fires an UpdateHighlightingEvent.
+	 */
 	public void reset() {
 		if(!updated) {
-		GameWorldCommand command = new ResetCommand(gameController);
-		gameController.handleCommand(command);
+			GameWorldCommand command = new ResetCommand(gameController);
+			gameController.handleCommand(command);
 		}
 		else {
 			gameController.resetGame();
@@ -65,8 +73,14 @@ public class ResettingState extends GameState {
 	public Class<? extends GameState> getNextState() {
 		return this.nextState;
 	}
+	
+	// For testing purposes
+	void setUpdated(Boolean updated) {
+		this.updated = updated;
+	}
 
-
-
+	Boolean getUpdated() {
+		return updated;
+	}
 
 }
