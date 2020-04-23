@@ -258,8 +258,18 @@ public class BlockController implements GUISubject, DomainSubject {
 			throw new NullPointerException("No snapshot given");
 		}
 
-		ConnectionType before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
-				snapshot.getBlock());
+		ConnectionType before;
+
+		if(programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId())!=null) {
+			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
+					programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId()));
+			
+		}else {
+			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
+					snapshot.getBlock());
+		}
+		
+		
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
 
 		if (removed) {
