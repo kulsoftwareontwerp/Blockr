@@ -138,63 +138,63 @@ public class BlockRepository {
 	public boolean checkIfConnectionIsOpen(Block connectedBlock, ConnectionType connection, Block block) {
 		boolean connectionOccupied = false;
 		switch (connection) {
-		case NOCONNECTION:
-			break;
-		case UP:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = !headBlocks.contains(connectedBlock);
-
-			if (connectionOccupied && block != null) {
-				if (block instanceof ExecutableBlock) {
-					connectionOccupied = block.getNextBlock() != connectedBlock;
+			case NOCONNECTION:
+				break;
+			case UP:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = !headBlocks.contains(connectedBlock);
+	
+				if (connectionOccupied && block != null) {
+					if (block instanceof ExecutableBlock) {
+						connectionOccupied = block.getNextBlock() != connectedBlock;
+					}
 				}
-			}
-			break;
-		case LEFT:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = !headBlocks.contains(connectedBlock);
-
-			if (connectionOccupied && block != null) {
-				if (block instanceof ControlBlock) {
-					connectionOccupied = block.getConditionBlock() != connectedBlock;
+				break;
+			case LEFT:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = !headBlocks.contains(connectedBlock);
+	
+				if (connectionOccupied && block != null) {
+					if (block instanceof ControlBlock) {
+						connectionOccupied = block.getConditionBlock() != connectedBlock;
+					}
+					if (block instanceof OperatorBlock) {
+						connectionOccupied = block.getOperand() != connectedBlock;
+					}
 				}
-				if (block instanceof OperatorBlock) {
-					connectionOccupied = block.getOperand() != connectedBlock;
+				break;
+			case DOWN:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = connectedBlock.getNextBlock() != null;
+				if (connectionOccupied && block != null) {
+					connectionOccupied = !connectedBlock.getNextBlock().getBlockId().equals(block.getBlockId());
 				}
-			}
-			break;
-		case DOWN:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = connectedBlock.getNextBlock() != null;
-			if (connectionOccupied && block != null) {
-				connectionOccupied = !connectedBlock.getNextBlock().getBlockId().equals(block.getBlockId());
-			}
-			break;
-		case BODY:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = connectedBlock.getFirstBlockOfBody() != null;
-			if (connectionOccupied && block != null) {
-				connectionOccupied = !connectedBlock.getFirstBlockOfBody().getBlockId().equals(block.getBlockId());
-			}
-			break;
-		case CONDITION:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = connectedBlock.getConditionBlock() != null;
-			if (connectionOccupied && block != null) {
-				connectionOccupied = !connectedBlock.getConditionBlock().getBlockId().equals(block.getBlockId());
-			}
-			break;
-		case OPERAND:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = connectedBlock.getOperand() != null;
-			if (connectionOccupied && block != null) {
-				connectionOccupied = !connectedBlock.getOperand().getBlockId().equals(block.getBlockId());
-			}
-			break;
-
-		default:
-			// It shouldn't be possible to get here.
-			break;
+				break;
+			case BODY:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = connectedBlock.getFirstBlockOfBody() != null;
+				if (connectionOccupied && block != null) {
+					connectionOccupied = !connectedBlock.getFirstBlockOfBody().getBlockId().equals(block.getBlockId());
+				}
+				break;
+			case CONDITION:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = connectedBlock.getConditionBlock() != null;
+				if (connectionOccupied && block != null) {
+					connectionOccupied = !connectedBlock.getConditionBlock().getBlockId().equals(block.getBlockId());
+				}
+				break;
+			case OPERAND:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = connectedBlock.getOperand() != null;
+				if (connectionOccupied && block != null) {
+					connectionOccupied = !connectedBlock.getOperand().getBlockId().equals(block.getBlockId());
+				}
+				break;
+	
+			default:
+				// It shouldn't be possible to get here.
+				break;
 		}
 		return !connectionOccupied;
 	}
@@ -262,21 +262,20 @@ public class BlockRepository {
 			ArrayList<String> parentIdentifiers = getConnectedParentIfExists(b.getBlockId());
 			Block parent = getBlockByID(parentIdentifiers.get(1));
 			switch (ConnectionType.valueOf(parentIdentifiers.get(0))) {
-			case BODY:
-				parent.setFirstBlockOfBody(null);
-				break;
-			case CONDITION:
-				parent.setConditionBlock(null);
-				break;
-			case DOWN:
-				parent.setNextBlock(null);
-				break;
-			case OPERAND:
-				parent.setOperand(null);
-				break;
-			default:
-				break;
-
+				case BODY:
+					parent.setFirstBlockOfBody(null);
+					break;
+				case CONDITION:
+					parent.setConditionBlock(null);
+					break;
+				case DOWN:
+					parent.setNextBlock(null);
+					break;
+				case OPERAND:
+					parent.setOperand(null);
+					break;
+				default:
+					break;
 			}
 
 		}
@@ -834,7 +833,6 @@ public class BlockRepository {
 	 *         "Condition Block"
 	 */
 	public boolean checkIfValidProgram() {
-
 		if (headBlocks.size() != 1)
 			return false;
 		Block headBlock = null;
@@ -983,6 +981,7 @@ public class BlockRepository {
 		return this.getMaxNbOfBlocks() <= this.allBlocks.size();
 	}
 
+	// TODO: how to test this?
 	/**
 	 * Retrieve the instantiation of BlockRepository.
 	 * 
