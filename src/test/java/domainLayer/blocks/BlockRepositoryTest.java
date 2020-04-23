@@ -73,6 +73,7 @@ public class BlockRepositoryTest {
 		allBlocks.put(actionBlock.getBlockId(), actionBlock);
 		allBlocks.put(ifBlock.getBlockId(), ifBlock);
 		allBlocks.put(notBlock.getBlockId(), notBlock);
+		allBlocks.put(movedConditionBlock.getBlockId(), movedConditionBlock);
 		
 		headBlocks.add(actionBlock);
 		
@@ -663,6 +664,21 @@ public class BlockRepositoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectedParentIfExists(java.lang.String)}.
 	 */
 	@Test
+	public void testGetConnectedParentIfExists_ActionBlockDownConnection_NextBlockNotEqual_Positive() {
+		String blockIdParam = "movedActionBlockId";
+		Mockito.doReturn(movedActionBlock).when(blockRepo).getBlockByID(blockIdParam);
+		when(actionBlock.getNextBlock()).thenReturn(ifBlock);
+		
+		ArrayList<String> expectedConnectedBlockInfo = new ArrayList<String>();
+		expectedConnectedBlockInfo.add("NOCONNECTION");
+		expectedConnectedBlockInfo.add("");
+		assertEquals(expectedConnectedBlockInfo, blockRepo.getConnectedParentIfExists(blockIdParam));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectedParentIfExists(java.lang.String)}.
+	 */
+	@Test
 	public void testGetConnectedParentIfExists_ControlBlockDownConnection_Positive() {
 		String blockIdParam = "movedActionBlockId";
 		Mockito.doReturn(movedActionBlock).when(blockRepo).getBlockByID(blockIdParam);
@@ -708,6 +724,23 @@ public class BlockRepositoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectedParentIfExists(java.lang.String)}.
 	 */
 	@Test
+	public void testGetConnectedParentIfExists_ControlBlockOtherOptions_Positive() {
+		String blockIdParam = "movedActionBlockId";
+		Mockito.doReturn(movedActionBlock).when(blockRepo).getBlockByID(blockIdParam);
+		when(ifBlock.getNextBlock()).thenReturn(actionBlockNotInHeadBlocks);
+		when(ifBlock.getConditionBlock()).thenReturn(notBlock);
+		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlockNotInHeadBlocks);
+		
+		ArrayList<String> expectedConnectedBlockInfo = new ArrayList<String>();
+		expectedConnectedBlockInfo.add("NOCONNECTION");
+		expectedConnectedBlockInfo.add("");
+		assertEquals(expectedConnectedBlockInfo, blockRepo.getConnectedParentIfExists(blockIdParam));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectedParentIfExists(java.lang.String)}.
+	 */
+	@Test
 	public void testGetConnectedParentIfExists_OperatorBlockOperandConnection_Positive() {
 		String blockIdParam = "movedConditionBlockId";
 		Mockito.doReturn(movedConditionBlock).when(blockRepo).getBlockByID(blockIdParam);
@@ -716,6 +749,21 @@ public class BlockRepositoryTest {
 		ArrayList<String> expectedConnectedBlockInfo = new ArrayList<String>();
 		expectedConnectedBlockInfo.add("OPERAND");
 		expectedConnectedBlockInfo.add(notBlock.getBlockId());
+		assertEquals(expectedConnectedBlockInfo, blockRepo.getConnectedParentIfExists(blockIdParam));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectedParentIfExists(java.lang.String)}.
+	 */
+	@Test
+	public void testGetConnectedParentIfExists_OperatorBlockNotEqual_Positive() {
+		String blockIdParam = "movedConditionBlockId";
+		Mockito.doReturn(movedConditionBlock).when(blockRepo).getBlockByID(blockIdParam);
+		when(notBlock.getOperand()).thenReturn(notBlock);
+		
+		ArrayList<String> expectedConnectedBlockInfo = new ArrayList<String>();
+		expectedConnectedBlockInfo.add("NOCONNECTION");
+		expectedConnectedBlockInfo.add("");
 		assertEquals(expectedConnectedBlockInfo, blockRepo.getConnectedParentIfExists(blockIdParam));
 	}
 	

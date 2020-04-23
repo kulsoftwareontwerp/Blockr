@@ -15,10 +15,6 @@ import types.ConnectionType;
 public abstract class Block implements Cloneable {
 
 	private String blockId;
-
-	
-	
-	
 	
 	@Override
 	public int hashCode() {
@@ -45,6 +41,7 @@ public abstract class Block implements Cloneable {
 		return true;
 	}
 
+	// TODO: How to fully test this?
 	@Override
 	public Block clone() {
 		Block cloned;
