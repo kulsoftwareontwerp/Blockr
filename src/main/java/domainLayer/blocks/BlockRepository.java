@@ -1243,7 +1243,6 @@ public class BlockRepository {
 		if (parent == null) {
 			return ConnectionType.NOCONNECTION;
 		}
-
 		if (parent.getConditionBlock() != null && parent.getConditionBlock().equals(child)) {
 			return ConnectionType.CONDITION;
 		}

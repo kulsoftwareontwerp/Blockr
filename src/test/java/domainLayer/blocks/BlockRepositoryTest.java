@@ -1026,8 +1026,22 @@ public class BlockRepositoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getAllBlockIDsBelowCertainBlock(domainLayer.blocks.Block)}.
 	 */
 	@Test
-	public void testGetAllBlockIDsBelowCertainBlock() {
-		fail("Not yet implemented");
+	public void testGetAllBlockIDsBelowCertainBlock_Positive() {
+		Set<String> blockIDsUnderNeath = new HashSet<String>();
+		String blockId = actionBlock.getBlockId();
+		blockIDsUnderNeath.add(blockId);
+		
+		assertEquals(blockIDsUnderNeath, blockRepo.getAllBlockIDsBelowCertainBlock(actionBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getAllBlockIDsBelowCertainBlock(domainLayer.blocks.Block)}.
+	 */
+	@Test
+	public void testGetAllBlockIDsBelowCertainBlock_BlockNull_Positive() {
+		Set<String> blockIDsUnderNeath = new HashSet<String>();
+		
+		assertEquals(blockIDsUnderNeath, blockRepo.getAllBlockIDsBelowCertainBlock(null));
 	}
 
 	/**
@@ -1035,7 +1049,10 @@ public class BlockRepositoryTest {
 	 */
 	@Test
 	public void testGetAllHeadBlocks() {
-		fail("Not yet implemented");
+		Set<Block> headBlocks = new HashSet<Block>();
+		headBlocks.add(actionBlock);
+		
+		assertEquals(headBlocks, blockRepo.getAllHeadBlocks());
 	}
 
 	/**
@@ -1046,4 +1063,102 @@ public class BlockRepositoryTest {
 		fail("Not yet implemented");
 	}
 
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
+	 */
+	@Test
+	public void testGetConnectionType_ParentNull_Positive() {
+		assertEquals(ConnectionType.NOCONNECTION, blockRepo.getConnectionType(null, null));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
+	 */
+	@Test
+	public void testGetConnectionType_ParentConditionEqualsChild_Positive() {
+		when(ifBlock.getConditionBlock()).thenReturn(notBlock);
+		
+		assertEquals(ConnectionType.CONDITION, blockRepo.getConnectionType(ifBlock, notBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
+	 */
+	@Test
+	public void testGetConnectionType_ParentFirstBlockOfBodyEqualsChild_Positive() {
+		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlock);
+		
+		assertEquals(ConnectionType.BODY, blockRepo.getConnectionType(ifBlock, actionBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
+	 */
+	@Test
+	public void testGetConnectionType_ParentNextBlockEqualsChild_Positive() {
+		when(ifBlock.getNextBlock()).thenReturn(actionBlock);
+		
+		assertEquals(ConnectionType.DOWN, blockRepo.getConnectionType(ifBlock, actionBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
+	 */
+	@Test
+	public void testGetConnectionType_ParentOperandEqualsChild_Positive() {
+		when(ifBlock.getOperand()).thenReturn(notBlock);
+		
+		assertEquals(ConnectionType.OPERAND, blockRepo.getConnectionType(ifBlock, notBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
+	 */
+	@Test
+	public void testGetConnectionType_ChildOperandEqualsParent_Positive() {
+		when(ifBlock.getOperand()).thenReturn(notBlock);
+		
+		assertEquals(ConnectionType.LEFT, blockRepo.getConnectionType(notBlock, ifBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
+	 */
+	@Test
+	public void testGetConnectionType_ChildConditionEqualsParent_Positive() {
+		when(ifBlock.getConditionBlock()).thenReturn(notBlock);
+		
+		assertEquals(ConnectionType.LEFT, blockRepo.getConnectionType(notBlock, ifBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
+	 */
+	@Test
+	public void testGetConnectionType_ChildNextBlockEqualsParent_Positive() {
+		when(ifBlock.getNextBlock()).thenReturn(actionBlock);
+		
+		assertEquals(ConnectionType.UP, blockRepo.getConnectionType(actionBlock, ifBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
+	 */
+	@Test
+	public void testGetConnectionType_NoConnection_Positive() {
+		assertEquals(ConnectionType.NOCONNECTION, blockRepo.getConnectionType(ifBlock, ifBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
+	 */
+	@Test
+	public void testGetConnectionType_NoConnectionWithOtherOptions_Positive() {
+		when(ifBlock.getConditionBlock()).thenReturn(notBlock);
+		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlockNotInHeadBlocks);
+		when(ifBlock.getNextBlock()).thenReturn(actionBlockNotInHeadBlocks);
+		when(ifBlock.getOperand()).thenReturn(notBlock);
+		assertEquals(ConnectionType.NOCONNECTION, blockRepo.getConnectionType(ifBlock, ifBlock));
+	}
+	
 }
