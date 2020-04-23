@@ -378,7 +378,8 @@ public class BlockRepository {
 			throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
 		ArrayList<String> beforeMoveTopBlock = getConnectedParentIfExists(topOfMovedChainBlockId);
-		beforeMove = getConnectedParentIfExists(topOfMovedChainBlockId);
+//		beforeMove = getConnectedParentIfExists(topOfMovedChainBlockId);
+		beforeMove = getConnectedBlockBeforeMove(movedBlockId, connectedAfterMoveBlockId, connectionAfterMove);
 
 		connectionBeforeMove = ConnectionType.valueOf(beforeMove.get(0));
 		String bfmBlockId = beforeMove.get(1);
@@ -392,10 +393,14 @@ public class BlockRepository {
 			if (afm == null)
 				throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
+			
+			addBlockToHeadBlocks(topMovedBlock);
+			
 			if (connectionAfterMove == ConnectionType.DOWN) {
 				if (afm.getNextBlock() != null)
 					throw new InvalidBlockConnectionException("This socket is not free");
 
+				
 				removeBlockFromHeadBlocks(movedBlock);
 
 				afm.setNextBlock(movedBlock);
@@ -438,6 +443,7 @@ public class BlockRepository {
 				if (!headBlocks.contains(afm))
 					throw new InvalidBlockConnectionException("This socket is not free");
 
+				
 				removeBlockFromHeadBlocks(afm);
 
 				if (movedBlock.getConditionBlock() != null) {
@@ -639,11 +645,6 @@ public class BlockRepository {
 					throw new InvalidBlockConnectionException(
 							"The moved block is not connected to this block or socket");
 
-				
-				
-				
-				
-				
 				if (connectionAfterMove == ConnectionType.LEFT) {
 					if (!headBlocks.contains(afm))
 						throw new InvalidBlockConnectionException("This socket is not free");
@@ -734,6 +735,9 @@ public class BlockRepository {
 			}
 
 			addBlockToAllBlocks(parent);
+			if(headBlocks.stream().anyMatch(s->s.getBlockId().equals(parent.getBlockId()))) {
+				addBlockToHeadBlocks(parent);
+			}
 		}
 
 	}
@@ -754,8 +758,8 @@ public class BlockRepository {
 	public ArrayList<String> getConnectedBlockBeforeMove(String movedBlockId, String afmId, ConnectionType cafm) {
 		ArrayList<String> connectedBlockInfo = getConnectedParentIfExists(movedBlockId);
 		ConnectionType cbfm = ConnectionType.valueOf(connectedBlockInfo.get(0));
-
-		if ((cbfm == ConnectionType.BODY || cbfm == ConnectionType.DOWN || cbfm == ConnectionType.CONDITION
+//		cbfm == ConnectionType.BODY ||
+		if (( cbfm == ConnectionType.DOWN || cbfm == ConnectionType.CONDITION
 				|| cbfm == ConnectionType.OPERAND) && cafm == ConnectionType.LEFT) {
 			connectedBlockInfo.set(0, ConnectionType.NOCONNECTION.toString());
 			connectedBlockInfo.set(1, "");
