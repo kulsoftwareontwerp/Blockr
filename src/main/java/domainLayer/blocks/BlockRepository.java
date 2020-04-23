@@ -524,20 +524,20 @@ public class BlockRepository {
 						if (!headBlocks.contains(afm))
 							throw new InvalidBlockConnectionException("This socket is not free");
 
-						//
-
-						addBlockToHeadBlocks(movedBlock);
-						removeBlockFromHeadBlocks(afm);
-						if (movedBlock.getOperand() != null) {
-							Block nextChainBlock = movedBlock;
-							while (nextChainBlock.getOperand() != null) {
-								nextChainBlock = nextChainBlock.getOperand();
-							}
-							nextChainBlock.setOperand(afm);
-							movedBlockID = nextChainBlock.getBlockId();
-						} else {
+//						//
+//
+//						addBlockToHeadBlocks(movedBlock);
+//						removeBlockFromHeadBlocks(afm);
+//						if (movedBlock.getOperand() != null) {
+//							Block nextChainBlock = movedBlock;
+//							while (nextChainBlock.getOperand() != null) {
+//								nextChainBlock = nextChainBlock.getOperand();
+//							}
+//							nextChainBlock.setOperand(afm);
+//							movedBlockID = nextChainBlock.getBlockId();
+//						} else {
 							movedBlock.setOperand(afm);
-						}
+//						}
 					}
 				}
 				// conditionBlock is hier niet mogelijk aangezien we met een UP connectie zaten.
