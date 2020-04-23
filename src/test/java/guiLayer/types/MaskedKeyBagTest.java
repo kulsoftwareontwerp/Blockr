@@ -3,15 +3,18 @@
  */
 package guiLayer.types;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.lang.reflect.Field;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
-/**
- * MaskedKeyBagTest
+ * /** MaskedKeyBagTest
  * 
  * @version 0.1
  * @author group17
@@ -34,11 +37,23 @@ public class MaskedKeyBagTest {
 	}
 
 	/**
-	 * Test method for {@link guiLayer.types.MaskedKeyBag#MaskedKeyBag(java.lang.Boolean, java.lang.Boolean)}.
+	 * Test method for
+	 * {@link guiLayer.types.MaskedKeyBag#MaskedKeyBag(java.lang.Boolean, java.lang.Boolean)}.
 	 */
 	@Test
 	public void testMaskedKeyBag() {
-		fail("Not yet implemented");
+		MaskedKeyBag bag = new MaskedKeyBag(false, true);
+		try {
+			Field f;
+			f = MaskedKeyBag.class.getDeclaredField("shift");
+			f.setAccessible(true);
+			assertFalse((Boolean) f.get(bag));
+			f = MaskedKeyBag.class.getDeclaredField("ctrl");
+			f.setAccessible(true);
+			assertTrue((Boolean) f.get(bag));
+		} catch (Exception e) {
+			System.out.println("Exception while retrieving fields");
+		}
 	}
 
 	/**
@@ -46,7 +61,10 @@ public class MaskedKeyBagTest {
 	 */
 	@Test
 	public void testIsShiftPressed() {
-		fail("Not yet implemented");
+		MaskedKeyBag bag = new MaskedKeyBag(false, true);
+		assertFalse(bag.isShiftPressed());
+		bag = new MaskedKeyBag(true, false);
+		assertTrue(bag.isShiftPressed());
 	}
 
 	/**
@@ -54,7 +72,10 @@ public class MaskedKeyBagTest {
 	 */
 	@Test
 	public void testIsCtrlPressed() {
-		fail("Not yet implemented");
+		MaskedKeyBag bag = new MaskedKeyBag(false, true);
+		assertTrue(bag.isCtrlPressed());
+		bag = new MaskedKeyBag(true, false);
+		assertFalse(bag.isCtrlPressed());
 	}
 
 	/**
@@ -62,7 +83,21 @@ public class MaskedKeyBagTest {
 	 */
 	@Test
 	public void testPressShift() {
-		fail("Not yet implemented");
+		MaskedKeyBag bag = new MaskedKeyBag(false, true);
+
+		try {
+			Field f;
+			bag.pressShift(true);
+			f = MaskedKeyBag.class.getDeclaredField("shift");
+			f.setAccessible(true);
+			assertTrue((Boolean) f.get(bag));
+			bag.pressShift(false);
+			f = MaskedKeyBag.class.getDeclaredField("shift");
+			f.setAccessible(true);
+			assertFalse((Boolean) f.get(bag));
+		} catch (Exception e) {
+			System.out.println("Exception while retrieving fields");
+		}
 	}
 
 	/**
@@ -70,7 +105,20 @@ public class MaskedKeyBagTest {
 	 */
 	@Test
 	public void testPressCtrl() {
-		fail("Not yet implemented");
-	}
+		MaskedKeyBag bag = new MaskedKeyBag(true, false);
+
+		try {
+			Field f;
+			bag.pressCtrl(true);
+			f = MaskedKeyBag.class.getDeclaredField("ctrl");
+			f.setAccessible(true);
+			assertTrue((Boolean) f.get(bag));
+			bag.pressCtrl(false);
+			f = MaskedKeyBag.class.getDeclaredField("ctrl");
+			f.setAccessible(true);
+			assertFalse((Boolean) f.get(bag));
+		} catch (Exception e) {
+			System.out.println("Exception while retrieving fields");
+		}	}
 
 }
