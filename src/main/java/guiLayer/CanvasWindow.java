@@ -69,8 +69,24 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private int y_offsetCurrentShape = 0;
 
 	private MaskedKeyBag maskedKeyBag;
+	private GuiSnapshot currentSnapshot;
 
 	public static DebugModus debugModus = DebugModus.NONE;
+	
+	//This Constructor is only used for Testing Purposes. This should NEVER be called upon, and is only public for the purpose of instantiating the CanvasWindow.class in the tests
+	public CanvasWindow(GuiSnapshot snapshot, ShapeFactory shapeFactory, CommandHandler commandHandler, ProgramArea programArea, DomainController domainController, PaletteArea paletteArea, Timer maskedKeyTimer, MaskedKeyBag maskedKeyBag) {
+		super("TEST-TITLE");
+		this.maskedKeyBag = maskedKeyBag;
+		this.maskedKeyTimer = maskedKeyTimer;
+		this.currentSnapshot = snapshot;
+		this.shapeFactory = shapeFactory;
+		this.commandHandler = commandHandler;
+		this.programArea = programArea;
+		this.shapesInMovement = new HashSet<Shape>();
+		this.shapeClonesInMovement = new HashSet<Shape>();
+		this.domainController = domainController;
+		this.paletteArea = paletteArea;
+	}
 
 	// methods of CanvasResource that need to be overridden:
 
@@ -611,9 +627,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	}
 
 	private Timer maskedKeyTimer = null;
-
-	private GuiSnapshot currentSnapshot;
-
+	
 	@Override
 	protected void handleKeyEvent(int id, int keyCode, char keyChar) {
 		if (id == KeyEvent.KEY_PRESSED) {
@@ -782,6 +796,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			coordinates.putAll(currentSnapshot.getSavedCoordinates());
 			heights.putAll(currentSnapshot.getSavedHeights());
 		}
+		System.out.println(ids);
 		for (String id : ids) {
 			BlockType type = domainController.getBlockType(id);
 			Shape shape = shapeFactory.createShape(id, type, coordinates.get(id));
@@ -801,6 +816,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				.collect(Collectors.toSet())) {
 			if (shape != null && domainController.isBlockPresent(shape.getId())) {
 				shape.determineTotalHeight(mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(shape.getId())));
+				System.out.println("ShapeDetermine " + shape.getId() + shape.getHeight());
 				commandHandler.setHeight(shape.getId(), shape.getHeight());
 			}
 		}
@@ -964,6 +980,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		Set<Shape> shapesToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
 				.filter(s -> s.getId().equals(event.getRemovedBlockId())).collect(Collectors.toSet());
 
+		System.out.println(shapesToBeRemovedFromProgramArea);
 		for (Shape shape : shapesToBeRemovedFromProgramArea) {
 			programArea.removeShapeFromProgramArea(shape);
 		}

@@ -40,8 +40,10 @@ public abstract class Shape implements Constants, Cloneable {
 
 	private int height = 0;
 	private int width = 0;
+	private boolean cloneSupported;
 
 	public Shape(String id, BlockType type, Coordinate coordinate) {
+		cloneSupported=true;
 		setId(id);
 		setType(type);
 		setCoordinate(coordinate);
@@ -275,10 +277,15 @@ public abstract class Shape implements Constants, Cloneable {
 	public Shape clone() {
 		Shape s = null;
 		try {
+			if(cloneSupported) {
 			s = (Shape) super.clone();
 			s.coordinateConnectionMap = new HashMap<ConnectionType, Coordinate>(
 					this.coordinateConnectionMap);
 			s.coordinatesShape = new HashSet<Coordinate>(this.coordinatesShape);
+			} else {
+				throw new CloneNotSupportedException();
+			}
+			
 		} catch (CloneNotSupportedException e) {
 			new RuntimeException(e);
 		}
