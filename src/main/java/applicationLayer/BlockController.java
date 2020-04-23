@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.ControlBlock;
@@ -48,7 +49,6 @@ public class BlockController implements GUISubject, DomainSubject {
 		guiListeners = new HashSet<GUIListener>();
 		domainListeners = new HashSet<DomainListener>();
 		programBlockRepository = BlockRepository.getInstance();
-
 	}
 
 	@SuppressWarnings("unused")
@@ -123,7 +123,6 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *                         new block must be connected. If no connectedBlockId
 	 *                         was given, this parameter must be set to
 	 *                         "ConnectionType.NOCONNECTION".
-	 * @return TODO
 	 * @throws InvalidBlockConnectionException The given combination of the
 	 *                                         blockType,connectedBlockId and
 	 *                                         connection is impossible. - an
@@ -151,7 +150,6 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @event PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
 	 *        block has been reached after adding a block.
 	 * @return The id of the block that has been added.
-	 * 
 	 */
 	public BlockSnapshot addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		if (programBlockRepository.checkIfMaxNbOfBlocksReached()) {
@@ -221,16 +219,15 @@ public class BlockController implements GUISubject, DomainSubject {
 			previousConnection = programBlockRepository.getConnectedBlockBeforeRemove(blockID);
 		}
 		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
-		Set<String> idsToBeRemoved = new HashSet<String>();
 		Block deletedBlock = programBlockRepository.getBlockByID(blockID).clone();
 		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1)) != null
 				? programBlockRepository.getBlockByID(previousConnection.get(1)).clone()
 				: null;
 
-		BlockSnapshot snapshot = new BlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,
+		BlockSnapshot snapshot = createNewBlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,
 				programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(deletedBlock));
 
-		idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
+		Set<String> idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
@@ -241,22 +238,38 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		return snapshot;
 	}
+	
+	// For testing purposes
+	BlockSnapshot createNewBlockSnapshot(Block block, Block connectedBlockBeforeSnapshot, Block connectedBlockAfterSnapshot,
+			Set<Block> changingBlocks) {
+		return new BlockSnapshot(block, connectedBlockBeforeSnapshot, connectedBlockAfterSnapshot, changingBlocks);
+	}
 
 	/**
 	 * Restore a given BlockSnapshot and send the needed events according to the
 	 * type of restore.
 	 * 
-	 * @param snapshot
-	 * @param isChain  TODO
+	 * @param snapshot the snapshot to restore
+	 * @param isChain  a flag indicating if a chain of blocks need to be restored
 	 */
-	public void restoreBlockSnapshot(BlockSnapshot snapshot, Boolean isChain) {
-//		ConnectionType before = ConnectionType.NOCONNECTION;
-//		if(snapshot.getConnectedBlockBeforeSnapshot()!=null) {
-//			before = programBlockRepository.getConnectionType(programBlockRepository.getBlockByID(snapshot.getConnectedBlockBeforeSnapshot().getBlockId()),
-//					snapshot.getBlock());
-//		}
-		ConnectionType before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
-				snapshot.getBlock());
+
+	public void restoreBlockSnapshot(BlockSnapshot snapshot, boolean isChain) {
+		if (snapshot == null) {
+			throw new NullPointerException("No snapshot given");
+		}
+
+		ConnectionType before;
+
+		if(programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId())!=null) {
+			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
+					programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId()));
+			
+		}else {
+			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
+					snapshot.getBlock());
+		}
+		
+		
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
 
 		if (removed) {
@@ -332,14 +345,21 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * Add a block of the given blockType to the domain and connect it with the
 	 * given connectedBlockId on the given connection
 	 * 
-	 * @param movedBlockId        TODO
-	 * @param connectionAfterMove The connection of the connected block on which the
-	 *                            new block must be connected. If no
-	 *                            connectedBlockId was given, this parameter must be
-	 *                            set to "ConnectionType.NOCONNECTION".
-	 * @param blockType           The type of block to be added, this parameter is
-	 *                            required.
-	 * @param connectedBlockId    The ID of the block to connect to, can be empty.
+	 * @param topOfMovedChainBlockId    The Id of block to be moved, if you move a
+	 *                                  chain of blocks this will be the first block
+	 *                                  in the chain, this parameter is required.
+	 * @param movedBlockId              The Id of block that's actually being moved,
+	 *                                  this might be the same as the
+	 *                                  topOfMovedChainBlockId, if the movedBlockId
+	 *                                  is empty the topOfMovedChainBlockId will be
+	 *                                  used in any way.
+	 * @param connectionAfterMove       The connection of the connected block on
+	 *                                  which the new block must be connected. If no
+	 *                                  connectedBlockId was given, this parameter
+	 *                                  must be set to
+	 *                                  "ConnectionType.NOCONNECTION".
+	 * @param connectedAfterMoveBlockId The ID of the block to connect to, can be
+	 *                                  empty.
 	 * 
 	 * @throws InvalidBlockConnectionException The given combination of the
 	 *                                         blockType,connectedBlockId and
@@ -371,8 +391,6 @@ public class BlockController implements GUISubject, DomainSubject {
 			ConnectionType connectionAfterMove) {
 		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId,
 				connectionAfterMove);
-//		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
-//				connectedAfterMoveBlockId, connectionAfterMove);
 		Set<Block> movedBlocks = programBlockRepository
 				.getAllBlocksConnectedToAndAfterACertainBlock(
 						programBlockRepository.getBlockByID(topOfMovedChainBlockId))
@@ -563,11 +581,21 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	/**
+	 * Check if the connection is open and can be used to perform a move or add on.
 	 * 
-	 * @param blockIdToCheck
-	 * @param connection
-	 * @param changingBlocks
-	 * @return
+	 * @param blockIdToCheck The id of the block to check the connection from
+	 * @param connection     The connection to check on the given block
+	 * @param changingBlocks A set with the id's of all blocks that are changing at
+	 *                       the moment as to keep in measure that if the
+	 *                       blockToCheck is connected to one of the blocks in this
+	 *                       set that connection will be removed after the operation
+	 *                       and hence can be ignored. If this parameter is null an
+	 *                       empty set will be used and the method won't keep in
+	 *                       mind any possible changed blocks.
+	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
+	 *                                       is not present in the domain.
+	 * @return A flag indicating if the given connection for the given block is
+	 *         open.
 	 */
 	public Boolean checkIfConnectionIsOpen(String blockIdToCheck, ConnectionType connection,
 			Set<String> changingBlocks) {

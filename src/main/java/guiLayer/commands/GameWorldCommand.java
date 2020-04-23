@@ -18,7 +18,7 @@ public abstract class GameWorldCommand implements Command {
 
 	/**
 	 * Create a GameWorldCommand to tell the domain that an operation in the gameWorld needs to be done or undone.
-	 * @param gameController
+	 * @param controller The controller to perform the command on.
 	 */
 	public GameWorldCommand(DomainController controller) {
 		super();

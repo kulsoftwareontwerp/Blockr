@@ -1,19 +1,29 @@
 package guiLayer.shapes;
 
-import domainLayer.blocks.ActionBlock;
-import domainLayer.blocks.ConditionBlock;
-import domainLayer.blocks.IfBlock;
-import domainLayer.blocks.NotBlock;
-import domainLayer.blocks.WhileBlock;
 import guiLayer.types.Coordinate;
 import types.BlockType;
 
+/**
+ * ShapeFactory
+ * 
+ * @version 0.1
+ * @author group17
+ *
+ */
 public class ShapeFactory {
-	
+	/**
+	 * Create a new shapeFactory
+	 */
 	public ShapeFactory() {
 		
 	}
-	
+	/**
+	 * Create a new shape with the given id, type and coordinate
+	 * @param id the id for the shape
+	 * @param type the type of the shape
+	 * @param coordinate the coordinate for the shape.
+	 * @return a new shape with the given id, type and coordinate
+	 */
 	public Shape createShape(String id, BlockType type, Coordinate coordinate) {
 		switch (type.cat()) {
 		case ACTION:

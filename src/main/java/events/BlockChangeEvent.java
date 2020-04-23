@@ -21,22 +21,23 @@ public class BlockChangeEvent implements EventObject {
 
 	private String beforeMoveBlockId;
 	private ConnectionType beforeMoveConnection;
-	
-	
+
 	private Set<String> changedBlocks;
 
 	/**
 	 * Create the BlockChangeEvent
 	 * 
 	 * @param changedBlockId       The ID of the block that has been changed.
+	 * @param topOfMovedChainId	   The ID of the block on the top of the chain
 	 * @param changedLinkedBlockId The new connected block ID
 	 * @param changedConnection    The new connection
-	 * @param beforeMoveBlockId    TODO
-	 * @param beforeMoveConnection TODO
-	 * @param changedBlocks TODO
+	 * @param beforeMoveBlockId    The ID of the block to which the changedBlock was connected before the move, "" if the block was not connected to any other block.
+	 * @param beforeMoveConnection The connection of the block before the move, NOCONNECTION if there was no connection before the move.
+	 * @param changedBlocks 		A set with the id's of all the changed blocks.
 	 */
 	public BlockChangeEvent(String changedBlockId, String topOfMovedChainId, String changedLinkedBlockId,
-			ConnectionType changedConnection, String beforeMoveBlockId, ConnectionType beforeMoveConnection, Set<String> changedBlocks) {
+			ConnectionType changedConnection, String beforeMoveBlockId, ConnectionType beforeMoveConnection,
+			Set<String> changedBlocks) {
 		super();
 		this.changedBlockId = changedBlockId;
 		this.changedLinkedBlockId = changedLinkedBlockId;
@@ -44,20 +45,20 @@ public class BlockChangeEvent implements EventObject {
 		this.beforeMoveBlockId = beforeMoveBlockId;
 		this.beforeMoveConnection = beforeMoveConnection;
 		this.topOfMovedChainId = topOfMovedChainId;
-		
-		if(changedBlocks==null) {
-			changedBlocks=new HashSet<String>();
+
+		if (changedBlocks == null) {
+			changedBlocks = new HashSet<String>();
 		}
-		this.changedBlocks=changedBlocks;
+		this.changedBlocks = changedBlocks;
 	}
-	
+
 	/**
-	 * @return the changedBlocks
+	 * Retrieve the id's of all the changed blocks
+	 * @return a set containing the id's of all the changed blocks
 	 */
 	public Set<String> getChangedBlocks() {
 		return changedBlocks;
 	}
-
 
 	/**
 	 * Retrieve the changed block ID
@@ -110,7 +111,8 @@ public class BlockChangeEvent implements EventObject {
 
 	/**
 	 * Retrieve the ID of the block on the top of the chain.
-	 * @return  the ID of the block on the top of the chain
+	 * 
+	 * @return the ID of the block on the top of the chain
 	 */
 	public String getTopOfMovedChainId() {
 		return topOfMovedChainId;

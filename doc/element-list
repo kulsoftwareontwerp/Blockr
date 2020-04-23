@@ -1,7 +1,12 @@
+unnamed package
 applicationLayer
+commands
 domainLayer.blocks
-domainLayer.elements
 domainLayer.gamestates
 events
 exceptions
 guiLayer
+guiLayer.commands
+guiLayer.shapes
+guiLayer.types
+types

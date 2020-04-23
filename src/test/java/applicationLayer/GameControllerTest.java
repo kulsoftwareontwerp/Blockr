@@ -21,8 +21,10 @@ import org.mockito.internal.matchers.Any;
 
 import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
 import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
+import commands.CommandHandler;
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.AssessableBlock;
 import domainLayer.blocks.BlockRepository;
@@ -30,10 +32,12 @@ import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.IfBlock;
 import domainLayer.blocks.WhileBlock;
+import domainLayer.gamestates.GameState;
 import domainLayer.gamestates.InExecutionState;
 import domainLayer.gamestates.ValidProgramState;
 import types.BlockCategory;
 import types.BlockType;
+import types.ExecutionSnapshot;
 
 /**
  * GameControllerTest
@@ -47,16 +51,22 @@ public class GameControllerTest {
 	private BlockRepository programBlockRepository;
 	@Mock(name="gameWorld")
 	private GameWorld gameWorld;
-	// Voor uitleg waarom hier specifiek een constructor wordt gecalled, zie comments boven constructor in kwestie.
+	@Mock(name="commandHandler")
+	private CommandHandler commandHandler;
+	@Mock
+	private GameWorldSnapshot snapshotMock;
 	@Spy @InjectMocks
-	private GameController gc = new GameController(programBlockRepository, gameWorld);
+	private GameController gc;
+//	private GameController gc = new GameController(programBlockRepository, gameWorld);
 	
 	private InExecutionState inExecutionState;
 	private ValidProgramState validProgramState;
 	private ActionBlock actionBlock;
+	private ActionBlock nextActionBlock;
 	private ControlBlock ifBlock;
 	private ControlBlock whileBlock;
 	private AssessableBlock assessableBlock;
+	private ExecutionSnapshot snapshot;
 	
 	/**
 	 * @throws java.lang.Exception
@@ -65,11 +75,13 @@ public class GameControllerTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		actionBlock = new ActionBlock("actionBlockId", new BlockType("Action", BlockCategory.ACTION));
+		nextActionBlock = new ActionBlock("nextActionBlockId", new BlockType("Action", BlockCategory.ACTION));
 		ifBlock = spy(new IfBlock("IfBlock"));
 		whileBlock = spy(new WhileBlock("WhileBlock"));
 		assessableBlock = spy(new ConditionBlock("ConditionBlock", new BlockType("ConditionBlock", BlockCategory.CONDITION)));
 		inExecutionState = spy(new InExecutionState(gc, actionBlock));
 		validProgramState = spy(new ValidProgramState(gc));
+		snapshot = new ExecutionSnapshot(actionBlock, snapshotMock, inExecutionState);
 	}
 
 	/**
@@ -106,6 +118,23 @@ public class GameControllerTest {
 		gc.resetGameExecution();
 		
 		verify(inExecutionState,atLeastOnce()).reset();
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#resetGame()}.
+	 */
+	@Test
+	public void testResetGame_NextStateNull_Positive() {
+		when(gameWorld.saveState()).thenReturn(snapshotMock);
+		Mockito.doReturn(inExecutionState).when(gc).getCurrentState();
+		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(actionBlock);
+		Mockito.doReturn(snapshot).when(gc).createNewExecutionSnapshot(actionBlock, snapshotMock, inExecutionState);
+		Mockito.doNothing().when(gc).fireUpdateHighlightingEvent(null);
+		when(inExecutionState.getNextState()).thenReturn(null);
+		
+		assertEquals(snapshot, gc.resetGame());
+		
+		verify(gc,atLeastOnce()).fireUpdateHighlightingEvent(null);
 	}
 
 	/**
@@ -233,6 +262,42 @@ public class GameControllerTest {
 		Mockito.doReturn(actionBlock).when(gc).findNextActionBlockToBeExecuted(ifBlock, actionBlock);
 		
 		assertEquals(actionBlock, gc.findNextActionBlockToBeExecuted(null, ifBlock));
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#performAction(domainLayer.blocks.ActionBlock)}.
+	 */
+	@Test
+	public void testPerformAction_NextActionBlockToBeExecutedNotNull_Positive() {
+		when(gameWorld.saveState()).thenReturn(snapshotMock);
+		Mockito.doReturn(inExecutionState).when(gc).getCurrentState();
+		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(nextActionBlock);
+		Mockito.doReturn(snapshot).when(gc).createNewExecutionSnapshot(nextActionBlock, snapshotMock, inExecutionState);
+		Mockito.doNothing().when(gc).fireUpdateHighlightingEvent(Mockito.any(String.class));
+		
+		assertEquals(snapshot, gc.performAction(actionBlock));
+		
+		verify(gameWorld,atLeastOnce()).performAction(actionBlock.getAction());
+		verify(gc,atLeastOnce()).fireUpdateHighlightingEvent(nextActionBlock.getBlockId());
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#performAction(domainLayer.blocks.ActionBlock)}.
+	 */
+	@Test
+	public void testPerformAction_NextActionBlockToBeExecutedNull_Positive() {
+		ExecutionSnapshot snapshotNextBlockNull = new ExecutionSnapshot(actionBlock, snapshotMock, inExecutionState);
+		
+		when(gameWorld.saveState()).thenReturn(snapshotMock);
+		Mockito.doReturn(inExecutionState).when(gc).getCurrentState();
+		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(null);
+		Mockito.doReturn(snapshotNextBlockNull).when(gc).createNewExecutionSnapshot(null, snapshotMock, inExecutionState);
+		Mockito.doNothing().when(gc).fireUpdateHighlightingEvent(null);
+		
+		assertEquals(snapshotNextBlockNull, gc.performAction(actionBlock));
+		
+		verify(gameWorld,atLeastOnce()).performAction(actionBlock.getAction());
+		verify(gc,atLeastOnce()).fireUpdateHighlightingEvent(null);
 	}
 
 	/**

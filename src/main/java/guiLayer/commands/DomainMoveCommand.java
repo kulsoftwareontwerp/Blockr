@@ -20,30 +20,31 @@ public class DomainMoveCommand extends BlockCommand {
 	private Boolean executed;
 
 	/**
-	 * @param canvas
-	 * @param beforeSnapshot
-	 * @param afterSnapshot
+	 * Create a new DomainMoveCommand
+	 * @param controller The domainController to perform the command on.
+	 * @param canvas The canvasWindow associated with this command
+	 * @param beforeSnapshot The snapshot before this command was executed
+	 * @param afterSnapshot The snapshot after this command was executed.
 	 */
-	public DomainMoveCommand(DomainController controller ,CanvasWindow canvas, GuiSnapshot beforeSnapshot, GuiSnapshot afterSnapshot) {
+	public DomainMoveCommand(DomainController controller, CanvasWindow canvas, GuiSnapshot beforeSnapshot,
+			GuiSnapshot afterSnapshot) {
 		super(canvas, beforeSnapshot, afterSnapshot);
-		if(controller==null) {
+		if (controller == null) {
 			throw new IllegalArgumentException("A DomainMoveCommand needs a DomainController.");
 		}
 		this.controller = controller;
 		this.canvas = canvas;
-		executed=false;
+		executed = false;
 	}
 
 	@Override
 	public void execute() {
 		super.execute();
-		if(executed) {
+		if (executed) {
 			controller.redo();
-		}
-		else {
+		} else {
 			executed = true;
 		}
-//		canvas.setCurrentSnapshot(null);
 	}
 
 	@Override

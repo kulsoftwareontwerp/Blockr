@@ -1,16 +1,12 @@
-/**
- * 
- */
 package types;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import domainLayer.blocks.Block;
 
 /**
- * /** BlockSnapshot
+ * BlockSnapshot, a snapshot of a blockOperation.
  * 
  * @version 0.1
  * @author group17
@@ -23,11 +19,16 @@ public class BlockSnapshot {
 	private Set<Block> changingBlocks;
 
 	/**
+	 * Create a new BlockSnapshot
 	 * 
-	 * @param block
-	 * @param connectedBlockBeforeSnapshot
-	 * @param connectedBlockAfterSnapshot
-	 * @param changingBlocks               TODO
+	 * @param block                        The block that's changed.
+	 * @param connectedBlockBeforeSnapshot The connectedBlock before the snapshot,
+	 *                                     can be null.
+	 * @param connectedBlockAfterSnapshot  The connectedBlock after the snapshot,
+	 *                                     can be null.
+	 * @param changingBlocks               A set with all the blocks affected by the
+	 *                                     change.
+	 * @throws NullPointerException When the block is null.
 	 */
 	public BlockSnapshot(Block block, Block connectedBlockBeforeSnapshot, Block connectedBlockAfterSnapshot,
 			Set<Block> changingBlocks) {
@@ -43,19 +44,30 @@ public class BlockSnapshot {
 		if (connectedBlockBeforeSnapshot != null) {
 			this.connectedBlockBeforeSnapshot = (Block) connectedBlockBeforeSnapshot.clone();
 		}
-		this.changingBlocks=new HashSet<Block>();
-		if(changingBlocks!=null) {
-			for(Block b: changingBlocks) {
+		this.changingBlocks = new HashSet<Block>();
+		if (changingBlocks != null) {
+			for (Block b : changingBlocks) {
 				this.changingBlocks.add(b.clone());
 			}
 		}
 
 	}
 
+	/**
+	 * Retrieve a clone of the changed block.
+	 * 
+	 * @return a clone of the changed block.
+	 */
 	public Block getBlock() {
 		return block.clone();
 	}
 
+	/**
+	 * Retrieve a clone of the connected block after the snapshot.
+	 * 
+	 * @return a clone of the connected block after the snapshot or null if there is
+	 *         no connected block after the snapshot
+	 */
 	public Block getConnectedBlockAfterSnapshot() {
 		if (connectedBlockAfterSnapshot != null) {
 			return connectedBlockAfterSnapshot.clone();
@@ -63,6 +75,12 @@ public class BlockSnapshot {
 		return null;
 	}
 
+	/**
+	 * Retrieve a clone of the connected block before the snapshot.
+	 * 
+	 * @return a clone of the connected block before the snapshot or null if there is
+	 *         no connected block before the snapshot
+	 */
 	public Block getConnectedBlockBeforeSnapshot() {
 		if (connectedBlockBeforeSnapshot != null) {
 			return connectedBlockBeforeSnapshot.clone();
@@ -70,9 +88,9 @@ public class BlockSnapshot {
 		return null;
 	}
 
-	
 	/**
 	 * Retrieve all the changing (moved) blocks associated with this snapshot.
+	 * 
 	 * @return all the changing (moved) blocks associated with this snapshot.
 	 */
 	public Set<Block> getChangingBlocks() {

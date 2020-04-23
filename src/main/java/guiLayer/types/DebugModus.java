@@ -1,7 +1,12 @@
 package guiLayer.types;
 
-
-
+/**
+ * DebugModus, This enum serves to specify the different kinds of debugModes, give a method to cycle trough them and order them in order of specificity
+ * 
+ * @version 0.1
+ * @author group17
+ *
+ */
 public enum DebugModus {
 	NONE {
 		public String toString() {
@@ -32,7 +37,6 @@ public enum DebugModus {
 	private DebugModus next;
 
 
-//	// https://stackoverflow.com/questions/18883646/java-enum-methods
 	static {
 		NONE.next=IDS;
 		IDS.next=CONNECTIONS;
@@ -41,6 +45,10 @@ public enum DebugModus {
 		FILLINGS.next=NONE;
 	}
 
+	/**
+	 * Retrieve the next debugModus
+	 * @return the next debugModus
+	 */
 	public DebugModus getNext() {
 		System.out.println(next);
 		return next;

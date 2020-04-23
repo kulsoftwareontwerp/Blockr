@@ -213,9 +213,9 @@ public class CanvasWindowTest implements Constants {
 		canvasWindow.handleKeyEvent(KeyEvent.KEY_PRESSED, KeyEvent.VK_CONTROL, ' ');
 		
 		verify(maskedKeyTimer,atLeastOnce()).cancel();
-		verify(maskedKeyBag,atLeastOnce()).setShift(false);
+		verify(maskedKeyBag,atLeastOnce()).pressShift(false);
 //		verify(maskedKeyTimer,atLeastOnce()).schedule(new MaskedKeyPressed(maskedKeyBag, false), MASKEDKEY_DURATION);
-		verify(maskedKeyBag,atLeastOnce()).setCtrl(true);
+		verify(maskedKeyBag,atLeastOnce()).pressCtrl(true);
 		
 		
 	}
@@ -239,7 +239,7 @@ public class CanvasWindowTest implements Constants {
 		canvasWindow.handleKeyEvent(KeyEvent.KEY_PRESSED, KeyEvent.VK_SHIFT, ' ');
 		
 		verify(maskedKeyTimer,atLeastOnce()).cancel();
-		verify(maskedKeyBag,atLeastOnce()).setShift(true);
+		verify(maskedKeyBag,atLeastOnce()).pressShift(true);
 //		verify(maskedKeyTimer,atLeastOnce()).schedule(new MaskedKeyPressed(maskedKeyBag, false), MASKEDKEY_DURATION);	
 	}
 	
@@ -275,7 +275,8 @@ public class CanvasWindowTest implements Constants {
 	
 		Timer maskedKeyTimer = Mockito.spy(new Timer());
 		//maskedKeyBag = new MaskedKeyBag(false, true);
-		maskedKeyBag.setCtrl(true);
+		maskedKeyBag.pressCtrl(true);
+		//when(maskedKeyBag.getCtrl()).
 		
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("maskedKeyTimer");
@@ -289,7 +290,7 @@ public class CanvasWindowTest implements Constants {
 		
 		verify(commandHandler,atLeastOnce()).undo();
 		verify(maskedKeyTimer,atLeastOnce()).cancel();
-		verify(maskedKeyBag,atLeastOnce()).setShift(false);
+		verify(maskedKeyBag,atLeastOnce()).pressShift(false);
 		
 	}
 	
@@ -300,8 +301,8 @@ public class CanvasWindowTest implements Constants {
 	public void testHandleKeyEvent_Pressed_Z_KEY_CTRL_SHIFT() {
 		
 		Timer maskedKeyTimer = Mockito.spy(new Timer());
-		maskedKeyBag.setCtrl(true);
-		maskedKeyBag.setShift(true);
+		maskedKeyBag.pressCtrl(true);
+		maskedKeyBag.pressShift(true);
 		
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("maskedKeyTimer");
@@ -315,7 +316,7 @@ public class CanvasWindowTest implements Constants {
 		
 		verify(commandHandler,atLeastOnce()).redo();
 		verify(maskedKeyTimer,atLeastOnce()).cancel();
-		verify(maskedKeyBag,atLeastOnce()).setShift(true);
+		verify(maskedKeyBag,atLeastOnce()).pressShift(true);
 //		verify(maskedKeyTimer,atLeastOnce()).schedule(new MaskedKeyPressed(maskedKeyBag, false), MASKEDKEY_DURATION);
 		
 	}
@@ -728,7 +729,7 @@ public class CanvasWindowTest implements Constants {
 			verify(shape,atLeastOnce()).defineConnectionTypes();
 		}
 		
-		verify(canvasWindow, atLeastOnce()).resetShapesInMovement();
+//		verify(canvasWindow, atLeastOnce())
 				
 	}
 	
@@ -801,7 +802,7 @@ public class CanvasWindowTest implements Constants {
 			verify(shape,atLeastOnce()).defineConnectionTypes();
 		}
 		
-		verify(canvasWindow, atLeastOnce()).resetShapesInMovement();
+//		verify(canvasWindow, atLeastOnce()).resetShapesInMovement();
 				
 	}
 	
@@ -879,7 +880,7 @@ public class CanvasWindowTest implements Constants {
 			verify(shape,atLeastOnce()).defineConnectionTypes();
 		}
 		
-		verify(canvasWindow, atLeastOnce()).resetShapesInMovement();
+//		verify(canvasWindow, atLeastOnce()).resetShapesInMovement();
 				
 	}
 
