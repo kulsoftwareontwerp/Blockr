@@ -511,9 +511,9 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	/**
-	 * Finds the ID's of all the controlblocks who are headblocks.
+	 * Finds the ID's of all the controlblocks who are not in another controlBlock.
 	 * 
-	 * @return A set of the ID's of all the controlblocks who are headblocks.
+	 * @return A set of the ID's of all the controlblocks who are not in another controlBlock.
 	 */
 	public Set<String> getAllHeadControlBlocks() {
 		return programBlockRepository.getAllHeadControlBlocks().stream().map(e -> e.getBlockId())

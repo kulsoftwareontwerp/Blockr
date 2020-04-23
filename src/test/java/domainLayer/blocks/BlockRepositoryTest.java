@@ -951,22 +951,6 @@ public class BlockRepositoryTest {
 	}
 
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#getAllBlockIDsUnderneath(java.lang.String)}.
-	 */
-	@Test
-	public void testGetAllBlockIDsUnderneathString() {
-		String blockId = "blockId";
-		Set<String> blockIDsUnderNeath = new HashSet<String>();
-		blockIDsUnderNeath.add("BlockIdUnderneath");
-		
-		Mockito.doReturn(actionBlock).when(blockRepo).getBlockByID(blockId);
-		when(actionBlock.getNextBlock()).thenReturn(ifBlock);
-		when(ifBlock.getBlockId()).thenReturn("BlockIdUnderneath");
-	
-		assertEquals(blockIDsUnderNeath, blockRepo.getAllBlockIDsUnderneath(blockId));
-	}
-
-	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getAllHeadControlBlocks()}.
 	 */
 	@Test
