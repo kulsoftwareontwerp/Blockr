@@ -375,7 +375,7 @@ public class BlockRepository {
 		Block bfm = null;
 
 		if (movedBlock == null)
-			throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+			throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain.");
 
 		ArrayList<String> beforeMoveTopBlock = getConnectedParentIfExists(topOfMovedChainBlockId);
 //		beforeMove = getConnectedParentIfExists(topOfMovedChainBlockId);
