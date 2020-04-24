@@ -1,13 +1,37 @@
-/**
- * 
- */
+
 package guiLayer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.stream.Collectors;
+
+
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 
 /**
  * PaletteAreaTest
@@ -16,6 +40,11 @@ import org.junit.Test;
  * @author group17
  */
 public class PaletteAreaTest {
+
+	
+//	@Spy @InjectMocks
+//	private PaletteArea paletteArea = new PaletteArea();
+
 
 	/**
 	 * @throws java.lang.Exception
@@ -56,11 +85,17 @@ public class PaletteAreaTest {
 	}
 
 	/**
-	 * Test method for {@link guiLayer.PaletteArea#paint(java.awt.Graphics)}.
+
+	 * Test method for {@link com.kuleuven.swop.group17.RobotGameWorld.guiLayer.RobotCanvas#paint(java.awt.Graphics)}.
 	 */
 	@Test
 	public void testPaint() {
-		fail("Not yet implemented");
+//		Graphics g = Mockito.spy(Graphics.class);
+//		when(g.getClipBounds()).thenReturn(new Rectangle(500,600));
+//		c.paint(g);
+//		verify(g,atLeastOnce()).drawLine(any(Integer.class), any(Integer.class), any(Integer.class), any(Integer.class));
+//		verify(g,atLeastOnce()).drawImage(any(Image.class), any(Integer.class), any(Integer.class),any());
+
 	}
 
 	/**
