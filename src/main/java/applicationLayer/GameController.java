@@ -47,68 +47,109 @@ public class GameController implements DomainListener, GUISubject {
 		initialSnapshot = gameWorld.saveState();
 
 		toState(new InValidProgramState(this));
-
+	}
+	
+	@SuppressWarnings("unused")
+	private GameController(BlockRepository programBlockRepository, GameWorld gameWorld, CommandHandler commandHandler) {
+		this.programBlockRepository = programBlockRepository;
+		this.gameWorld = gameWorld;
+		this.commandHandler = commandHandler;
+		this.guiListeners = new HashSet<GUIListener>();
 	}
 
 	public void handleCommand(GameWorldCommand command) {
 		this.commandHandler.handle(command);
 	}
-
+	
+	/**
+	 * Resets the game execution. 
+	 * 
+	 * @event UpdateHighlightingEvent
+	 * 		  Fires an UpdateHighlightingEvent if the program was in an executing state.
+	 */
 	public void resetGameExecution() {
 		GameState currentState = getCurrentState();
 		currentState.reset();
-
 	}
 
 	/**
-	 * ResetGame is only allowed to be called from the resettingState class.
+	 * Restores the gameworld back to its initial state, changes the current state of the program to its correct nextState and
+	 *  returns the state of the program before the reset. ResetGame is only allowed to be called from the resettingState class.
 	 * 
+	 * @event fireUpdateHighlightingEvent Fires an UpdateHighlightingEvent.
 	 * @return The ExecutionSnapshot describing the state before the reset.
 	 */
 	public ExecutionSnapshot resetGame() {
 		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
 		ActionBlock nextBlockToBeExecuted = getCurrentState().getNextActionBlockToBeExecuted();
-		ExecutionSnapshot snapshot = new ExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState());
+		ExecutionSnapshot snapshot = createNewExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState());
 		gameWorld.restoreState(initialSnapshot);
 		fireUpdateHighlightingEvent(null);
-
+		
 		try {
 			if (getCurrentState().getNextState() == null) {
 				// This is not a resettingState.
 				toState(new ResettingState(this));
+			} else {
+				// TODO: How to test this?
+				Constructor<? extends GameState> constructor = getCurrentState().getNextState().getConstructor(GameController.class);
+				GameState newState = (GameState) constructor.newInstance(this);
+				toState(newState);
 			}
-			Constructor<? extends GameState> constructor = getCurrentState().getNextState()
-					.getConstructor(GameController.class);
-			GameState newState = (GameState) constructor.newInstance(this);
-			toState(newState);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		return snapshot;
 	}
-
+	
+	// For testing purposes
+	ExecutionSnapshot createNewExecutionSnapshot(ActionBlock actionBlock, GameWorldSnapshot snapshot, GameState state) {
+		return new ExecutionSnapshot(actionBlock, snapshot, state);
+	}
+	
+	/**
+	 * Returns the current state of the program.
+	 * 
+	 * @return The current state of the program.
+	 */
 	public GameState getCurrentState() {
 		return this.currentState;
 	}
 
 	/**
+	 * Sets the current state of the program to the given state.
 	 * 
-	 * @param state
+	 * @param state		The new state of the program.
 	 */
 	public void toState(GameState state) {
 		this.currentState = state;
 	}
 
+	/**
+	 * Updates the current state of the program.
+	 */
 	public void updateState() {
 		currentState.update();
 	}
 
+	/**
+	 * Executes the next block to be executed if the gamestate is in a valid state or an in execution state. 
+	 * 	If this is not the case, nothing happens.
+	 * 
+	 * @event UpdateHighlightingEvent
+	 * 		  Fires an UpdateHighlightingEvent if the program was in a valid state or an in executing state.
+	 */
 	public void executeBlock() {
 		GameState currentState = getCurrentState();
 		currentState.execute();
 	}
 
+	/**
+	 * Find the first action block that needs to be executed next.
+	 * 
+	 * @return The next actionBlock to be executed.
+	 */
 	public ActionBlock findFirstBlockToBeExecuted() {
 		ExecutableBlock firstExecutableBlock = programBlockRepository.findFirstBlockToBeExecuted();
 		if (!(firstExecutableBlock instanceof ActionBlock)) {
@@ -119,8 +160,13 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	/**
+	 * Given a block to check (currentBlock) and a block that was checked before the currentBlock (previousBlock),
+	 * 	return the first actionBlock to be executed following the rules of control- and assessable blocks by means of recursion.
 	 * 
-	 * @param block
+	 * @param previousBlock		The block that was the currentBlock in the previous recursive call of this method.
+	 * @param currentBlock		The newest possible block that needs to be checked.
+	 * 
+	 * @return The next actionBlock in the program.
 	 */
 	public ActionBlock findNextActionBlockToBeExecuted(ExecutableBlock previousBlock, ExecutableBlock currentBlock) {
 		// ExecutableBlock nextBlock = block.getNextBlock();
@@ -139,26 +185,26 @@ public class GameController implements DomainListener, GUISubject {
 			// If or while block
 			AssessableBlock condition = currentBlock.getConditionBlock();
 
-			if (evaluateCondition(condition)) {
+			if (condition.assess(gameWorld)) {
 				return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getFirstBlockOfBody());
 			} else {
 				return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getNextBlock());
 			}
 		}
 	}
-
-	private boolean evaluateCondition(AssessableBlock condition) {
-		return condition.assess(gameWorld);
-	}
-
+	
 	/**
+	 * Asks the gameWorld to perform the action of the given block and find the next block to be executed and
+	 *  set it in the current execution state.
 	 * 
-	 * @param block
+	 * @param block The block which action needs to be performed.
+	 * @event fireUpdateHighlightingEvent Fires an UpdateHighlightingEvent.
+	 * @return a snapshot containing all the information regarding the state of the program before the action was performed.
 	 */
 	public ExecutionSnapshot performAction(ActionBlock block) {
 		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
 		ActionBlock nextBlockToBeExecuted = getCurrentState().getNextActionBlockToBeExecuted();
-		ExecutionSnapshot snapshot = new ExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState());
+		ExecutionSnapshot snapshot = createNewExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState());
 		gameWorld.performAction(block.getAction());
 
 		ActionBlock newNextActionBlockToBeExecuted = findNextActionBlockToBeExecuted(block, block.getNextBlock());
@@ -183,6 +229,11 @@ public class GameController implements DomainListener, GUISubject {
 		}
 	}
 
+	/**
+	 * Checks if the current program is valid.
+	 * 
+	 * @return true if the current program is valid.
+	 */
 	public boolean checkIfValidProgram() {
 		return programBlockRepository.checkIfValidProgram();
 	}
@@ -192,17 +243,11 @@ public class GameController implements DomainListener, GUISubject {
 	 * @param highlightedBlockId
 	 */
 	public void fireUpdateHighlightingEvent(String highlightedBlockId) {
-
 		UpdateHighlightingEvent updateHighlightingEvent = new UpdateHighlightingEvent(highlightedBlockId);
 		for (GUIListener listener : guiListeners) {
 			listener.onUpdateHighlightingEvent(updateHighlightingEvent);
 		}
 
-	}
-
-	private HashMap<String, Integer> findNextPosition() {
-		// TODO - implement GameController.findNextPosition
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -213,7 +258,6 @@ public class GameController implements DomainListener, GUISubject {
 	@Override
 	public void addListener(GUIListener listener) {
 		this.guiListeners.add(listener);
-
 	}
 
 	@Override
@@ -233,7 +277,9 @@ public class GameController implements DomainListener, GUISubject {
 	 * @return if it's useful to perform a gameAction at the moment.
 	 */
 	public boolean isGameExecutionUseful() {
-		return (getCurrentState() instanceof ValidProgramState) || (getCurrentState() instanceof InExecutionState && getCurrentState().getNextActionBlockToBeExecuted()!=null) ;
+		return (getCurrentState() instanceof ValidProgramState) || 
+				(getCurrentState() instanceof InExecutionState && 
+						getCurrentState().getNextActionBlockToBeExecuted()!=null) ;
 	}
 
 	/**

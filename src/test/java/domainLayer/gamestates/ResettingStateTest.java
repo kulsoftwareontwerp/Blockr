@@ -4,12 +4,22 @@
 package domainLayer.gamestates;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+
+import applicationLayer.GameController;
+import commands.ResetCommand;
 
 
 import static org.junit.Assert.*;
@@ -36,15 +46,18 @@ import domainLayer.blocks.ActionBlock;
 @RunWith(MockitoJUnitRunner.class)
 public class ResettingStateTest {
 
-	@Mock
+
+	@Mock(name="gameController")
 	private GameController gameController;
-	@InjectMocks
+	@Spy @InjectMocks
 	private ResettingState gameState;
+
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
 	}
 
 	/**
@@ -52,6 +65,19 @@ public class ResettingStateTest {
 	 */
 	@After
 	public void tearDown() throws Exception {
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.gamestates.ResettingState#reset()}.
+	 */
+	@Test
+	public void testReset_UpdatedFalse_Positive() {
+		gameState.setUpdated(false);
+		
+		gameState.reset();
+		
+		verify(gameController,atLeastOnce()).handleCommand(Mockito.any(ResetCommand.class));
+		assertFalse(gameState.getUpdated());
 	}
 
 	/**
@@ -76,6 +102,16 @@ public class ResettingStateTest {
 		} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
 			fail("One or more of the required fields were not declared.");
 		}
+	}
+	@Test
+	public void testReset_UpdatedTrue_Positive() {
+		gameState.setUpdated(true);
+		
+		gameState.reset();
+		
+		verify(gameController,atLeastOnce()).resetGame();
+		assertFalse(gameState.getUpdated());
+
 	}
 
 	/**

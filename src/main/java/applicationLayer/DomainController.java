@@ -69,15 +69,16 @@ public class DomainController {
 	 */
 	public DomainController(GameWorld gameWorld) {
 		CommandHandler handler = new CommandHandler();
-
 		initializeDomainController(new GameController(gameWorld, handler), new BlockController(), gameWorld, handler);
-
 	}
-
+	
+	// Used for mockinjection in the tests
 	@SuppressWarnings("unused")
-	private DomainController(GameController gameController, BlockController blockController, GameWorld gameWorld,
-			CommandHandler handler) {
-		initializeDomainController(gameController, blockController, gameWorld, handler);
+	private DomainController(GameWorld gw, GameController gc, BlockController bc, CommandHandler ch) {
+		this.gameWorld = gw;
+		this.gameController = gc;
+		this.blockController = bc;
+		this.commandHandler = ch;
 	}
 
 	/**
@@ -252,18 +253,24 @@ public class DomainController {
 			BlockCommand command = new RemoveBlockCommand(blockController, blockID);
 			commandHandler.handle(command);
 		}
-
 	}
 
 	/**
-	 * Execute the next block to be executed
+	 * Executes the next block to be executed if the gamestate is in a valid state or an in execution state. 
+	 * 	If this is not the case, nothing happens.
+	 * 
+	 * @event UpdateHighlightingEvent
+	 * 		  Fires a UpdateHighlightingEvent if the program was in a valid state or an in executing state.
 	 */
 	public void executeBlock() {
 		gameController.executeBlock();
 	}
 
 	/**
-	 * Reset the game execution
+	 * Resets the game execution.
+	 * 
+	 * @event UpdateHighlightingEvent
+	 * 		  Fires a UpdateHighlightingEvent if the program was in an executing state.
 	 */
 	public void resetGameExecution() {
 		gameController.resetGameExecution();
@@ -276,7 +283,6 @@ public class DomainController {
 	 */
 	public void paint(Graphics gameWorldGraphics) {
 		gameWorld.paint(gameWorldGraphics);
-
 	}
 
 	/**
@@ -319,7 +325,6 @@ public class DomainController {
 		if (blockID == null || blockID == "") {
 			throw new IllegalArgumentException("No blockID given.");
 		}
-
 		return blockController.getAllBlockIDsUnderneath(blockID);
 	}
 
@@ -364,7 +369,6 @@ public class DomainController {
 		}
 
 		return blockController.getAllBlockIDsInBody(blockID);
-
 	}
 
 	/**
@@ -401,7 +405,7 @@ public class DomainController {
 	}
 
 	/**
-	 * Retrieve the blockType of the block associated with the given id;
+	 * Retrieve the blockType of the block associated with the given id.
 	 * 
 	 * @param id The id of the block to retrieve the Blocktype from.
 	 * @return the blockType associated with the given block

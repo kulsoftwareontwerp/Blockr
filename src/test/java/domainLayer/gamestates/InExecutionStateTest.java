@@ -4,19 +4,22 @@
 package domainLayer.gamestates;
 
 import static org.junit.Assert.*;
+
 import static org.mockito.Mockito.*;
-
 import java.lang.reflect.Field;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import applicationLayer.GameController;
+import commands.ExecuteBlockCommand;
 import commands.GameWorldCommand;
 import domainLayer.blocks.ActionBlock;
 
@@ -29,17 +32,20 @@ import domainLayer.blocks.ActionBlock;
 @RunWith(MockitoJUnitRunner.class)
 public class InExecutionStateTest {
 
-	@Mock
-	private ActionBlock block;
-	@Mock
+
+	@Mock(name="gameController")
 	private GameController gameController;
-	@InjectMocks
-	private InExecutionState gameState;
+	@Mock(name="nextActionBlockToBeExecuted")
+	private ActionBlock nextActionBlockToBeExecuted;
+	@Spy @InjectMocks
+	private InExecutionState ies;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
 	}
 
 	/**
@@ -54,8 +60,11 @@ public class InExecutionStateTest {
 	 */
 	@Test
 	public void testReset() {
-		gameState.reset();
+		ies.reset();
 		verify(gameController).toState(any(ResettingState.class));
+		ies.reset();
+		
+		verify(gameController,atLeastOnce()).toState(Mockito.any(ResettingState.class));
 	}
 
 	/**
@@ -63,8 +72,26 @@ public class InExecutionStateTest {
 	 */
 	@Test
 	public void testExecute() {
-		gameState.execute();
+		ies.execute();
 		verify(gameController).handleCommand(any(GameWorldCommand.class));
+	}
+	@Test
+	public void testExecute_nextActionBlockToBeExecutedNull_Positive() {
+		Mockito.doReturn(null).when(ies).getNextActionBlockToBeExecuted();
+		
+		ies.execute();
+		
+		Mockito.verifyNoMoreInteractions(gameController);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.gamestates.InExecutionState#execute()}.
+	 */
+	@Test
+	public void testExecute_nextActionBlockToBeExecutedNotNull_Positive() {		
+		ies.execute();
+		
+		verify(gameController,atLeastOnce()).handleCommand(Mockito.any(ExecuteBlockCommand.class));
 	}
 
 	/**
@@ -72,16 +99,16 @@ public class InExecutionStateTest {
 	 */
 	@Test
 	public void testUpdate() {
-		gameState.update();
+		ies.update();
 		verify(gameController).toState(any(GameState.class));
 	}
 
 	/**
-	 * Test method for {@link domainLayer.gamestates.InExecutionState#InExecutionState(applicationLayer.GameController, domainLayer.blocks.ActionBlock)}.
+	 * Test method for {@link domainLayer.gamestates.InExecutionState#InExecutionState(applicationLayer.GameController, domainLayer.nextActionBlockToBeExecuteds.ActionBlock)}.
 	 */
 	@Test
 	public void testInExecutionState() {
-		InExecutionState state = new InExecutionState(gameController, block);
+		InExecutionState state = new InExecutionState(gameController, nextActionBlockToBeExecuted);
 		try {
 			Field gameController = InExecutionState.class.getSuperclass().getDeclaredField("gameController");
 			gameController.setAccessible(true);
@@ -101,22 +128,21 @@ public class InExecutionStateTest {
 	 */
 	@Test
 	public void testGetNextActionBlockToBeExecuted() {
-		assertEquals(block,gameState.getNextActionBlockToBeExecuted());
+		assertEquals(nextActionBlockToBeExecuted,ies.getNextActionBlockToBeExecuted());
 	}
 
 	/**
-	 * Test method for {@link domainLayer.gamestates.InExecutionState#setNextActionBlockToBeExecuted(domainLayer.blocks.ActionBlock)}.
+	 * Test method for {@link domainLayer.gamestates.InExecutionState#setNextActionBlockToBeExecuted(domainLayer.nextActionBlockToBeExecuteds.ActionBlock)}.
 	 */
 	@Test
 	public void testSetNextActionBlockToBeExecuted() {
-		gameState.setNextActionBlockToBeExecuted(block);
+		ies.setNextActionBlockToBeExecuted(nextActionBlockToBeExecuted);
 		try {
 			Field ActionBlock = InExecutionState.class.getDeclaredField("nextActionBlockToBeExecuted");
 			ActionBlock.setAccessible(true);
-			assertTrue("ActionBlock was not initialised", ActionBlock.get(gameState) != null);
+			assertTrue("ActionBlock was not initialised", ActionBlock.get(ies) != null);
 		}catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
 			fail("One or more of the required fields were not declared.");
 		}
 	}
-
 }

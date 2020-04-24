@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.mockito.exceptions.misusing.NullInsteadOfMockException;
 
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
@@ -50,12 +49,11 @@ public class BlockController implements GUISubject, DomainSubject {
 		guiListeners = new HashSet<GUIListener>();
 		domainListeners = new HashSet<DomainListener>();
 		programBlockRepository = BlockRepository.getInstance();
-
 	}
 
 	@SuppressWarnings("unused")
-	private BlockController(BlockRepository programBlockRepository) {
-		this.guiListeners = new HashSet<GUIListener>();
+	private BlockController(BlockRepository programBlockRepository, Collection<GUIListener> guiListeners) {
+		this.guiListeners = guiListeners;
 		this.domainListeners = new HashSet<DomainListener>();
 		this.programBlockRepository = programBlockRepository;
 	}
@@ -77,7 +75,6 @@ public class BlockController implements GUISubject, DomainSubject {
 			for (GUIListener listener : guiListeners) {
 				listener.onBlockRemoved(event);
 			}
-
 		}
 	}
 
@@ -221,16 +218,15 @@ public class BlockController implements GUISubject, DomainSubject {
 			previousConnection = programBlockRepository.getConnectedBlockBeforeRemove(blockID);
 		}
 		Boolean maxBlocksReachedBeforeRemove = programBlockRepository.checkIfMaxNbOfBlocksReached();
-		Set<String> idsToBeRemoved = new HashSet<String>();
 		Block deletedBlock = programBlockRepository.getBlockByID(blockID).clone();
 		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1)) != null
 				? programBlockRepository.getBlockByID(previousConnection.get(1)).clone()
 				: null;
 
-		BlockSnapshot snapshot = new BlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,
+		BlockSnapshot snapshot = createNewBlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,
 				programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(deletedBlock));
 
-		idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
+		Set<String> idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
@@ -241,6 +237,12 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		return snapshot;
 	}
+	
+	// For testing purposes
+	BlockSnapshot createNewBlockSnapshot(Block block, Block connectedBlockBeforeSnapshot, Block connectedBlockAfterSnapshot,
+			Set<Block> changingBlocks) {
+		return new BlockSnapshot(block, connectedBlockBeforeSnapshot, connectedBlockAfterSnapshot, changingBlocks);
+	}
 
 	/**
 	 * Restore a given BlockSnapshot and send the needed events according to the
@@ -249,13 +251,24 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @param snapshot the snapshot to restore
 	 * @param isChain  a flag indicating if a chain of blocks need to be restored
 	 */
+
 	public void restoreBlockSnapshot(BlockSnapshot snapshot, boolean isChain) {
 		if (snapshot == null) {
 			throw new NullPointerException("No snapshot given");
 		}
 
-		ConnectionType before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
-				snapshot.getBlock());
+		ConnectionType before;
+
+		if(programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId())!=null) {
+			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
+					programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId()));
+			
+		}else {
+			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
+					snapshot.getBlock());
+		}
+		
+		
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
 
 		if (removed) {
@@ -309,6 +322,8 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		Block toAdd = snapshot.getBlock();
 
+		// TODO: How best to test this?
+		// 	See testRestoreBlockSnapshot_RemovedTrue_MaxBlocksReachedTrue_IsChainTrue_AllOptionsInFireBlockAdded_Positive in BlockControllerTest
 		if (toAdd.getConditionBlock() != null) {
 			BlockSnapshot s = new BlockSnapshot(toAdd.getConditionBlock(), null, toAdd, null);
 			fireBlockAdded(s);
@@ -377,8 +392,6 @@ public class BlockController implements GUISubject, DomainSubject {
 			ConnectionType connectionAfterMove) {
 		String movedID = programBlockRepository.getBlockIdToPerformMoveOn(topOfMovedChainBlockId, movedBlockId,
 				connectionAfterMove);
-//		ArrayList<String> previousConnection = programBlockRepository.getConnectedBlockBeforeMove(movedID,
-//				connectedAfterMoveBlockId, connectionAfterMove);
 		Set<Block> movedBlocks = programBlockRepository
 				.getAllBlocksConnectedToAndAfterACertainBlock(
 						programBlockRepository.getBlockByID(topOfMovedChainBlockId))
@@ -462,16 +475,23 @@ public class BlockController implements GUISubject, DomainSubject {
 		return blockIDsInBody;
 	}
 
-	// TO BE DOCUMENTED:
-
-	// TODO THROW EXECPTIONS!!!!!
-
+	/**
+	 * Finds the id of the enclosing controlblock of the given block.
+	 * 
+	 * @param id The ID of the block to find the enclosing controlblock of.
+	 * @return The id of the enclosing controlblock. 
+	 * 	If there is no enclosing block, the method returns null.
+	 */
 	public String getEnclosingControlBlock(String id) {
-
 		Block givenBlock = programBlockRepository.getBlockByID(id);
 		ControlBlock block = null;
-		if (givenBlock instanceof ExecutableBlock) {
-
+		if (givenBlock == null) {
+			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
+		}
+		else if (!(givenBlock instanceof ExecutableBlock)) {
+			throw new InvalidBlockTypeException(ExecutableBlock.class, givenBlock.getClass());
+		}
+		else {
 			block = programBlockRepository.getEnclosingControlBlock((ExecutableBlock) givenBlock);
 		}
 
@@ -481,6 +501,12 @@ public class BlockController implements GUISubject, DomainSubject {
 		return block.getBlockId();
 	}
 
+	/**
+	 * Finds all the ID's of the blocks that are below the given block.
+	 * 
+	 * @param blockID The ID of the block from which we want to find all blocks below.
+	 * @return A set of blockID's of the blocks below the given block.
+	 */
 	public Set<String> getAllBlockIDsBelowCertainBlock(String blockID) {
 		Block block = programBlockRepository.getBlockByID(blockID);
 		Set<String> blockIDsUnderNeath = new HashSet<String>();
@@ -494,6 +520,11 @@ public class BlockController implements GUISubject, DomainSubject {
 		return blockIDsUnderNeath;
 	}
 
+	/**
+	 * Finds the ID's of all the controlblocks who are not in another controlBlock.
+	 * 
+	 * @return A set of the ID's of all the controlblocks who are not in another controlBlock.
+	 */
 	public Set<String> getAllHeadControlBlocks() {
 		return programBlockRepository.getAllHeadControlBlocks().stream().map(e -> e.getBlockId())
 				.collect(Collectors.toSet());
@@ -523,21 +554,11 @@ public class BlockController implements GUISubject, DomainSubject {
 
 	}
 
-	public String getFirstBlockBelow(String id) {
-		Block block = programBlockRepository.getBlockByID(id);
-
-		if (block == null) {
-			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
-		}
-
-		if (block.getNextBlock() != null) {
-			return block.getBlockId();
-		} else {
-			return null;
-		}
-
-	}
-
+	/**
+	 * Finds all the current headblocks in the program.
+	 * 
+	 * @return A set of all the ID's of the current headblocks of the program.
+	 */
 	public Set<String> getAllHeadBlocks() {
 		return programBlockRepository.getAllHeadBlocks().stream().map(e -> e.getBlockId()).collect(Collectors.toSet());
 	}

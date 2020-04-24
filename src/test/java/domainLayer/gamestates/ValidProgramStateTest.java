@@ -4,10 +4,25 @@
 package domainLayer.gamestates;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
+
+import com.kuleuven.swop.group17.GameWorldApi.Action;
+
+import applicationLayer.GameController;
+import domainLayer.blocks.ActionBlock;
+import types.BlockCategory;
+import types.BlockType;
 
 
 import static org.junit.Assert.*;
@@ -36,17 +51,21 @@ import domainLayer.blocks.ActionBlock;
 @RunWith(MockitoJUnitRunner.class)
 public class ValidProgramStateTest {
 
-	@Mock
-	private ActionBlock block;
-	@Mock
+
+	@Mock(name="gameController")
 	private GameController gameController;
-	@InjectMocks
-	private ValidProgramState gameState;
+	@Spy @InjectMocks
+	private ValidProgramState vps;
+	
+	private ActionBlock actionBlock;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
+		actionBlock = new ActionBlock("actionBlockId", new BlockType("Action", BlockCategory.ACTION));
 	}
 
 	/**
@@ -61,10 +80,15 @@ public class ValidProgramStateTest {
 	 */
 	@Test
 	public void testExecute() {
-		when(gameController.findFirstBlockToBeExecuted()).thenReturn(block);
-		gameState.execute();
+		when(gameController.findFirstBlockToBeExecuted()).thenReturn(actionBlock);
+		vps.execute();
 		verify(gameController).toState(any(GameState.class));
+
+		when(gameController.findFirstBlockToBeExecuted()).thenReturn(actionBlock);
 		
+		vps.execute();
+		
+		verify(gameController,atLeastOnce()).toState(Mockito.any(InExecutionState.class));
 	}
 
 	/**
@@ -73,7 +97,7 @@ public class ValidProgramStateTest {
 	@Test
 	public void testUpdate() {
 		when(gameController.checkIfValidProgram()).thenReturn(false);
-		gameState.update();
+		vps.update();
 		verify(gameController).checkIfValidProgram();
 		verify(gameController).toState(any(GameState.class));
 	}
@@ -81,7 +105,7 @@ public class ValidProgramStateTest {
 	@Test
 	public void testUpdateNegative() {
 		when(gameController.checkIfValidProgram()).thenReturn(true);
-		gameState.update();
+		vps.update();
 		verify(gameController).checkIfValidProgram();
 		verify(gameController,times(0)).toState(any(GameState.class));
 	}
