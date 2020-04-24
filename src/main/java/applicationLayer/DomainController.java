@@ -137,7 +137,6 @@ public class DomainController {
 				&& connection == ConnectionType.NOCONNECTION) {
 			throw new IllegalArgumentException("No connection given for connected block.");
 		} else {
-			System.out.println("DomainController");
 			BlockCommand command = new AddBlockCommand(blockController, blockType, connectedBlockId, connection);
 			commandHandler.handle(command);
 		}

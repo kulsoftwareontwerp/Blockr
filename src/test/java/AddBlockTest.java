@@ -87,14 +87,6 @@ public class AddBlockTest {
 	private NotBlock newNotBlock;
 
 
-//	private MoveForwardBlock newMoveForwardBlock;
-//
-//	private TurnLeftBlock newTurnLeftBlock;
-//
-//	private TurnRightBlock newTurnRightBlock;
-//
-//	private WallInFrontBlock newWallInFrontBlock;
-
 	private WhileBlock newWhileBlock;
 	
 	@Spy
