@@ -2,11 +2,9 @@ package applicationLayer;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,9 +21,15 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import com.kuleuven.swop.group17.CoolGameWorld.events.GUIListener;
+import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorldType;
+import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
+import commands.CommandHandler;
+import commands.MoveBlockCommand;
 import domainLayer.blocks.IfBlock;
 import domainLayer.blocks.NotBlock;
 import domainLayer.blocks.WhileBlock;
@@ -42,24 +46,68 @@ public class MoveBlockDCTest {
 	private ArrayList<BlockType> assessableBlockTypes = new ArrayList<BlockType>();
 	private Set<String> blockIdsInRepository = new HashSet<String>();
 	
-//	@Mock
-//	private GameWorldType type;
-//	@Mock(name = "gameWorld")
-//	private GameWorld gameWorld;
-//	@Mock (name = "gameController")
-//	GameController gameController;
-	@Mock(name = "blockController")
-	private BlockController mockBlockController;
 	@Spy
-	@InjectMocks
+	private GameWorld gameWorld = new GameWorld() {
+		
+		@Override
+		public GameWorldSnapshot saveState() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+		@Override
+		public void restoreState(GameWorldSnapshot state) throws IllegalArgumentException {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void performAction(Action action)
+				throws UnsupportedOperationException, NullPointerException, RuntimeException {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void paint(Graphics graphics) throws NullPointerException, RuntimeException {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public GameWorldType getType() {
+			return mockGameWorldType;
+		}
+		
+		@Override
+		public Boolean evaluate(Predicate predicate)
+				throws UnsupportedOperationException, NullPointerException, RuntimeException {
+			return false;
+		}
+	};
+	
+	@Mock(name="gameController")
+	private GameController mockGameController;
+	@Mock(name="blockController")
+	private BlockController mockBlockController;
+	@Mock(name="commandHandler")
+	private CommandHandler mockCommandHandler;
+	@Spy @InjectMocks
 	private DomainController dc;
+	
+	@Mock
+	private GameWorldType mockGameWorldType;
+	@Mock
+	private GUIListener mockGuiListener;
+	
+	@Mock
+	private Predicate mockPredicate;
+	@Mock
+	private Action mockAction;
 	
 	
 	@Before
 	public void setUp() throws Exception {
-//		when(gameWorld.getType()).thenReturn(type);
-//		when(type.supportedActions()).thenReturn(null);
-//		when(type.supportedPredicates()).thenReturn(null);
 		
 		connectionTypes.add(ConnectionType.BODY);
 		connectionTypes.add(ConnectionType.CONDITION);
@@ -84,36 +132,36 @@ public class MoveBlockDCTest {
 		try {
 			dc.moveBlock("", "", "", null);
 		} catch (Exception e) {
-			
-			verify(mockBlockController,times(0)).moveBlock(any(), any(), any(), any());
+			verify(mockCommandHandler,times(0)).handle(any(MoveBlockCommand.class));
+	
 		}
 
 		try {
 			dc.moveBlock("1", "", "", null);
 
 		} catch (Exception e) {
-			verify(mockBlockController,times(0)).moveBlock(any(), any(), any(), any());
+			verify(mockCommandHandler,times(0)).handle(any(MoveBlockCommand.class));
 		}
 
 		try {
 			dc.moveBlock("1", "", "", null);
 
 		} catch (Exception e) {
-			verify(mockBlockController,times(0)).moveBlock(any(), any(), any(), any());
+			verify(mockCommandHandler,times(0)).handle(any(MoveBlockCommand.class));
 		}
 
 		try {
 			dc.moveBlock("1", "", "2", null);
 
 		} catch (Exception e) {
-			verify(mockBlockController,times(0)).moveBlock(any(), any(), any(), any());
+			verify(mockCommandHandler,times(0)).handle(any(MoveBlockCommand.class));
 		}
 
 		try {
 			dc.moveBlock("1", "", "3", null);
 
 		} catch (Exception e) {
-			verify(mockBlockController,times(0)).moveBlock(any(), any(), any(), any());
+			verify(mockCommandHandler,times(0)).handle(any(MoveBlockCommand.class));
 		}
 
 	}
@@ -173,21 +221,14 @@ public class MoveBlockDCTest {
 		for (ConnectionType connectionType : ConnectionsWithoutNoConnection) {
 
 			dc.moveBlock("1", "", "3", connectionType);
-			verify(mockBlockController).moveBlock("1", "", "3", connectionType);
-
 			dc.moveBlock("1", "2", "3", connectionType);
-			verify(mockBlockController).moveBlock("1", "2", "3", connectionType);
+			verify(mockCommandHandler,atLeast(2)).handle(any(MoveBlockCommand.class));
 		}
 		
 		dc.moveBlock("1", null, "", ConnectionType.NOCONNECTION);
 		
 		dc.moveBlock("1", "", "", ConnectionType.NOCONNECTION);
-		verify(mockBlockController,times(2)).moveBlock("1", "", "", ConnectionType.NOCONNECTION);
-	}
-	
-	@Test
-	public void testDcCommand() {
-		
+		verify(mockCommandHandler, atLeast(2)).handle(any(MoveBlockCommand.class));
 	}
 
 		

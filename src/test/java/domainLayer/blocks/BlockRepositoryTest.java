@@ -4,6 +4,20 @@
 package domainLayer.blocks;
 
 import static org.junit.Assert.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * BlockRepositoryTest
+ *
+ * @version 0.1
+ * @author group17
+ */
+
+
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
