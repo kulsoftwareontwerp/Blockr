@@ -296,4 +296,6 @@ public abstract class Block implements Cloneable {
 	 * @return the supported connectionTypes for this block.
 	 */
 	public abstract Set<ConnectionType> getSupportedConnectionTypes();
+	
+
 }
