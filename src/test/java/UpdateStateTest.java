@@ -26,17 +26,18 @@
 //import org.mockito.internal.verification.NoInteractions;
 //import org.mockito.junit.MockitoJUnitRunner;
 //
+//import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
+//
 //import applicationLayer.GameController;
+//import commands.CommandHandler;
 //import domainLayer.blocks.ActionBlock;
 //import domainLayer.blocks.Block;
 //import domainLayer.blocks.BlockRepository;
 //import domainLayer.blocks.ConditionBlock;
 //import domainLayer.blocks.ControlBlock;
 //import domainLayer.blocks.IfBlock;
-//import domainLayer.blocks.MoveForwardBlock;
 //import domainLayer.blocks.NotBlock;
 //import domainLayer.blocks.OperatorBlock;
-//import domainLayer.blocks.WallInFrontBlock;
 //import domainLayer.blocks.WhileBlock;
 //import domainLayer.gamestates.GameState;
 //import domainLayer.gamestates.InExecutionState;
@@ -51,9 +52,7 @@
 //@RunWith(MockitoJUnitRunner.class)
 //public class UpdateStateTest {
 //	
-//	
-//	
-//	
+//
 //	@Mock
 //	private GameState mockInvalidGameState;
 //	@Mock	
@@ -68,6 +67,10 @@
 //	private GUIListener mockGuiListener;
 //	@Mock
 //	private GameController mockgameController;
+//	@Mock
+//	private GameWorld gameWorld;
+//	@Mock
+//	private  CommandHandler commandHandler;
 //	
 //	private GameController gameController;
 //	private GameState InvalidGameState;
@@ -88,7 +91,7 @@
 //	@Before
 //	public void setUp() throws Exception {
 //		
-//		gameController = spy(new GameController());
+//		gameController = spy(new GameController(gameWorld, commandHandler));
 //		InvalidGameState = spy(new InValidProgramState(gameController));
 //		ValidGameState = spy(new ValidProgramState(gameController));
 //		ExecuteGameState = spy(new InExecutionState(gameController, null));

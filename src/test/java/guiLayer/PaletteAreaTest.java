@@ -1,3 +1,4 @@
+
 package guiLayer;
 
 import static org.junit.Assert.assertEquals;
@@ -18,6 +19,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.stream.Collectors;
 
+
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +32,7 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+
 /**
  * PaletteAreaTest
  *
@@ -36,9 +40,11 @@ import org.mockito.stubbing.Answer;
  * @author group17
  */
 public class PaletteAreaTest {
+
 	
 //	@Spy @InjectMocks
 //	private PaletteArea paletteArea = new PaletteArea();
+
 
 	/**
 	 * @throws java.lang.Exception
@@ -79,6 +85,7 @@ public class PaletteAreaTest {
 	}
 
 	/**
+
 	 * Test method for {@link com.kuleuven.swop.group17.RobotGameWorld.guiLayer.RobotCanvas#paint(java.awt.Graphics)}.
 	 */
 	@Test
@@ -88,6 +95,7 @@ public class PaletteAreaTest {
 //		c.paint(g);
 //		verify(g,atLeastOnce()).drawLine(any(Integer.class), any(Integer.class), any(Integer.class), any(Integer.class));
 //		verify(g,atLeastOnce()).drawImage(any(Image.class), any(Integer.class), any(Integer.class),any());
+
 	}
 
 	/**

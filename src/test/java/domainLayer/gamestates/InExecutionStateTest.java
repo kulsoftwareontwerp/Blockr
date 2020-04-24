@@ -4,20 +4,23 @@
 package domainLayer.gamestates;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
 
+import static org.mockito.Mockito.*;
+import java.lang.reflect.Field;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import applicationLayer.GameController;
 import commands.ExecuteBlockCommand;
+import commands.GameWorldCommand;
 import domainLayer.blocks.ActionBlock;
 
 /**
@@ -26,7 +29,9 @@ import domainLayer.blocks.ActionBlock;
  * @version 0.1
  * @author group17
  */
+@RunWith(MockitoJUnitRunner.class)
 public class InExecutionStateTest {
+
 
 	@Mock(name="gameController")
 	private GameController gameController;
@@ -56,6 +61,8 @@ public class InExecutionStateTest {
 	@Test
 	public void testReset() {
 		ies.reset();
+		verify(gameController).toState(any(ResettingState.class));
+		ies.reset();
 		
 		verify(gameController,atLeastOnce()).toState(Mockito.any(ResettingState.class));
 	}
@@ -63,6 +70,11 @@ public class InExecutionStateTest {
 	/**
 	 * Test method for {@link domainLayer.gamestates.InExecutionState#execute()}.
 	 */
+	@Test
+	public void testExecute() {
+		ies.execute();
+		verify(gameController).handleCommand(any(GameWorldCommand.class));
+	}
 	@Test
 	public void testExecute_nextActionBlockToBeExecutedNull_Positive() {
 		Mockito.doReturn(null).when(ies).getNextActionBlockToBeExecuted();
@@ -87,15 +99,50 @@ public class InExecutionStateTest {
 	 */
 	@Test
 	public void testUpdate() {
-		fail("Not yet implemented");
+		ies.update();
+		verify(gameController).toState(any(GameState.class));
 	}
 
 	/**
-	 * Test method for {@link domainLayer.gamestates.InExecutionState#InExecutionState(applicationLayer.GameController, domainLayer.blocks.ActionBlock)}.
+	 * Test method for {@link domainLayer.gamestates.InExecutionState#InExecutionState(applicationLayer.GameController, domainLayer.nextActionBlockToBeExecuteds.ActionBlock)}.
 	 */
 	@Test
 	public void testInExecutionState() {
-		fail("Not yet implemented");
+		InExecutionState state = new InExecutionState(gameController, nextActionBlockToBeExecuted);
+		try {
+			Field gameController = InExecutionState.class.getSuperclass().getDeclaredField("gameController");
+			gameController.setAccessible(true);
+			assertTrue("gameController was not initialised", gameController.get(state) != null);
+			
+			Field actionBlock = InExecutionState.class.getDeclaredField("nextActionBlockToBeExecuted");
+			actionBlock.setAccessible(true);
+			assertTrue("ActionBlock was not initialised", actionBlock.get(state) != null);
+			
+		} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+			fail("One or more of the required fields were not declared.");
+		}
 	}
 
+	/**
+	 * Test method for {@link domainLayer.gamestates.InExecutionState#getNextActionBlockToBeExecuted()}.
+	 */
+	@Test
+	public void testGetNextActionBlockToBeExecuted() {
+		assertEquals(nextActionBlockToBeExecuted,ies.getNextActionBlockToBeExecuted());
+	}
+
+	/**
+	 * Test method for {@link domainLayer.gamestates.InExecutionState#setNextActionBlockToBeExecuted(domainLayer.nextActionBlockToBeExecuteds.ActionBlock)}.
+	 */
+	@Test
+	public void testSetNextActionBlockToBeExecuted() {
+		ies.setNextActionBlockToBeExecuted(nextActionBlockToBeExecuted);
+		try {
+			Field ActionBlock = InExecutionState.class.getDeclaredField("nextActionBlockToBeExecuted");
+			ActionBlock.setAccessible(true);
+			assertTrue("ActionBlock was not initialised", ActionBlock.get(ies) != null);
+		}catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+			fail("One or more of the required fields were not declared.");
+		}
+	}
 }

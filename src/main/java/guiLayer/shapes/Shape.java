@@ -53,6 +53,7 @@ public abstract class Shape implements Constants, Cloneable {
 	private int width = 0;
 	private boolean cloneSupported;
 
+
 	/**
 	 * Create a new shape with the given id, type and coordinate
 	 * 
@@ -434,6 +435,7 @@ public abstract class Shape implements Constants, Cloneable {
 	public Shape clone() {
 		Shape s = null;
 		try {
+
 			if(cloneSupported) {
 			s = (Shape) super.clone();
 			s.coordinateConnectionMap = new HashMap<ConnectionType, Coordinate>(this.coordinateConnectionMap);
@@ -441,7 +443,6 @@ public abstract class Shape implements Constants, Cloneable {
 			} else {
 				throw new CloneNotSupportedException();
 			}
-			
 		} catch (CloneNotSupportedException e) {
 			new RuntimeException(e);
 		}
@@ -515,4 +516,3 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 }
-
