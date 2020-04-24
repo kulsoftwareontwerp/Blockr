@@ -54,6 +54,7 @@ public class GameController implements DomainListener, GUISubject {
 		this.programBlockRepository = programBlockRepository;
 		this.gameWorld = gameWorld;
 		this.commandHandler = commandHandler;
+		this.guiListeners = new HashSet<GUIListener>();
 	}
 
 	public void handleCommand(GameWorldCommand command) {
@@ -257,7 +258,6 @@ public class GameController implements DomainListener, GUISubject {
 	@Override
 	public void addListener(GUIListener listener) {
 		this.guiListeners.add(listener);
-
 	}
 
 	@Override
@@ -277,7 +277,9 @@ public class GameController implements DomainListener, GUISubject {
 	 * @return if it's useful to perform a gameAction at the moment.
 	 */
 	public boolean isGameExecutionUseful() {
-		return (getCurrentState() instanceof ValidProgramState) || (getCurrentState() instanceof InExecutionState && getCurrentState().getNextActionBlockToBeExecuted()!=null) ;
+		return (getCurrentState() instanceof ValidProgramState) || 
+				(getCurrentState() instanceof InExecutionState && 
+						getCurrentState().getNextActionBlockToBeExecuted()!=null) ;
 	}
 
 	/**
@@ -290,5 +292,4 @@ public class GameController implements DomainListener, GUISubject {
 		return getCurrentState() instanceof InExecutionState  ;
 
 	}
-
 }

@@ -33,6 +33,18 @@ public class CommandHandler {
 		undoneGameWorldCommands = new Stack<GameWorldCommand>();
 		this.canvas=canvas;
 	}
+	
+	// For testing purposes
+	CommandHandler(CanvasWindow canvas, Stack<BlockCommand> executedBlockCommands, Stack<BlockCommand> undoneBlockCommands, 
+			Stack<GameWorldCommand> executedGameWorldCommands, Stack<GameWorldCommand> undoneGameWorldCommands,
+			BlockCommand currentlyHandledBlockCommand) {
+		this.canvas=canvas;
+		this.executedBlockCommands = executedBlockCommands;
+		this.undoneBlockCommands = undoneBlockCommands;
+		this.executedGameWorldCommands = executedGameWorldCommands;
+		this.undoneGameWorldCommands = undoneGameWorldCommands;
+		this.currentlyHandledBlockCommand = currentlyHandledBlockCommand;
+	}
 
 	/**
 	 * Execute a BlockCommand and put it on the stack, all undone BlockCommands will be cleared as well as all GameWorldCommands, executed and undone alike.

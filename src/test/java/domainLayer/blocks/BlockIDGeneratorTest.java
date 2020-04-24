@@ -8,6 +8,8 @@ import static org.junit.Assert.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 /**
  * BlockIDGeneratorTest
@@ -17,11 +19,14 @@ import org.junit.Test;
  */
 public class BlockIDGeneratorTest {
 
+	private BlockIDGenerator gen;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		gen = BlockIDGenerator.getInstance();
 	}
 
 	/**
@@ -36,15 +41,7 @@ public class BlockIDGeneratorTest {
 	 */
 	@Test
 	public void testGenerateBlockID() {
-		fail("Not yet implemented");
-	}
-
-	/**
-	 * Test method for {@link domainLayer.blocks.BlockIDGenerator#getInstance()}.
-	 */
-	@Test
-	public void testGetInstance() {
-		fail("Not yet implemented");
+		assertEquals("0", gen.generateBlockID());
 	}
 
 }

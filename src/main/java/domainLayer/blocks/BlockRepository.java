@@ -128,73 +128,76 @@ public class BlockRepository {
 		}
 
 	}
-
+	
 	/**
-	 * @param connectedBlock
-	 * @param connection
-	 * @param block
-	 * @return
+	 * Check if the connection between 2 blocks is open and can be used to perform a move or add on.
+	 * 
+	 * @param connectedBlock 	The block to check the connection from
+	 * @param connection		The connection to check on the given block
+	 * @param block				The block to check the connection to
+	 * 
+	 * @return A flag indicating if the given connection for the given block is open.
 	 */
 	public boolean checkIfConnectionIsOpen(Block connectedBlock, ConnectionType connection, Block block) {
 		boolean connectionOccupied = false;
 		switch (connection) {
-		case NOCONNECTION:
-			break;
-		case UP:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = !headBlocks.contains(connectedBlock);
-
-			if (connectionOccupied && block != null) {
-				if (block instanceof ExecutableBlock) {
-					connectionOccupied = block.getNextBlock() != connectedBlock;
+			case NOCONNECTION:
+				break;
+			case UP:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = !headBlocks.contains(connectedBlock);
+	
+				if (connectionOccupied && block != null) {
+					if (block instanceof ExecutableBlock) {
+						connectionOccupied = block.getNextBlock() != connectedBlock;
+					}
 				}
-			}
-			break;
-		case LEFT:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = !headBlocks.contains(connectedBlock);
-
-			if (connectionOccupied && block != null) {
-				if (block instanceof ControlBlock) {
-					connectionOccupied = block.getConditionBlock() != connectedBlock;
+				break;
+			case LEFT:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = !headBlocks.contains(connectedBlock);
+	
+				if (connectionOccupied && block != null) {
+					if (block instanceof ControlBlock) {
+						connectionOccupied = block.getConditionBlock() != connectedBlock;
+					}
+					if (block instanceof OperatorBlock) {
+						connectionOccupied = block.getOperand() != connectedBlock;
+					}
 				}
-				if (block instanceof OperatorBlock) {
-					connectionOccupied = block.getOperand() != connectedBlock;
+				break;
+			case DOWN:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = connectedBlock.getNextBlock() != null;
+				if (connectionOccupied && block != null) {
+					connectionOccupied = !connectedBlock.getNextBlock().getBlockId().equals(block.getBlockId());
 				}
-			}
-			break;
-		case DOWN:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = connectedBlock.getNextBlock() != null;
-			if (connectionOccupied && block != null) {
-				connectionOccupied = !connectedBlock.getNextBlock().getBlockId().equals(block.getBlockId());
-			}
-			break;
-		case BODY:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = connectedBlock.getFirstBlockOfBody() != null;
-			if (connectionOccupied && block != null) {
-				connectionOccupied = !connectedBlock.getFirstBlockOfBody().getBlockId().equals(block.getBlockId());
-			}
-			break;
-		case CONDITION:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = connectedBlock.getConditionBlock() != null;
-			if (connectionOccupied && block != null) {
-				connectionOccupied = !connectedBlock.getConditionBlock().getBlockId().equals(block.getBlockId());
-			}
-			break;
-		case OPERAND:
-			validateConnectedBlockIsInDomain(connectedBlock);
-			connectionOccupied = connectedBlock.getOperand() != null;
-			if (connectionOccupied && block != null) {
-				connectionOccupied = !connectedBlock.getOperand().getBlockId().equals(block.getBlockId());
-			}
-			break;
-
-		default:
-			// It shouldn't be possible to get here.
-			break;
+				break;
+			case BODY:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = connectedBlock.getFirstBlockOfBody() != null;
+				if (connectionOccupied && block != null) {
+					connectionOccupied = !connectedBlock.getFirstBlockOfBody().getBlockId().equals(block.getBlockId());
+				}
+				break;
+			case CONDITION:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = connectedBlock.getConditionBlock() != null;
+				if (connectionOccupied && block != null) {
+					connectionOccupied = !connectedBlock.getConditionBlock().getBlockId().equals(block.getBlockId());
+				}
+				break;
+			case OPERAND:
+				validateConnectedBlockIsInDomain(connectedBlock);
+				connectionOccupied = connectedBlock.getOperand() != null;
+				if (connectionOccupied && block != null) {
+					connectionOccupied = !connectedBlock.getOperand().getBlockId().equals(block.getBlockId());
+				}
+				break;
+	
+			default:
+				// It shouldn't be possible to get here.
+				break;
 		}
 		return !connectionOccupied;
 	}
@@ -206,7 +209,7 @@ public class BlockRepository {
 	}
 
 	/**
-	 * Retrieve a block by its ID
+	 * Retrieve a block by its ID.
 	 * 
 	 * @param ID
 	 * 
@@ -218,7 +221,7 @@ public class BlockRepository {
 	}
 
 	/**
-	 * Remove a block by its ID
+	 * Remove a block by its ID.
 	 * 
 	 * @param isChain A flag announcing if a chain of blocks has to be removed or if
 	 *                only the given blockId has to be removed.
@@ -262,21 +265,20 @@ public class BlockRepository {
 			ArrayList<String> parentIdentifiers = getConnectedParentIfExists(b.getBlockId());
 			Block parent = getBlockByID(parentIdentifiers.get(1));
 			switch (ConnectionType.valueOf(parentIdentifiers.get(0))) {
-			case BODY:
-				parent.setFirstBlockOfBody(null);
-				break;
-			case CONDITION:
-				parent.setConditionBlock(null);
-				break;
-			case DOWN:
-				parent.setNextBlock(null);
-				break;
-			case OPERAND:
-				parent.setOperand(null);
-				break;
-			default:
-				break;
-
+				case BODY:
+					parent.setFirstBlockOfBody(null);
+					break;
+				case CONDITION:
+					parent.setConditionBlock(null);
+					break;
+				case DOWN:
+					parent.setNextBlock(null);
+					break;
+				case OPERAND:
+					parent.setOperand(null);
+					break;
+				default:
+					break;
 			}
 
 		}
@@ -375,7 +377,7 @@ public class BlockRepository {
 		Block bfm = null;
 
 		if (movedBlock == null)
-			throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+			throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain.");
 
 		ArrayList<String> beforeMoveTopBlock = getConnectedParentIfExists(topOfMovedChainBlockId);
 //		beforeMove = getConnectedParentIfExists(topOfMovedChainBlockId);
@@ -409,16 +411,16 @@ public class BlockRepository {
 
 				removeBlockFromHeadBlocks(afm);
 
-				if (movedBlock.getNextBlock() != null) {
-					Block nextBlockInChain = movedBlock;
-					while (nextBlockInChain.getNextBlock() != null) {
-						nextBlockInChain = nextBlockInChain.getNextBlock();
-					}
-					nextBlockInChain.setNextBlock(afm);
-					movedBlockID = nextBlockInChain.getBlockId();
-				} else {
+//				if (movedBlock.getNextBlock() != null) {
+//					Block nextBlockInChain = movedBlock;
+//					while (nextBlockInChain.getNextBlock() != null) {
+//						nextBlockInChain = nextBlockInChain.getNextBlock();
+//					}
+//					nextBlockInChain.setNextBlock(afm);
+//					movedBlockID = nextBlockInChain.getBlockId();
+//				} else {
 					movedBlock.setNextBlock(afm);
-				}
+//				}
 			}
 
 			else if (connectionAfterMove == ConnectionType.BODY) {
@@ -443,29 +445,29 @@ public class BlockRepository {
 
 				removeBlockFromHeadBlocks(afm);
 
-				if (movedBlock.getConditionBlock() != null) {
-					Block nextChainBlock = movedBlock.getConditionBlock();
-					while (nextChainBlock.getOperand() != null) {
-						nextChainBlock = nextChainBlock.getOperand();
-					}
-					nextChainBlock.setOperand(afm);
-					movedBlockID = nextChainBlock.getBlockId();
-
-				} else {
-					if (movedBlock.getOperand() != null) {
-						Block nextChainBlock = movedBlock;
-						while (nextChainBlock.getOperand() != null) {
-							nextChainBlock = nextChainBlock.getOperand();
-						}
-						nextChainBlock.setOperand(afm);
-						movedBlockID = nextChainBlock.getBlockId();
-					} else {
+//				if (movedBlock.getConditionBlock() != null) {
+//					Block nextChainBlock = movedBlock.getConditionBlock();
+//					while (nextChainBlock.getOperand() != null) {
+//						nextChainBlock = nextChainBlock.getOperand();
+//					}
+//					nextChainBlock.setOperand(afm);
+//					movedBlockID = nextChainBlock.getBlockId();
+//
+//				} else {
+//					if (movedBlock.getOperand() != null) {
+//						Block nextChainBlock = movedBlock;
+//						while (nextChainBlock.getOperand() != null) {
+//							nextChainBlock = nextChainBlock.getOperand();
+//						}
+//						nextChainBlock.setOperand(afm);
+//						movedBlockID = nextChainBlock.getBlockId();
+//					} else {
 						// If movedBlock is a controlBlock it doesn't have an operand and vice versa,
 						// We don't have to worry about calling setCondition or setOperand.
 						movedBlock.setConditionBlock(afm);
 						movedBlock.setOperand(afm);
-					}
-				}
+//					}
+//				}
 
 			} else if (connectionAfterMove == ConnectionType.OPERAND) {
 				if (afm.getOperand() != null)
@@ -475,20 +477,19 @@ public class BlockRepository {
 				afm.setOperand(movedBlock);
 			}
 		} else {
-			if (bfm == null)
-				throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+//			if (bfm == null)
+//				throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain.");
 
 			if (connectionBeforeMove == ConnectionType.DOWN) {
-				if (bfm.getNextBlock() != null && !bfm.getNextBlock().equals(movedBlock))
-					throw new InvalidBlockConnectionException(
-							"The moved block is not connected to this block or socket");
+//				if (bfm.getNextBlock() != null && !bfm.getNextBlock().equals(movedBlock))
+//					throw new InvalidBlockConnectionException(
+//							"The moved block is not connected to this block or socket");
 
 				if (connectionAfterMove == ConnectionType.NOCONNECTION) {
-					bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
 					addBlockToHeadBlocks(movedBlock);
 				} else {
-					if (afm == null)
-						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+//					if (afm == null)
+//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
 					if (connectionAfterMove == ConnectionType.DOWN) {
 						if (afm.getNextBlock() != null)
@@ -502,17 +503,17 @@ public class BlockRepository {
 						bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
 						addBlockToHeadBlocks(movedBlock);// connection up is broken so there is no upper block
 						removeBlockFromHeadBlocks(afm); // Remove the old headblock from headblocks
-						if (movedBlock.getNextBlock() != null) // block is Head block of a blockChain
-						{
-							Block nextBlockInChain = movedBlock;
-							while (nextBlockInChain.getNextBlock() != null) {
-								nextBlockInChain = nextBlockInChain.getNextBlock();
-							}
-							nextBlockInChain.setNextBlock(afm);
-							movedBlockID = nextBlockInChain.getBlockId();
-						} else {
+//						if (movedBlock.getNextBlock() != null) // block is Head block of a blockChain
+//						{
+//							Block nextBlockInChain = movedBlock;
+//							while (nextBlockInChain.getNextBlock() != null) {
+//								nextBlockInChain = nextBlockInChain.getNextBlock();
+//							}
+//							nextBlockInChain.setNextBlock(afm);
+//							movedBlockID = nextBlockInChain.getBlockId();
+//						} else {
 							movedBlock.setNextBlock(afm);
-						}
+//						}
 
 					} else if (connectionAfterMove == ConnectionType.BODY) {
 						if (afm.getFirstBlockOfBody() != null)
@@ -524,20 +525,20 @@ public class BlockRepository {
 						if (!headBlocks.contains(afm))
 							throw new InvalidBlockConnectionException("This socket is not free");
 
-						//
-
-						addBlockToHeadBlocks(movedBlock);
-						removeBlockFromHeadBlocks(afm);
-						if (movedBlock.getOperand() != null) {
-							Block nextChainBlock = movedBlock;
-							while (nextChainBlock.getOperand() != null) {
-								nextChainBlock = nextChainBlock.getOperand();
-							}
-							nextChainBlock.setOperand(afm);
-							movedBlockID = nextChainBlock.getBlockId();
-						} else {
+//						//
+//
+//						addBlockToHeadBlocks(movedBlock);
+//						removeBlockFromHeadBlocks(afm);
+//						if (movedBlock.getOperand() != null) {
+//							Block nextChainBlock = movedBlock;
+//							while (nextChainBlock.getOperand() != null) {
+//								nextChainBlock = nextChainBlock.getOperand();
+//							}
+//							nextChainBlock.setOperand(afm);
+//							movedBlockID = nextChainBlock.getBlockId();
+//						} else {
 							movedBlock.setOperand(afm);
-						}
+//						}
 					}
 				}
 				// conditionBlock is hier niet mogelijk aangezien we met een UP connectie zaten.
@@ -577,16 +578,16 @@ public class BlockRepository {
 
 						addBlockToHeadBlocks(movedBlock);
 						removeBlockFromHeadBlocks(afm);
-						if (movedBlock.getOperand() != null) {
-							Block nextChainBlock = movedBlock;
-							while (nextChainBlock.getOperand() != null) {
-								nextChainBlock = nextChainBlock.getOperand();
-							}
-							nextChainBlock.setOperand(afm);
-							movedBlockID = nextChainBlock.getBlockId();
-						} else {
+//						if (movedBlock.getOperand() != null) {
+//							Block nextChainBlock = movedBlock;
+//							while (nextChainBlock.getOperand() != null) {
+//								nextChainBlock = nextChainBlock.getOperand();
+//							}
+//							nextChainBlock.setOperand(afm);
+//							movedBlockID = nextChainBlock.getBlockId();
+//						} else {
 							movedBlock.setOperand(afm);
-						}
+//						}
 					}
 				}
 
@@ -597,7 +598,6 @@ public class BlockRepository {
 							"The moved block is not connected to this block or socket");
 
 				if (connectionAfterMove == ConnectionType.NOCONNECTION) {
-					bfm.setOperand(null);
 					addBlockToHeadBlocks(movedBlock);
 				} else {
 					if (afm == null)
@@ -625,16 +625,16 @@ public class BlockRepository {
 						// effectieve move op gedaan wordt.
 						// Er is hier dus nood aan 2 blokken
 						disconnectParentTopOfChain(topOfMovedChainBlockId);
-						if (movedBlock.getNextBlock() != null) {
-							Block nextBlockInChain = movedBlock;
-							while (nextBlockInChain.getOperand() != null) {
-								nextBlockInChain = nextBlockInChain.getOperand();
-							}
-							nextBlockInChain.setOperand(afm);
-							movedBlockID = nextBlockInChain.getBlockId();
-						} else {
+//						if (movedBlock.getNextBlock() != null) {
+//							Block nextBlockInChain = movedBlock;
+//							while (nextBlockInChain.getOperand() != null) {
+//								nextBlockInChain = nextBlockInChain.getOperand();
+//							}
+//							nextBlockInChain.setOperand(afm);
+//							movedBlockID = nextBlockInChain.getBlockId();
+//						} else {
 							movedBlock.setOperand(afm);
-						}
+//						}
 					}
 				}
 			} else if (connectionBeforeMove == ConnectionType.BODY) {
@@ -672,16 +672,16 @@ public class BlockRepository {
 							addBlockToHeadBlocks(movedBlock);
 							removeBlockFromHeadBlocks(afm);
 
-							if (movedBlock.getNextBlock() != null) {
-								Block nextBlockInChain = movedBlock;
-								while (nextBlockInChain.getNextBlock() != null) {
-									nextBlockInChain = nextBlockInChain.getNextBlock();
-								}
-								nextBlockInChain.setNextBlock(afm);
-								movedBlockID = nextBlockInChain.getBlockId();
-							} else {
+//							if (movedBlock.getNextBlock() != null) {
+//								Block nextBlockInChain = movedBlock;
+//								while (nextBlockInChain.getNextBlock() != null) {
+//									nextBlockInChain = nextBlockInChain.getNextBlock();
+//								}
+//								nextBlockInChain.setNextBlock(afm);
+//								movedBlockID = nextBlockInChain.getBlockId();
+//							} else {
 								movedBlock.setNextBlock(afm);
-							}
+//							}
 						} else if (connectionAfterMove == ConnectionType.BODY) {
 							if (afm.getFirstBlockOfBody() != null)
 								throw new InvalidBlockConnectionException("This socket is not free");
@@ -703,8 +703,7 @@ public class BlockRepository {
 	}
 
 	/**
-	 * Disconnects the topOfChainBlock with its old parent if it has one. Should be
-	 * notified to GUI TODO
+	 * Disconnects the topOfChainBlock with its old parent if it has one.
 	 * 
 	 * @param topOfMovedChainBlockId
 	 */
@@ -855,7 +854,6 @@ public class BlockRepository {
 	 *         "Condition Block"
 	 */
 	public boolean checkIfValidProgram() {
-
 		if (headBlocks.size() != 1)
 			return false;
 		Block headBlock = null;
@@ -866,6 +864,12 @@ public class BlockRepository {
 
 	}
 
+	/**
+	 * Checks if the chain starting from the given block is valid.
+	 * 
+	 * @param nextBlockInChain First block of the chain to check.
+	 * @return A flag indicating if the chain is valid or not.
+	 */
 	public boolean CheckIfChainIsValid(Block nextBlockInChain) {
 		while (nextBlockInChain != null) {
 			if (nextBlockInChain instanceof ControlBlock)
@@ -877,7 +881,10 @@ public class BlockRepository {
 	}
 
 	/**
-	 * method used to check if ControlBlock is in a valid state
+	 * Method used to check if ControlBlock is in a valid state.
+	 * 
+	 * @param block The controlblock that needs to be checked.
+	 * @return A flag indicating if the controlBlock is in a valid state or not.
 	 */
 	public boolean checkIfValidControlBlock(ControlBlock block) {
 		if (block.getConditionBlock() == null)
@@ -1006,6 +1013,7 @@ public class BlockRepository {
 		return this.getMaxNbOfBlocks() <= this.allBlocks.size();
 	}
 
+	// TODO: how to test this?
 	/**
 	 * Retrieve the instantiation of BlockRepository.
 	 * 
@@ -1094,16 +1102,12 @@ public class BlockRepository {
 		return maxNbOfBlocks;
 	}
 
-	public Set<String> getAllBlockIDsUnderneath(String blockID) {
-		Set<String> blocksUnderneath = new HashSet<String>();
-		Block nextChainBlock = getBlockByID(blockID);
-		while (nextChainBlock.getNextBlock() != null) {
-			blocksUnderneath.add(nextChainBlock.getNextBlock().getBlockId());
-			nextChainBlock = nextChainBlock.getNextBlock();
-		}
-		return blocksUnderneath;
-	}
-
+	
+	/**
+	 * Finds all the controlblocks who are not in another controlBlock.
+	 * 
+	 * @return A set of all the controlblocks who are not in another controlBlock.
+	 */
 	public Set<ControlBlock> getAllHeadControlBlocks() {
 		Set<ControlBlock> firstControlBlocks = new HashSet<ControlBlock>();
 
@@ -1116,6 +1120,13 @@ public class BlockRepository {
 		return firstControlBlocks;
 	}
 
+	/**
+	 * Finds the enclosing controlblock of the given block.
+	 * 
+	 * @param block The block to find the enclosing controlblock of.
+	 * @return The enclosing controlblock. 
+	 * 	If there is no enclosing block, the method returns null.
+	 */	
 	public ControlBlock getEnclosingControlBlock(ExecutableBlock block) {
 		Set<ControlBlock> chain = new HashSet<ControlBlock>();
 		for (Block headBlock : headBlocks) {
@@ -1145,17 +1156,28 @@ public class BlockRepository {
 		return allBlocksInBody;
 	}
 
+	/**
+	 * Finds all the ID's of the blocks that are below the given block.
+	 * 
+	 * @param blockID The ID of the block from which we want to find all blocks below.
+	 * @return A set of blockID's of the blocks below the given block.
+	 */
 	public Set<String> getAllBlockIDsBelowCertainBlock(Block block) {
 		Set<String> blockIDsUnderNeath = new HashSet<String>();
 		getAllBlocksAfterACertainBlock(block).stream().map(s -> s.getBlockId()).forEach(s -> blockIDsUnderNeath.add(s));
 		return blockIDsUnderNeath;
 	}
 
-	@SuppressWarnings("unchecked")
+	/**
+	 * Finds all headblocks.
+	 * 
+	 * @return A set of all headblocks.
+	 */
 	public Set<Block> getAllHeadBlocks() {
 		return new HashSet<Block>(headBlocks);
 	}
 
+	
 	public String getBlockIdToPerformMoveOn(String topOfMovedChainBlockId, String movedBlockId,
 			ConnectionType connectionAfterMove) {
 		String movedID = topOfMovedChainBlockId;
@@ -1306,11 +1328,17 @@ public class BlockRepository {
 		return isRemoved;
 	}
 
+	/**
+	 * Finds the type of connection between 2 blocks.
+	 * 
+	 * @param parent 	The parent block.
+	 * @param child		The child block.
+	 * @return The type of connection between the 2 given blocks.
+	 */
 	public ConnectionType getConnectionType(Block parent, Block child) {
 		if (parent == null) {
 			return ConnectionType.NOCONNECTION;
 		}
-
 		if (parent.getConditionBlock() != null && parent.getConditionBlock().equals(child)) {
 			return ConnectionType.CONDITION;
 		}

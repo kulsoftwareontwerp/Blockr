@@ -967,5 +967,4 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		resetGlobalVariables();
 		super.repaint();
 	}
-
 }

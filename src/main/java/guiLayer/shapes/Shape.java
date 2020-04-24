@@ -515,3 +515,4 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 }
+

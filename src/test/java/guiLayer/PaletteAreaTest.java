@@ -1,6 +1,3 @@
-/**
- * 
- */
 package guiLayer;
 
 import static org.junit.Assert.assertEquals;

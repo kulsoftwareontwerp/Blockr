@@ -3,7 +3,10 @@
  */
 package applicationLayer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -17,14 +20,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.internal.matchers.Any;
 
-import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
-import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
 import commands.CommandHandler;
+import commands.GameWorldCommand;
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.AssessableBlock;
 import domainLayer.blocks.BlockRepository;
@@ -32,9 +33,13 @@ import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.IfBlock;
 import domainLayer.blocks.WhileBlock;
-import domainLayer.gamestates.GameState;
 import domainLayer.gamestates.InExecutionState;
+import domainLayer.gamestates.InValidProgramState;
 import domainLayer.gamestates.ValidProgramState;
+import events.GUIListener;
+import events.ResetExecutionEvent;
+import events.UpdateGameStateEvent;
+import events.UpdateHighlightingEvent;
 import types.BlockCategory;
 import types.BlockType;
 import types.ExecutionSnapshot;
@@ -57,7 +62,11 @@ public class GameControllerTest {
 	private GameWorldSnapshot snapshotMock;
 	@Spy @InjectMocks
 	private GameController gc;
-//	private GameController gc = new GameController(programBlockRepository, gameWorld);
+	
+	@Mock
+	private GameWorldCommand gameWorldCommand;
+	@Mock
+	private GUIListener mockGuiListener;
 	
 	private InExecutionState inExecutionState;
 	private ValidProgramState validProgramState;
@@ -81,7 +90,8 @@ public class GameControllerTest {
 		assessableBlock = spy(new ConditionBlock("ConditionBlock", new BlockType("ConditionBlock", BlockCategory.CONDITION)));
 		inExecutionState = spy(new InExecutionState(gc, actionBlock));
 		validProgramState = spy(new ValidProgramState(gc));
-		snapshot = new ExecutionSnapshot(actionBlock, snapshotMock, inExecutionState);
+		snapshot = spy(new ExecutionSnapshot(actionBlock, snapshotMock, inExecutionState));
+		gc.addListener(mockGuiListener);
 	}
 
 	/**
@@ -95,16 +105,20 @@ public class GameControllerTest {
 	 * Test method for {@link applicationLayer.GameController#GameController()}.
 	 */
 	@Test
-	public void testGameController() {
-		fail("Not yet implemented");
+	public void testGameController_Positive() {
+		new GameController(gameWorld, commandHandler);
+		
+		verify(gameWorld,atLeastOnce()).saveState();
 	}
 
 	/**
-	 * Test method for {@link applicationLayer.GameController#fireRobotChangeEvent()}.
+	 * Test method for {@link applicationLayer.GameController#handleCommand(commands.GameWorldCommand)}.
 	 */
 	@Test
-	public void testFireRobotChangeEvent() {
-		fail("Not yet implemented");
+	public void testHandleCommand_Positive() {
+		gc.handleCommand(gameWorldCommand);
+		
+		verify(commandHandler,atLeastOnce()).handle(gameWorldCommand);
 	}
 
 	/**
@@ -135,22 +149,6 @@ public class GameControllerTest {
 		assertEquals(snapshot, gc.resetGame());
 		
 		verify(gc,atLeastOnce()).fireUpdateHighlightingEvent(null);
-	}
-
-	/**
-	 * Test method for {@link applicationLayer.GameController#getCurrentState()}.
-	 */
-	@Test
-	public void testGetCurrentState() {
-		fail("Not yet implemented");
-	}
-
-	/**
-	 * Test method for {@link applicationLayer.GameController#toState(domainLayer.gamestates.GameState)}.
-	 */
-	@Test
-	public void testToState() {
-		fail("Not yet implemented");
 	}
 
 	/**
@@ -299,12 +297,53 @@ public class GameControllerTest {
 		verify(gameWorld,atLeastOnce()).performAction(actionBlock.getAction());
 		verify(gc,atLeastOnce()).fireUpdateHighlightingEvent(null);
 	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#checkIfValidProgram()}.
+	 */
+	@Test
+	public void testRestoreExecutionSnapshot_Positive() {
+		when(snapshot.getNextActionBlockToBeExecuted()).thenReturn(actionBlock);
+		when(gc.getCurrentState()).thenReturn(validProgramState);
+		when(snapshot.getGameSnapshot()).thenReturn(snapshotMock);
+		when(snapshot.getState()).thenReturn(inExecutionState);
+		Mockito.doNothing().when(gc).fireUpdateHighlightingEvent(null);
+		when(validProgramState.getNextActionBlockToBeExecuted()).thenReturn(null);
+		
+		gc.restoreExecutionSnapshot(snapshot);
+		
+		verify(validProgramState,atLeastOnce()).setNextActionBlockToBeExecuted(actionBlock);
+		verify(gameWorld,atLeastOnce()).restoreState(snapshotMock);
+		verify(gc,atLeastOnce()).toState(inExecutionState);
+		verify(gc,atLeastOnce()).fireUpdateHighlightingEvent(null);
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#checkIfValidProgram()}.
+	 */
+	@Test
+	public void testRestoreExecutionSnapshot_NextActionBlockNotNull_Positive() {
+		when(snapshot.getNextActionBlockToBeExecuted()).thenReturn(actionBlock);
+		when(gc.getCurrentState()).thenReturn(validProgramState);
+		when(snapshot.getGameSnapshot()).thenReturn(snapshotMock);
+		when(snapshot.getState()).thenReturn(inExecutionState);
+		String blockId = actionBlock.getBlockId();
+		when(validProgramState.getNextActionBlockToBeExecuted()).thenReturn(actionBlock);
+		Mockito.doNothing().when(gc).fireUpdateHighlightingEvent(blockId);
+		
+		gc.restoreExecutionSnapshot(snapshot);
+		
+		verify(validProgramState,atLeastOnce()).setNextActionBlockToBeExecuted(actionBlock);
+		verify(gameWorld,atLeastOnce()).restoreState(snapshotMock);
+		verify(gc,atLeastOnce()).toState(inExecutionState);
+		verify(gc,atLeastOnce()).fireUpdateHighlightingEvent(blockId);
+	}
 
 	/**
 	 * Test method for {@link applicationLayer.GameController#checkIfValidProgram()}.
 	 */
 	@Test
-	public void testCheckIfValidProgram() {
+	public void testCheckIfValidProgram_Positive() {
 		gc.checkIfValidProgram();
 		verify(programBlockRepository,atLeastOnce()).checkIfValidProgram();
 	}
@@ -313,40 +352,95 @@ public class GameControllerTest {
 	 * Test method for {@link applicationLayer.GameController#fireUpdateHighlightingEvent(java.lang.String)}.
 	 */
 	@Test
-	public void testFireUpdateHighlightingEvent() {
-		fail("Not yet implemented");
+	public void testFireUpdateHighlightingEvent_Positive() {
+		gc.fireUpdateHighlightingEvent("someBlockId");
+		
+		verify(mockGuiListener,atLeastOnce()).onUpdateHighlightingEvent(Mockito.any(UpdateHighlightingEvent.class));
 	}
 
 	/**
 	 * Test method for {@link applicationLayer.GameController#removeListener(events.GUIListener)}.
 	 */
 	@Test
-	public void testRemoveListener() {
-		fail("Not yet implemented");
+	public void testRemoveListener_Positive() {
+		gc.removeListener(mockGuiListener);
 	}
 
 	/**
 	 * Test method for {@link applicationLayer.GameController#addListener(events.GUIListener)}.
 	 */
 	@Test
-	public void testAddListener() {
-		fail("Not yet implemented");
+	public void testAddListener_Positive() {
+		gc.addListener(mockGuiListener);
 	}
 
 	/**
 	 * Test method for {@link applicationLayer.GameController#onResetExecutionEvent(events.ResetExecutionEvent)}.
 	 */
 	@Test
-	public void testOnResetExecutionEvent() {
-		fail("Not yet implemented");
+	public void testOnResetExecutionEvent_Positive() {
+		Mockito.doNothing().when(gc).resetGameExecution();
+		
+		gc.onResetExecutionEvent(Mockito.mock(ResetExecutionEvent.class));
+		verify(gc,atLeastOnce()).resetGameExecution();
 	}
 
 	/**
 	 * Test method for {@link applicationLayer.GameController#onUpdateGameStateEvent(events.UpdateGameStateEvent)}.
 	 */
 	@Test
-	public void testOnUpdateGameStateEvent() {
-		fail("Not yet implemented");
+	public void testOnUpdateGameStateEvent_Positive() {
+		Mockito.doNothing().when(gc).updateState();
+		
+		gc.onUpdateGameStateEvent(Mockito.mock(UpdateGameStateEvent.class));
+		verify(gc,atLeastOnce()).updateState();
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#isGameExecutionUseful()}.
+	 */
+	@Test
+	public void testIsGameExecutionUseful_CurrentStateValid_Positive() {
+		when(gc.getCurrentState()).thenReturn(validProgramState);
+		assertTrue(gc.isGameExecutionUseful());
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#isGameExecutionUseful()}.
+	 */
+	@Test
+	public void testIsGameExecutionUseful_CurrentStateInExecution_NextActionBlockNotNull_Positive() {
+		when(gc.getCurrentState()).thenReturn(inExecutionState);
+		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(actionBlock);
+		assertTrue(gc.isGameExecutionUseful());
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#isGameExecutionUseful()}.
+	 */
+	@Test
+	public void testIsGameExecutionUseful_CurrentStateInvalid_Positive() {
+		when(gc.getCurrentState()).thenReturn(Mockito.mock(InValidProgramState.class));
+		assertFalse(gc.isGameExecutionUseful());
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.GameController#isGameExecutionUseful()}.
+	 */
+	@Test
+	public void testIsGameExecutionUseful_CurrentStateInExecution_NextActionBlockNull_Positive() {
+		when(gc.getCurrentState()).thenReturn(inExecutionState);
+		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(null);
+		assertFalse(gc.isGameExecutionUseful());
 	}
 
+	/**
+	 * Test method for {@link applicationLayer.GameController#isGameExecutionUseful()}.
+	 */
+	@Test
+	public void testIsGameResetUseful_CurrentStateInExecution_Positive() {
+		when(gc.getCurrentState()).thenReturn(inExecutionState);
+		assertTrue(gc.isGameResetUseful());
+	}
 }
+
