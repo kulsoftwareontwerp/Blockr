@@ -483,5 +483,4 @@ public class DomainController {
 	public boolean isGameResetUseful() {
 		return gameController.isGameResetUseful();
 	}
-
 }
