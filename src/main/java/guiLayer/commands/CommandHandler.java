@@ -5,7 +5,6 @@ package guiLayer.commands;
 
 import java.util.Stack;
 
-import commands.Command;
 import guiLayer.CanvasWindow;
 
 /**
@@ -36,7 +35,6 @@ public class CommandHandler {
 	}
 	
 	// For testing purposes
-	@SuppressWarnings("unused")
 	CommandHandler(CanvasWindow canvas, Stack<BlockCommand> executedBlockCommands, Stack<BlockCommand> undoneBlockCommands, 
 			Stack<GameWorldCommand> executedGameWorldCommands, Stack<GameWorldCommand> undoneGameWorldCommands,
 			BlockCommand currentlyHandledBlockCommand) {
