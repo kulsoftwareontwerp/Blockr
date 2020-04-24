@@ -79,12 +79,6 @@ public class DomainController {
 		this.gameController = gc;
 		this.blockController = bc;
 		this.commandHandler = ch;
-	}	
-
-	@SuppressWarnings("unused")
-	private DomainController(GameController gameController, BlockController blockController, GameWorld gameWorld,
-			CommandHandler handler) {
-		initializeDomainController(gameController, blockController, gameWorld, handler);
 	}
 
 	/**
@@ -288,7 +282,6 @@ public class DomainController {
 	 */
 	public void paint(Graphics gameWorldGraphics) {
 		gameWorld.paint(gameWorldGraphics);
-
 	}
 
 	/**

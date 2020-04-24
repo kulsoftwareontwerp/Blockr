@@ -52,8 +52,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	@SuppressWarnings("unused")
-	private BlockController(BlockRepository programBlockRepository) {
-		this.guiListeners = new HashSet<GUIListener>();
+	private BlockController(BlockRepository programBlockRepository, Collection<GUIListener> guiListeners) {
+		this.guiListeners = guiListeners;
 		this.domainListeners = new HashSet<DomainListener>();
 		this.programBlockRepository = programBlockRepository;
 	}
@@ -75,7 +75,6 @@ public class BlockController implements GUISubject, DomainSubject {
 			for (GUIListener listener : guiListeners) {
 				listener.onBlockRemoved(event);
 			}
-
 		}
 	}
 
@@ -323,6 +322,8 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		Block toAdd = snapshot.getBlock();
 
+		// TODO: How best to test this?
+		// 	See testRestoreBlockSnapshot_RemovedTrue_MaxBlocksReachedTrue_IsChainTrue_AllOptionsInFireBlockAdded_Positive in BlockControllerTest
 		if (toAdd.getConditionBlock() != null) {
 			BlockSnapshot s = new BlockSnapshot(toAdd.getConditionBlock(), null, toAdd, null);
 			fireBlockAdded(s);
@@ -474,16 +475,23 @@ public class BlockController implements GUISubject, DomainSubject {
 		return blockIDsInBody;
 	}
 
-	// TO BE DOCUMENTED:
-
-	// TODO THROW EXECPTIONS!!!!!
-
+	/**
+	 * Finds the id of the enclosing controlblock of the given block.
+	 * 
+	 * @param id The ID of the block to find the enclosing controlblock of.
+	 * @return The id of the enclosing controlblock. 
+	 * 	If there is no enclosing block, the method returns null.
+	 */
 	public String getEnclosingControlBlock(String id) {
-
 		Block givenBlock = programBlockRepository.getBlockByID(id);
 		ControlBlock block = null;
-		if (givenBlock instanceof ExecutableBlock) {
-
+		if (givenBlock == null) {
+			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
+		}
+		else if (!(givenBlock instanceof ExecutableBlock)) {
+			throw new InvalidBlockTypeException(ExecutableBlock.class, givenBlock.getClass());
+		}
+		else {
 			block = programBlockRepository.getEnclosingControlBlock((ExecutableBlock) givenBlock);
 		}
 
@@ -493,6 +501,12 @@ public class BlockController implements GUISubject, DomainSubject {
 		return block.getBlockId();
 	}
 
+	/**
+	 * Finds all the ID's of the blocks that are below the given block.
+	 * 
+	 * @param blockID The ID of the block from which we want to find all blocks below.
+	 * @return A set of blockID's of the blocks below the given block.
+	 */
 	public Set<String> getAllBlockIDsBelowCertainBlock(String blockID) {
 		Block block = programBlockRepository.getBlockByID(blockID);
 		Set<String> blockIDsUnderNeath = new HashSet<String>();
@@ -506,6 +520,11 @@ public class BlockController implements GUISubject, DomainSubject {
 		return blockIDsUnderNeath;
 	}
 
+	/**
+	 * Finds the ID's of all the controlblocks who are not in another controlBlock.
+	 * 
+	 * @return A set of the ID's of all the controlblocks who are not in another controlBlock.
+	 */
 	public Set<String> getAllHeadControlBlocks() {
 		return programBlockRepository.getAllHeadControlBlocks().stream().map(e -> e.getBlockId())
 				.collect(Collectors.toSet());
@@ -535,21 +554,11 @@ public class BlockController implements GUISubject, DomainSubject {
 
 	}
 
-	public String getFirstBlockBelow(String id) {
-		Block block = programBlockRepository.getBlockByID(id);
-
-		if (block == null) {
-			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
-		}
-
-		if (block.getNextBlock() != null) {
-			return block.getBlockId();
-		} else {
-			return null;
-		}
-
-	}
-
+	/**
+	 * Finds all the current headblocks in the program.
+	 * 
+	 * @return A set of all the ID's of the current headblocks of the program.
+	 */
 	public Set<String> getAllHeadBlocks() {
 		return programBlockRepository.getAllHeadBlocks().stream().map(e -> e.getBlockId()).collect(Collectors.toSet());
 	}
