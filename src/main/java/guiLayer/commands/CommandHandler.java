@@ -5,6 +5,7 @@ package guiLayer.commands;
 
 import java.util.Stack;
 
+import commands.Command;
 import guiLayer.CanvasWindow;
 
 /**
@@ -32,6 +33,19 @@ public class CommandHandler {
 		executedGameWorldCommands = new Stack<GameWorldCommand>();
 		undoneGameWorldCommands = new Stack<GameWorldCommand>();
 		this.canvas=canvas;
+	}
+	
+	// For testing purposes
+	@SuppressWarnings("unused")
+	CommandHandler(CanvasWindow canvas, Stack<BlockCommand> executedBlockCommands, Stack<BlockCommand> undoneBlockCommands, 
+			Stack<GameWorldCommand> executedGameWorldCommands, Stack<GameWorldCommand> undoneGameWorldCommands,
+			BlockCommand currentlyHandledBlockCommand) {
+		this.canvas=canvas;
+		this.executedBlockCommands = executedBlockCommands;
+		this.undoneBlockCommands = undoneBlockCommands;
+		this.executedGameWorldCommands = executedGameWorldCommands;
+		this.undoneGameWorldCommands = undoneGameWorldCommands;
+		this.currentlyHandledBlockCommand = currentlyHandledBlockCommand;
 	}
 
 	/**

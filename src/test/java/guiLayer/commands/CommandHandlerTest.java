@@ -1,14 +1,11 @@
-package commands;
+package guiLayer.commands;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
 import java.util.Stack;
 
 import org.junit.After;
@@ -19,33 +16,32 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.mockito.internal.verification.AtMost;
 
-import applicationLayer.BlockController;
-import domainLayer.blocks.ActionBlock;
-import domainLayer.blocks.Block;
-import domainLayer.blocks.IfBlock;
-import types.BlockCategory;
-import types.BlockSnapshot;
-import types.BlockType;
+import applicationLayer.DomainController;
+import guiLayer.CanvasWindow;
+import guiLayer.types.GuiSnapshot;
 
 public class CommandHandlerTest {
+
+	@Spy
+	private Stack<BlockCommand> executedBlockCommands;
+	@Spy
+	private Stack<BlockCommand> undoneBlockCommands;
+	@Spy
+	private Stack<GameWorldCommand> executedGameWorldCommands;
+	@Spy
+	private Stack<GameWorldCommand> undoneGameWorldCommands;
+	@Mock
+	private CanvasWindow canvas;
 	
-	@Spy
-	private Stack<Command> executedBlockCommands;
-	@Spy
-	private Stack<Command> undoneBlockCommands;
-	@Spy
-	private Stack<Command> executedGameWorldCommands;
-	@Spy
-	private Stack<Command> undoneGameWorldCommands;
+	BlockCommand mock = Mockito.mock(BlockCommand.class);
 	
 	@Spy @InjectMocks
-	private CommandHandler ch = new CommandHandler(executedBlockCommands, undoneBlockCommands, 
-			executedGameWorldCommands, undoneGameWorldCommands);
+	private CommandHandler ch = new CommandHandler(canvas, executedBlockCommands, undoneBlockCommands, 
+			executedGameWorldCommands, undoneGameWorldCommands, mock);
 	
 	@Mock
-	private AddBlockCommand addBlockCommand;
+	private BlockCommand blockCommand;
 	@Mock
 	private ResetCommand resetCommand;
 	
@@ -65,11 +61,11 @@ public class CommandHandlerTest {
 	}
 	
 	/**
-	 * Test method for {@link commands.CommandHandler#CommandHandler()}.
+	 * Test method for {@link guiLayer.commands.CommandHandler#CommandHandler()}.
 	 */
 	@Test
 	public void testCommandHandler_Positive() {
-		CommandHandler newCommandHandler = new CommandHandler();
+		CommandHandler newCommandHandler = new CommandHandler(canvas);
 		try {
 			Field executedBlockCommands = CommandHandler.class.getDeclaredField("executedBlockCommands");
 			executedBlockCommands.setAccessible(true);
@@ -93,25 +89,25 @@ public class CommandHandlerTest {
 	}
 	
 	/**
-	 * Test method for {@link commands.CommandHandler#handle(BlockCommand)}.
+	 * Test method for {@link guiLayer.commands.CommandHandler#handle(BlockCommand)}.
 	 */
 	@Test
 	public void testHandle_BlockCommand_Positive() {
-		Mockito.doNothing().when(addBlockCommand).execute();
+		Mockito.doNothing().when(blockCommand).execute();
 		
-		ch.handle(addBlockCommand);
+		ch.handle(blockCommand);
 		
 		assertTrue(executedGameWorldCommands.empty());
 		assertTrue(undoneGameWorldCommands.empty());
 		assertTrue(undoneBlockCommands.empty());
 		
-		verify(addBlockCommand, atLeastOnce()).execute();
+		verify(blockCommand, atLeastOnce()).execute();
 		
-		assertTrue(executedBlockCommands.contains(addBlockCommand));
+		assertTrue(executedBlockCommands.contains(blockCommand));
 	}
 	
 	/**
-	 * Test method for {@link commands.CommandHandler#handle(GameWorldCommand)}.
+	 * Test method for {@link guiLayer.commands.CommandHandler#handle(GameWorldCommand)}.
 	 */
 	@Test
 	public void testHandle_GameWorldCommand_Positive() {
@@ -123,8 +119,58 @@ public class CommandHandlerTest {
 		assertTrue(executedGameWorldCommands.contains(resetCommand));		
 	}
 	
+	
+	
 	/**
-	 * Test method for {@link commands.CommandHandler#undo()}.
+	 * Test method for {@link guiLayer.commands.CommandHandler#setAddedId(String)}.
+	 */
+	@Test
+	public void testSetAddedId_CurrentBlockCommandNull_Positive() {
+		CommandHandler handler = new CommandHandler(canvas, executedBlockCommands, undoneBlockCommands, 
+				executedGameWorldCommands, undoneGameWorldCommands, null);
+		
+		handler.setAddedId("0");
+		
+		verify(Mockito.mock(BlockCommand.class),Mockito.never()).setAddedID(Mockito.anyString());
+	}
+	
+	/**
+	 * Test method for {@link guiLayer.commands.CommandHandler#setAddedId(String)}.
+	 */
+	@Test
+	public void testSetAddedId_CurrentBlockCommandNotNull_Positive() {	
+		ch.setAddedId("0");
+		
+		verify(mock,atLeastOnce()).setAddedID("0");
+	}
+	
+	
+	
+	/**
+	 * Test method for {@link guiLayer.commands.CommandHandler#setHeight(String, int)}.
+	 */
+	@Test
+	public void testSetHeight_CurrentBlockCommandNull_Positive() {
+		CommandHandler handler = new CommandHandler(canvas, executedBlockCommands, undoneBlockCommands, 
+				executedGameWorldCommands, undoneGameWorldCommands, null);
+		
+		handler.setHeight("0", 10);
+		
+		verify(Mockito.mock(BlockCommand.class),Mockito.never()).setAfterActionHeight("0", 10);
+	}
+	
+	/**
+	 * Test method for {@link guiLayer.commands.CommandHandler#setHeight(String, int)}.
+	 */
+	@Test
+	public void testSetHeight_CurrentBlockCommandNotNull_Positive() {	
+		ch.setHeight("0", 10);
+		
+		verify(mock,atLeastOnce()).setAfterActionHeight("0", 10);
+	}
+	
+	/**
+	 * Test method for {@link guiLayer.commands.CommandHandler#undo()}.
 	 */
 	@Test
 	public void testUndo_BothCommandStacksEmpty_Positive() {
@@ -138,7 +184,7 @@ public class CommandHandlerTest {
 	}
 	
 	/**
-	 * Test method for {@link commands.CommandHandler#undo()}.
+	 * Test method for {@link guiLayer.commands.CommandHandler#undo()}.
 	 */
 	@Test
 	public void testUndo_ExecutedGameWorldCommandsNotEmpty_Positive() {
@@ -151,25 +197,25 @@ public class CommandHandlerTest {
 	}	
 	
 	/**
-	 * Test method for {@link commands.CommandHandler#undo()}.
+	 * Test method for {@link guiLayer.commands.CommandHandler#undo()}.
 	 */
 	@Test
 	public void testUndo_ExecutedBlockCommandsNotEmpty_Positive() {
-		executedBlockCommands.push(addBlockCommand);
+		executedBlockCommands.push(blockCommand);
 		
 		ch.undo();
 		
 		assertTrue(executedGameWorldCommands.empty());
 		assertTrue(undoneGameWorldCommands.empty());
 		
-		verify(addBlockCommand,atLeastOnce()).undo();
-		assertTrue(undoneBlockCommands.contains(addBlockCommand));
+		verify(blockCommand,atLeastOnce()).undo();
+		assertTrue(undoneBlockCommands.contains(blockCommand));
 	}	
 	
 	
 	
 	/**
-	 * Test method for {@link commands.CommandHandler#undo()}.
+	 * Test method for {@link guiLayer.commands.CommandHandler#undo()}.
 	 */
 	@Test
 	public void testRedo_BothCommandStacksEmpty_Positive() {
@@ -183,7 +229,7 @@ public class CommandHandlerTest {
 	}
 	
 	/**
-	 * Test method for {@link commands.CommandHandler#undo()}.
+	 * Test method for {@link guiLayer.commands.CommandHandler#undo()}.
 	 */
 	@Test
 	public void testRedo_UndoneGameWorldCommandsNotEmpty_Positive() {
@@ -196,20 +242,19 @@ public class CommandHandlerTest {
 	}	
 	
 	/**
-	 * Test method for {@link commands.CommandHandler#undo()}.
+	 * Test method for {@link guiLayer.commands.CommandHandler#undo()}.
 	 */
 	@Test
 	public void testRedo_UndoneBlockCommandsNotEmpty_Positive() {
-		undoneBlockCommands.push(addBlockCommand);
+		undoneBlockCommands.push(blockCommand);
 		
 		ch.redo();
 		
 		assertTrue(executedGameWorldCommands.empty());
 		assertTrue(undoneGameWorldCommands.empty());
 		
-		verify(addBlockCommand,atLeastOnce()).execute();
-		assertTrue(executedBlockCommands.contains(addBlockCommand));
-	}	
-
+		verify(blockCommand,atLeastOnce()).execute();
+		assertTrue(executedBlockCommands.contains(blockCommand));
+	}
 	
 }
