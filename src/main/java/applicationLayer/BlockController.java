@@ -52,8 +52,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	@SuppressWarnings("unused")
-	private BlockController(BlockRepository programBlockRepository) {
-		this.guiListeners = new HashSet<GUIListener>();
+	private BlockController(BlockRepository programBlockRepository, Collection<GUIListener> guiListeners) {
+		this.guiListeners = guiListeners;
 		this.domainListeners = new HashSet<DomainListener>();
 		this.programBlockRepository = programBlockRepository;
 	}

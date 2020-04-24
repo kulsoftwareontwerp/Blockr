@@ -88,12 +88,14 @@ public class BlockFactoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType)}.
 	 */
 	@Test
-	public void testCreateBlock_WrongControl_Positive() {		
+	public void testCreateBlock_WrongControl_IllegalArgumentException() {		
 		String excMessage = "Unexpected value: WrongType";
 		exceptionRule.expect(IllegalArgumentException.class);
 		exceptionRule.expectMessage(excMessage);
 		
 		assertTrue(factory.createBlock(new BlockType("WrongType", BlockCategory.CONTROL)) instanceof WhileBlock);
 	}
+	
+	
 
 }

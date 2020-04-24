@@ -41,7 +41,7 @@ public abstract class Block implements Cloneable {
 		return true;
 	}
 
-	// TODO: How to fully test this?
+	// TODO: Fully test this (see robotGameWorld for examples)
 	@Override
 	public Block clone() {
 		Block cloned;

@@ -5,6 +5,7 @@ package applicationLayer;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -14,6 +15,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -60,6 +63,10 @@ public class BlockControllerTest {
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();
 	
+	@Mock
+	private GUIListener mockGuiListener;
+	@Spy
+	private HashSet<GUIListener> guiListeners;
 	@Mock(name="blockRepository")
 	private BlockRepository blockRepository;
 	@Spy @InjectMocks
@@ -72,8 +79,6 @@ public class BlockControllerTest {
 	private BlockSnapshot snapshot;
 	
 	@Mock
-	private GUIListener mockGuiListener;
-	@Mock
 	private DomainListener mockDomainListener;
 
 	/**
@@ -81,13 +86,17 @@ public class BlockControllerTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
+		guiListeners.clear();
+		guiListeners.add(mockGuiListener);
+		
 		actionBlock0 = new ActionBlock("0", new BlockType("Action", BlockCategory.ACTION));
 		actionBlock1 = new ActionBlock("1", new BlockType("Action", BlockCategory.ACTION));
 		actionBlockSpy = spy(new ActionBlock("2", new BlockType("Action", BlockCategory.ACTION)));
 		controlBlock = spy(new IfBlock("ifBlock"));
 		snapshot = spy(new BlockSnapshot(actionBlock0, null, null, new HashSet<Block>()));
-		MockitoAnnotations.initMocks(this);
-		bc.addListener(mockGuiListener);
+		
+//		bc.addListener(mockGuiListener);
 		bc.addDomainListener(mockDomainListener);
 	}
 
@@ -103,7 +112,22 @@ public class BlockControllerTest {
 	 */
 	@Test
 	public void testBlockController_Positive() {
-		new BlockController();
+		BlockController newBlockController = new BlockController();
+		try {
+			Field guiListeners = BlockController.class.getDeclaredField("guiListeners");
+			guiListeners.setAccessible(true);
+			assertTrue("guiListeners were not initialised", guiListeners.get(newBlockController) != null);
+
+			Field domainListeners = BlockController.class.getDeclaredField("domainListeners");
+			domainListeners.setAccessible(true);
+			assertTrue("domainListeners were not initialised", domainListeners.get(newBlockController) != null);
+
+			Field programBlockRepository = BlockController.class.getDeclaredField("programBlockRepository");
+			programBlockRepository.setAccessible(true);
+			assertTrue("programBlockRepository was not initialised", programBlockRepository.get(newBlockController) != null);
+		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			fail("One or more of the required fields were not declared.");
+		}
 	}
 
 	/**
@@ -511,6 +535,9 @@ public class BlockControllerTest {
 		assertEquals(allHeadControlBlocksID, bc.getAllHeadControlBlocks());		
 	}
 
+	@Captor
+	private ArgumentCaptor<GUIListener> listenerCaptor;
+	
 	/**
 	 * Test method for {@link applicationLayer.BlockController#addDomainListener(events.DomainListener)}.
 	 */
@@ -532,15 +559,31 @@ public class BlockControllerTest {
 	 */
 	@Test
 	public void testRemoveListener_Positive() {
-		bc.removeListener(mockGuiListener);
-	}
+		GUIListener listenerToRemove = Mockito.mock(GUIListener.class);
+		guiListeners.add(listenerToRemove);
+		assertEquals(2, guiListeners.size());
 
+		bc.removeListener(listenerToRemove);
+		verify(guiListeners).remove(listenerCaptor.capture());
+
+		assertEquals(listenerToRemove, listenerCaptor.getValue());
+		assertEquals(1, guiListeners.size());
+
+	}
+	
 	/**
 	 * Test method for {@link applicationLayer.BlockController#addListener(events.GUIListener)}.
 	 */
 	@Test
 	public void testAddListener_Positive() {
-		bc.addListener(mockGuiListener);
+		GUIListener listenerToAdd = Mockito.mock(GUIListener.class);
+		assertEquals(1, guiListeners.size());
+
+		bc.addListener(listenerToAdd);
+		verify(guiListeners, atLeastOnce()).add(listenerCaptor.capture());
+
+		assertEquals(listenerToAdd, listenerCaptor.getValue());
+		assertEquals(2, guiListeners.size());
 	}
 
 	/**
