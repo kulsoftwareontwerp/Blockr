@@ -4,10 +4,15 @@
 package domainLayer.gamestates;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+import java.lang.reflect.Field;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.mockito.*;
+import org.mockito.junit.MockitoJUnitRunner;
+import applicationLayer.GameController;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+
 
 /**
  * InValidProgramStateTest
@@ -15,8 +20,13 @@ import org.junit.Test;
  * @version 0.1
  * @author group17
  */
+@RunWith(MockitoJUnitRunner.class)
 public class InValidProgramStateTest {
 
+	@Mock
+	private GameController gameController;
+	@InjectMocks
+	private InValidProgramState gameState;
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -36,7 +46,19 @@ public class InValidProgramStateTest {
 	 */
 	@Test
 	public void testUpdate() {
-		fail("Not yet implemented");
+		when(gameController.checkIfValidProgram()).thenReturn(true);
+		gameState.update();
+		verify(gameController).checkIfValidProgram();
+		verify(gameController).toState(any(GameState.class));
+		
+	}
+	
+	@Test
+	public void testUpdateNegative() {
+		when(gameController.checkIfValidProgram()).thenReturn(false);
+		gameState.update();
+		verify(gameController).checkIfValidProgram();
+		verify(gameController,times(0)).toState(any(GameState.class));
 	}
 
 	/**
@@ -44,7 +66,15 @@ public class InValidProgramStateTest {
 	 */
 	@Test
 	public void testInValidProgramState() {
-		fail("Not yet implemented");
+		InValidProgramState state = new InValidProgramState(gameController);
+		try {
+			Field gameController = InValidProgramState.class.getSuperclass().getDeclaredField("gameController");
+			gameController.setAccessible(true);
+			assertTrue("gameController was not initialised", gameController.get(state) != null);
+
+		} catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+			fail("One or more of the required fields were not declared.");
+		}
 	}
 
 }

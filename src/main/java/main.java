@@ -1,4 +1,3 @@
-
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorldType;
 
@@ -29,4 +28,3 @@ public class main {
 	}
 
 }
-

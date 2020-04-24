@@ -443,4 +443,3 @@ public class GameControllerTest {
 		assertTrue(gc.isGameResetUseful());
 	}
 }
-

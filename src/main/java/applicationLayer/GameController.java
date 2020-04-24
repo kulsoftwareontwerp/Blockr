@@ -292,4 +292,5 @@ public class GameController implements DomainListener, GUISubject {
 		return getCurrentState() instanceof InExecutionState  ;
 
 	}
+
 }

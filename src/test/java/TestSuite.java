@@ -1,7 +1,6 @@
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-
 import applicationLayer.ApplicationLayer;
 import commands.Commands;
 import domainLayer.DomainLayer;

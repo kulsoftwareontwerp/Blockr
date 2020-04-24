@@ -55,9 +55,28 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private Shape movedShape = null;
 
 	private MaskedKeyBag maskedKeyBag;
-	private Timer maskedKeyTimer = null;
 
 	private GuiSnapshot currentSnapshot;
+
+	// This Constructor is only used for Testing Purposes. This should NEVER be
+	// called upon, and is only public for the purpose of instantiating the
+	// CanvasWindow.class in the tests
+	public CanvasWindow(GuiSnapshot snapshot, ShapeFactory shapeFactory, CommandHandler commandHandler,
+			ProgramArea programArea, DomainController domainController, PaletteArea paletteArea, Timer maskedKeyTimer,
+			MaskedKeyBag maskedKeyBag) {
+		super("TEST-TITLE");
+		this.maskedKeyBag = maskedKeyBag;
+		this.maskedKeyTimer = maskedKeyTimer;
+		this.currentSnapshot = snapshot;
+		this.shapeFactory = shapeFactory;
+		this.commandHandler = commandHandler;
+		this.programArea = programArea;
+		this.shapesInMovement = new HashSet<Shape>();
+		this.shapeClonesInMovement = new HashSet<Shape>();
+		this.domainController = domainController;
+		this.paletteArea = paletteArea;
+	}
+
 
 	private boolean undoMode;
 
@@ -72,7 +91,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 * Create a new canvasWindow
 	 * 
 	 * @param title the title of the canvasWindow
-	 * @param dc the domainController to perform actions on
+	 * @param dc    the domainController to perform actions on
 	 */
 	public CanvasWindow(String title, DomainController dc) {
 		super(title);
@@ -183,7 +202,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 * 
 	 * @return the currentShape used in this canvasWindow
 	 */
-	private Shape getCurrentShape() {
+	Shape getCurrentShape() {
 		return this.currentShape;
 	}
 
@@ -201,7 +220,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 * 
 	 * @return the shapes in movement.
 	 */
-	private Set<Shape> getShapesInMovement() {
+	Set<Shape> getShapesInMovement() {
+
 		return shapesInMovement;
 	}
 
@@ -410,8 +430,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 							int originalChangedShapeX = movedShape.getX_coord();
 							int originalChangedShapeY = movedShape.getY_coord();
+							movedShape.clipOn(programArea.getHighlightedShapeForConnections(),
+									movedShape.getConnectedVia());
 
-							movedShape.clipOn(programArea.getHighlightedShapeForConnections(), movedShape.getConnectedVia());
 
 							// Only if the shape that's being dragged is the moved shape than it should
 							// be decoupled from the chain it's in
@@ -434,7 +455,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 						if (programArea.getHighlightedShapeForConnections() != null) {
 							domainController.addBlock(getCurrentShape().getType(),
-									programArea.getHighlightedShapeForConnections().getId(), getCurrentShape().getConnectedVia());
+									programArea.getHighlightedShapeForConnections().getId(),
+									getCurrentShape().getConnectedVia());
+
 						} else {
 
 							domainController.addBlock(getCurrentShape().getType(), "", ConnectionType.NOCONNECTION);
@@ -443,11 +466,14 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						commandHandler.handle(new DomainMoveCommand(domainController, this,
 								new GuiSnapshot(getShapeClonesInMovement()), new GuiSnapshot(getShapesInMovement())));
 
-						if (programArea.getHighlightedShapeForConnections().getConnectedVia().equals(ConnectionType.NOCONNECTION)) {
+						if (programArea.getHighlightedShapeForConnections().getConnectedVia()
+								.equals(ConnectionType.NOCONNECTION)) {
 							domainController.moveBlock(getCurrentShape().getId(), "", "", ConnectionType.NOCONNECTION);
 						} else {
 							domainController.moveBlock(getCurrentShape().getId(), movedShape.getId(),
-									programArea.getHighlightedShapeForConnections().getId(), movedShape.getConnectedVia());
+									programArea.getHighlightedShapeForConnections().getId(),
+									movedShape.getConnectedVia());
+
 						}
 					}
 					// decouple chain of blocks from a block
@@ -479,7 +505,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				setCurrentShape(null);
 				programArea.setHighlightedShapeForConnections(null);
 				movedShape = null;
-				offsetCurrentShape = new Coordinate(0,0);
+				offsetCurrentShape = new Coordinate(0, 0);
+
 
 				resetShapesInMovement();
 				blocksUnderneath = new HashSet<String>();
@@ -493,7 +520,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				setCurrentShape(null);
 				programArea.setHighlightedShapeForConnections(null);
 				movedShape = null;
-				offsetCurrentShape = new Coordinate(0,0);
+				offsetCurrentShape = new Coordinate(0, 0);
+
 				resetShapesInMovement();
 				blocksUnderneath = new HashSet<String>();
 			}
@@ -513,13 +541,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 */
 	private void updateAllShapesInMovementAccordingToChangeOfLeader(int diffX, int diffy, Shape excludedShape) {
 		for (Shape shape : getShapesInMovement()) {
-	
+
 			if (shape != excludedShape) {
 				shape.setX_coord(shape.getX_coord() + diffX);
 				shape.setY_coord(shape.getY_coord() + diffy);
 			}
 		}
-	
+
 	}
 
 	/**
@@ -532,7 +560,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 */
 	private Shape determineHighlightShape() {
 		HashMap<ConnectionType, HashMap<Shape, Coordinate>> shapesInProgramAreaConnectionMap = new HashMap<ConnectionType, HashMap<Shape, Coordinate>>();
-	
+
 		for (ConnectionType connection : ConnectionType.values()) {
 			shapesInProgramAreaConnectionMap.put(connection, new HashMap<Shape, Coordinate>());
 			for (Shape shape : programArea.getShapesInProgramArea().stream()
@@ -543,13 +571,14 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						shape.getCoordinateConnectionMap().get(connection));
 			}
 		}
-	
+
 		Shape shape = null;
-	
+
 		for (Shape shapeInMovement : getShapesInMovement()) {
 			// The setConnectedVia of all shapes in movement will be reverted
 			shapeInMovement.persistConnectedVia(false);
-	
+
+
 			if (isConnectionOpen(shapeInMovement, ConnectionType.DOWN)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.UP),
 							shapeInMovement.getTriggerSet(ConnectionType.DOWN))) {
@@ -558,7 +587,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-	
+
 				shapeInMovement.setConnectedVia(ConnectionType.UP, false);
 				shape.setConnectedVia(ConnectionType.DOWN, false);
 				movedShape = shapeInMovement;
@@ -570,11 +599,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-	
+
 				shapeInMovement.setConnectedVia(ConnectionType.DOWN, false);
 				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
-	
+
+
 			} else if (isConnectionOpen(shapeInMovement, ConnectionType.UP)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.BODY),
 							shapeInMovement.getTriggerSet(ConnectionType.UP))) {
@@ -583,11 +613,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-	
+
 				shapeInMovement.setConnectedVia(ConnectionType.BODY, false);
 				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
-	
+
+
 			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION),
 							shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
@@ -596,11 +627,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-	
+
 				shapeInMovement.setConnectedVia(ConnectionType.CONDITION, false);
 				shape.setConnectedVia(ConnectionType.LEFT, false);
 				movedShape = shapeInMovement;
-	
+
+
 			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND),
 							shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
@@ -609,7 +641,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-	
+
 				shapeInMovement.setConnectedVia(ConnectionType.OPERAND, false);
 				shape.setConnectedVia(ConnectionType.LEFT, false);
 				movedShape = shapeInMovement;
@@ -621,7 +653,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-	
+
 				shapeInMovement.setConnectedVia(ConnectionType.LEFT, false);
 				shape.setConnectedVia(ConnectionType.CONDITION, false);
 				movedShape = shapeInMovement;
@@ -633,13 +665,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						.findFirst().get().getKey();
 				// The connectedvia of the determinedShape must be reverted.
 				shape.persistConnectedVia(false);
-	
+
 				shapeInMovement.setConnectedVia(ConnectionType.LEFT, false);
 				shape.setConnectedVia(ConnectionType.OPERAND, false);
 				movedShape = shapeInMovement;
 			}
 		}
-	
+
 		return shape;
 	}
 
@@ -676,10 +708,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			if (connectionTriggerSet.contains(s.getValue())) {
 				return true;
 			}
-	
+
 		}
 		return false;
 	}
+
+	private Timer maskedKeyTimer = null;
 
 	/**
 	 * Revert a move in the GUI. The shapes will be placed on their last recorded
@@ -706,10 +740,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia(), true);
 	}
 
+
 	@Override
 	protected void handleKeyEvent(int id, int keyCode, char keyChar) {
 		if (id == KeyEvent.KEY_PRESSED) {
-	
 			if (keyCode == KeyEvent.VK_CONTROL) {
 				if (maskedKeyTimer != null) {
 					maskedKeyTimer.cancel();
@@ -757,7 +791,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					maskedKeyBag.pressShift(true);
 				}
 			}
-	
+
 			if (keyCode == KeyEvent.VK_U) {
 				commandHandler.undo();
 			}
@@ -766,14 +800,14 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 		}
 		if (id == KeyEvent.KEY_TYPED) {
-	
+
 			if (keyChar == 'd') {
 				// d key 68
 				debugModus = debugModus.getNext();
 				repaint();
 			}
 		}
-	
+
 	}
 
 	/**
@@ -791,6 +825,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			coordinates.putAll(currentSnapshot.getSavedCoordinates());
 			heights.putAll(currentSnapshot.getSavedHeights());
 		}
+		System.out.println(ids);
+
 		for (String id : ids) {
 			BlockType type = domainController.getBlockType(id);
 			Shape shape = shapeFactory.createShape(id, type, coordinates.get(id));
@@ -810,6 +846,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				.collect(Collectors.toSet())) {
 			if (shape != null && domainController.isBlockPresent(shape.getId())) {
 				shape.determineTotalHeight(mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(shape.getId())));
+				System.out.println("ShapeDetermine " + shape.getId() + shape.getHeight());
+
 				commandHandler.setHeight(shape.getId(), shape.getHeight());
 			}
 		}
@@ -920,6 +958,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	public void onBlockRemoved(BlockRemovedEvent event) {
 		Set<Shape> shapesToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
 				.filter(s -> s.getId().equals(event.getRemovedBlockId())).collect(Collectors.toSet());
+
+
+		System.out.println(shapesToBeRemovedFromProgramArea);
 
 		for (Shape shape : shapesToBeRemovedFromProgramArea) {
 			programArea.removeShapeFromProgramArea(shape);

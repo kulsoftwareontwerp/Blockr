@@ -377,7 +377,7 @@ public class BlockRepository {
 		Block bfm = null;
 
 		if (movedBlock == null)
-			throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain.");
+			throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
 		ArrayList<String> beforeMoveTopBlock = getConnectedParentIfExists(topOfMovedChainBlockId);
 //		beforeMove = getConnectedParentIfExists(topOfMovedChainBlockId);
@@ -411,16 +411,16 @@ public class BlockRepository {
 
 				removeBlockFromHeadBlocks(afm);
 
-//				if (movedBlock.getNextBlock() != null) {
-//					Block nextBlockInChain = movedBlock;
-//					while (nextBlockInChain.getNextBlock() != null) {
-//						nextBlockInChain = nextBlockInChain.getNextBlock();
-//					}
-//					nextBlockInChain.setNextBlock(afm);
-//					movedBlockID = nextBlockInChain.getBlockId();
-//				} else {
+				if (movedBlock.getNextBlock() != null) {
+					Block nextBlockInChain = movedBlock;
+					while (nextBlockInChain.getNextBlock() != null) {
+						nextBlockInChain = nextBlockInChain.getNextBlock();
+					}
+					nextBlockInChain.setNextBlock(afm);
+					movedBlockID = nextBlockInChain.getBlockId();
+				} else {
 					movedBlock.setNextBlock(afm);
-//				}
+				}
 			}
 
 			else if (connectionAfterMove == ConnectionType.BODY) {
@@ -445,29 +445,29 @@ public class BlockRepository {
 
 				removeBlockFromHeadBlocks(afm);
 
-//				if (movedBlock.getConditionBlock() != null) {
-//					Block nextChainBlock = movedBlock.getConditionBlock();
-//					while (nextChainBlock.getOperand() != null) {
-//						nextChainBlock = nextChainBlock.getOperand();
-//					}
-//					nextChainBlock.setOperand(afm);
-//					movedBlockID = nextChainBlock.getBlockId();
-//
-//				} else {
-//					if (movedBlock.getOperand() != null) {
-//						Block nextChainBlock = movedBlock;
-//						while (nextChainBlock.getOperand() != null) {
-//							nextChainBlock = nextChainBlock.getOperand();
-//						}
-//						nextChainBlock.setOperand(afm);
-//						movedBlockID = nextChainBlock.getBlockId();
-//					} else {
+				if (movedBlock.getConditionBlock() != null) {
+					Block nextChainBlock = movedBlock.getConditionBlock();
+					while (nextChainBlock.getOperand() != null) {
+						nextChainBlock = nextChainBlock.getOperand();
+					}
+					nextChainBlock.setOperand(afm);
+					movedBlockID = nextChainBlock.getBlockId();
+
+				} else {
+					if (movedBlock.getOperand() != null) {
+						Block nextChainBlock = movedBlock;
+						while (nextChainBlock.getOperand() != null) {
+							nextChainBlock = nextChainBlock.getOperand();
+						}
+						nextChainBlock.setOperand(afm);
+						movedBlockID = nextChainBlock.getBlockId();
+					} else {
 						// If movedBlock is a controlBlock it doesn't have an operand and vice versa,
 						// We don't have to worry about calling setCondition or setOperand.
 						movedBlock.setConditionBlock(afm);
 						movedBlock.setOperand(afm);
-//					}
-//				}
+					}
+				}
 
 			} else if (connectionAfterMove == ConnectionType.OPERAND) {
 				if (afm.getOperand() != null)
@@ -477,19 +477,20 @@ public class BlockRepository {
 				afm.setOperand(movedBlock);
 			}
 		} else {
-//			if (bfm == null)
-//				throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain.");
+			if (bfm == null)
+				throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
 			if (connectionBeforeMove == ConnectionType.DOWN) {
-//				if (bfm.getNextBlock() != null && !bfm.getNextBlock().equals(movedBlock))
-//					throw new InvalidBlockConnectionException(
-//							"The moved block is not connected to this block or socket");
+				if (bfm.getNextBlock() != null && !bfm.getNextBlock().equals(movedBlock))
+					throw new InvalidBlockConnectionException(
+							"The moved block is not connected to this block or socket");
 
 				if (connectionAfterMove == ConnectionType.NOCONNECTION) {
+					bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
 					addBlockToHeadBlocks(movedBlock);
 				} else {
-//					if (afm == null)
-//						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+					if (afm == null)
+						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
 
 					if (connectionAfterMove == ConnectionType.DOWN) {
 						if (afm.getNextBlock() != null)
@@ -503,17 +504,17 @@ public class BlockRepository {
 						bfm.setNextBlock(null);// verwijderen referentie van block bij vorige verbonden block
 						addBlockToHeadBlocks(movedBlock);// connection up is broken so there is no upper block
 						removeBlockFromHeadBlocks(afm); // Remove the old headblock from headblocks
-//						if (movedBlock.getNextBlock() != null) // block is Head block of a blockChain
-//						{
-//							Block nextBlockInChain = movedBlock;
-//							while (nextBlockInChain.getNextBlock() != null) {
-//								nextBlockInChain = nextBlockInChain.getNextBlock();
-//							}
-//							nextBlockInChain.setNextBlock(afm);
-//							movedBlockID = nextBlockInChain.getBlockId();
-//						} else {
+						if (movedBlock.getNextBlock() != null) // block is Head block of a blockChain
+						{
+							Block nextBlockInChain = movedBlock;
+							while (nextBlockInChain.getNextBlock() != null) {
+								nextBlockInChain = nextBlockInChain.getNextBlock();
+							}
+							nextBlockInChain.setNextBlock(afm);
+							movedBlockID = nextBlockInChain.getBlockId();
+						} else {
 							movedBlock.setNextBlock(afm);
-//						}
+						}
 
 					} else if (connectionAfterMove == ConnectionType.BODY) {
 						if (afm.getFirstBlockOfBody() != null)
@@ -525,20 +526,20 @@ public class BlockRepository {
 						if (!headBlocks.contains(afm))
 							throw new InvalidBlockConnectionException("This socket is not free");
 
-//						//
-//
-//						addBlockToHeadBlocks(movedBlock);
-//						removeBlockFromHeadBlocks(afm);
-//						if (movedBlock.getOperand() != null) {
-//							Block nextChainBlock = movedBlock;
-//							while (nextChainBlock.getOperand() != null) {
-//								nextChainBlock = nextChainBlock.getOperand();
-//							}
-//							nextChainBlock.setOperand(afm);
-//							movedBlockID = nextChainBlock.getBlockId();
-//						} else {
+						//
+
+						addBlockToHeadBlocks(movedBlock);
+						removeBlockFromHeadBlocks(afm);
+						if (movedBlock.getOperand() != null) {
+							Block nextChainBlock = movedBlock;
+							while (nextChainBlock.getOperand() != null) {
+								nextChainBlock = nextChainBlock.getOperand();
+							}
+							nextChainBlock.setOperand(afm);
+							movedBlockID = nextChainBlock.getBlockId();
+						} else {
 							movedBlock.setOperand(afm);
-//						}
+						}
 					}
 				}
 				// conditionBlock is hier niet mogelijk aangezien we met een UP connectie zaten.
@@ -578,16 +579,16 @@ public class BlockRepository {
 
 						addBlockToHeadBlocks(movedBlock);
 						removeBlockFromHeadBlocks(afm);
-//						if (movedBlock.getOperand() != null) {
-//							Block nextChainBlock = movedBlock;
-//							while (nextChainBlock.getOperand() != null) {
-//								nextChainBlock = nextChainBlock.getOperand();
-//							}
-//							nextChainBlock.setOperand(afm);
-//							movedBlockID = nextChainBlock.getBlockId();
-//						} else {
+						if (movedBlock.getOperand() != null) {
+							Block nextChainBlock = movedBlock;
+							while (nextChainBlock.getOperand() != null) {
+								nextChainBlock = nextChainBlock.getOperand();
+							}
+							nextChainBlock.setOperand(afm);
+							movedBlockID = nextChainBlock.getBlockId();
+						} else {
 							movedBlock.setOperand(afm);
-//						}
+						}
 					}
 				}
 
@@ -598,6 +599,7 @@ public class BlockRepository {
 							"The moved block is not connected to this block or socket");
 
 				if (connectionAfterMove == ConnectionType.NOCONNECTION) {
+					bfm.setOperand(null);
 					addBlockToHeadBlocks(movedBlock);
 				} else {
 					if (afm == null)
@@ -625,16 +627,16 @@ public class BlockRepository {
 						// effectieve move op gedaan wordt.
 						// Er is hier dus nood aan 2 blokken
 						disconnectParentTopOfChain(topOfMovedChainBlockId);
-//						if (movedBlock.getNextBlock() != null) {
-//							Block nextBlockInChain = movedBlock;
-//							while (nextBlockInChain.getOperand() != null) {
-//								nextBlockInChain = nextBlockInChain.getOperand();
-//							}
-//							nextBlockInChain.setOperand(afm);
-//							movedBlockID = nextBlockInChain.getBlockId();
-//						} else {
+						if (movedBlock.getNextBlock() != null) {
+							Block nextBlockInChain = movedBlock;
+							while (nextBlockInChain.getOperand() != null) {
+								nextBlockInChain = nextBlockInChain.getOperand();
+							}
+							nextBlockInChain.setOperand(afm);
+							movedBlockID = nextBlockInChain.getBlockId();
+						} else {
 							movedBlock.setOperand(afm);
-//						}
+						}
 					}
 				}
 			} else if (connectionBeforeMove == ConnectionType.BODY) {
@@ -672,16 +674,16 @@ public class BlockRepository {
 							addBlockToHeadBlocks(movedBlock);
 							removeBlockFromHeadBlocks(afm);
 
-//							if (movedBlock.getNextBlock() != null) {
-//								Block nextBlockInChain = movedBlock;
-//								while (nextBlockInChain.getNextBlock() != null) {
-//									nextBlockInChain = nextBlockInChain.getNextBlock();
-//								}
-//								nextBlockInChain.setNextBlock(afm);
-//								movedBlockID = nextBlockInChain.getBlockId();
-//							} else {
+							if (movedBlock.getNextBlock() != null) {
+								Block nextBlockInChain = movedBlock;
+								while (nextBlockInChain.getNextBlock() != null) {
+									nextBlockInChain = nextBlockInChain.getNextBlock();
+								}
+								nextBlockInChain.setNextBlock(afm);
+								movedBlockID = nextBlockInChain.getBlockId();
+							} else {
 								movedBlock.setNextBlock(afm);
-//							}
+							}
 						} else if (connectionAfterMove == ConnectionType.BODY) {
 							if (afm.getFirstBlockOfBody() != null)
 								throw new InvalidBlockConnectionException("This socket is not free");

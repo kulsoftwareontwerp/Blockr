@@ -82,4 +82,7 @@ public class ResettingState extends GameState {
 	Boolean getUpdated() {
 		return updated;
 	}
+
+
+
 }
