@@ -201,7 +201,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 * 
 	 * @return the currentShape used in this canvasWindow
 	 */
-	private Shape getCurrentShape() {
+	Shape getCurrentShape() {
 		return this.currentShape;
 	}
 
@@ -219,7 +219,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 * 
 	 * @return the shapes in movement.
 	 */
-	private Set<Shape> getShapesInMovement() {
+	Set<Shape> getShapesInMovement() {
 		return shapesInMovement;
 	}
 
