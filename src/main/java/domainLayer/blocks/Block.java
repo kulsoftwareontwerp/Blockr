@@ -15,10 +15,6 @@ import types.ConnectionType;
 public abstract class Block implements Cloneable {
 
 	private String blockId;
-
-	
-	
-	
 	
 	@Override
 	public int hashCode() {
@@ -45,6 +41,7 @@ public abstract class Block implements Cloneable {
 		return true;
 	}
 
+	// TODO: Fully test this (see robotGameWorld for examples)
 	@Override
 	public Block clone() {
 		Block cloned;
@@ -299,6 +296,4 @@ public abstract class Block implements Cloneable {
 	 * @return the supported connectionTypes for this block.
 	 */
 	public abstract Set<ConnectionType> getSupportedConnectionTypes();
-	
-
 }
