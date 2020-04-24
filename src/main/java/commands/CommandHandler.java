@@ -27,6 +27,16 @@ public class CommandHandler {
 		executedGameWorldCommands = new Stack<Command>();
 		undoneGameWorldCommands = new Stack<Command>();
 	}
+	
+	// For testing purposes
+	@SuppressWarnings("unused")
+	CommandHandler(Stack<Command> executedBlockCommands, Stack<Command> undoneBlockCommands, 
+			Stack<Command> executedGameWorldCommands, Stack<Command> undoneGameWorldCommands) {
+		this.executedBlockCommands = executedBlockCommands;
+		this.undoneBlockCommands = undoneBlockCommands;
+		this.executedGameWorldCommands = executedGameWorldCommands;
+		this.undoneGameWorldCommands = undoneGameWorldCommands;
+	}
 
 	/**
 	 * Execute a BlockCommand and put it on the stack, all undone BlockCommands will
