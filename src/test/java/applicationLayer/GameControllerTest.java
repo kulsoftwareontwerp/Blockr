@@ -90,7 +90,7 @@ public class GameControllerTest {
 		assessableBlock = spy(new ConditionBlock("ConditionBlock", new BlockType("ConditionBlock", BlockCategory.CONDITION)));
 		inExecutionState = spy(new InExecutionState(gc, actionBlock));
 		validProgramState = spy(new ValidProgramState(gc));
-		snapshot = spy(new ExecutionSnapshot(actionBlock, snapshotMock, inExecutionState));
+		snapshot = spy(new ExecutionSnapshot(actionBlock, snapshotMock, inExecutionState, null));
 		gc.addListener(mockGuiListener);
 	}
 
@@ -284,7 +284,7 @@ public class GameControllerTest {
 	 */
 	@Test
 	public void testPerformAction_NextActionBlockToBeExecutedNull_Positive() {
-		ExecutionSnapshot snapshotNextBlockNull = new ExecutionSnapshot(actionBlock, snapshotMock, inExecutionState);
+		ExecutionSnapshot snapshotNextBlockNull = new ExecutionSnapshot(actionBlock, snapshotMock, inExecutionState, null);
 		
 		when(gameWorld.saveState()).thenReturn(snapshotMock);
 		Mockito.doReturn(inExecutionState).when(gc).getCurrentState();

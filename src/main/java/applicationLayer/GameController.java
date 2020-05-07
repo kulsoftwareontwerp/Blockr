@@ -105,7 +105,7 @@ public class GameController implements DomainListener, GUISubject {
 	
 	// For testing purposes
 	ExecutionSnapshot createNewExecutionSnapshot(ActionBlock actionBlock, GameWorldSnapshot snapshot, GameState state) {
-		return new ExecutionSnapshot(actionBlock, snapshot, state);
+		return new ExecutionSnapshot(actionBlock, snapshot, state, null);
 	}
 	
 	/**
