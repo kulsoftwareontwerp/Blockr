@@ -86,8 +86,8 @@ public class PaletteArea implements Constants {
 
 			for (var type : BlockType.values()) {
 				if (type.cat() == BlockCategory.ACTION) {
-					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
-							new Coordinate(ACTION_BLOCK_INIT_OFFSET, tempHeight)));
+					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, null,
+							(BlockType) type, new Coordinate(ACTION_BLOCK_INIT_OFFSET, tempHeight)));
 					tempHeight += 45;
 				}
 			}
@@ -100,8 +100,8 @@ public class PaletteArea implements Constants {
 
 			for (var type : BlockType.values()) {
 				if (type.cat() == BlockCategory.CONTROL) {
-					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
-							new Coordinate(CONTROL_BLOCK_INIT_OFFSET, tempHeight)));
+					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, null,
+							(BlockType) type, new Coordinate(CONTROL_BLOCK_INIT_OFFSET, tempHeight)));
 					tempHeight += 105;
 				}
 			}
@@ -114,8 +114,8 @@ public class PaletteArea implements Constants {
 
 			for (var type : BlockType.values()) {
 				if (type.cat() == BlockCategory.OPERATOR) {
-					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
-							new Coordinate(OPERATOR_BLOCK_INIT_OFFSET, tempHeight)));
+					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, null,
+							(BlockType) type, new Coordinate(OPERATOR_BLOCK_INIT_OFFSET, tempHeight)));
 					tempHeight += 35;
 				}
 			}
@@ -128,8 +128,8 @@ public class PaletteArea implements Constants {
 
 			for (var type : BlockType.values()) {
 				if (type.cat() == BlockCategory.CONDITION) {
-					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
-							new Coordinate(CONDITION_BLOCK_INIT_OFFSET, tempHeight)));
+					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, null,
+							(BlockType) type, new Coordinate(CONDITION_BLOCK_INIT_OFFSET, tempHeight)));
 					tempHeight += 35;
 				}
 			}

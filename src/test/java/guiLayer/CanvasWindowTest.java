@@ -215,7 +215,7 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.getAllChangedControlShapes()).thenReturn(changedControlShapes);
 		when(domainController.getAllBlockIDsInBody(testControlShape.getId())).thenReturn(internalsAsStringOfControlBlock);
 		
-		when(shapeFactory.createShape(any(String.class),any(BlockType.class), any(Coordinate.class))).thenAnswer(new Answer<Shape>() {
+		when(shapeFactory.createShape(any(String.class),null, any(BlockType.class), any(Coordinate.class))).thenAnswer(new Answer<Shape>() {
 
 			@Override
 			public Shape answer(InvocationOnMock invocation) throws Throwable {
@@ -679,7 +679,7 @@ public class CanvasWindowTest implements Constants {
 		shapesInProgramArea.add(testActionShape);
 		
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEvent.getAddedBlockID(), blockAddedEvent.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
+		when(shapeFactory.createShape(blockAddedEvent.getAddedBlockID(), null, blockAddedEvent.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		
 		canvasWindow.onBlockAdded(blockAddedEvent);
@@ -705,7 +705,7 @@ public class CanvasWindowTest implements Constants {
 		//Shape linkedShape = Mockito.spy(new ActionShape(blockAddedEventWithLinkedShapeUP.getLinkedBlockID(), null, coordinate));
 		
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeUP.getAddedBlockID(), blockAddedEventWithLinkedShapeUP.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
+		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeUP.getAddedBlockID(), null, blockAddedEventWithLinkedShapeUP.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		//when(programArea.getShapeById("1")).thenReturn(linkedShape);
 	
@@ -738,7 +738,7 @@ public class CanvasWindowTest implements Constants {
 		//Shape linkedShape = Mockito.spy(new ActionShape(blockAddedEventWithLinkedShapeBODY.getLinkedBlockID(), null, coordinate));
 		
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeBODY.getAddedBlockID(), blockAddedEventWithLinkedShapeBODY.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
+		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeBODY.getAddedBlockID(), null, blockAddedEventWithLinkedShapeBODY.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		//when(programArea.getShapeById("1")).thenReturn(linkedShape);
 	
@@ -771,7 +771,7 @@ public class CanvasWindowTest implements Constants {
 	//	Shape linkedShape = Mockito.spy(new ActionShape(blockAddedEventWithLinkedShapeCONDITION.getLinkedBlockID(), null, coordinate));
 		
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeCONDITION.getAddedBlockID(), blockAddedEventWithLinkedShapeCONDITION.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
+		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeCONDITION.getAddedBlockID(), null, blockAddedEventWithLinkedShapeCONDITION.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 	//	when(programArea.getShapeById("1")).thenReturn(linkedShape);
 	
@@ -804,7 +804,7 @@ public class CanvasWindowTest implements Constants {
 		//Shape linkedShape = Mockito.spy(new ActionShape(blockAddedEventWithLinkedShapeDOWN.getLinkedBlockID(), null, coordinate));
 		
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeDOWN.getAddedBlockID(), blockAddedEventWithLinkedShapeDOWN.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
+		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeDOWN.getAddedBlockID(), null, blockAddedEventWithLinkedShapeDOWN.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		//when(programArea.getShapeById("1")).thenReturn(linkedShape);
 	
@@ -837,7 +837,7 @@ public class CanvasWindowTest implements Constants {
 		//Shape linkedShape = Mockito.spy(new UnaryOperatorShape(blockAddedEventWithLinkedShapeLEFT_parentOperand.getLinkedBlockID(), null, coordinate));
 		
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeLEFT_parentOperand.getAddedBlockID(), blockAddedEventWithLinkedShapeLEFT_parentOperand.getAddedBlockType(), coordinate )).thenReturn(testOperandShape);
+		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeLEFT_parentOperand.getAddedBlockID(), null, blockAddedEventWithLinkedShapeLEFT_parentOperand.getAddedBlockType(), coordinate )).thenReturn(testOperandShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		//when(programArea.getShapeById("21")).thenReturn(linkedShape);
 	
@@ -869,7 +869,7 @@ public class CanvasWindowTest implements Constants {
 		//Shape linkedShape = Mockito.spy(new ControlShape(blockAddedEventWithLinkedShapeLEFT_parentControl.getLinkedBlockID(), null, coordinate));
 		
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeLEFT_parentControl.getAddedBlockID(), blockAddedEventWithLinkedShapeLEFT_parentControl.getAddedBlockType(), coordinate )).thenReturn(testOperandShape);
+		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeLEFT_parentControl.getAddedBlockID(), null, blockAddedEventWithLinkedShapeLEFT_parentControl.getAddedBlockType(), coordinate )).thenReturn(testOperandShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		//when(programArea.getShapeById("10")).thenReturn(linkedShape);
 	
@@ -899,7 +899,7 @@ public class CanvasWindowTest implements Constants {
 		
 		
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeNOCONNECTION.getAddedBlockID(), blockAddedEventWithLinkedShapeNOCONNECTION.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
+		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeNOCONNECTION.getAddedBlockID(), null, blockAddedEventWithLinkedShapeNOCONNECTION.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 	
 		canvasWindow.onBlockAdded(blockAddedEventWithLinkedShapeNOCONNECTION);
@@ -929,7 +929,7 @@ public class CanvasWindowTest implements Constants {
 //		Shape linkedShape = Mockito.spy(new ActionShape(blockAddedEventWithLinkedShapeOPERAND.getLinkedBlockID(), null, coordinate));
 		
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeOPERAND.getAddedBlockID(), blockAddedEventWithLinkedShapeOPERAND.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
+		when(shapeFactory.createShape(blockAddedEventWithLinkedShapeOPERAND.getAddedBlockID(), null, blockAddedEventWithLinkedShapeOPERAND.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 //		when(programArea.getShapeById("1")).thenReturn(linkedShape);
 	
@@ -960,7 +960,7 @@ public class CanvasWindowTest implements Constants {
 		shapesInProgramArea.add(testActionShape);
 		
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEvent.getAddedBlockID(), blockAddedEvent.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
+		when(shapeFactory.createShape(blockAddedEvent.getAddedBlockID(), null, blockAddedEvent.getAddedBlockType(), coordinate )).thenReturn(testActionShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		
 		canvasWindow.onBlockAdded(blockAddedEvent);
@@ -984,7 +984,7 @@ public class CanvasWindowTest implements Constants {
 		shapesInProgramArea.add(testActionShapeWithZeroCoordinate);
 		
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEvent.getAddedBlockID(), blockAddedEvent.getAddedBlockType(), zeroCoordinate )).thenReturn(testActionShapeWithZeroCoordinate);
+		when(shapeFactory.createShape(blockAddedEvent.getAddedBlockID(), null, blockAddedEvent.getAddedBlockType(), zeroCoordinate )).thenReturn(testActionShapeWithZeroCoordinate);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		
 		canvasWindow.onBlockAdded(blockAddedEvent);
@@ -1069,7 +1069,7 @@ public class CanvasWindowTest implements Constants {
 		when(currentSnapshot.getSavedHeights()).thenReturn(heights);
 		when(domainController.getBlockType("0")).thenReturn(new BlockType("Move Forward", BlockCategory.ACTION));
 		when(blockRemovedEvent.getRemovedBlockId()).thenReturn("10");
-		when(shapeFactory.createShape(any(String.class),any(BlockType.class), any(Coordinate.class))).thenAnswer(new Answer<Shape>() {
+		when(shapeFactory.createShape(any(String.class),null, any(BlockType.class), any(Coordinate.class))).thenAnswer(new Answer<Shape>() {
 
 			@Override
 			public Shape answer(InvocationOnMock invocation) throws Throwable {
@@ -1150,7 +1150,7 @@ public class CanvasWindowTest implements Constants {
 		when(domainController.getAllBlockIDsBelowCertainBlock("10")).thenReturn(ShapesUnderControlBlockAsString);
 		when(blockRemovedEvent.getRemovedBlockId()).thenReturn("10");
 		when(programArea.getShapeById("11")).thenReturn(testControlShapeUnder);
-		when(shapeFactory.createShape(any(String.class),any(BlockType.class), any(Coordinate.class))).thenAnswer(new Answer<Shape>() {
+		when(shapeFactory.createShape(any(String.class),null, any(BlockType.class), any(Coordinate.class))).thenAnswer(new Answer<Shape>() {
 
 			@Override
 			public Shape answer(InvocationOnMock invocation) throws Throwable {

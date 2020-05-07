@@ -285,6 +285,14 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 	/**
+	 * Retrieve the ID of the DefinitionShape associated with this shape. Returns Null when there is no associated DefinitionShape.
+	 * @return the ID of the DefinitionShape associated with this shape. Returns Null when there is no associated DefinitionShape.
+	 */
+	public String getDefinitionShapeID() {
+		return null;
+	}
+	
+	/**
 	 * Retrieve the connectedVia of this shape If a temporary connectedvia was set
 	 * this will be returned
 	 * 

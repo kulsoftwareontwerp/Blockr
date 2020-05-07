@@ -24,7 +24,9 @@ import guiLayer.commands.DomainMoveCommand;
 import guiLayer.commands.ExecuteBlockCommand;
 import guiLayer.commands.GuiMoveCommand;
 import guiLayer.commands.ResetCommand;
+import guiLayer.shapes.CallFunctionShape;
 import guiLayer.shapes.ControlShape;
+import guiLayer.shapes.DefinitionShape;
 import guiLayer.shapes.Shape;
 import guiLayer.shapes.ShapeFactory;
 import guiLayer.types.Constants;
@@ -152,7 +154,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				BlockType type = domainController.getBlockType(IdAndCoordinate.getKey());
 
-				Shape shape = shapeFactory.createShape(IdAndCoordinate.getKey(), type, IdAndCoordinate.getValue());
+				Shape shape = shapeFactory.createShape(IdAndCoordinate.getKey(), null, type, IdAndCoordinate.getValue());
 				determineTotalHeightControlShapes();
 				shape.setCoordinatesShape();
 				programArea.addToAlreadyFilledInCoordinates(shape);
@@ -290,6 +292,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, PROGRAM_END_X, super.height);
 		Graphics gameAreaGraphics = g.create(GAME_START_X, ORIGIN, WIDTH - GAME_START_X, super.height);
 
+		
+		
 		// only for debugging purposes
 		if (debugModus == DebugModus.FILLINGS) {
 			for (Coordinate filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
@@ -829,7 +833,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		for (String id : ids) {
 			BlockType type = domainController.getBlockType(id);
-			Shape shape = shapeFactory.createShape(id, type, coordinates.get(id));
+			Shape shape = shapeFactory.createShape(id, null, type, coordinates.get(id));
 			if (heights.containsKey(id)) {
 				shape.setHeight(heights.get(id));
 			}
@@ -908,7 +912,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			newCoordinate = new Coordinate(0, 0);
 		}
 
-		Shape toAdd = shapeFactory.createShape(event.getAddedBlockID(), event.getAddedBlockType(), newCoordinate);
+		Shape toAdd = shapeFactory.createShape(event.getAddedBlockID(), null, event.getAddedBlockType(), newCoordinate);
 
 		// Update the ID of the snapshot in the executionStack
 		commandHandler.setAddedId(event.getAddedBlockID());
