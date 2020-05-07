@@ -11,7 +11,7 @@ import types.ConnectionType;
  * @version 0.1
  * @author group17
  */
-public abstract class ControlBlock extends ExecutableBlock {
+public abstract class ControlBlock extends ExecutableBlock implements BodyCavityBlock {
 
 	private ExecutableBlock firstBlockOfBody;
 	private AssessableBlock conditionBlock;
