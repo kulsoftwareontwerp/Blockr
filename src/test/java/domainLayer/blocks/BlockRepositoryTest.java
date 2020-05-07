@@ -88,7 +88,7 @@ public class BlockRepositoryTest {
 	}
 
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * Test method for {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testAddBlock() {

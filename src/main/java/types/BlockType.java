@@ -9,7 +9,7 @@ public class BlockType extends DynaEnum<BlockType>{
 	public final static BlockType WHILE = new BlockType("While", BlockCategory.CONTROL);
 	public final static BlockType NOT = new BlockType("Not", BlockCategory.OPERATOR);
 	public final static BlockType DEFINITION = new BlockType("Definition", BlockCategory.DEFINITION);
-	public final static BlockType FUNCTIONCALL = new BlockType("Function call", BlockCategory.FUNCTIONCALL);
+	public final static BlockType CALL = new BlockType("Function call", BlockCategory.FUNCTIONCALL);
 	
 	public BlockType(String type, BlockCategory cat) {
 		

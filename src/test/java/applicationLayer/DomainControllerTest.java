@@ -122,7 +122,7 @@ public class DomainControllerTest {
 	private void assertExceptionDCAddBlockCombination(BlockType bt, String cb, ConnectionType ct, String excMessage) {
 		boolean pass = false;
 		try {
-			dc.addBlock(bt, cb, ct);
+			dc.addBlock(bt, null, cb, ct);
 		} catch (IllegalArgumentException e) {
 			pass = e.getMessage().equals(excMessage);
 		}
@@ -132,7 +132,7 @@ public class DomainControllerTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testAddBlockNegativeNoBlockType() {
@@ -141,7 +141,7 @@ public class DomainControllerTest {
 		exceptionRule.expectMessage(excMessage);
 
 		for (ConnectionType c : ConnectionType.values()) {
-			dc.addBlock(null, "", c);
+			dc.addBlock(null, null, "", c);
 			assertExceptionDCAddBlockCombination(null, "", c, excMessage);
 			verifyNoInteractions(commandHandler);
 		}
@@ -149,7 +149,7 @@ public class DomainControllerTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testAddBlockNegativeConnectedBlockNoConnection() {
@@ -158,7 +158,7 @@ public class DomainControllerTest {
 		exceptionRule.expectMessage(excMessage);
 
 		for (DynaEnum<? extends DynaEnum<?>> b : BlockType.values()) {
-			dc.addBlock((BlockType) b, "connectedBlockId", ConnectionType.NOCONNECTION);
+			dc.addBlock((BlockType) b, null, "connectedBlockId", ConnectionType.NOCONNECTION);
 			assertExceptionDCAddBlockCombination((BlockType) b, "connectedBlockId", ConnectionType.NOCONNECTION,
 					excMessage);
 			verifyNoInteractions(commandHandler);
@@ -168,7 +168,7 @@ public class DomainControllerTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testAddBlockNegativeConnectionTypeNull() {
@@ -176,7 +176,7 @@ public class DomainControllerTest {
 		exceptionRule.expect(IllegalArgumentException.class);
 		exceptionRule.expectMessage(excMessage);
 
-		dc.addBlock(BlockType.IF, "connectedBlockId", null);
+		dc.addBlock(BlockType.IF, null, "connectedBlockId", null);
 		verifyNoInteractions(commandHandler);
 	}
 	
@@ -190,7 +190,7 @@ public class DomainControllerTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testAddBlockNegativeConnectionNoConnectedBlock() {
@@ -200,7 +200,7 @@ public class DomainControllerTest {
 
 		for (DynaEnum<? extends DynaEnum<?>> b : BlockType.values()) {
 			for (ConnectionType c : ConnectionType.values()) {
-				dc.addBlock((BlockType) b, null, c);
+				dc.addBlock((BlockType) b, null, null, c);
 				assertExceptionDCAddBlockCombination((BlockType) b, null, c, excMessage);
 				verifyNoInteractions(commandHandler);
 			}
@@ -212,12 +212,12 @@ public class DomainControllerTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testAddBlockPositiveNoConnectedBlock() {
 		for (DynaEnum<? extends DynaEnum<?>> b : BlockType.values()) {
-			dc.addBlock((BlockType) b, "", ConnectionType.NOCONNECTION);
+			dc.addBlock((BlockType) b, null, "", ConnectionType.NOCONNECTION);
 
 			verify(commandHandler,atLeastOnce()).handle(addBlockCommandCaptor.capture());
 			BlockCommand command = addBlockCommandCaptor.getValue();

@@ -43,7 +43,7 @@ public class CallFunctionBlock extends Block {
 
 	@Override
 	public BlockType getBlockType() {
-		return BlockType.FUNCTIONCALL;
+		return BlockType.CALL;
 	}
 
 	@Override

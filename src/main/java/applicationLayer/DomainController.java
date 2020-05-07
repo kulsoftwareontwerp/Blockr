@@ -62,8 +62,8 @@ public class DomainController {
 	}
 
 	/**
-	 * Construct a domainController and it's dependencies. 
-	 * The commandHandler,  GameController and the BlockController
+	 * Construct a domainController and it's dependencies. The commandHandler,
+	 * GameController and the BlockController
 	 * 
 	 * @param gameWorld The GameWorld to work with.
 	 */
@@ -71,7 +71,7 @@ public class DomainController {
 		CommandHandler handler = new CommandHandler();
 		initializeDomainController(new GameController(gameWorld, handler), new BlockController(), gameWorld, handler);
 	}
-	
+
 	// Used for mockinjection in the tests
 	@SuppressWarnings("unused")
 	private DomainController(GameWorld gw, GameController gc, BlockController bc, CommandHandler ch) {
@@ -85,13 +85,15 @@ public class DomainController {
 	 * Add a block of the given blockType to the domain and connect it with the
 	 * given connectedBlockId on the given connection
 	 * 
-	 * @param blockType        The type of block to be added, this parameter is
-	 *                         required.
-	 * @param connectedBlockId The ID of the block to connect to, can be empty.
-	 * @param connection       The connection of the connected block on which the
-	 *                         new block must be connected. If no connectedBlockId
-	 *                         was given, this parameter must be set to
-	 *                         "ConnectionType.NOCONNECTION".
+	 * @param blockType         The type of block to be added, this parameter is
+	 *                          required.
+	 * @param definitionBlockID The ID to be called by the block to be added. This
+	 *                          can't be null when the blockType is CALL.
+	 * @param connectedBlockId  The ID of the block to connect to, can be empty.
+	 * @param connection        The connection of the connected block on which the
+	 *                          new block must be connected. If no connectedBlockId
+	 *                          was given, this parameter must be set to
+	 *                          "ConnectionType.NOCONNECTION".
 	 * @throws IllegalArgumentException        There can't be a block added with the
 	 *                                         given parameters because either: -
 	 *                                         the given blockType or the given
@@ -102,6 +104,8 @@ public class DomainController {
 	 *                                         given connectedBlockId is not empty
 	 *                                         and the connection is equal to
 	 *                                         ConnectionType.NOCONNECTION
+	 * @throws IllegalArgumentException        When the blockType is Call and there
+	 *                                         is no definitionBlockID present.
 	 * @throws InvalidBlockConnectionException The given combination of the
 	 *                                         blockType,connectedBlockId and
 	 *                                         connection is impossible. - an
@@ -125,7 +129,8 @@ public class DomainController {
 	 * @event PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
 	 *        block has been reached after adding a block.
 	 */
-	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
+	public void addBlock(BlockType blockType, String definitionBlockID, String connectedBlockId,
+			ConnectionType connection) {
 		if (blockType == null) {
 			throw new IllegalArgumentException("No blockType given.");
 		} else if (connection == null) {
@@ -136,8 +141,11 @@ public class DomainController {
 		} else if ((connectedBlockId != null && !connectedBlockId.equals(""))
 				&& connection == ConnectionType.NOCONNECTION) {
 			throw new IllegalArgumentException("No connection given for connected block.");
+		} else if (blockType == BlockType.CALL && (definitionBlockID == null || definitionBlockID.equals(""))) {
+			throw new IllegalArgumentException("When the blockType is Call there must be a definitionBlockID present");
 		} else {
-			BlockCommand command = new AddBlockCommand(blockController, blockType, connectedBlockId, connection);
+			BlockCommand command = new AddBlockCommand(blockController, blockType, definitionBlockID, connectedBlockId,
+					connection);
 			commandHandler.handle(command);
 		}
 	}
@@ -255,11 +263,11 @@ public class DomainController {
 	}
 
 	/**
-	 * Executes the next block to be executed if the gamestate is in a valid state or an in execution state. 
-	 * 	If this is not the case, nothing happens.
+	 * Executes the next block to be executed if the gamestate is in a valid state
+	 * or an in execution state. If this is not the case, nothing happens.
 	 * 
-	 * @event UpdateHighlightingEvent
-	 * 		  Fires a UpdateHighlightingEvent if the program was in a valid state or an in executing state.
+	 * @event UpdateHighlightingEvent Fires a UpdateHighlightingEvent if the program
+	 *        was in a valid state or an in executing state.
 	 */
 	public void executeBlock() {
 		gameController.executeBlock();
@@ -268,8 +276,8 @@ public class DomainController {
 	/**
 	 * Resets the game execution.
 	 * 
-	 * @event UpdateHighlightingEvent
-	 * 		  Fires a UpdateHighlightingEvent if the program was in an executing state.
+	 * @event UpdateHighlightingEvent Fires a UpdateHighlightingEvent if the program
+	 *        was in an executing state.
 	 */
 	public void resetGameExecution() {
 		gameController.resetGameExecution();

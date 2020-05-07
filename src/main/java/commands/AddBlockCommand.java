@@ -18,6 +18,7 @@ import types.ConnectionType;
 public class AddBlockCommand implements BlockCommand {
 	private BlockController blockController;
 	private BlockType blockType;
+	private String definitionBlockID;
 	private String connectedBlockId;
 	private ConnectionType connection;
 	private BlockSnapshot snapshot;
@@ -27,6 +28,8 @@ public class AddBlockCommand implements BlockCommand {
 	 * 
 	 * @param blockController  The blockController to perform the add on
 	 * @param type             The type of the block to add
+	 * @param definitionBlockID The ID to be called by the block to be added. This
+	 *                          can't be null when the blockType is CALL.
 	 * @param connectedBlockId The Id of the block to connect the added block to, an
 	 *                         empty string if the block won't be connected to any
 	 *                         other block on add.
@@ -34,19 +37,20 @@ public class AddBlockCommand implements BlockCommand {
 	 *                         connectedBlock, NOCONNECTION if the added block won't
 	 *                         be connected to any other block.
 	 */
-	public AddBlockCommand(BlockController blockController, BlockType type, String connectedBlockId,
-			ConnectionType connection) {
+	public AddBlockCommand(BlockController blockController, BlockType type, String definitionBlockID,
+			String connectedBlockId, ConnectionType connection) {
 		super();
 		this.blockController = blockController;
 		this.blockType = type;
 		this.connectedBlockId = connectedBlockId;
 		this.connection = connection;
+		this.definitionBlockID=definitionBlockID;
 	}
 
 	@Override
 	public void execute() {
 		if (snapshot == null) {
-			snapshot = blockController.addBlock(blockType, connectedBlockId, connection);
+			snapshot = blockController.addBlock(blockType, definitionBlockID, connectedBlockId, connection);
 		} else {
 			blockController.restoreBlockSnapshot(snapshot, false);
 		}

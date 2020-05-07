@@ -51,6 +51,7 @@ public class BlockRepository {
 	 * 
 	 * @param blockType        The type of block to be added, this parameter is
 	 *                         required.
+	 * @param definitionBlockID TODO
 	 * @param connectedBlockId The ID of the block to connect to, can be empty.
 	 * @param connection       The connection of the connected block on which the
 	 *                         new block must be connected. If no connectedBlockId
@@ -74,8 +75,8 @@ public class BlockRepository {
 	 *                                         domain.
 	 * @return The ID of the block that has been added.
 	 */
-	public String addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
-		Block newBlock = blockFactory.createBlock(blockType);
+	public String addBlock(BlockType blockType, String definitionBlockID, String connectedBlockId, ConnectionType connection) {
+		Block newBlock = blockFactory.createBlock(blockType,definitionBlockID);
 		Block connectedBlock = getBlockByID(connectedBlockId);
 
 		validateConnection(connectedBlock, connection, newBlock);

@@ -455,12 +455,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 						if (programArea.getHighlightedShapeForConnections() != null) {
 							domainController.addBlock(getCurrentShape().getType(),
-									programArea.getHighlightedShapeForConnections().getId(),
-									getCurrentShape().getConnectedVia());
+									null,
+									programArea.getHighlightedShapeForConnections().getId(), getCurrentShape().getConnectedVia());
 
 						} else {
 
-							domainController.addBlock(getCurrentShape().getType(), "", ConnectionType.NOCONNECTION);
+							domainController.addBlock(getCurrentShape().getType(), null, "", ConnectionType.NOCONNECTION);
 						}
 					} else if (programArea.getHighlightedShapeForConnections() != null) {
 						commandHandler.handle(new DomainMoveCommand(domainController, this,

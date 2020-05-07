@@ -169,7 +169,7 @@ public class AddBlockTest {
 	private void assertExceptionDCAddBlockCombination(BlockType bt, String cb, ConnectionType ct, String excMessage) {
 		boolean pass = false;
 		try {
-			dc.addBlock(bt, cb, ct);
+			dc.addBlock(bt, null, cb, ct);
 		} catch (IllegalArgumentException e) {
 			pass = e.getMessage().equals(excMessage);
 		}
@@ -179,7 +179,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testDCAddBlockNegativeNoBlockType() {
@@ -189,7 +189,7 @@ public class AddBlockTest {
 		dc = new DomainController(null);
 
 		for (ConnectionType c : ConnectionType.values()) {
-			dc.addBlock(null, "", c);
+			dc.addBlock(null, null, "", c);
 			assertExceptionDCAddBlockCombination(null, "", c, excMessage);
 			verifyNoInteractions(mockBlockController);
 		}
@@ -197,7 +197,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testDCAddBlockNegativeConnectedBlockNoConnection() {
@@ -216,7 +216,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testDCAddBlockNegativeConnectionTypeNull() {
@@ -230,7 +230,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testDCAddBlockNegativeConnectionNoConnectedBlock() {
@@ -252,7 +252,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.DomainController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testDCAddBlockPositiveNoConnectedBlock() {
@@ -278,7 +278,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.BlockController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.BlockController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBCAddBlockPositiveMaxNbOfBlocksReached() {
@@ -319,7 +319,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.BlockController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.BlockController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBCAddBlockPositiveMaxNbOfBlocksNotReached() {
@@ -357,7 +357,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.BlockController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.BlockController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBCAddBlockNegativeMaxNbOfBlocksAlreadyReached() {
@@ -384,8 +384,8 @@ public class AddBlockTest {
 //						+ " ConnectedBlockId=" + cb + " ConnectionType=" + c.toString(), pass);
 //			}
 //		}
-		verify(mockBlockRepository, never()).addBlock(blockType.capture(), connectedBlock.capture(),
-				connectionType.capture());
+		verify(mockBlockRepository, never()).addBlock(blockType.capture(), null,
+				connectedBlock.capture(), connectionType.capture());
 	}
 
 	@Mock(name = "blockFactory")
@@ -438,7 +438,7 @@ public class AddBlockTest {
 			String excMessage) {
 		boolean pass = false;
 		try {
-			blockRepo.addBlock(bt, cb, ct);
+			blockRepo.addBlock(bt, null, cb, ct);
 		} catch (InvalidBlockConnectionException e) {
 			pass = e.getMessage().equals(excMessage);
 		}
@@ -584,7 +584,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockNegativeAddExecutableBlockAsCondition() {
@@ -594,9 +594,9 @@ public class AddBlockTest {
 
 		testAddBlockBRMain();
 		for (BlockType b : executableBlockTypes) {
-			blockRepo.addBlock(b, "controlBlock", ConnectionType.CONDITION);
+			blockRepo.addBlock(b, null, "controlBlock", ConnectionType.CONDITION);
 			assertExceptionBRInvalidBlockConnection(b, "controlBlock", ConnectionType.CONDITION, excMessage);
-			blockRepo.addBlock(b, "operatorBlock", ConnectionType.OPERAND);
+			blockRepo.addBlock(b, null, "operatorBlock", ConnectionType.OPERAND);
 			assertExceptionBRInvalidBlockConnection(b, "operatorBlock", ConnectionType.CONDITION, excMessage);
 			verifyNoInteractions(mockBlockFactory);
 		}
@@ -747,7 +747,7 @@ public class AddBlockTest {
 
 	/**
 	 * Test method for
-	 * {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
+	 * {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testBRAddBlockNegativeAddAssessableBlockNoCompatible() {

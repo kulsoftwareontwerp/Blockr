@@ -6,10 +6,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.ControlBlock;
+import domainLayer.blocks.DefinitionBlock;
 import domainLayer.blocks.ExecutableBlock;
 import events.BlockAddedEvent;
 import events.BlockChangeEvent;
@@ -115,13 +115,16 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * Add a block of the given blockType to the domain and connect it with the
 	 * given connectedBlockId on the given connection
 	 * 
-	 * @param blockType        The type of block to be added, this parameter is
-	 *                         required.
-	 * @param connectedBlockId The ID of the block to connect to, can be empty.
-	 * @param connection       The connection of the connected block on which the
-	 *                         new block must be connected. If no connectedBlockId
-	 *                         was given, this parameter must be set to
-	 *                         "ConnectionType.NOCONNECTION".
+	 * @param blockType         The type of block to be added, this parameter is
+	 *                          required.
+	 * @param definitionBlockID The ID to be called by the block to be added. This
+	 *                          can't be null when the blockType is CALL.
+	 * @param connectedBlockId  The ID of the block to connect to, can be empty.
+	 * @param connection        The connection of the connected block on which the
+	 *                          new block must be connected. If no connectedBlockId
+	 *                          was given, this parameter must be set to
+	 *                          "ConnectionType.NOCONNECTION".
+	 * 
 	 * @throws InvalidBlockConnectionException The given combination of the
 	 *                                         blockType,connectedBlockId and
 	 *                                         connection is impossible. - an
@@ -150,11 +153,17 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *        block has been reached after adding a block.
 	 * @return The id of the block that has been added.
 	 */
-	public BlockSnapshot addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
+	public BlockSnapshot addBlock(BlockType blockType, String definitionBlockID, String connectedBlockId,
+			ConnectionType connection) {
+		Block definitionBlock = programBlockRepository.getBlockByID(definitionBlockID);
+		if (blockType == BlockType.CALL && (definitionBlock==null || !(definitionBlock instanceof DefinitionBlock))) {
+			throw new NoSuchConnectedBlockException("There is no DefinitionBlock in the domain with the given definitionBlockID.");
+		}
+
 		if (programBlockRepository.checkIfMaxNbOfBlocksReached()) {
 			throw new MaxNbOfBlocksReachedException("The maximum number of blocks has already been reached.");
 		}
-		String newBlockId = programBlockRepository.addBlock(blockType, connectedBlockId, connection);
+		String newBlockId = programBlockRepository.addBlock(blockType, definitionBlockID, connectedBlockId, connection);
 
 		Block newBlock = programBlockRepository.getBlockByID(newBlockId);
 		Block connectedBlock = programBlockRepository.getBlockByID(connectedBlockId);
@@ -237,10 +246,10 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		return snapshot;
 	}
-	
+
 	// For testing purposes
-	BlockSnapshot createNewBlockSnapshot(Block block, Block connectedBlockBeforeSnapshot, Block connectedBlockAfterSnapshot,
-			Set<Block> changingBlocks) {
+	BlockSnapshot createNewBlockSnapshot(Block block, Block connectedBlockBeforeSnapshot,
+			Block connectedBlockAfterSnapshot, Set<Block> changingBlocks) {
 		return new BlockSnapshot(block, connectedBlockBeforeSnapshot, connectedBlockAfterSnapshot, changingBlocks);
 	}
 
@@ -259,16 +268,15 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		ConnectionType before;
 
-		if(programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId())!=null) {
+		if (programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId()) != null) {
 			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
 					programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId()));
-			
-		}else {
+
+		} else {
 			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
 					snapshot.getBlock());
 		}
-		
-		
+
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
 
 		if (removed) {
@@ -323,7 +331,9 @@ public class BlockController implements GUISubject, DomainSubject {
 		Block toAdd = snapshot.getBlock();
 
 		// TODO: How best to test this?
-		// 	See testRestoreBlockSnapshot_RemovedTrue_MaxBlocksReachedTrue_IsChainTrue_AllOptionsInFireBlockAdded_Positive in BlockControllerTest
+		// See
+		// testRestoreBlockSnapshot_RemovedTrue_MaxBlocksReachedTrue_IsChainTrue_AllOptionsInFireBlockAdded_Positive
+		// in BlockControllerTest
 		if (toAdd.getConditionBlock() != null) {
 			BlockSnapshot s = new BlockSnapshot(toAdd.getConditionBlock(), null, toAdd, null);
 			fireBlockAdded(s);
@@ -479,19 +489,17 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * Finds the id of the enclosing controlblock of the given block.
 	 * 
 	 * @param id The ID of the block to find the enclosing controlblock of.
-	 * @return The id of the enclosing controlblock. 
-	 * 	If there is no enclosing block, the method returns null.
+	 * @return The id of the enclosing controlblock. If there is no enclosing block,
+	 *         the method returns null.
 	 */
 	public String getEnclosingControlBlock(String id) {
 		Block givenBlock = programBlockRepository.getBlockByID(id);
 		ControlBlock block = null;
 		if (givenBlock == null) {
 			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
-		}
-		else if (!(givenBlock instanceof ExecutableBlock)) {
+		} else if (!(givenBlock instanceof ExecutableBlock)) {
 			throw new InvalidBlockTypeException(ExecutableBlock.class, givenBlock.getClass());
-		}
-		else {
+		} else {
 			block = programBlockRepository.getEnclosingControlBlock((ExecutableBlock) givenBlock);
 		}
 
@@ -504,7 +512,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	/**
 	 * Finds all the ID's of the blocks that are below the given block.
 	 * 
-	 * @param blockID The ID of the block from which we want to find all blocks below.
+	 * @param blockID The ID of the block from which we want to find all blocks
+	 *                below.
 	 * @return A set of blockID's of the blocks below the given block.
 	 */
 	public Set<String> getAllBlockIDsBelowCertainBlock(String blockID) {
@@ -523,7 +532,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	/**
 	 * Finds the ID's of all the controlblocks who are not in another controlBlock.
 	 * 
-	 * @return A set of the ID's of all the controlblocks who are not in another controlBlock.
+	 * @return A set of the ID's of all the controlblocks who are not in another
+	 *         controlBlock.
 	 */
 	public Set<String> getAllHeadControlBlocks() {
 		return programBlockRepository.getAllHeadControlBlocks().stream().map(e -> e.getBlockId())
