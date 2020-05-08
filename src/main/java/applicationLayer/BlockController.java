@@ -118,13 +118,13 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * Add a block of the given blockType to the domain and connect it with the
 	 * given connectedBlockId on the given connection
 	 * 
-	 * @param blockType         The type of block to be added, this parameter is
-	 *                          required.
-	 * @param connectedBlockId  The ID of the block to connect to, can be empty.
-	 * @param connection        The connection of the connected block on which the
-	 *                          new block must be connected. If no connectedBlockId
-	 *                          was given, this parameter must be set to
-	 *                          "ConnectionType.NOCONNECTION".
+	 * @param blockType        The type of block to be added, this parameter is
+	 *                         required.
+	 * @param connectedBlockId The ID of the block to connect to, can be empty.
+	 * @param connection       The connection of the connected block on which the
+	 *                         new block must be connected. If no connectedBlockId
+	 *                         was given, this parameter must be set to
+	 *                         "ConnectionType.NOCONNECTION".
 	 * @throws InvalidBlockConnectionException The given combination of the
 	 *                                         blockType,connectedBlockId and
 	 *                                         connection is impossible. - an
@@ -155,8 +155,10 @@ public class BlockController implements GUISubject, DomainSubject {
 	 */
 	public BlockSnapshot addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		Block definitionBlock = programBlockRepository.getBlockByID(blockType.definition());
-		if (blockType.cat() == BlockCategory.CALL && (definitionBlock==null || !(definitionBlock instanceof DefinitionBlock))) {
-			throw new NoSuchConnectedBlockException("There is no DefinitionBlock in the domain with the given definitionBlockID.");
+		if (blockType.cat() == BlockCategory.CALL
+				&& (definitionBlock == null || !(definitionBlock instanceof DefinitionBlock))) {
+			throw new NoSuchConnectedBlockException(
+					"There is no DefinitionBlock in the domain with the given definitionBlockID.");
 		}
 
 		if (programBlockRepository.checkIfMaxNbOfBlocksReached()) {
@@ -230,28 +232,62 @@ public class BlockController implements GUISubject, DomainSubject {
 		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1)) != null
 				? programBlockRepository.getBlockByID(previousConnection.get(1)).clone()
 				: null;
-				
+
 		Set<BlockSnapshot> associatedSnapshots = new HashSet<BlockSnapshot>();
-		if(deletedBlock instanceof DefinitionBlock) {
-			final Set<Block> tempCallBlocks = programBlockRepository.getCallerBlocksByDefinition(deletedBlock.getBlockId());
-			
-			// Filter out the callBlocks that are lower in the chain of another callBlock
-			Set<Block> callBlocks = tempCallBlocks.stream().filter(s->!(tempCallBlocks.stream().anyMatch(j->s!=j && programBlockRepository.getAllBlockIDsUnderneath(j).contains(s.getBlockId())))).collect(Collectors.toSet());
-			
-			callBlocks = callBlocks.stream().map(s->s.clone()).collect(Collectors.toSet());
-			
-			for(Block callBlock : callBlocks) {
-				ArrayList<String> previousConnectionCallBlock;
-					previousConnectionCallBlock = programBlockRepository.getConnectedParentIfExists(callBlock.getBlockId());
-					
-				Block connectedBlockBeforeDeleteCallBlock = programBlockRepository.getBlockByID(previousConnectionCallBlock.get(1)) != null
-						? programBlockRepository.getBlockByID(previousConnectionCallBlock.get(1)).clone()
-						: null;
-						
-				Set<Block> blocksUnderneathCallBlock = programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(callBlock);
-				
-						
-				associatedSnapshots.add(createNewBlockSnapshot(callBlock, connectedBlockBeforeDeleteCallBlock, null, blocksUnderneathCallBlock, null));
+		if (deletedBlock instanceof DefinitionBlock) {
+			final Set<Block> tempCallBlocks = programBlockRepository
+					.getCallerBlocksByDefinition(deletedBlock.getBlockId());
+
+			// Filter out the callBlocks that are lower in the chain of another callBlock or
+			// that are in their own definitionBlock
+
+			Set<Block> callBlocks = tempCallBlocks.stream()
+					.filter(s -> !(tempCallBlocks.stream().anyMatch(
+							j -> s != j && programBlockRepository.getAllBlockIDsUnderneath(j).contains(s.getBlockId()))
+							|| programBlockRepository.getAllBlockIDsInBody((BodyCavityBlock) deletedBlock)
+									.contains(s.getBlockId())))
+					.collect(Collectors.toSet());
+
+			callBlocks = callBlocks.stream().map(s -> s.clone()).collect(Collectors.toSet());
+
+			ArrayList<String> previousConnectionCallBlock;
+			for (Block callBlock : callBlocks) {
+				previousConnectionCallBlock = programBlockRepository.getConnectedParentIfExists(callBlock.getBlockId());
+
+				Block connectedBlockBeforeDeleteCallBlock = programBlockRepository
+						.getBlockByID(previousConnectionCallBlock.get(1)) != null
+								? programBlockRepository.getBlockByID(previousConnectionCallBlock.get(1)).clone()
+								: null;
+
+				Set<Block> blocksUnderneathCallBlock = programBlockRepository
+						.getAllBlocksConnectedToAndAfterACertainBlock(callBlock);
+
+				associatedSnapshots.add(createNewBlockSnapshot(callBlock, connectedBlockBeforeDeleteCallBlock, null,
+						blocksUnderneathCallBlock, null));
+
+			}
+
+			callBlocks = tempCallBlocks.stream().filter(s -> !(programBlockRepository
+					.getAllBlockIDsInBody((BodyCavityBlock) deletedBlock).contains(s.getBlockId())))
+					.collect(Collectors.toSet());
+			for (Block callBlock : callBlocks) {
+				previousConnectionCallBlock = programBlockRepository.getConnectedParentIfExists(callBlock.getBlockId());
+
+				Block callerParent = programBlockRepository.getBlockByID(previousConnectionCallBlock.get(1));
+				switch (ConnectionType.valueOf(previousConnectionCallBlock.get(0))) {
+				case BODY:
+					callerParent.setFirstBlockOfBody(callBlock.getNextBlock());
+					break;
+				case DOWN:
+					callerParent.setNextBlock(callBlock.getNextBlock());
+					break;
+				default:
+					break;
+				}
+
+				Set<String> callIdsToBeRemoved = programBlockRepository.removeBlock(callBlock.getBlockId(), false);
+				fireBlockRemoved(callIdsToBeRemoved, callerParent != null ? callerParent.getBlockId() : "",
+						ConnectionType.valueOf(previousConnectionCallBlock.get(0)));
 			}
 		}
 
@@ -273,7 +309,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	// For testing purposes
 	BlockSnapshot createNewBlockSnapshot(Block block, Block connectedBlockBeforeSnapshot,
 			Block connectedBlockAfterSnapshot, Set<Block> changingBlocks, Set<BlockSnapshot> associatedSnapshots) {
-		return new BlockSnapshot(block, connectedBlockBeforeSnapshot, connectedBlockAfterSnapshot, changingBlocks, associatedSnapshots);
+		return new BlockSnapshot(block, connectedBlockBeforeSnapshot, connectedBlockAfterSnapshot, changingBlocks,
+				associatedSnapshots);
 	}
 
 	/**
@@ -299,8 +336,8 @@ public class BlockController implements GUISubject, DomainSubject {
 			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
 					snapshot.getBlock());
 		}
-		
-		for(BlockSnapshot associatedSnapshot : snapshot.getAssociatedSnapshots()) {
+
+		for (BlockSnapshot associatedSnapshot : snapshot.getAssociatedSnapshots()) {
 			programBlockRepository.restoreBlockSnapshot(associatedSnapshot);
 		}
 
@@ -488,8 +525,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	/**
 	 * Returns all the blockID's in the body of a given BodyCavityBlock
 	 * 
-	 * @param blockID The blockID of the BodyCavityBlock of which you want to retrieve
-	 *                all Blocks in the body.
+	 * @param blockID The blockID of the BodyCavityBlock of which you want to
+	 *                retrieve all Blocks in the body.
 	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
 	 *                                       is not present in the domain.
 	 * @throws InvalidBlockTypeException     Is thrown when given blockID isn't the

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Timer;
 import java.util.stream.Collectors;
@@ -308,8 +309,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	protected void paint(Graphics g) {
 		calculateWindowHeight();
-		
-		
+
 		Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, PROGRAM_END_X, super.height);
 		Graphics gameAreaGraphics = g.create(GAME_START_X, ORIGIN, WIDTH - GAME_START_X, super.height);
 
@@ -321,7 +321,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 
 		// Partition CanvasWindow in different sections
-		
+
 		paletteArea.paint(blockrGraphics);
 
 		domainController.paint(gameAreaGraphics);
@@ -348,8 +348,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				}
 			}
 		}
-		
-		
 
 	}
 
@@ -975,14 +973,46 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	public void onBlockRemoved(BlockRemovedEvent event) {
-		Set<Shape> shapesToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
-				.filter(s -> s.getId().equals(event.getRemovedBlockId())).collect(Collectors.toSet());
+		Optional<Shape> shapeToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
+				.filter(s -> s.getId().equals(event.getRemovedBlockId())).findAny();
 
-		System.out.println(shapesToBeRemovedFromProgramArea);
+		System.out.println(shapeToBeRemovedFromProgramArea);
 
-		for (Shape shape : shapesToBeRemovedFromProgramArea) {
-			programArea.removeShapeFromProgramArea(shape);
+		// Only in the case of the removal of a DefinitionShape this will be true
+		if (shapeToBeRemovedFromProgramArea.isPresent()) {
+			if (shapeToBeRemovedFromProgramArea.get() instanceof CallFunctionShape) {
+				currentSnapshot.addShapeToSnapshot(shapeToBeRemovedFromProgramArea.get());
+
+				// Move all shapes under this shape up
+				if (event.getBeforeRemoveBlockId() != "") {
+					Set<String> shapeIDs;
+					BlockType bfrm = domainController.getBlockType(event.getBeforeRemoveBlockId());
+					if((bfrm==BlockType.IF|| bfrm==BlockType.WHILE)) {
+						if(event.getBeforeRemoveConnection()==ConnectionType.BODY) {						
+						shapeIDs = domainController.getAllBlockIDsInBody(event.getBeforeRemoveBlockId());
+						}else {
+							shapeIDs = domainController.getAllBlockIDsBelowCertainBlock(event.getBeforeRemoveBlockId());							
+						}
+					}
+					else {
+						shapeIDs = domainController.getAllBlockIDsUnderneath(event.getBeforeRemoveBlockId());
+					}
+					
+					for (Shape s : shapeIDs.stream()
+							.map(i -> programArea.getShapeById(i))
+							.filter(j -> !(j.getId().equals(event.getBeforeRemoveBlockId()) || j.getType().definition()
+									.equals(shapeToBeRemovedFromProgramArea.get().getType().definition())))
+							.collect(Collectors.toSet())) {
+						s.setY_coord(s.getY_coord() - shapeToBeRemovedFromProgramArea.get().getHeight());
+
+					}
+				}
+
+			}
+
+			programArea.removeShapeFromProgramArea(shapeToBeRemovedFromProgramArea.get());
 		}
+
 		programArea.clearAlreadyFilledInCoordinates();
 
 		// update internals of controlshapes

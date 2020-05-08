@@ -60,7 +60,13 @@ public class GuiSnapshot implements Constants {
 		return new HashMap<String, Coordinate>(savedCoordinates);
 	}
 	
-	
+	/**
+	 * Add the coordinates of a shape to the snapshot
+	 * @param shape the shape to add the coordinates from
+	 */
+	public void addShapeToSnapshot(Shape shape ) {
+		savedCoordinates.put(shape.getId(), shape.getCoordinate());
+	}
 	
 	
 	/**
