@@ -17,7 +17,7 @@ import types.ConnectionType;
  * @author group17
  *
  */
-public class CallFunctionBlock extends Block {
+public class CallFunctionBlock extends ExecutableBlock {
 
 	private HashSet<ConnectionType> supportedConnectionTypes;
 	private BlockType type;
@@ -45,7 +45,7 @@ public class CallFunctionBlock extends Block {
 
 	@Override
 	public Set<ConnectionType> getSupportedConnectionTypes() {
-		return this.getSupportedConnectionTypes();
+		return new HashSet<ConnectionType>(supportedConnectionTypes);
 	}
 
 //	/**

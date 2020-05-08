@@ -45,47 +45,47 @@ public class BlockFactoryTest {
 	}
 
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType, String)}.
+	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType)}.
 	 */
 	@Test
 	public void testCreateBlock_ControlIf_Positive() {
-		assertTrue(factory.createBlock(new BlockType("If", BlockCategory.CONTROL), null) instanceof IfBlock);
+		assertTrue(factory.createBlock(new BlockType("If", BlockCategory.CONTROL)) instanceof IfBlock);
 	}
 	
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType, String)}.
+	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType)}.
 	 */
 	@Test
 	public void testCreateBlock_ControlWhile_Positive() {
-		assertTrue(factory.createBlock(new BlockType("While", BlockCategory.CONTROL), null) instanceof WhileBlock);
+		assertTrue(factory.createBlock(new BlockType("While", BlockCategory.CONTROL)) instanceof WhileBlock);
 	}
 	
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType, String)}.
+	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType)}.
 	 */
 	@Test
 	public void testCreateBlock_Operator_Positive() {
-		assertTrue(factory.createBlock(BlockType.NOT, null) instanceof NotBlock);
+		assertTrue(factory.createBlock(BlockType.NOT) instanceof NotBlock);
 	}
 	
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType, String)}.
+	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType)}.
 	 */
 	@Test
 	public void testCreateBlock_Action_Positive() {
-		assertTrue(factory.createBlock(new BlockType("Action", BlockCategory.ACTION), null) instanceof ActionBlock);
+		assertTrue(factory.createBlock(new BlockType("Action", BlockCategory.ACTION)) instanceof ActionBlock);
 	}
 	
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType, String)}.
+	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType)}.
 	 */
 	@Test
 	public void testCreateBlock_Condition_Positive() {
-		assertTrue(factory.createBlock(new BlockType("Condition", BlockCategory.CONDITION), null) instanceof ConditionBlock);
+		assertTrue(factory.createBlock(new BlockType("Condition", BlockCategory.CONDITION)) instanceof ConditionBlock);
 	}
 	
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType, String)}.
+	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType)}.
 	 */
 	@Test
 	public void testCreateBlock_WrongControl_IllegalArgumentException() {		
@@ -93,7 +93,7 @@ public class BlockFactoryTest {
 		exceptionRule.expect(IllegalArgumentException.class);
 		exceptionRule.expectMessage(excMessage);
 		
-		assertTrue(factory.createBlock(new BlockType("WrongType", BlockCategory.CONTROL), null) instanceof WhileBlock);
+		assertTrue(factory.createBlock(new BlockType("WrongType", BlockCategory.CONTROL)) instanceof WhileBlock);
 	}
 	
 	

@@ -193,7 +193,7 @@ public class BlockControllerTest {
 		
 		
 		
-		when(blockRepository.addBlock(any(BlockType.class), null, any(String.class), any(ConnectionType.class))).thenAnswer(new Answer<String>() {
+		when(blockRepository.addBlock(any(BlockType.class), any(String.class), any(ConnectionType.class))).thenAnswer(new Answer<String>() {
 
 			@Override
 			public String answer(InvocationOnMock invocation) throws Throwable {
@@ -271,7 +271,7 @@ public class BlockControllerTest {
 
 	/**
 	 * Test method for
-	 * {@link applicationLayer.BlockController#addBlock(types.BlockType, String, java.lang.String, types.ConnectionType)}.
+	 * {@link applicationLayer.BlockController#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
 	public void testAddBlockPositiveMaxNbOfBlocksReached() {
@@ -285,10 +285,10 @@ public class BlockControllerTest {
 			for (ConnectionType c : ConnectionType.values()) {
 				when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(false, true);
 				String cb = "connectedActionBlock";
-				BlockSnapshot s = bc.addBlock((BlockType) b, null, cb, c);
+				BlockSnapshot s = bc.addBlock((BlockType) b, cb, c);
 
-				verify(blockRepository, atLeastOnce()).addBlock(blockType.capture(), null,
-						connectedBlock.capture(), connectionType.capture());
+				verify(blockRepository, atLeastOnce()).addBlock(blockType.capture(), connectedBlock.capture(),
+						connectionType.capture());
 
 				assertEquals(b, blockType.getValue());
 				assertEquals(cb, connectedBlock.getValue());

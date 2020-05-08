@@ -21,9 +21,8 @@ public class BlockFactory {
 	 * Create a block of a certain BlockType.
 	 * 
 	 * @param type The BlockType of which a block must be added.
-	 * @param definitionBlockID The ID to be called by the block to be added.
 	 */
-	public Block createBlock(BlockType type, String definitionBlockID) {
+	public Block createBlock(BlockType type) {
 		String blockId = blockIDGenerator.generateBlockID();
 		switch (type.cat()) {
 		case CONTROL:

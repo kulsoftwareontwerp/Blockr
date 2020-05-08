@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
+import domainLayer.blocks.BodyCavityBlock;
 import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.DefinitionBlock;
 import domainLayer.blocks.ExecutableBlock;
@@ -118,14 +119,11 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * 
 	 * @param blockType         The type of block to be added, this parameter is
 	 *                          required.
-	 * @param definitionBlockID The ID to be called by the block to be added. This
-	 *                          can't be null when the blockType is CALL.
 	 * @param connectedBlockId  The ID of the block to connect to, can be empty.
 	 * @param connection        The connection of the connected block on which the
 	 *                          new block must be connected. If no connectedBlockId
 	 *                          was given, this parameter must be set to
 	 *                          "ConnectionType.NOCONNECTION".
-	 * 
 	 * @throws InvalidBlockConnectionException The given combination of the
 	 *                                         blockType,connectedBlockId and
 	 *                                         connection is impossible. - an
@@ -154,9 +152,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	 *        block has been reached after adding a block.
 	 * @return The id of the block that has been added.
 	 */
-	public BlockSnapshot addBlock(BlockType blockType, String definitionBlockID, String connectedBlockId,
-			ConnectionType connection) {
-		Block definitionBlock = programBlockRepository.getBlockByID(definitionBlockID);
+	public BlockSnapshot addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
+		Block definitionBlock = programBlockRepository.getBlockByID(blockType.definition());
 		if (blockType.cat() == BlockCategory.CALL && (definitionBlock==null || !(definitionBlock instanceof DefinitionBlock))) {
 			throw new NoSuchConnectedBlockException("There is no DefinitionBlock in the domain with the given definitionBlockID.");
 		}
@@ -164,7 +161,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		if (programBlockRepository.checkIfMaxNbOfBlocksReached()) {
 			throw new MaxNbOfBlocksReachedException("The maximum number of blocks has already been reached.");
 		}
-		String newBlockId = programBlockRepository.addBlock(blockType, definitionBlockID, connectedBlockId, connection);
+		String newBlockId = programBlockRepository.addBlock(blockType, connectedBlockId, connection);
 
 		Block newBlock = programBlockRepository.getBlockByID(newBlockId);
 		Block connectedBlock = programBlockRepository.getBlockByID(connectedBlockId);
@@ -460,16 +457,16 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	/**
-	 * Returns all the blockID's in the body of a given ControlBlock
+	 * Returns all the blockID's in the body of a given BodyCavityBlock
 	 * 
-	 * @param blockID The blockID of the controlBlock of which you want to retrieve
+	 * @param blockID The blockID of the BodyCavityBlock of which you want to retrieve
 	 *                all Blocks in the body.
 	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
 	 *                                       is not present in the domain.
 	 * @throws InvalidBlockTypeException     Is thrown when given blockID isn't the
-	 *                                       ID of a ControlBlock.
+	 *                                       ID of a BodyCavityBlock.
 	 * @return A set containing the blockID of the blocks in the body of the given
-	 *         ControlBlock.
+	 *         BodyCavityBlock.
 	 */
 	public Set<String> getAllBlockIDsInBody(String blockID) {
 		Block block = programBlockRepository.getBlockByID(blockID);
@@ -477,10 +474,10 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		if (block == null) {
 			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
-		} else if (!(block instanceof ControlBlock)) {
-			throw new InvalidBlockTypeException(ControlBlock.class, block.getClass());
+		} else if (!(block instanceof BodyCavityBlock)) {
+			throw new InvalidBlockTypeException(BodyCavityBlock.class, block.getClass());
 		} else {
-			blockIDsInBody = programBlockRepository.getAllBlockIDsInBody((ControlBlock) block);
+			blockIDsInBody = programBlockRepository.getAllBlockIDsInBody((BodyCavityBlock) block);
 		}
 
 		return blockIDsInBody;

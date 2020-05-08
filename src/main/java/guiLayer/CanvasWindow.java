@@ -171,7 +171,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				BlockType type = domainController.getBlockType(IdAndCoordinate.getKey());
 
 				Shape shape = shapeFactory.createShape(IdAndCoordinate.getKey(), type, IdAndCoordinate.getValue());
-				determineTotalHeightControlShapes();
+				determineTotalHeightBodyCavityShapes();
 				shape.setCoordinatesShape();
 				programArea.addToAlreadyFilledInCoordinates(shape);
 				shape.defineConnectionTypes();
@@ -179,7 +179,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 			programArea.clearAlreadyFilledInCoordinates();
 
-			determineTotalHeightControlShapes();
+			determineTotalHeightBodyCavityShapes();
 			programArea.placeShapes();
 
 		}
@@ -477,12 +477,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 						if (programArea.getHighlightedShapeForConnections() != null) {
 							domainController.addBlock(getCurrentShape().getType(),
-									null,
-									programArea.getHighlightedShapeForConnections().getId(), getCurrentShape().getConnectedVia());
+									programArea.getHighlightedShapeForConnections().getId(),
+									getCurrentShape().getConnectedVia());
 
 						} else {
 
-							domainController.addBlock(getCurrentShape().getType(), null, "", ConnectionType.NOCONNECTION);
+							domainController.addBlock(getCurrentShape().getType(), "", ConnectionType.NOCONNECTION);
 						}
 					} else if (programArea.getHighlightedShapeForConnections() != null) {
 						commandHandler.handle(new DomainMoveCommand(domainController, this,
@@ -863,8 +863,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	/**
 	 * Determine the height of all the controlshapes
 	 */
-	private void determineTotalHeightControlShapes() {
-		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(s -> s instanceof ControlShape)
+	private void determineTotalHeightBodyCavityShapes() {
+		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(s -> (s instanceof ControlShape) || (s instanceof DefinitionShape))
 				.collect(Collectors.toSet())) {
 			if (shape != null && domainController.isBlockPresent(shape.getId())) {
 				shape.determineTotalHeight(mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(shape.getId())));
@@ -879,7 +879,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 * Update the position of all shapes after the height of controlshapes has been
 	 * changed.
 	 */
-	private void updatePositionOfAllShapesAccordingToChangesOfTheControlShapes() {
+	private void updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes() {
 		Set<ControlShape> changedControlShapes = programArea.getAllChangedControlShapes();
 
 		for (ControlShape c : changedControlShapes) {
@@ -940,8 +940,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		programArea.addShapeToProgramArea(toAdd);
 		programArea.clearAlreadyFilledInCoordinates();
 
-		determineTotalHeightControlShapes();
-		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+		determineTotalHeightBodyCavityShapes();
+		updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes();
 
 		programArea.placeShapes();
 
@@ -964,10 +964,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		programArea.clearAlreadyFilledInCoordinates();
 
 		// update internals of controlshapes
-		determineTotalHeightControlShapes();
+		determineTotalHeightBodyCavityShapes();
 		// handle add to programArea in practice, all coordinates etc are set.
 
-		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+		updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes();
 
 		programArea.placeShapes();
 
@@ -990,8 +990,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		programArea.clearAlreadyFilledInCoordinates();
 
 		// update internals of controlshapes
-		determineTotalHeightControlShapes();
-		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+		determineTotalHeightBodyCavityShapes();
+		updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes();
 
 		// handle add to programArea in practice, all coordinates etc are set.
 		programArea.placeShapes();

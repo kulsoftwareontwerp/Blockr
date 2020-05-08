@@ -87,8 +87,6 @@ public class DomainController {
 	 * 
 	 * @param blockType         The type of block to be added, this parameter is
 	 *                          required.
-	 * @param definitionBlockID The ID to be called by the block to be added. This
-	 *                          can't be null when the blockType is CALL.
 	 * @param connectedBlockId  The ID of the block to connect to, can be empty.
 	 * @param connection        The connection of the connected block on which the
 	 *                          new block must be connected. If no connectedBlockId
@@ -129,8 +127,7 @@ public class DomainController {
 	 * @event PanelChangeEvent Fires a PanelChangeEvent if the maximum number of
 	 *        block has been reached after adding a block.
 	 */
-	public void addBlock(BlockType blockType, String definitionBlockID, String connectedBlockId,
-			ConnectionType connection) {
+	public void addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
 		if (blockType == null) {
 			throw new IllegalArgumentException("No blockType given.");
 		} else if (connection == null) {
@@ -141,11 +138,10 @@ public class DomainController {
 		} else if ((connectedBlockId != null && !connectedBlockId.equals(""))
 				&& connection == ConnectionType.NOCONNECTION) {
 			throw new IllegalArgumentException("No connection given for connected block.");
-		} else if (blockType.cat() == BlockCategory.CALL && (definitionBlockID == null || definitionBlockID.equals(""))) {
+		} else if (blockType.cat() == BlockCategory.CALL && (blockType.definition() == null)) {
 			throw new IllegalArgumentException("When the blockType is Call there must be a definitionBlockID present");
 		} else {
-			BlockCommand command = new AddBlockCommand(blockController, blockType, definitionBlockID, connectedBlockId,
-					connection);
+			BlockCommand command = new AddBlockCommand(blockController, blockType, connectedBlockId, connection);
 			commandHandler.handle(command);
 		}
 	}
@@ -356,18 +352,18 @@ public class DomainController {
 	}
 
 	/**
-	 * Returns all the blockID's in the body of a given ControlBlock
+	 * Returns all the blockID's in the body of a given BodyCavityBlock
 	 * 
-	 * @param blockID The blockID of the controlBlock of which you want to retrieve
+	 * @param blockID The blockID of the BodyCavityBlock of which you want to retrieve
 	 *                all Blocks in the body.
 	 * @throws IllegalArgumentException      Is thrown when the given blockID is
 	 *                                       empty or null.
 	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
 	 *                                       is not present in the domain.
 	 * @throws InvalidBlockTypeException     Is thrown when given blockID isn't the
-	 *                                       ID of a ControlBlock.
+	 *                                       ID of a BodyCavityBlock.
 	 * @return A set containing the blockID of the blocks in the body of the given
-	 *         ControlBlock.
+	 *         BodyCavityBlock.
 	 * 
 	 */
 	public Set<String> getAllBlockIDsInBody(String blockID) {
