@@ -816,7 +816,7 @@ public class BlockRepository {
 		while (itAllBlocks.hasNext()) {
 			Map.Entry element = (Entry) itAllBlocks.next();
 			Block block = (Block) element.getValue();
-			if (block instanceof ActionBlock) {
+			if (block instanceof ActionBlock || block instanceof CallFunctionBlock) {
 				if (block.getNextBlock() != null && block.getNextBlock().equals(movedBlock)) {
 					connectedBlockInfo.add("DOWN");
 					connectedBlockInfo.add(block.getBlockId());
