@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import exceptions.InvalidBlockConnectionException;
 import exceptions.NoSuchConnectedBlockException;
+import types.BlockCategory;
 import types.BlockSnapshot;
 import types.BlockType;
 import types.ConnectionType;
@@ -1226,6 +1227,10 @@ public class BlockRepository {
 		}
 
 		if (isRemoved) {
+			if(snapshot.getBlock()instanceof DefinitionBlock) {
+				new BlockType("Call "+snapshot.getBlock().getBlockId(),BlockCategory.CALL,snapshot.getBlock().getBlockId());
+			}
+			
 			// removed blocks
 			if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 				Block cb = snapshot.getConnectedBlockAfterSnapshot();

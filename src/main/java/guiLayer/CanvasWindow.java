@@ -79,7 +79,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		this.paletteArea = paletteArea;
 	}
 
-
 	private boolean undoMode;
 
 	private Coordinate offsetCurrentShape;
@@ -108,7 +107,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		maskedKeyBag = new MaskedKeyBag(false, false);
 
-
 		super.width = WIDTH;
 		this.domainController = dc;
 		this.domainController.addGameListener(this);
@@ -123,8 +121,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	/**
 	 * Sets the height of the window to accommodate all the shapes
+	 * 
+	 * @return if the windowheight has been changed
 	 */
-	private void calculateWindowHeight() {
+	private Boolean calculateWindowHeight() {
 		// Calculate Total Height of the CanvasWindow based on the different type of
 		// blocks
 		int totalHeight = 200; // 5x40px for the titles in the palette
@@ -154,10 +154,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 
 		totalHeight += 25; // Padding at the bottom
-		
-		super.height = totalHeight;
-		System.out.println(totalHeight);
-	
+		if (super.height != totalHeight) {
+			super.height = totalHeight;
+			System.out.println(totalHeight);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -304,12 +307,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	protected void paint(Graphics g) {
-
+		calculateWindowHeight();
+		
+		
 		Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, PROGRAM_END_X, super.height);
 		Graphics gameAreaGraphics = g.create(GAME_START_X, ORIGIN, WIDTH - GAME_START_X, super.height);
 
-		
-		
 		// only for debugging purposes
 		if (debugModus == DebugModus.FILLINGS) {
 			for (Coordinate filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
@@ -318,10 +321,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 
 		// Partition CanvasWindow in different sections
-		calculateWindowHeight();
+		
 		paletteArea.paint(blockrGraphics);
-		
-		
 
 		domainController.paint(gameAreaGraphics);
 
@@ -347,6 +348,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				}
 			}
 		}
+		
+		
 
 	}
 
@@ -455,7 +458,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							movedShape.clipOn(programArea.getHighlightedShapeForConnections(),
 									movedShape.getConnectedVia());
 
-
 							// Only if the shape that's being dragged is the moved shape than it should
 							// be decoupled from the chain it's in
 							if (movedShape == getCurrentShape()) {
@@ -529,7 +531,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				movedShape = null;
 				offsetCurrentShape = new Coordinate(0, 0);
 
-
 				resetShapesInMovement();
 				blocksUnderneath = new HashSet<String>();
 			} else {
@@ -600,7 +601,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			// The setConnectedVia of all shapes in movement will be reverted
 			shapeInMovement.persistConnectedVia(false);
 
-
 			if (isConnectionOpen(shapeInMovement, ConnectionType.DOWN)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.UP),
 							shapeInMovement.getTriggerSet(ConnectionType.DOWN))) {
@@ -626,7 +626,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
 
-
 			} else if (isConnectionOpen(shapeInMovement, ConnectionType.UP)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.BODY),
 							shapeInMovement.getTriggerSet(ConnectionType.UP))) {
@@ -640,7 +639,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
 
-
 			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION),
 							shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
@@ -653,7 +651,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shapeInMovement.setConnectedVia(ConnectionType.CONDITION, false);
 				shape.setConnectedVia(ConnectionType.LEFT, false);
 				movedShape = shapeInMovement;
-
 
 			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND),
@@ -744,24 +741,23 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private void revertMove() {
 		for (Iterator<Shape> iterator = getShapesInMovement().iterator(); iterator.hasNext();) {
 			Shape shape = (Shape) iterator.next();
-	
+
 			if (shape.getPreviousX_coord() == INVALID_COORDINATE || shape.getPreviousY_coord() == INVALID_COORDINATE) {
 				iterator.remove();
 			} else {
 				shape.setX_coord(shape.getPreviousX_coord());
 				shape.setY_coord(shape.getPreviousY_coord());
-	
+
 				shape.setCoordinatesShape();
 				programArea.addToAlreadyFilledInCoordinates(shape);
 				shape.defineConnectionTypes();
 				programArea.addShapeToProgramArea(shape);
 			}
-	
+
 		}
-	
+
 		getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia(), true);
 	}
-
 
 	@Override
 	protected void handleKeyEvent(int id, int keyCode, char keyChar) {
@@ -864,7 +860,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 * Determine the height of all the controlshapes
 	 */
 	private void determineTotalHeightBodyCavityShapes() {
-		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(s -> (s instanceof ControlShape) || (s instanceof DefinitionShape))
+		for (Shape shape : programArea.getShapesInProgramArea().stream()
+				.filter(s -> (s instanceof ControlShape) || (s instanceof DefinitionShape))
 				.collect(Collectors.toSet())) {
 			if (shape != null && domainController.isBlockPresent(shape.getId())) {
 				shape.determineTotalHeight(mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(shape.getId())));
@@ -980,7 +977,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	public void onBlockRemoved(BlockRemovedEvent event) {
 		Set<Shape> shapesToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
 				.filter(s -> s.getId().equals(event.getRemovedBlockId())).collect(Collectors.toSet());
-
 
 		System.out.println(shapesToBeRemovedFromProgramArea);
 
