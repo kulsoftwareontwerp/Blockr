@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.BodyCavityBlock;
+import domainLayer.blocks.CallFunctionBlock;
 import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.DefinitionBlock;
 import domainLayer.blocks.ExecutableBlock;
@@ -168,7 +169,7 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		HashSet<Block> addedBlocks = new HashSet<Block>();
 		addedBlocks.add(programBlockRepository.getBlockByID(newBlockId).clone());
-		BlockSnapshot snapshot = new BlockSnapshot(newBlock, null, connectedBlock, addedBlocks);
+		BlockSnapshot snapshot = new BlockSnapshot(newBlock, null, connectedBlock, addedBlocks, null);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
@@ -229,9 +230,32 @@ public class BlockController implements GUISubject, DomainSubject {
 		Block connectedBlockBeforeDelete = programBlockRepository.getBlockByID(previousConnection.get(1)) != null
 				? programBlockRepository.getBlockByID(previousConnection.get(1)).clone()
 				: null;
+				
+		Set<BlockSnapshot> associatedSnapshots = new HashSet<BlockSnapshot>();
+		if(deletedBlock instanceof DefinitionBlock) {
+			final Set<Block> callBlocks = programBlockRepository.getCallerBlocksByDefinition(deletedBlock.getBlockId());
+			
+			Set<Block> callBlocks2 = callBlocks.stream().filter(s->callBlocks.stream().anyMatch(j->s!=j && programBlockRepository.getAllBlockIDsUnderneath(j).contains(s))).collect(Collectors.toSet());
+			
+			
+//			.stream().map(s->s.clone()).collect(Collectors.toSet());
+			for(Block callBlock : callBlocks) {
+				ArrayList<String> previousConnectionCallBlock;
+					previousConnectionCallBlock = programBlockRepository.getConnectedParentIfExists(callBlock.getBlockId());
+					
+				Block connectedBlockBeforeDeleteCallBlock = programBlockRepository.getBlockByID(previousConnectionCallBlock.get(1)) != null
+						? programBlockRepository.getBlockByID(previousConnection.get(1)).clone()
+						: null;
+						
+				Set<Block> blocksUnderneathCallBlock = programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(callBlock);
+				
+						
+				associatedSnapshots.add(createNewBlockSnapshot(callBlock, connectedBlockBeforeDeleteCallBlock, null, blocksUnderneathCallBlock, associatedSnapshots));
+			}
+		}
 
 		BlockSnapshot snapshot = createNewBlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,
-				programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(deletedBlock));
+				programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(deletedBlock), associatedSnapshots);
 
 		Set<String> idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
 
@@ -247,8 +271,8 @@ public class BlockController implements GUISubject, DomainSubject {
 
 	// For testing purposes
 	BlockSnapshot createNewBlockSnapshot(Block block, Block connectedBlockBeforeSnapshot,
-			Block connectedBlockAfterSnapshot, Set<Block> changingBlocks) {
-		return new BlockSnapshot(block, connectedBlockBeforeSnapshot, connectedBlockAfterSnapshot, changingBlocks);
+			Block connectedBlockAfterSnapshot, Set<Block> changingBlocks, Set<BlockSnapshot> associatedSnapshots) {
+		return new BlockSnapshot(block, connectedBlockBeforeSnapshot, connectedBlockAfterSnapshot, changingBlocks, associatedSnapshots);
 	}
 
 	/**
@@ -333,19 +357,19 @@ public class BlockController implements GUISubject, DomainSubject {
 		// testRestoreBlockSnapshot_RemovedTrue_MaxBlocksReachedTrue_IsChainTrue_AllOptionsInFireBlockAdded_Positive
 		// in BlockControllerTest
 		if (toAdd.getConditionBlock() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getConditionBlock(), null, toAdd, null);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getConditionBlock(), null, toAdd, null, null);
 			fireBlockAdded(s);
 		}
 		if (toAdd.getFirstBlockOfBody() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getFirstBlockOfBody(), null, toAdd, null);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getFirstBlockOfBody(), null, toAdd, null, null);
 			fireBlockAdded(s);
 		}
 		if (toAdd.getNextBlock() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getNextBlock(), null, toAdd, null);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getNextBlock(), null, toAdd, null, null);
 			fireBlockAdded(s);
 		}
 		if (toAdd.getOperand() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getOperand(), null, toAdd, null);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getOperand(), null, toAdd, null, null);
 			fireBlockAdded(s);
 		}
 	}
@@ -420,7 +444,7 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		Block connectedBlockAfterMove = programBlockRepository.getBlockByID(connectedAfterMoveBlockId);
 		BlockSnapshot snapshot = new BlockSnapshot(movedBlock, connectedBlockBeforeMove, connectedBlockAfterMove,
-				movedBlocks);
+				movedBlocks, null);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();

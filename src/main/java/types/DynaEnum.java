@@ -61,7 +61,7 @@ public class DynaEnum<E extends DynaEnum<E>> {
 		this.predicate = predicate;
 		this.action = action;
 		if(cat!= BlockCategory.CALL) {
-			definition=null;
+			definition="";
 		}
 		this.definitionBlockID=definition;
 		Map<String, DynaEnum<?>> typeElements = elements.get(getClass());

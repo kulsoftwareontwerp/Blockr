@@ -67,7 +67,7 @@ public class MoveBlockCommand implements BlockCommand {
 	public void undo() {
 		if (snapshot != null) {
 			snapshot = new BlockSnapshot(snapshot.getBlock(), snapshot.getConnectedBlockAfterSnapshot(),
-					snapshot.getConnectedBlockBeforeSnapshot(), snapshot.getChangingBlocks());
+					snapshot.getConnectedBlockBeforeSnapshot(), snapshot.getChangingBlocks(), null);
 			blockController.restoreBlockSnapshot(snapshot, true);
 			snapshot = null;
 		}

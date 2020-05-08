@@ -153,7 +153,7 @@ public class BlockControllerTest {
 
 		actionBlockSpy = spy(new ActionBlock("2", new BlockType("Action", BlockCategory.ACTION)));
 		controlBlock = spy(new IfBlock("ifBlock"));
-		snapshot = spy(new BlockSnapshot(actionBlock0, null, null, new HashSet<Block>()));
+		snapshot = spy(new BlockSnapshot(actionBlock0, null, null, new HashSet<Block>(), null));
 		
 //		bc.addListener(mockGuiListener);
 		bc.addDomainListener(mockDomainListener);
@@ -329,14 +329,14 @@ public class BlockControllerTest {
 		ArrayList<String> previousConnection = new ArrayList<String>();
 		previousConnection.add("UP");
 		previousConnection.add("1");
-		BlockSnapshot blockSnapShot = new BlockSnapshot(actionBlock0, actionBlock1, null, new HashSet<Block>());
+		BlockSnapshot blockSnapShot = new BlockSnapshot(actionBlock0, actionBlock1, null, new HashSet<Block>(), null);
 		
 		when(blockRepository.getConnectedParentIfExists(blockIDParam)).thenReturn(previousConnection);
 		when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(false);
 		when(blockRepository.getBlockByID("0")).thenReturn(actionBlock0);
 		when(blockRepository.getBlockByID("1")).thenReturn(actionBlock1);
 		when(blockRepository.getAllBlocksConnectedToAndAfterACertainBlock(actionBlock0)).thenReturn(new HashSet<Block>());
-		when(bc.createNewBlockSnapshot(actionBlock0, actionBlock1, null, new HashSet<Block>())).thenReturn(blockSnapShot);
+		when(bc.createNewBlockSnapshot(actionBlock0, actionBlock1, null, new HashSet<Block>(), null)).thenReturn(blockSnapShot);
 		when(blockRepository.removeBlock(blockIDParam, isChainParam)).thenReturn(new HashSet<String>());
 		
 		assertEquals(blockSnapShot, bc.removeBlock(blockIDParam, isChainParam));
@@ -352,14 +352,14 @@ public class BlockControllerTest {
 		ArrayList<String> previousConnection = new ArrayList<String>();
 		previousConnection.add("UP");
 		previousConnection.add("1");
-		BlockSnapshot blockSnapShot = new BlockSnapshot(actionBlock0, null, null, new HashSet<Block>());
+		BlockSnapshot blockSnapShot = new BlockSnapshot(actionBlock0, null, null, new HashSet<Block>(), null);
 		
 		when(blockRepository.getConnectedBlockBeforeRemove(blockIDParam)).thenReturn(previousConnection);
 		when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(true);
 		when(blockRepository.getBlockByID("0")).thenReturn(actionBlock0);
 		when(blockRepository.getBlockByID("1")).thenReturn(null);
 		when(blockRepository.getAllBlocksConnectedToAndAfterACertainBlock(actionBlock0)).thenReturn(new HashSet<Block>());
-		when(bc.createNewBlockSnapshot(actionBlock0, null, null, new HashSet<Block>())).thenReturn(blockSnapShot);
+		when(bc.createNewBlockSnapshot(actionBlock0, null, null, new HashSet<Block>(), null)).thenReturn(blockSnapShot);
 		HashSet<String> idsToBeRemoved = new HashSet<String>();
 		idsToBeRemoved.add("idToBeRemoved");
 		when(blockRepository.removeBlock(blockIDParam, isChainParam)).thenReturn(idsToBeRemoved);

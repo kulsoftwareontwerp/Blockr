@@ -1382,4 +1382,13 @@ public class BlockRepository {
 		return ConnectionType.NOCONNECTION;
 	}
 
+	/**
+	 * Returns all the blocks that have the given blockID as their definition.
+	 * @param blockId the definition of the callerBlocks
+	 * @return A set containing all the blocks with the given definition 
+	 */
+	public Set<Block> getCallerBlocksByDefinition(String blockId) {
+		return allBlocks.values().stream().filter(s->s.getBlockType().type().equals(blockId)).collect(Collectors.toSet());	
+	}
+
 }
