@@ -245,7 +245,7 @@ public class BlockController implements GUISubject, DomainSubject {
 					previousConnectionCallBlock = programBlockRepository.getConnectedParentIfExists(callBlock.getBlockId());
 					
 				Block connectedBlockBeforeDeleteCallBlock = programBlockRepository.getBlockByID(previousConnectionCallBlock.get(1)) != null
-						? programBlockRepository.getBlockByID(previousConnection.get(1)).clone()
+						? programBlockRepository.getBlockByID(previousConnectionCallBlock.get(1)).clone()
 						: null;
 						
 				Set<Block> blocksUnderneathCallBlock = programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(callBlock);

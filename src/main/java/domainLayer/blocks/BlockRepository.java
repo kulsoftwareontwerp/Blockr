@@ -238,14 +238,33 @@ public class BlockRepository {
 	public Set<String> removeBlock(String blockId, Boolean isChain) {
 		Block b = getBlockByID(blockId);
 
-		if(b instanceof DefinitionBlock) {
-			BlockType.removeBlockType(b.getBlockId());
-		}
+
 		
 		// the given exception may be thrown here.
 		validateConnectedBlockIsInDomain(b);
 		Set<String> blockIdsToBeRemoved = new HashSet<String>();
 		Set<Block> blocksToBeRemoved = new HashSet<Block>();
+		
+		if(b instanceof DefinitionBlock) {
+			BlockType.removeBlockType(b.getBlockId());
+			for(Block caller : getCallerBlocksByDefinition(b.getBlockId())) {
+				ArrayList<String> callerParentIdentifiers = getConnectedParentIfExists(caller.getBlockId());
+				Block callerParent = getBlockByID(callerParentIdentifiers.get(1));
+				switch (ConnectionType.valueOf(callerParentIdentifiers.get(0))) {
+				case BODY:
+					callerParent.setFirstBlockOfBody(caller.getNextBlock());
+					break;
+				case DOWN:
+					callerParent.setNextBlock(caller.getNextBlock());
+					break;
+				default:
+					break;
+				}
+				
+				blockIdsToBeRemoved.addAll(removeBlock(caller.getBlockId(), false));
+			}
+		}
+		
 		if (isChain) {
 			blocksToBeRemoved = getAllBlocksConnectedToAndAfterACertainBlock(b);
 		} else {
@@ -1388,7 +1407,7 @@ public class BlockRepository {
 	 * @return A set containing all the blocks with the given definition 
 	 */
 	public Set<Block> getCallerBlocksByDefinition(String blockId) {
-		return allBlocks.values().stream().filter(s->s.getBlockType().type().equals(blockId)).collect(Collectors.toSet());	
+		return allBlocks.values().stream().filter(s->s.getBlockType().definition().equals(blockId)).collect(Collectors.toSet());	
 	}
 
 }
