@@ -233,12 +233,13 @@ public class BlockController implements GUISubject, DomainSubject {
 				
 		Set<BlockSnapshot> associatedSnapshots = new HashSet<BlockSnapshot>();
 		if(deletedBlock instanceof DefinitionBlock) {
-			final Set<Block> callBlocks = programBlockRepository.getCallerBlocksByDefinition(deletedBlock.getBlockId());
+			final Set<Block> tempCallBlocks = programBlockRepository.getCallerBlocksByDefinition(deletedBlock.getBlockId());
 			
-			Set<Block> callBlocks2 = callBlocks.stream().filter(s->callBlocks.stream().anyMatch(j->s!=j && programBlockRepository.getAllBlockIDsUnderneath(j).contains(s))).collect(Collectors.toSet());
+			// Filter out the callBlocks that are lower in the chain of another callBlock
+			Set<Block> callBlocks = tempCallBlocks.stream().filter(s->!(tempCallBlocks.stream().anyMatch(j->s!=j && programBlockRepository.getAllBlockIDsUnderneath(j).contains(s.getBlockId())))).collect(Collectors.toSet());
 			
+			callBlocks = callBlocks.stream().map(s->s.clone()).collect(Collectors.toSet());
 			
-//			.stream().map(s->s.clone()).collect(Collectors.toSet());
 			for(Block callBlock : callBlocks) {
 				ArrayList<String> previousConnectionCallBlock;
 					previousConnectionCallBlock = programBlockRepository.getConnectedParentIfExists(callBlock.getBlockId());
