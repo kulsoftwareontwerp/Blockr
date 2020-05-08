@@ -25,6 +25,7 @@ public class PaletteArea implements Constants {
 	private HashSet<Shape> shapesInPalette;
 	private ShapeFactory shapeFactory;
 	private Boolean paletteVisible;
+	private int currentDrawHeight;
 
 	/**
 	 * Create a new PaletteArea, takes a shapeFactory to create shapes with.
@@ -34,6 +35,8 @@ public class PaletteArea implements Constants {
 	public PaletteArea(ShapeFactory shapeFactory) {
 		setShapeFactory(shapeFactory);
 		setPaletteVisible(true);
+		currentDrawHeight = 0;
+		shapesInPalette = new HashSet<Shape>();
 	}
 
 	/**
@@ -70,75 +73,140 @@ public class PaletteArea implements Constants {
 		// Rest of the Frame
 		g.drawLine(100, 0, 100, g.getClipBounds().height);
 		drawFullPalette(g);
+		
 
 	}
 
 	private void drawFullPalette(Graphics g) {
-
-		HashSet<Shape> set = new HashSet<Shape>();
-
-		int tempHeight = 30; // initial starting position in paletteArea to draw Strings
 		if (isPaletteVisible()) {
-			g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
-			g.drawString("Action Blocks", 15, tempHeight);
-			tempHeight += 20;
-			g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
-
-			for (var type : BlockType.values()) {
-				if (type.cat() == BlockCategory.ACTION) {
-					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, null,
-							(BlockType) type, new Coordinate(ACTION_BLOCK_INIT_OFFSET, tempHeight)));
-					tempHeight += 45;
-				}
+			drawTitles(g);
+			if (shapesInPalette.size() != BlockType.values().length) {
+				fillPalette();
 			}
+			shapesInPalette.forEach(e -> e.draw(g));
+		}
+	}
 
-			tempHeight += 20;
-			g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
-			g.drawString("Control Blocks", 10, tempHeight);
-			tempHeight += 20;
-			g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
+	private void drawTitles(Graphics g) {
+		int tempHeight = 30; // initial starting position in paletteArea to draw Strings
+		g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
+		g.drawString("Action Blocks", 15, tempHeight);
+		tempHeight += 20;
+		g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
 
-			for (var type : BlockType.values()) {
-				if (type.cat() == BlockCategory.CONTROL) {
-					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, null,
-							(BlockType) type, new Coordinate(CONTROL_BLOCK_INIT_OFFSET, tempHeight)));
-					tempHeight += 105;
-				}
+		for (var type : BlockType.values()) {
+			if (type.cat() == BlockCategory.ACTION) {
+				tempHeight += 45;
 			}
-
-			tempHeight += 20;
-			g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
-			g.drawString("Operator Blocks", 5, tempHeight);
-			tempHeight += 20;
-			g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
-
-			for (var type : BlockType.values()) {
-				if (type.cat() == BlockCategory.OPERATOR) {
-					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, null,
-							(BlockType) type, new Coordinate(OPERATOR_BLOCK_INIT_OFFSET, tempHeight)));
-					tempHeight += 35;
-				}
-			}
-
-			tempHeight += 25;
-			g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
-			g.drawString("Condition Blocks", 5, tempHeight);
-			tempHeight += 20;
-			g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
-
-			for (var type : BlockType.values()) {
-				if (type.cat() == BlockCategory.CONDITION) {
-					set.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, null,
-							(BlockType) type, new Coordinate(CONDITION_BLOCK_INIT_OFFSET, tempHeight)));
-					tempHeight += 35;
-				}
-			}
-
-			set.forEach(e -> e.draw(g));
 		}
 
-		this.shapesInPalette = set;
+		tempHeight += 20;
+		g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
+		g.drawString("Control Blocks", 10, tempHeight);
+		tempHeight += 20;
+		g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
 
+		for (var type : BlockType.values()) {
+			if (type.cat() == BlockCategory.CONTROL) {
+				tempHeight += 105;
+			}
+		}
+
+		tempHeight += 20;
+		g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
+		g.drawString("Operator Blocks", 5, tempHeight);
+		tempHeight += 20;
+		g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
+
+		for (var type : BlockType.values()) {
+			if (type.cat() == BlockCategory.OPERATOR) {
+				tempHeight += 35;
+			}
+		}
+
+		tempHeight += 25;
+		g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
+		g.drawString("Condition Blocks", 5, tempHeight);
+		tempHeight += 20;
+		g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
+
+		for (var type : BlockType.values()) {
+			if (type.cat() == BlockCategory.CONDITION) {
+				tempHeight += 35;
+			}
+		}
+
+		tempHeight += 20;
+		g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
+		g.drawString("Function Blocks", 10, tempHeight);
+		tempHeight += 20;
+		g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
+
+	}
+
+	private void fillPalette() {
+		shapesInPalette.clear();
+		int tempHeight = 50;
+		for (var type : BlockType.values()) {
+			if (type.cat() == BlockCategory.ACTION) {
+				shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
+						new Coordinate(ACTION_BLOCK_INIT_OFFSET, tempHeight)));
+
+				tempHeight += 45;
+			}
+		}
+
+		tempHeight += 40;
+		for (var type : BlockType.values()) {
+			if (type.cat() == BlockCategory.CONTROL) {
+
+				shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
+						new Coordinate(CONTROL_BLOCK_INIT_OFFSET, tempHeight)));
+				tempHeight += 105;
+
+			}
+		}
+
+		tempHeight += 40;
+		for (var type : BlockType.values()) {
+			if (type.cat() == BlockCategory.OPERATOR) {
+
+				shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
+						new Coordinate(OPERATOR_BLOCK_INIT_OFFSET, tempHeight)));
+				tempHeight += 35;
+
+			}
+		}
+
+		tempHeight += 45;
+
+		for (var type : BlockType.values()) {
+			if (type.cat() == BlockCategory.CONDITION) {
+
+				shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
+						new Coordinate(CONDITION_BLOCK_INIT_OFFSET, tempHeight)));
+				tempHeight += 35;
+
+			}
+		}
+
+		tempHeight += 40;
+		shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.DEFINITION,
+				new Coordinate(CONTROL_BLOCK_INIT_OFFSET, tempHeight)));
+		tempHeight += 105;
+
+		for (var type : BlockType.values()) {
+			if (type.cat() == BlockCategory.CALL) {
+				shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
+						new Coordinate(ACTION_BLOCK_INIT_OFFSET, tempHeight)));
+				tempHeight += 45;
+
+			}
+		}
+
+		if (currentDrawHeight == 0) {
+			currentDrawHeight = tempHeight;
+		}
 	}
 
 	/**
@@ -166,7 +234,7 @@ public class PaletteArea implements Constants {
 				.filter(e -> e.getCoordinatesShape().contains(new Coordinate(x, y))).findFirst();
 
 		if (shape.isPresent()) {
-			return shape.get();
+			return shape.get().clone();
 		} else {
 			return null;
 		}

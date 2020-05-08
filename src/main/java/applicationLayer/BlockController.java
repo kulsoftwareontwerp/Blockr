@@ -25,6 +25,7 @@ import exceptions.InvalidBlockConnectionException;
 import exceptions.InvalidBlockTypeException;
 import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
+import types.BlockCategory;
 import types.BlockSnapshot;
 import types.BlockType;
 import types.ConnectionType;
@@ -156,7 +157,7 @@ public class BlockController implements GUISubject, DomainSubject {
 	public BlockSnapshot addBlock(BlockType blockType, String definitionBlockID, String connectedBlockId,
 			ConnectionType connection) {
 		Block definitionBlock = programBlockRepository.getBlockByID(definitionBlockID);
-		if (blockType == BlockType.CALL && (definitionBlock==null || !(definitionBlock instanceof DefinitionBlock))) {
+		if (blockType.cat() == BlockCategory.CALL && (definitionBlock==null || !(definitionBlock instanceof DefinitionBlock))) {
 			throw new NoSuchConnectedBlockException("There is no DefinitionBlock in the domain with the given definitionBlockID.");
 		}
 

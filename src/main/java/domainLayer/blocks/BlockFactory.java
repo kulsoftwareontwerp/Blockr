@@ -42,9 +42,10 @@ public class BlockFactory {
 		case CONDITION:
 			return new ConditionBlock(blockId, type);
 		case DEFINITION:
+			new BlockType("Call "+ blockId, BlockCategory.CALL,blockId);
 			return new DefinitionBlock(blockId);
-		case FUNCTIONCALL:
-			return new CallFunctionBlock(blockId,definitionBlockID);
+		case CALL:
+			return new CallFunctionBlock(blockId,type);
 		default:
 			return null;
 		}

@@ -19,25 +19,19 @@ import types.ConnectionType;
  *
  */
 public class CallFunctionShape extends Shape {
-	private final String definitionShapeID;
 
 	/**
 	 * Create a new shape with the given id, type and coordinate
 	 * 
 	 * @param id         the id for the shape
-	 * @param definitionShapeID the id of the DefinitionShape associated with this shape
 	 * @param type       the type of the shape
 	 * @param coordinate the coordinate for the shape.
 	 */
-	public CallFunctionShape(String id, String definitionShapeID, BlockType type, Coordinate coordinate) {
+	public CallFunctionShape(String id, BlockType type, Coordinate coordinate) {
 		super(id, type, coordinate);
-		this.definitionShapeID = definitionShapeID;
 	}
 
-	@Override
-	public String getDefinitionShapeID() {
-		return definitionShapeID;
-	}
+
 
 	@Override
 	public void clipOn(Shape shape, ConnectionType connection) {
@@ -76,7 +70,7 @@ public class CallFunctionShape extends Shape {
 		g.drawLine(startX, startY + 30, startX + 10, startY + 30);
 		g.drawLine(startX + 30, startY + 30, startX + 90, startY + 30);
 
-		g.drawString(type.toString()+ " " + definitionShapeID + idForDisplay(), startX + 3, startY + 23);
+		g.drawString(type.toString() + idForDisplay(), startX + 3, startY + 23);
 
 	}
 

@@ -102,9 +102,32 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		this.undoMode = false;
 
+		calculateWindowHeight();
+
+		commandHandler = new CommandHandler(this);
+
+		maskedKeyBag = new MaskedKeyBag(false, false);
+
+
+		super.width = WIDTH;
+		this.domainController = dc;
+		this.domainController.addGameListener(this);
+		setShapeFactory(new ShapeFactory());
+		this.programArea = new ProgramArea();
+		this.paletteArea = new PaletteArea(getShapeFactory());
+
+		this.blocksUnderneath = new HashSet<String>();
+		resetShapesInMovement();
+
+	}
+
+	/**
+	 * Sets the height of the window to accommodate all the shapes
+	 */
+	private void calculateWindowHeight() {
 		// Calculate Total Height of the CanvasWindow based on the different type of
 		// blocks
-		int totalHeight = 160; // 4x40px for the titles in the palette
+		int totalHeight = 200; // 5x40px for the titles in the palette
 		for (var type : BlockType.values()) {
 			switch (type.cat()) {
 			case ACTION:
@@ -119,29 +142,22 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			case OPERATOR:
 				totalHeight += 35;
 				break;
+			case DEFINITION:
+				totalHeight += 105;
+				break;
+			case CALL:
+				totalHeight += 45;
+				break;
 			default:
 				break;
 			}
 		}
 
 		totalHeight += 25; // Padding at the bottom
-
-		commandHandler = new CommandHandler(this);
-
-		maskedKeyBag = new MaskedKeyBag(false, false);
-
+		
 		super.height = totalHeight;
 		System.out.println(totalHeight);
-		super.width = WIDTH;
-		this.domainController = dc;
-		this.domainController.addGameListener(this);
-		setShapeFactory(new ShapeFactory());
-		this.programArea = new ProgramArea();
-		this.paletteArea = new PaletteArea(getShapeFactory());
-
-		this.blocksUnderneath = new HashSet<String>();
-		resetShapesInMovement();
-
+	
 	}
 
 	/**
@@ -154,7 +170,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 				BlockType type = domainController.getBlockType(IdAndCoordinate.getKey());
 
-				Shape shape = shapeFactory.createShape(IdAndCoordinate.getKey(), null, type, IdAndCoordinate.getValue());
+				Shape shape = shapeFactory.createShape(IdAndCoordinate.getKey(), type, IdAndCoordinate.getValue());
 				determineTotalHeightControlShapes();
 				shape.setCoordinatesShape();
 				programArea.addToAlreadyFilledInCoordinates(shape);
@@ -302,8 +318,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 
 		// Partition CanvasWindow in different sections
-
+		calculateWindowHeight();
 		paletteArea.paint(blockrGraphics);
+		
+		
 
 		domainController.paint(gameAreaGraphics);
 
@@ -833,7 +851,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		for (String id : ids) {
 			BlockType type = domainController.getBlockType(id);
-			Shape shape = shapeFactory.createShape(id, null, type, coordinates.get(id));
+			Shape shape = shapeFactory.createShape(id, type, coordinates.get(id));
 			if (heights.containsKey(id)) {
 				shape.setHeight(heights.get(id));
 			}
@@ -912,7 +930,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			newCoordinate = new Coordinate(0, 0);
 		}
 
-		Shape toAdd = shapeFactory.createShape(event.getAddedBlockID(), null, event.getAddedBlockType(), newCoordinate);
+		Shape toAdd = shapeFactory.createShape(event.getAddedBlockID(), event.getAddedBlockType(), newCoordinate);
 
 		// Update the ID of the snapshot in the executionStack
 		commandHandler.setAddedId(event.getAddedBlockID());

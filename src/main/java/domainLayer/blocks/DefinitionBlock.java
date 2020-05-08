@@ -73,7 +73,7 @@ public class DefinitionBlock extends Block implements BodyCavityBlock {
 	 * @param caller the caller that calls this definitionBlock.
 	 */
 	public void pushToCallStack(CallFunctionBlock caller) {
-		if (caller != null && caller.getDefinitionBlockID().equals(this.getBlockId())) {
+		if (caller != null && caller.getBlockType().definition().equals(this.getBlockId())) {
 			this.functionBlockCallStack.push(caller.getBlockId());
 		}
 	}

@@ -10,9 +10,8 @@ import types.BlockType;
 import types.ConnectionType;
 
 /**
-/**
- * CallFunctionBlock
- * A block used to call upon the functionalities of a given definitionBlock.
+ * /** CallFunctionBlock A block used to call upon the functionalities of a
+ * given definitionBlock.
  * 
  * @version 0.1
  * @author group17
@@ -21,44 +20,43 @@ import types.ConnectionType;
 public class CallFunctionBlock extends Block {
 
 	private HashSet<ConnectionType> supportedConnectionTypes;
-	private String definitionBlockID;
-	
+	private BlockType type;
+
 	/**
 	 * Create a new CallFunctionBlock
 	 * 
 	 * @param blockID The blockID for this CallFunctionBlock
-	 * @param definitionBlockID The ID of the definitionBlock to call upon.
+	 * @param type    The BlockType of the definitionBlock
 	 */
-	public CallFunctionBlock(String blockID,String definitionBlockID) {
+	public CallFunctionBlock(String blockID, BlockType type) {
 		super(blockID);
-		if(definitionBlockID==null) {
-			definitionBlockID="";
-		}
-		this.definitionBlockID=definitionBlockID;
-		
-		this.supportedConnectionTypes=new HashSet<ConnectionType>();
+
+		this.type = type;
+
+		this.supportedConnectionTypes = new HashSet<ConnectionType>();
 		supportedConnectionTypes.add(ConnectionType.UP);
 		supportedConnectionTypes.add(ConnectionType.DOWN);
 	}
 
 	@Override
 	public BlockType getBlockType() {
-		return BlockType.CALL;
+		return type;
 	}
 
 	@Override
 	public Set<ConnectionType> getSupportedConnectionTypes() {
 		return this.getSupportedConnectionTypes();
 	}
-	
-	
-	/**
-	 * Retrieve the ID of the DefinitionBlock that will be called by this CallFunctionBlock.
-	 * @return the ID of the DefinitionBlock that will be called by this CallFunctionBlock.
-	 */
-	public String getDefinitionBlockID() {
-		return this.definitionBlockID;
-	}
-	
+
+//	/**
+//	 * Retrieve the ID of the DefinitionBlock that will be called by this
+//	 * CallFunctionBlock.
+//	 * 
+//	 * @return the ID of the DefinitionBlock that will be called by this
+//	 *         CallFunctionBlock.
+//	 */
+//	public String getDefinitionBlockID() {
+//		return this.definitionBlockID;
+//	}
 
 }

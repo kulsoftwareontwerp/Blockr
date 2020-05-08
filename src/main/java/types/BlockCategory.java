@@ -7,6 +7,6 @@ package types;
  * @author group17
  */
 public enum BlockCategory {
-	ACTION, OPERATOR, CONDITION, CONTROL, DEFINITION, FUNCTIONCALL
+	ACTION, OPERATOR, CONDITION, CONTROL, DEFINITION, CALL
 
 }

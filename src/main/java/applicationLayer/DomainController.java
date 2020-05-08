@@ -141,7 +141,7 @@ public class DomainController {
 		} else if ((connectedBlockId != null && !connectedBlockId.equals(""))
 				&& connection == ConnectionType.NOCONNECTION) {
 			throw new IllegalArgumentException("No connection given for connected block.");
-		} else if (blockType == BlockType.CALL && (definitionBlockID == null || definitionBlockID.equals(""))) {
+		} else if (blockType.cat() == BlockCategory.CALL && (definitionBlockID == null || definitionBlockID.equals(""))) {
 			throw new IllegalArgumentException("When the blockType is Call there must be a definitionBlockID present");
 		} else {
 			BlockCommand command = new AddBlockCommand(blockController, blockType, definitionBlockID, connectedBlockId,
