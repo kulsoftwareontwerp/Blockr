@@ -237,6 +237,10 @@ public class BlockRepository {
 	public Set<String> removeBlock(String blockId, Boolean isChain) {
 		Block b = getBlockByID(blockId);
 
+		if(b instanceof DefinitionBlock) {
+			BlockType.removeBlockType(b.getBlockId());
+		}
+		
 		// the given exception may be thrown here.
 		validateConnectedBlockIsInDomain(b);
 		Set<String> blockIdsToBeRemoved = new HashSet<String>();

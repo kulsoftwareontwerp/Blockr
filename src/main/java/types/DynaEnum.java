@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.lang.model.element.TypeElement;
+
 import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
@@ -42,6 +44,15 @@ public class DynaEnum<E extends DynaEnum<E>> {
    private final String definitionBlockID;
    public final String definition() {
    	return definitionBlockID;
+   }
+   
+   /**
+    * Remove a literal from the DynaEnum
+    * @param literal The literal to be removed
+    */
+   protected static final void remove(DynaEnum<?> literal) {
+			Map<String, DynaEnum<?>> typeElements = elements.get(literal.getClass());
+			typeElements.remove(literal.type());
    }
 
 	protected DynaEnum(String type, BlockCategory cat, Action action, Predicate predicate, String definition) {
