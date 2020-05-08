@@ -251,7 +251,7 @@ public class BlockController implements GUISubject, DomainSubject {
 				Set<Block> blocksUnderneathCallBlock = programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(callBlock);
 				
 						
-				associatedSnapshots.add(createNewBlockSnapshot(callBlock, connectedBlockBeforeDeleteCallBlock, null, blocksUnderneathCallBlock, associatedSnapshots));
+				associatedSnapshots.add(createNewBlockSnapshot(callBlock, connectedBlockBeforeDeleteCallBlock, null, blocksUnderneathCallBlock, null));
 			}
 		}
 
@@ -298,6 +298,10 @@ public class BlockController implements GUISubject, DomainSubject {
 		} else {
 			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
 					snapshot.getBlock());
+		}
+		
+		for(BlockSnapshot associatedSnapshot : snapshot.getAssociatedSnapshots()) {
+			programBlockRepository.restoreBlockSnapshot(associatedSnapshot);
 		}
 
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
