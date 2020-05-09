@@ -6,6 +6,7 @@ package guiLayer.commands;
 import java.util.Stack;
 
 import guiLayer.CanvasWindow;
+import guiLayer.shapes.Shape;
 
 /**
  * /** CommandHandler
@@ -132,6 +133,14 @@ public class CommandHandler {
 			c.execute();
 			currentlyHandledBlockCommand = null;
 			executedBlockCommands.push(c);
+		}
+	}
+
+	public void addShapeToBeforeSnapshot(Shape shape) {
+		if (currentlyHandledBlockCommand != null) {
+			currentlyHandledBlockCommand.addShapeToBeforeSnapshot(shape);
+		}else {
+			executedBlockCommands.peek().addShapeToBeforeSnapshot(shape);
 		}
 	}
 

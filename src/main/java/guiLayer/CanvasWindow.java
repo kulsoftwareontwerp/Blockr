@@ -981,7 +981,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		// Only in the case of the removal of a DefinitionShape this will be true
 		if (shapeToBeRemovedFromProgramArea.isPresent()) {
 			if (shapeToBeRemovedFromProgramArea.get() instanceof CallFunctionShape) {
-				currentSnapshot.addShapeToSnapshot(shapeToBeRemovedFromProgramArea.get());
+				commandHandler.addShapeToBeforeSnapshot(shapeToBeRemovedFromProgramArea.get());
+//				currentSnapshot.addShapeToSnapshot(shapeToBeRemovedFromProgramArea.get());
 
 				// Move all shapes under this shape up
 				if (event.getBeforeRemoveBlockId() != "") {

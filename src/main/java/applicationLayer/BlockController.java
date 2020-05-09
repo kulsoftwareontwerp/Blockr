@@ -338,7 +338,26 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 
 		for (BlockSnapshot associatedSnapshot : snapshot.getAssociatedSnapshots()) {
-			programBlockRepository.restoreBlockSnapshot(associatedSnapshot);
+			Boolean removed = programBlockRepository.restoreBlockSnapshot(associatedSnapshot);
+			if (removed) {
+				Set<Block> allCallers = programBlockRepository
+						.getAllBlocksConnectedToAndAfterACertainBlock(associatedSnapshot.getBlock()).stream()
+						.filter(s -> s.getBlockType().definition()
+								.equals(associatedSnapshot.getBlock().getBlockType().definition()))
+						.collect(Collectors.toSet());
+
+				for (Block caller : allCallers) {
+					ConnectionType after = programBlockRepository.getConnectionType(
+							associatedSnapshot.getConnectedBlockAfterSnapshot(), associatedSnapshot.getBlock());
+					String caID = "";
+					if (associatedSnapshot.getConnectedBlockAfterSnapshot() != null) {
+						caID = associatedSnapshot.getConnectedBlockAfterSnapshot().getBlockId();
+					}
+					fireBlockAdded(associatedSnapshot.getBlock().getBlockId(), caID, after,
+							associatedSnapshot.getBlock().getBlockType(), null);
+				}
+			}
+
 		}
 
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);

@@ -1250,6 +1250,9 @@ public class BlockRepository {
 			} else {
 				addBlockToHeadBlocks(snapshot.getBlock());
 			}
+			
+			// remove all blocks from the headblocks that are also underneath the restored block.
+			getAllBlocksConnectedToAndAfterACertainBlock(snapshot.getBlock()).stream().filter(s->(!s.getBlockId().equals(snapshot.getBlock().getBlockId()) && headBlocks.contains(s))).forEach(s-> headBlocks.remove(s));;
 
 			for (Block b : connectedBlocks) {
 				addBlockToAllBlocks(b);
