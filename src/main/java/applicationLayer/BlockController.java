@@ -347,14 +347,16 @@ public class BlockController implements GUISubject, DomainSubject {
 						.collect(Collectors.toSet());
 
 				for (Block caller : allCallers) {
-					ConnectionType after = programBlockRepository.getConnectionType(
-							associatedSnapshot.getConnectedBlockAfterSnapshot(), associatedSnapshot.getBlock());
+					
+					ArrayList<String> parentIdentifiers = programBlockRepository.getConnectedParentIfExists(caller.getBlockId());
+					
+					ConnectionType after = ConnectionType.valueOf(parentIdentifiers.get(0));
 					String caID = "";
-					if (associatedSnapshot.getConnectedBlockAfterSnapshot() != null) {
-						caID = associatedSnapshot.getConnectedBlockAfterSnapshot().getBlockId();
+					if (parentIdentifiers.get(1) != null) {
+						caID = parentIdentifiers.get(1);
 					}
-					fireBlockAdded(associatedSnapshot.getBlock().getBlockId(), caID, after,
-							associatedSnapshot.getBlock().getBlockType(), null);
+					fireBlockAdded(caller.getBlockId(), caID, after,
+							caller.getBlockType(), null);
 				}
 			}
 
