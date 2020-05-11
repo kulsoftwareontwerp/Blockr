@@ -587,32 +587,32 @@ public class BlockControllerTest {
 	}
 	
 	/**
-	 * Test method for {@link applicationLayer.BlockController#getEnclosingControlBlock(java.lang.String)}.
+	 * Test method for {@link applicationLayer.BlockController#getEnclosingBodyCavityBlock(java.lang.String)}.
 	 */
 	@Test
 	public void testGetEnclosingControlBlock_Positive() {
 		String blockIdParam = "blockId";
 		when(blockRepository.getBlockByID(blockIdParam)).thenReturn(actionBlock0);
-		when(blockRepository.getEnclosingControlBlock(actionBlock0)).thenReturn(controlBlock);
+		when(blockRepository.getEnclosingBodyCavityBlock(actionBlock0)).thenReturn(controlBlock);
 		String controlBlockId = controlBlock.getBlockId();
 		
-		assertEquals(controlBlockId, bc.getEnclosingControlBlock(blockIdParam));
+		assertEquals(controlBlockId, bc.getEnclosingBodyCavityBlock(blockIdParam));
 	}
 	
 	/**
-	 * Test method for {@link applicationLayer.BlockController#getEnclosingControlBlock(java.lang.String)}.
+	 * Test method for {@link applicationLayer.BlockController#getEnclosingBodyCavityBlock(java.lang.String)}.
 	 */
 	@Test
 	public void testGetEnclosingControlBlock_EnclosingBlockNull_Positive() {
 		String blockIdParam = "blockId";
 		when(blockRepository.getBlockByID(blockIdParam)).thenReturn(actionBlock0);
-		when(blockRepository.getEnclosingControlBlock(actionBlock0)).thenReturn(null);
+		when(blockRepository.getEnclosingBodyCavityBlock(actionBlock0)).thenReturn(null);
 		
-		assertEquals(null, bc.getEnclosingControlBlock(blockIdParam));
+		assertEquals(null, bc.getEnclosingBodyCavityBlock(blockIdParam));
 	}
 	
 	/**
-	 * Test method for {@link applicationLayer.BlockController#getEnclosingControlBlock(java.lang.String)}.
+	 * Test method for {@link applicationLayer.BlockController#getEnclosingBodyCavityBlock(java.lang.String)}.
 	 */
 	@Test
 	public void testGetEnclosingControlBlock_GivenBlockNull_NoSuchConnectedBlockException() {
@@ -624,18 +624,18 @@ public class BlockControllerTest {
 		exceptionRule.expectMessage(excMessage);
 		
 		try {
-			bc.getEnclosingControlBlock(blockIdParam);
+			bc.getEnclosingBodyCavityBlock(blockIdParam);
 		} catch (NoSuchConnectedBlockException e) {
 			assertEquals(excMessage, e.getMessage());
 		}
 		
-		verify(blockRepository, Mockito.times(0)).getEnclosingControlBlock(Mockito.any(ActionBlock.class));
+		verify(blockRepository, Mockito.times(0)).getEnclosingBodyCavityBlock(Mockito.any(ActionBlock.class));
 		
-		bc.getEnclosingControlBlock(blockIdParam);
+		bc.getEnclosingBodyCavityBlock(blockIdParam);
 	}
 	
 	/**
-	 * Test method for {@link applicationLayer.BlockController#getEnclosingControlBlock(java.lang.String)}.
+	 * Test method for {@link applicationLayer.BlockController#getEnclosingBodyCavityBlock(java.lang.String)}.
 	 */
 	@Test
 	public void testGetEnclosingControlBlock_BlockNoExecutableBlock_InvalidBlockTypeException() {
@@ -645,14 +645,14 @@ public class BlockControllerTest {
 		exceptionRule.expect(InvalidBlockTypeException.class);
 		
 		try {
-			bc.getEnclosingControlBlock(blockIdParam);
+			bc.getEnclosingBodyCavityBlock(blockIdParam);
 		} catch (InvalidBlockTypeException e) {
 			
 		}
 		
-		verify(blockRepository, Mockito.times(0)).getEnclosingControlBlock(Mockito.any(ActionBlock.class));
+		verify(blockRepository, Mockito.times(0)).getEnclosingBodyCavityBlock(Mockito.any(ActionBlock.class));
 		
-		bc.getEnclosingControlBlock(blockIdParam);
+		bc.getEnclosingBodyCavityBlock(blockIdParam);
 	}
 
 	/**

@@ -1011,7 +1011,7 @@ public class BlockRepositoryTest {
 	}
 
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#getEnclosingControlBlock(domainLayer.blocks.ExecutableBlock)}.
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getEnclosingBodyCavityBlock(domainLayer.blocks.ExecutableBlock)}.
 	 */
 	@Test
 	public void testGetEnclosingControlBlock_Positive() {
@@ -1023,11 +1023,11 @@ public class BlockRepositoryTest {
 		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlock);
 		when(actionBlock.getNextBlock()).thenReturn(movedActionBlock);
 		
-		assertEquals(ifBlock, blockRepo.getEnclosingControlBlock(movedActionBlock));
+		assertEquals(ifBlock, blockRepo.getEnclosingBodyCavityBlock(movedActionBlock));
 	}
 	
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#getEnclosingControlBlock(domainLayer.blocks.ExecutableBlock)}.
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getEnclosingBodyCavityBlock(domainLayer.blocks.ExecutableBlock)}.
 	 */
 	@Test
 	public void testGetEnclosingControlBlock_NoTopLevelBlock_Positive() {
@@ -1038,11 +1038,11 @@ public class BlockRepositoryTest {
 		Mockito.doReturn(connectedBlocks).when(blockRepo).getAllBlocksConnectedToAndAfterACertainBlock(actionBlock);
 		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlock);
 		
-		assertEquals(null, blockRepo.getEnclosingControlBlock(movedActionBlock));
+		assertEquals(null, blockRepo.getEnclosingBodyCavityBlock(movedActionBlock));
 	}
 	
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#getEnclosingControlBlock(domainLayer.blocks.ExecutableBlock)}.
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getEnclosingBodyCavityBlock(domainLayer.blocks.ExecutableBlock)}.
 	 */
 	@Test
 	public void testGetEnclosingControlBlock_NoControlBlocks_Positive() {
@@ -1051,7 +1051,7 @@ public class BlockRepositoryTest {
 		connectedBlocks.add(movedActionBlock);
 		Mockito.doReturn(connectedBlocks).when(blockRepo).getAllBlocksConnectedToAndAfterACertainBlock(actionBlock);
 		
-		assertEquals(null, blockRepo.getEnclosingControlBlock(movedActionBlock));
+		assertEquals(null, blockRepo.getEnclosingBodyCavityBlock(movedActionBlock));
 	}
 	
 	/**

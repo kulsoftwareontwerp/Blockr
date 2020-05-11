@@ -22,7 +22,7 @@ import domainLayer.gamestates.GameState;
  */
 public class ExecutionSnapshot {
 
-	private HashMap<String,Stack<String>> callStacks;
+	private Map<String,Stack<String>> callStacks;
 	private ActionBlock nextBlockToBeExecuted;
 	private GameWorldSnapshot gameSnapshot;
 	private GameState state;
@@ -32,11 +32,11 @@ public class ExecutionSnapshot {
 	 * @param nextBlockToBeExecuted The next block to be executed
 	 * @param gameSnapshot the gameWorld snapshot before the execution has been performed.
 	 * @param state the saved state of an execution
-	 * @param callStacks TODO
+	 * @param callStacks The callStacks of all the definitionBlocks.
 	 * @throws NullPointerException when the gameSnapshot is null
 	 * @throws NullPointerException when the state is null
 	 */
-	public ExecutionSnapshot(ActionBlock nextBlockToBeExecuted, GameWorldSnapshot gameSnapshot, GameState state, HashMap<String, Stack<String>> callStacks) {
+	public ExecutionSnapshot(ActionBlock nextBlockToBeExecuted, GameWorldSnapshot gameSnapshot, GameState state, Map<String, Stack<String>> callStacks) {
 		super();
 		if(gameSnapshot==null) {
 			throw new NullPointerException("the gameSnapshot of an ExecutionSnapshot can't be null");
@@ -82,7 +82,7 @@ public class ExecutionSnapshot {
 	 * Retrieve the callStacks from this snapshot.
 	 * @return the callStacks from this snapshot.
 	 */
-	public HashMap<String,Stack<String>> getCallStacks(){
+	public Map<String, Stack<String>> getCallStacks(){
 		HashMap<String, Stack<String>> copy = new HashMap<String, Stack<String>>();
 	    for (Map.Entry<String, Stack<String>> entry : this.callStacks.entrySet())
 	    {

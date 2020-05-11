@@ -142,7 +142,7 @@ public class GameControllerTest {
 		when(gameWorld.saveState()).thenReturn(snapshotMock);
 		Mockito.doReturn(inExecutionState).when(gc).getCurrentState();
 		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(actionBlock);
-		Mockito.doReturn(snapshot).when(gc).createNewExecutionSnapshot(actionBlock, snapshotMock, inExecutionState);
+		Mockito.doReturn(snapshot).when(gc).createNewExecutionSnapshot(actionBlock, snapshotMock, inExecutionState, null);
 		Mockito.doNothing().when(gc).fireUpdateHighlightingEvent(null);
 		when(inExecutionState.getNextState()).thenReturn(null);
 		
@@ -200,7 +200,7 @@ public class GameControllerTest {
 	 */
 	@Test
 	public void testFindNextActionBlockToBeExecuted_CurrentBlockNull_ControlBlockIfBlock_Positive() {
-		when(programBlockRepository.getEnclosingControlBlock(actionBlock)).thenReturn(ifBlock);
+		when(programBlockRepository.getEnclosingBodyCavityBlock(actionBlock)).thenReturn(ifBlock);
 		when(ifBlock.getNextBlock()).thenReturn(actionBlock);
 		Mockito.doReturn(actionBlock).when(gc).findNextActionBlockToBeExecuted(ifBlock, actionBlock);
 		
@@ -212,7 +212,7 @@ public class GameControllerTest {
 	 */
 	@Test
 	public void testFindNextActionBlockToBeExecuted_CurrentBlockNull_ControlBlockWhileBlock_Positive() {
-		when(programBlockRepository.getEnclosingControlBlock(actionBlock)).thenReturn(whileBlock);
+		when(programBlockRepository.getEnclosingBodyCavityBlock(actionBlock)).thenReturn(whileBlock);
 		Mockito.doReturn(actionBlock).when(gc).findNextActionBlockToBeExecuted(null, whileBlock);
 		
 		assertEquals(actionBlock, gc.findNextActionBlockToBeExecuted(actionBlock, null));
@@ -223,7 +223,7 @@ public class GameControllerTest {
 	 */
 	@Test
 	public void testFindNextActionBlockToBeExecuted_CurrentBlockNull_ControlBlockNull_Positive() {
-		when(programBlockRepository.getEnclosingControlBlock(actionBlock)).thenReturn(null);
+		when(programBlockRepository.getEnclosingBodyCavityBlock(actionBlock)).thenReturn(null);
 		
 		assertEquals(null, gc.findNextActionBlockToBeExecuted(actionBlock, null));
 	}
@@ -270,7 +270,7 @@ public class GameControllerTest {
 		when(gameWorld.saveState()).thenReturn(snapshotMock);
 		Mockito.doReturn(inExecutionState).when(gc).getCurrentState();
 		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(nextActionBlock);
-		Mockito.doReturn(snapshot).when(gc).createNewExecutionSnapshot(nextActionBlock, snapshotMock, inExecutionState);
+		Mockito.doReturn(snapshot).when(gc).createNewExecutionSnapshot(nextActionBlock, snapshotMock, inExecutionState, null);
 		Mockito.doNothing().when(gc).fireUpdateHighlightingEvent(Mockito.any(String.class));
 		
 		assertEquals(snapshot, gc.performAction(actionBlock));
@@ -289,7 +289,7 @@ public class GameControllerTest {
 		when(gameWorld.saveState()).thenReturn(snapshotMock);
 		Mockito.doReturn(inExecutionState).when(gc).getCurrentState();
 		when(inExecutionState.getNextActionBlockToBeExecuted()).thenReturn(null);
-		Mockito.doReturn(snapshotNextBlockNull).when(gc).createNewExecutionSnapshot(null, snapshotMock, inExecutionState);
+		Mockito.doReturn(snapshotNextBlockNull).when(gc).createNewExecutionSnapshot(null, snapshotMock, inExecutionState, null);
 		Mockito.doNothing().when(gc).fireUpdateHighlightingEvent(null);
 		
 		assertEquals(snapshotNextBlockNull, gc.performAction(actionBlock));

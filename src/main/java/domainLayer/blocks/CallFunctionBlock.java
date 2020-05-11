@@ -48,15 +48,4 @@ public class CallFunctionBlock extends ExecutableBlock {
 		return new HashSet<ConnectionType>(supportedConnectionTypes);
 	}
 
-//	/**
-//	 * Retrieve the ID of the DefinitionBlock that will be called by this
-//	 * CallFunctionBlock.
-//	 * 
-//	 * @return the ID of the DefinitionBlock that will be called by this
-//	 *         CallFunctionBlock.
-//	 */
-//	public String getDefinitionBlockID() {
-//		return this.definitionBlockID;
-//	}
-
 }

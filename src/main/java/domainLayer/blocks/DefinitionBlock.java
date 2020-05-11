@@ -56,15 +56,34 @@ public class DefinitionBlock extends Block implements BodyCavityBlock {
 	}
 
 	/**
+	 * Retrieve the callStack
+	 * 
+	 * @return the callStack
+	 */
+	public Stack<String> getCallStack() {
+		return copyCallStack(functionBlockCallStack);
+	}
+
+	private Stack<String> copyCallStack(Stack<String> callStack) {
+		Stack<String> tempCallStack = new Stack<String>();
+
+		for (int i = 0; i < callStack.size(); i++) {
+			tempCallStack.add(i, callStack.get(i));
+		}
+		return tempCallStack;
+	}
+
+	/**
 	 * Set the callStack of this definitionBlock to the given CallStack
 	 * 
 	 * @param callStack The callStack to give to this block.
 	 */
 	public void setCallStack(Stack<String> callStack) {
 		if (callStack == null) {
-			callStack = new Stack<String>();
+			this.functionBlockCallStack = new Stack<String>();
+		} else {
+			this.functionBlockCallStack = copyCallStack(callStack);
 		}
-		this.functionBlockCallStack = callStack;
 	}
 
 	/**
@@ -91,14 +110,12 @@ public class DefinitionBlock extends Block implements BodyCavityBlock {
 			return null;
 		}
 	}
-	
-	
+
 	/**
 	 * Clear the callStack of this DefinitionBlock.
 	 */
 	public void clearCallStack() {
 		this.functionBlockCallStack.clear();
 	}
-	
 
 }

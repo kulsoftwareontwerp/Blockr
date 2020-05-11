@@ -869,13 +869,18 @@ public class BlockRepository {
 	 *         "Condition Block"
 	 */
 	public boolean checkIfValidProgram() {
-		if (headBlocks.size() != 1)
+		if (headBlocks.stream().filter(s->s.getBlockType()!=BlockType.DEFINITION).collect(Collectors.toSet()).size() != 1)
 			return false;
 		Block headBlock = null;
+		Boolean valid = true;
 		for (Block block : headBlocks) {
 			headBlock = allBlocks.get(block.getBlockId());
+			valid = CheckIfChainIsValid(headBlock);
+			if(!valid) {
+				break;
+			}
 		}
-		return CheckIfChainIsValid(headBlock);
+		return valid;
 
 	}
 
@@ -934,14 +939,16 @@ public class BlockRepository {
 	 * method can only be called in a valid program state. If that is the case,
 	 * there is only one block in headBlocks and that block gets returned.
 	 * 
-	 * @return The first block to be executed in the program.
+	 * @return The first block to be executed in the program or null if no such block exists.
 	 */
 	public ExecutableBlock findFirstBlockToBeExecuted() {
-		// We find the "first" item in the HashSet, that should always be the only item
-		// in the set, otherwise it would not be in an ValidState
-		Iterator<Block> iter = headBlocks.iterator();
-		ExecutableBlock firstExecutableBlock = (ExecutableBlock) iter.next();
-		return firstExecutableBlock;
+		Optional<ExecutableBlock> firstBlock =  headBlocks.stream().filter(s->s.getBlockType()!=BlockType.DEFINITION).map(s->(ExecutableBlock)s).findFirst();
+		if(firstBlock.isPresent()) {
+			return firstBlock.get();
+		}
+		else {
+			return null;
+		}
 	}
 
 	/**
@@ -1134,22 +1141,32 @@ public class BlockRepository {
 
 		return firstControlBlocks;
 	}
+	
+	
+	/**
+	 * Retrieve all the definitionBlocks
+	 * @return a set containing all the definitionBlocks
+	 */
+	public Set<DefinitionBlock> getAllDefinitionBlocks(){
+		return headBlocks.stream().filter(s->s.getBlockType()==BlockType.DEFINITION).map(s->(DefinitionBlock)s).collect(Collectors.toSet());
+	}
+	
 
 	/**
-	 * Finds the enclosing controlblock of the given block.
+	 * Finds the enclosing bodyCavityBlock of the given block.
 	 * 
-	 * @param block The block to find the enclosing controlblock of.
-	 * @return The enclosing controlblock. If there is no enclosing block, the
+	 * @param block The block to find the enclosing bodyCavityBlock of.
+	 * @return The enclosing bodyCavityBlock. If there is no enclosing block, the
 	 *         method returns null.
 	 */
-	public ControlBlock getEnclosingControlBlock(ExecutableBlock block) {
-		Set<ControlBlock> chain = new HashSet<ControlBlock>();
+	public BodyCavityBlock getEnclosingBodyCavityBlock(ExecutableBlock block) {
+		Set<BodyCavityBlock> chain = new HashSet<BodyCavityBlock>();
 		for (Block headBlock : headBlocks) {
 			getAllBlocksConnectedToAndAfterACertainBlock(headBlock).stream()
-					.filter(e -> !e.getBlockId().equals(block.getBlockId()) && (e instanceof ControlBlock))
-					.forEach(p -> chain.add((ControlBlock) p));
+					.filter(e -> !e.getBlockId().equals(block.getBlockId()) && (e instanceof BodyCavityBlock))
+					.forEach(p -> chain.add((BodyCavityBlock) p));
 		}
-		for (ControlBlock c : chain) {
+		for (BodyCavityBlock c : chain) {
 			for (ExecutableBlock topLevelBlock : getAllBlocksInBodyTopLevel(c.getFirstBlockOfBody())) {
 				if (topLevelBlock.getBlockId().equals(block.getBlockId())) {
 					return c;

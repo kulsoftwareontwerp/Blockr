@@ -575,21 +575,21 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @return The id of the enclosing controlblock. If there is no enclosing block,
 	 *         the method returns null.
 	 */
-	public String getEnclosingControlBlock(String id) {
+	public String getEnclosingBodyCavityBlock(String id) {
 		Block givenBlock = programBlockRepository.getBlockByID(id);
-		ControlBlock block = null;
+		BodyCavityBlock block = null;
 		if (givenBlock == null) {
 			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
 		} else if (!(givenBlock instanceof ExecutableBlock)) {
 			throw new InvalidBlockTypeException(ExecutableBlock.class, givenBlock.getClass());
 		} else {
-			block = programBlockRepository.getEnclosingControlBlock((ExecutableBlock) givenBlock);
+			block = programBlockRepository.getEnclosingBodyCavityBlock((ExecutableBlock) givenBlock);
 		}
 
 		if (block == null)
 			return null;
 
-		return block.getBlockId();
+		return ((Block) block).getBlockId();
 	}
 
 	/**
