@@ -869,14 +869,15 @@ public class BlockRepository {
 	 *         "Condition Block"
 	 */
 	public boolean checkIfValidProgram() {
-		if (headBlocks.stream().filter(s->s.getBlockType()!=BlockType.DEFINITION).collect(Collectors.toSet()).size() != 1)
+		if (headBlocks.stream().filter(s -> s.getBlockType() != BlockType.DEFINITION).collect(Collectors.toSet())
+				.size() != 1)
 			return false;
 		Block headBlock = null;
 		Boolean valid = true;
 		for (Block block : headBlocks) {
 			headBlock = allBlocks.get(block.getBlockId());
 			valid = CheckIfChainIsValid(headBlock);
-			if(!valid) {
+			if (!valid) {
 				break;
 			}
 		}
@@ -939,14 +940,15 @@ public class BlockRepository {
 	 * method can only be called in a valid program state. If that is the case,
 	 * there is only one block in headBlocks and that block gets returned.
 	 * 
-	 * @return The first block to be executed in the program or null if no such block exists.
+	 * @return The first block to be executed in the program or null if no such
+	 *         block exists.
 	 */
 	public ExecutableBlock findFirstBlockToBeExecuted() {
-		Optional<ExecutableBlock> firstBlock =  headBlocks.stream().filter(s->s.getBlockType()!=BlockType.DEFINITION).map(s->(ExecutableBlock)s).findFirst();
-		if(firstBlock.isPresent()) {
+		Optional<ExecutableBlock> firstBlock = headBlocks.stream().filter(s -> s.getBlockType() != BlockType.DEFINITION)
+				.map(s -> (ExecutableBlock) s).findFirst();
+		if (firstBlock.isPresent()) {
 			return firstBlock.get();
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
@@ -977,13 +979,19 @@ public class BlockRepository {
 		}
 	}
 
-	private void deepReplace(Block block, Collection<Block> collection) {
+	private Set<Block> deepReplace(Block block, Collection<Block> collection) {
+		Set<Block> replacedBlocks = new HashSet<Block>();
 		for (Block b : collection) {
-			deepReplace(block, b);
+			Block replacing = deepReplace(block, b);
+
+			if (replacing != null) {
+				replacedBlocks.add(replacing);
+			}
 		}
+		return replacedBlocks;
 	}
 
-	private void deepReplace(Block block, Block parent) {
+	private Block deepReplace(Block block, Block parent) {
 		Optional<Block> connectedBlock = getAllBlocksConnectedToAndAfterACertainBlock(parent).stream()
 				.filter(s -> (block != null && s.getBlockId().equals(block.getBlockId()) && parent != null
 						&& !s.getBlockId().equals(parent.getBlockId())))
@@ -994,6 +1002,7 @@ public class BlockRepository {
 			ArrayList<String> parentInfo = getConnectedParentIfExists(connectedBlock.get().getBlockId());
 
 			Block firstParent = getBlockByID(parentInfo.get(1));
+
 			ConnectionType connection = ConnectionType.valueOf(parentInfo.get(0));
 
 			switch (connection) {
@@ -1013,9 +1022,11 @@ public class BlockRepository {
 				break;
 			}
 
-			deepReplace(firstParent, parent);
+			Block globalParent = deepReplace(firstParent, parent);
 
+			return globalParent != null ? globalParent : firstParent;
 		}
+		return null;
 
 	}
 
@@ -1141,16 +1152,16 @@ public class BlockRepository {
 
 		return firstControlBlocks;
 	}
-	
-	
+
 	/**
 	 * Retrieve all the definitionBlocks
+	 * 
 	 * @return a set containing all the definitionBlocks
 	 */
-	public Set<DefinitionBlock> getAllDefinitionBlocks(){
-		return headBlocks.stream().filter(s->s.getBlockType()==BlockType.DEFINITION).map(s->(DefinitionBlock)s).collect(Collectors.toSet());
+	public Set<DefinitionBlock> getAllDefinitionBlocks() {
+		return headBlocks.stream().filter(s -> s.getBlockType() == BlockType.DEFINITION).map(s -> (DefinitionBlock) s)
+				.collect(Collectors.toSet());
 	}
-	
 
 	/**
 	 * Finds the enclosing bodyCavityBlock of the given block.
@@ -1257,7 +1268,13 @@ public class BlockRepository {
 					removeBlockFromHeadBlocks(cb);
 					addBlockToHeadBlocks(snapshot.getBlock());
 				} else {
-					deepReplace(cb, headBlocks);
+					Set<Block> replacedBlocks = deepReplace(cb, headBlocks);
+
+					for (Block b : replacedBlocks) {
+						if (getAllHeadBlocks().stream().anyMatch(s -> s.getBlockId().equals(b.getBlockId()))) {
+							addBlockToHeadBlocks(b);
+						}
+					}
 					if (getAllHeadBlocks().stream().anyMatch(s -> s.getBlockId().equals(cb.getBlockId()))) {
 						addBlockToHeadBlocks(cb);
 					}
@@ -1267,9 +1284,13 @@ public class BlockRepository {
 			} else {
 				addBlockToHeadBlocks(snapshot.getBlock());
 			}
-			
-			// remove all blocks from the headblocks that are also underneath the restored block.
-			getAllBlocksConnectedToAndAfterACertainBlock(snapshot.getBlock()).stream().filter(s->(!s.getBlockId().equals(snapshot.getBlock().getBlockId()) && headBlocks.contains(s))).forEach(s-> headBlocks.remove(s));;
+
+			// remove all blocks from the headblocks that are also underneath the restored
+			// block.
+			getAllBlocksConnectedToAndAfterACertainBlock(snapshot.getBlock()).stream()
+					.filter(s -> (!s.getBlockId().equals(snapshot.getBlock().getBlockId()) && headBlocks.contains(s)))
+					.forEach(s -> headBlocks.remove(s));
+			;
 
 			for (Block b : connectedBlocks) {
 				addBlockToAllBlocks(b);

@@ -148,7 +148,7 @@ public class ResettingStateTest {
 	}
 
 	/**
-	 * Test method for {@link domainLayer.gamestates.ResettingState#ResettingState(applicationLayer.GameController)}.
+	 * Test method for {@link domainLayer.gamestates.ResettingState#ResettingState(applicationLayer.GameController, ActionBlock)}.
 	 */
 	@Test
 	public void testResettingState() {

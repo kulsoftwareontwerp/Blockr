@@ -3,20 +3,24 @@ package domainLayer.gamestates;
 import applicationLayer.GameController;
 import commands.GameWorldCommand;
 import commands.ResetCommand;
+import domainLayer.blocks.ActionBlock;
 
 public class ResettingState extends GameState {
 
 	private Class<? extends GameState> nextState;
 	private Boolean updated;
+	private ActionBlock nextActionBlockToBeExecuted;
 
 	/**
 	 * 
+	 * @param nextBlock TODO
 	 * @param game
 	 */
-	public ResettingState(GameController gameController) {
+	public ResettingState(GameController gameController, ActionBlock nextBlock) {
 		super(gameController);
 		setNextState(ValidProgramState.class);
 		updated = false;
+		this.nextActionBlockToBeExecuted = nextBlock;
 	}
 	
 
@@ -59,6 +63,15 @@ public class ResettingState extends GameState {
 			gameController.resetGame();
 			updated=false;
 		}
+	}
+
+	
+	
+	
+
+	@Override
+	public ActionBlock getNextActionBlockToBeExecuted() {
+		return nextActionBlockToBeExecuted!=null?(ActionBlock) nextActionBlockToBeExecuted.clone():null;
 	}
 
 

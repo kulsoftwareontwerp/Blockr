@@ -29,7 +29,7 @@ public class InExecutionState extends GameState {
 	 */
 	@Override
 	public void reset() {
-		ResettingState resettingState = new ResettingState(gameController);
+		ResettingState resettingState = new ResettingState(gameController, nextActionBlockToBeExecuted);
 		gameController.toState(resettingState);
 		resettingState.reset();
 	}
@@ -61,7 +61,7 @@ public class InExecutionState extends GameState {
 	 */
 	@Override
 	public void update() {
-			GameState ResettingStateFollowingUpdate = new ResettingState(gameController);
+			GameState ResettingStateFollowingUpdate = new ResettingState(gameController, null);
 			ResettingStateFollowingUpdate.update();
 			gameController.toState(ResettingStateFollowingUpdate);
 			

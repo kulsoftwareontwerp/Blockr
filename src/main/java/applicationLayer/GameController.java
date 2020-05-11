@@ -95,15 +95,18 @@ public class GameController implements DomainListener, GUISubject {
 
 		programBlockRepository.getAllDefinitionBlocks().stream().forEach(s -> s.clearCallStack());
 
-		ExecutionSnapshot snapshot = createNewExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState(),
+		
+		
+		ExecutionSnapshot snapshot = createNewExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, new InExecutionState(this,getCurrentState().getNextActionBlockToBeExecuted()),
 				callStacks);
+
 		gameWorld.restoreState(initialSnapshot);
 		fireUpdateHighlightingEvent(null);
 
 		try {
 			if (getCurrentState().getNextState() == null) {
 				// This is not a resettingState.
-				toState(new ResettingState(this));
+				toState(new ResettingState(this, null));
 			} else {
 				// TODO: How to test this?
 				Constructor<? extends GameState> constructor = getCurrentState().getNextState()
@@ -114,7 +117,6 @@ public class GameController implements DomainListener, GUISubject {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 		return snapshot;
 	}
 
