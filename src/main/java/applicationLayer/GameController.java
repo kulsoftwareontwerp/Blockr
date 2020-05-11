@@ -95,10 +95,8 @@ public class GameController implements DomainListener, GUISubject {
 
 		programBlockRepository.getAllDefinitionBlocks().stream().forEach(s -> s.clearCallStack());
 
-		
-		
-		ExecutionSnapshot snapshot = createNewExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, new InExecutionState(this,getCurrentState().getNextActionBlockToBeExecuted()),
-				callStacks);
+		ExecutionSnapshot snapshot = createNewExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot,
+				new InExecutionState(this, getCurrentState().getNextActionBlockToBeExecuted()), callStacks);
 
 		gameWorld.restoreState(initialSnapshot);
 		fireUpdateHighlightingEvent(null);
@@ -215,37 +213,49 @@ public class GameController implements DomainListener, GUISubject {
 				} else if (cb instanceof DefinitionBlock) {
 					CallFunctionBlock caller = (CallFunctionBlock) programBlockRepository
 							.getBlockByID(((DefinitionBlock) cb).popFromCallStack());
-					
-					if(caller.getNextBlock()!=null) {
+
+					if (caller.getNextBlock() != null) {
 						return findNextActionBlockToBeExecuted(currentBlock, caller.getNextBlock());
-					}
-					else {
+					} else {
 						BodyCavityBlock enclosing = programBlockRepository
 								.getEnclosingBodyCavityBlock((ExecutableBlock) caller);
-						return findNextActionBlockToBeExecuted((Block) enclosing,currentBlock);
-					}			
-					
+
+						if (enclosing instanceof DefinitionBlock) {
+							return findNextActionBlockToBeExecuted((Block) enclosing, currentBlock);
+						} else if (enclosing instanceof ControlBlock) {
+							if (enclosing instanceof IfBlock) {
+								return findNextActionBlockToBeExecuted((ControlBlock) enclosing,
+										((ControlBlock) enclosing).getNextBlock());
+							} else {
+								return findNextActionBlockToBeExecuted(currentBlock, (ControlBlock) enclosing);
+							}
+						} else {
+							throw new RuntimeException("Not able to process this block for execution");
+						}
+
+					}
+
 				} else {
 					throw new RuntimeException("Not able to process this block for execution");
 				}
 			} else if (previousBlock instanceof DefinitionBlock) {
 				CallFunctionBlock caller = (CallFunctionBlock) programBlockRepository
 						.getBlockByID(((DefinitionBlock) previousBlock).popFromCallStack());
-				
-				if(caller.getNextBlock()!=null) {
+
+				if (caller.getNextBlock() != null) {
 					return findNextActionBlockToBeExecuted(currentBlock, caller.getNextBlock());
-				}
-				else {
+				} else {
 					BodyCavityBlock enclosing = programBlockRepository
 							.getEnclosingBodyCavityBlock((ExecutableBlock) caller);
-					return findNextActionBlockToBeExecuted( (Block) enclosing,currentBlock);
+					return findNextActionBlockToBeExecuted((Block) enclosing, currentBlock);
 				}
-				
-				
+
 			} else {
 				return null;
 			}
-		} else if (currentBlock instanceof ActionBlock) {
+		} else if (currentBlock instanceof ActionBlock)
+
+		{
 			return (ActionBlock) currentBlock;
 		} else if (currentBlock instanceof ControlBlock) {
 			// If or while block
@@ -265,7 +275,7 @@ public class GameController implements DomainListener, GUISubject {
 			return findNextActionBlockToBeExecuted(currentBlock, definition);
 		} else if (currentBlock instanceof DefinitionBlock) {
 			// Definition Block
-				return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getFirstBlockOfBody());				
+			return findNextActionBlockToBeExecuted(currentBlock, currentBlock.getFirstBlockOfBody());
 		} else {
 			throw new RuntimeException("Not able to process this block for execution");
 		}
@@ -302,7 +312,8 @@ public class GameController implements DomainListener, GUISubject {
 	public void restoreExecutionSnapshot(ExecutionSnapshot snapshot) {
 		getCurrentState().setNextActionBlockToBeExecuted(snapshot.getNextActionBlockToBeExecuted());
 		gameWorld.restoreState(snapshot.getGameSnapshot());
-		programBlockRepository.getAllDefinitionBlocks().forEach(s->s.setCallStack(snapshot.getCallStacks().get(s.getBlockId())));
+		programBlockRepository.getAllDefinitionBlocks()
+				.forEach(s -> s.setCallStack(snapshot.getCallStacks().get(s.getBlockId())));
 		toState(snapshot.getState());
 		if (getCurrentState().getNextActionBlockToBeExecuted() != null) {
 			fireUpdateHighlightingEvent(getCurrentState().getNextActionBlockToBeExecuted().getBlockId());
