@@ -37,7 +37,7 @@ public class BlockAddedEventTest {
 	}
 
 	/**
-	 * Test method for {@link events.BlockAddedEvent#BlockAddedEvent(java.lang.String, String, ConnectionType, BlockType, Set)}.
+	 * Test method for {@link events.BlockAddedEvent#BlockAddedEvent(java.lang.String, String, ConnectionType, BlockType, Set, boolean)}.
 	 */
 	@Test
 	public void testBlockAddedEvent() {

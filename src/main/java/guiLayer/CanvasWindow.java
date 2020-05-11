@@ -36,6 +36,7 @@ import guiLayer.types.DebugModus;
 import guiLayer.types.GuiSnapshot;
 import guiLayer.types.MaskedKeyBag;
 import guiLayer.types.MaskedKeyPressed;
+import types.BlockCategory;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -154,7 +155,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 		}
 
-		totalHeight += 25; // Padding at the bottom
+		totalHeight += 55; // Padding at the bottom
 		if (super.height != totalHeight) {
 			super.height = totalHeight;
 			System.out.println(totalHeight);
@@ -873,17 +874,23 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	/**
 	 * Update the position of all shapes after the height of controlshapes has been
 	 * changed.
+	 * @param shapesToBeIgnoredWhileMoving The ids of shapes to exclude in the update position process
 	 */
-	private void updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes() {
+	private void updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(Set<String> shapesToBeIgnoredWhileMoving) {
 		Set<ControlShape> changedControlShapes = programArea.getAllChangedControlShapes();
 
 		for (ControlShape c : changedControlShapes) {
 			Set<Shape> shapesToMove = domainController.getAllBlockIDsBelowCertainBlock(c.getId()).stream()
 					.filter(s -> !s.equals(c.getId())).map(s -> programArea.getShapeById(s))
 					.collect(Collectors.toSet());
-			if (c.getHeightDiff() < 0 && undoMode) {
-				shapesToMove.removeIf(s -> currentSnapshot.getSavedCoordinates().containsKey(s.getId()));
+			if (undoMode) {
+				if (c.getHeightDiff() < 0) {
+					shapesToMove.removeIf(s -> currentSnapshot.getSavedCoordinates().containsKey(s.getId()));
+				}
 			}
+			
+			shapesToMove.removeIf(s -> s!=null && shapesToBeIgnoredWhileMoving.contains(s.getId()));
+			
 
 			for (Shape shape : shapesToMove) {
 				if (shape != null) {
@@ -913,11 +920,17 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 	}
 
+	
+	private Set<String> comingEvents=new HashSet<String>();
 	@Override
 	public void onBlockAdded(BlockAddedEvent event) {
+		boolean redone = false;
 		Coordinate newCoordinate;
 		if (currentSnapshot.getSavedCoordinates().containsKey(event.getAddedBlockID())) {
+			// shape was present in the programArea at one point in time
 			newCoordinate = currentSnapshot.getSavedCoordinates().get(event.getAddedBlockID());
+			redone = true;
+
 		} else if (currentSnapshot.getSavedCoordinates().containsKey(PALETTE_BLOCK_IDENTIFIER)) {
 			newCoordinate = currentSnapshot.getSavedCoordinates().get(PALETTE_BLOCK_IDENTIFIER);
 		} else {
@@ -935,8 +948,38 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		programArea.addShapeToProgramArea(toAdd);
 		programArea.clearAlreadyFilledInCoordinates();
 
-		determineTotalHeightBodyCavityShapes();
-		updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes();
+		if (redone && event.getAddedBlockType().cat() == BlockCategory.CALL) {
+			for (Shape shape : domainController.getAllBlockIDsUnderneath(event.getAddedBlockID()).stream()
+					.filter(s -> !s.equals(event.getAddedBlockID())).map(s -> programArea.getShapeById(s))
+					.collect(Collectors.toSet())) {
+				if (shape != null && !shape.getType().definition().equals(toAdd.getType().definition())
+						&& !domainController.getAllHeadBlocks().contains(toAdd.getId())) {
+					shape.setY_coord(shape.getY_coord() + toAdd.getHeight());
+				}
+			}
+		}
+
+//		!domainController.getAllHeadBlocks()
+//		.stream().filter(s -> domainController.getAllBlockIDsUnderneath(s).contains(event.getAddedBlockID()))
+//		.anyMatch(s -> domainController.getAllBlockIDsUnderneath(s).stream()
+//				.filter(g -> domainController.getBlockType(g).cat() == BlockCategory.CALL
+//						&& !g.equals(event.getAddedBlockID()))
+//				.anyMatch(j -> domainController.getBlockType(j).definition()
+//								.equals(event.getAddedBlockType().definition())
+//						&& domainController.getAllBlockIDsUnderneath(j).contains(event.getAddedBlockID())))
+
+		if (!event.areMoreRelatedEventsComing()) {
+			determineTotalHeightBodyCavityShapes();
+			Set<String> idsToBeIgnoredFromMovement= new HashSet<String>();
+			if(undoMode && event.getAddedBlockType()==BlockType.DEFINITION) {
+				idsToBeIgnoredFromMovement.addAll(comingEvents);
+			}
+			comingEvents.clear();
+			updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(idsToBeIgnoredFromMovement);
+		}
+		else {
+			comingEvents.add(event.getAddedBlockID());
+		}
 
 		programArea.placeShapes();
 
@@ -962,7 +1005,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		determineTotalHeightBodyCavityShapes();
 		// handle add to programArea in practice, all coordinates etc are set.
 
-		updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes();
+		updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(new HashSet<String>());
 
 		programArea.placeShapes();
 
@@ -973,6 +1016,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	public void onBlockRemoved(BlockRemovedEvent event) {
+		Boolean removeCallShapeBecauseDefinitionShapeWasRemoved = false;
 		Optional<Shape> shapeToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
 				.filter(s -> s.getId().equals(event.getRemovedBlockId())).findAny();
 
@@ -984,23 +1028,22 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				commandHandler.addShapeToBeforeSnapshot(shapeToBeRemovedFromProgramArea.get());
 //				currentSnapshot.addShapeToSnapshot(shapeToBeRemovedFromProgramArea.get());
 
+				removeCallShapeBecauseDefinitionShapeWasRemoved = true;
 				// Move all shapes under this shape up
 				if (event.getBeforeRemoveBlockId() != "") {
 					Set<String> shapeIDs;
 					BlockType bfrm = domainController.getBlockType(event.getBeforeRemoveBlockId());
-					if((bfrm==BlockType.IF|| bfrm==BlockType.WHILE)) {
-						if(event.getBeforeRemoveConnection()==ConnectionType.BODY) {						
-						shapeIDs = domainController.getAllBlockIDsInBody(event.getBeforeRemoveBlockId());
-						}else {
-							shapeIDs = domainController.getAllBlockIDsBelowCertainBlock(event.getBeforeRemoveBlockId());							
+					if ((bfrm == BlockType.IF || bfrm == BlockType.WHILE)) {
+						if (event.getBeforeRemoveConnection() == ConnectionType.BODY) {
+							shapeIDs = domainController.getAllBlockIDsInBody(event.getBeforeRemoveBlockId());
+						} else {
+							shapeIDs = domainController.getAllBlockIDsBelowCertainBlock(event.getBeforeRemoveBlockId());
 						}
-					}
-					else {
+					} else {
 						shapeIDs = domainController.getAllBlockIDsUnderneath(event.getBeforeRemoveBlockId());
 					}
-					
-					for (Shape s : shapeIDs.stream()
-							.map(i -> programArea.getShapeById(i))
+
+					for (Shape s : shapeIDs.stream().map(i -> programArea.getShapeById(i))
 							.filter(j -> !(j.getId().equals(event.getBeforeRemoveBlockId()) || j.getType().definition()
 									.equals(shapeToBeRemovedFromProgramArea.get().getType().definition())))
 							.collect(Collectors.toSet())) {
@@ -1016,10 +1059,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		programArea.clearAlreadyFilledInCoordinates();
 
-		// update internals of controlshapes
-		determineTotalHeightBodyCavityShapes();
-		updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes();
-
+		if (!removeCallShapeBecauseDefinitionShapeWasRemoved) {
+			// update internals of controlshapes
+			determineTotalHeightBodyCavityShapes();
+			updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(new HashSet<String>());
+		}
 		// handle add to programArea in practice, all coordinates etc are set.
 		programArea.placeShapes();
 

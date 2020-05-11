@@ -19,6 +19,7 @@ public class BlockAddedEvent implements EventObject {
 	private BlockType type;
 	private ConnectionType linkedType;
 	private Set<String> changedBlocks;
+	private boolean moreRelatedEventsComing;
 
 	/**
 	 * Create the blockAddedEvent
@@ -27,9 +28,10 @@ public class BlockAddedEvent implements EventObject {
 	 * @param linkedBlock The ID of the block that's linked to the addedBlock after the add
 	 * @param linkedType The connection on which the added block is connected to the linkedBlock.
 	 * @param type The BlockType of the added Block
-	 * @param changedBlocks a set with the ID's of all blocks that were involved in this add.
+	 * @param changedBlocks a set with the ID's of all blocks that were involved in this add. 
+	 * @param moreRelatedEventsComing signifies that there are still related events comming.
 	 */
-	public BlockAddedEvent(String addedBlockID, String linkedBlock, ConnectionType linkedType, BlockType type, Set<String> changedBlocks) {
+	public BlockAddedEvent(String addedBlockID, String linkedBlock, ConnectionType linkedType, BlockType type, Set<String> changedBlocks, boolean moreRelatedEventsComing) {
 		this.addedBlockID = addedBlockID;
 		this.linkedBlockID=linkedBlock;
 		this.linkedType=linkedType;
@@ -38,6 +40,7 @@ public class BlockAddedEvent implements EventObject {
 			changedBlocks=new HashSet<String>();
 		}
 		this.changedBlocks=changedBlocks;
+		this.moreRelatedEventsComing=moreRelatedEventsComing;
 	}
 
 	
@@ -89,5 +92,17 @@ public class BlockAddedEvent implements EventObject {
 	 */
 	public BlockType getAddedBlockType() {
 		return type;
+	}
+
+
+
+
+
+	/**
+	 * Retrieve if there are more related events coming.
+	 * @return if there are more related events coming.
+	 */
+	public boolean areMoreRelatedEventsComing() {
+		return moreRelatedEventsComing;
 	}
 }

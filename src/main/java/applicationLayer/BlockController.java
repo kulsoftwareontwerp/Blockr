@@ -62,8 +62,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	private void fireBlockAdded(String newBlockId, String linkedBlockId, ConnectionType linkedConnection,
-			BlockType type, Set<String> changedBlocks) {
-		BlockAddedEvent event = new BlockAddedEvent(newBlockId, linkedBlockId, linkedConnection, type, changedBlocks);
+			BlockType type, Set<String> changedBlocks, boolean moreRelatedEventsComing) {
+		BlockAddedEvent event = new BlockAddedEvent(newBlockId, linkedBlockId, linkedConnection, type, changedBlocks, moreRelatedEventsComing);
 
 		for (GUIListener listener : guiListeners) {
 			listener.onBlockAdded(event);
@@ -187,7 +187,7 @@ public class BlockController implements GUISubject, DomainSubject {
 			caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 		}
 		fireBlockAdded(newBlockId, caID, after, blockType,
-				addedBlocks.stream().map(s -> s.getBlockId()).collect(Collectors.toSet()));
+				addedBlocks.stream().map(s -> s.getBlockId()).collect(Collectors.toSet()), false);
 
 		return snapshot;
 	}
@@ -338,26 +338,24 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 
 		for (BlockSnapshot associatedSnapshot : snapshot.getAssociatedSnapshots()) {
-			Boolean removed = programBlockRepository.restoreBlockSnapshot(associatedSnapshot);
-			if (removed) {
-				Set<Block> allCallers = programBlockRepository
-						.getAllBlocksConnectedToAndAfterACertainBlock(associatedSnapshot.getBlock()).stream()
-						.filter(s -> s.getBlockType().definition()
-								.equals(associatedSnapshot.getBlock().getBlockType().definition()))
-						.collect(Collectors.toSet());
+			programBlockRepository.restoreBlockSnapshot(associatedSnapshot);
+			Set<Block> allCallers = programBlockRepository
+					.getAllBlocksConnectedToAndAfterACertainBlock(associatedSnapshot.getBlock()).stream()
+					.filter(s -> s.getBlockType().definition()
+							.equals(associatedSnapshot.getBlock().getBlockType().definition()))
+					.collect(Collectors.toSet());
 
-				for (Block caller : allCallers) {
-					
-					ArrayList<String> parentIdentifiers = programBlockRepository.getConnectedParentIfExists(caller.getBlockId());
-					
-					ConnectionType after = ConnectionType.valueOf(parentIdentifiers.get(0));
-					String caID = "";
-					if (parentIdentifiers.get(1) != null) {
-						caID = parentIdentifiers.get(1);
-					}
-					fireBlockAdded(caller.getBlockId(), caID, after,
-							caller.getBlockType(), null);
+			for (Block caller : allCallers) {
+
+				ArrayList<String> parentIdentifiers = programBlockRepository
+						.getConnectedParentIfExists(caller.getBlockId());
+
+				ConnectionType after = ConnectionType.valueOf(parentIdentifiers.get(0));
+				String caID = "";
+				if (parentIdentifiers.get(1) != null) {
+					caID = parentIdentifiers.get(1);
 				}
+				fireBlockAdded(caller.getBlockId(), caID, after, caller.getBlockType(), null, true);
 			}
 
 		}
@@ -378,7 +376,7 @@ public class BlockController implements GUISubject, DomainSubject {
 				if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 					caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 				}
-				fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType(), null);
+				fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType(), null, false);
 			}
 		} else {
 
@@ -411,7 +409,7 @@ public class BlockController implements GUISubject, DomainSubject {
 			caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 		}
 		fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType(),
-				programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock()));
+				programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock()), false);
 
 		Block toAdd = snapshot.getBlock();
 

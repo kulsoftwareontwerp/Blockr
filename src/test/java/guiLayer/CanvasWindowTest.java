@@ -142,15 +142,15 @@ public class CanvasWindowTest implements Constants {
 		
 		moveForward = new BlockType("Move Forward", BlockCategory.ACTION);
 		
-		blockAddedEvent = new BlockAddedEvent("0", "", null, moveForward, null);
-		blockAddedEventWithLinkedShapeUP = new BlockAddedEvent("0", "1", ConnectionType.UP , moveForward, null);
-		blockAddedEventWithLinkedShapeBODY = new BlockAddedEvent("0", "1", ConnectionType.BODY , moveForward, null);
-		blockAddedEventWithLinkedShapeCONDITION = new BlockAddedEvent("0", "1", ConnectionType.CONDITION , moveForward, null);
-		blockAddedEventWithLinkedShapeDOWN = new BlockAddedEvent("0", "1", ConnectionType.DOWN , moveForward, null);
-		blockAddedEventWithLinkedShapeLEFT_parentOperand = new BlockAddedEvent("20", "21", ConnectionType.LEFT , BlockType.NOT, null);
-		blockAddedEventWithLinkedShapeLEFT_parentControl = new BlockAddedEvent("20", "10", ConnectionType.LEFT , BlockType.NOT, null);
-		blockAddedEventWithLinkedShapeNOCONNECTION = new BlockAddedEvent("0", "1", ConnectionType.NOCONNECTION , moveForward, null);
-		blockAddedEventWithLinkedShapeOPERAND = new BlockAddedEvent("0", "1", ConnectionType.OPERAND , moveForward, null);
+		blockAddedEvent = new BlockAddedEvent("0", "", null, moveForward, null, false);
+		blockAddedEventWithLinkedShapeUP = new BlockAddedEvent("0", "1", ConnectionType.UP , moveForward, null, false);
+		blockAddedEventWithLinkedShapeBODY = new BlockAddedEvent("0", "1", ConnectionType.BODY , moveForward, null, false);
+		blockAddedEventWithLinkedShapeCONDITION = new BlockAddedEvent("0", "1", ConnectionType.CONDITION , moveForward, null, false);
+		blockAddedEventWithLinkedShapeDOWN = new BlockAddedEvent("0", "1", ConnectionType.DOWN , moveForward, null, false);
+		blockAddedEventWithLinkedShapeLEFT_parentOperand = new BlockAddedEvent("20", "21", ConnectionType.LEFT , BlockType.NOT, null, false);
+		blockAddedEventWithLinkedShapeLEFT_parentControl = new BlockAddedEvent("20", "10", ConnectionType.LEFT , BlockType.NOT, null, false);
+		blockAddedEventWithLinkedShapeNOCONNECTION = new BlockAddedEvent("0", "1", ConnectionType.NOCONNECTION , moveForward, null, false);
+		blockAddedEventWithLinkedShapeOPERAND = new BlockAddedEvent("0", "1", ConnectionType.OPERAND , moveForward, null, false);
 		blockRemovedEvent = Mockito.spy(new BlockRemovedEvent("0", "", ConnectionType.NOCONNECTION, null));
 		Set<String> changedBlocks = new HashSet<>();
 		changedBlocks.add("11");
