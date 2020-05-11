@@ -959,15 +959,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 		}
 
-//		!domainController.getAllHeadBlocks()
-//		.stream().filter(s -> domainController.getAllBlockIDsUnderneath(s).contains(event.getAddedBlockID()))
-//		.anyMatch(s -> domainController.getAllBlockIDsUnderneath(s).stream()
-//				.filter(g -> domainController.getBlockType(g).cat() == BlockCategory.CALL
-//						&& !g.equals(event.getAddedBlockID()))
-//				.anyMatch(j -> domainController.getBlockType(j).definition()
-//								.equals(event.getAddedBlockType().definition())
-//						&& domainController.getAllBlockIDsUnderneath(j).contains(event.getAddedBlockID())))
-
 		if (!event.areMoreRelatedEventsComing()) {
 			determineTotalHeightBodyCavityShapes();
 			Set<String> idsToBeIgnoredFromMovement= new HashSet<String>();
