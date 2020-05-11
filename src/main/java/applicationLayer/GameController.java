@@ -220,7 +220,9 @@ public class GameController implements DomainListener, GUISubject {
 						BodyCavityBlock enclosing = programBlockRepository
 								.getEnclosingBodyCavityBlock((ExecutableBlock) caller);
 
-						if (enclosing instanceof DefinitionBlock) {
+						if(enclosing == null) {
+							return null;
+						} else if (enclosing instanceof DefinitionBlock) {
 							return findNextActionBlockToBeExecuted((Block) enclosing, currentBlock);
 						} else if (enclosing instanceof ControlBlock) {
 							if (enclosing instanceof IfBlock) {
