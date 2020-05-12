@@ -200,45 +200,31 @@ public class GameController implements DomainListener, GUISubject {
 		if (currentBlock == null) {
 			if (previousBlock instanceof ExecutableBlock) {
 
-				BodyCavityBlock cb = programBlockRepository
-						.getEnclosingBodyCavityBlock((ExecutableBlock) previousBlock);
-				if (cb == null) {
-					return null;
-				} else if (cb instanceof ControlBlock) {
-					if (cb instanceof IfBlock) {
-						return findNextActionBlockToBeExecuted((ControlBlock) cb, ((ControlBlock) cb).getNextBlock());
-					} else {
-						return findNextActionBlockToBeExecuted(currentBlock, (ControlBlock) cb);
-					}
-				} else if (cb instanceof DefinitionBlock) {
-					CallFunctionBlock caller = (CallFunctionBlock) programBlockRepository
-							.getBlockByID(((DefinitionBlock) cb).popFromCallStack());
-
-					if (caller.getNextBlock() != null) {
-						return findNextActionBlockToBeExecuted(currentBlock, caller.getNextBlock());
-					} else {
-						BodyCavityBlock enclosing = programBlockRepository
-								.getEnclosingBodyCavityBlock((ExecutableBlock) caller);
-
-						if(enclosing == null) {
-							return null;
-						} else if (enclosing instanceof DefinitionBlock) {
-							return findNextActionBlockToBeExecuted((Block) enclosing, currentBlock);
-						} else if (enclosing instanceof ControlBlock) {
-							if (enclosing instanceof IfBlock) {
-								return findNextActionBlockToBeExecuted((ControlBlock) enclosing,
-										((ControlBlock) enclosing).getNextBlock());
-							} else {
-								return findNextActionBlockToBeExecuted(currentBlock, (ControlBlock) enclosing);
-							}
-						} else {
-							throw new RuntimeException("Not able to process this block for execution");
-						}
-
-					}
-
+				if (previousBlock instanceof CallFunctionBlock && previousBlock.getNextBlock() != null) {
+					return findNextActionBlockToBeExecuted(currentBlock, previousBlock.getNextBlock());
 				} else {
-					throw new RuntimeException("Not able to process this block for execution");
+
+					BodyCavityBlock cb = programBlockRepository
+							.getEnclosingBodyCavityBlock((ExecutableBlock) previousBlock);
+					if (cb == null) {
+
+						return null;
+
+					} else if (cb instanceof ControlBlock) {
+						if (cb instanceof IfBlock) {
+							return findNextActionBlockToBeExecuted((ControlBlock) cb,
+									((ControlBlock) cb).getNextBlock());
+						} else {
+							return findNextActionBlockToBeExecuted(currentBlock, (ControlBlock) cb);
+						}
+					} else if (cb instanceof DefinitionBlock) {
+						CallFunctionBlock caller = (CallFunctionBlock) programBlockRepository
+								.getBlockByID(((DefinitionBlock) cb).popFromCallStack());
+						return findNextActionBlockToBeExecuted(caller, null);
+
+					} else {
+						throw new RuntimeException("Not able to process this block for execution");
+					}
 				}
 			} else if (previousBlock instanceof DefinitionBlock) {
 				CallFunctionBlock caller = (CallFunctionBlock) programBlockRepository
