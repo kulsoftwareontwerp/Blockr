@@ -1007,7 +1007,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	public void onBlockRemoved(BlockRemovedEvent event) {
-		Boolean removeCallShapeBecauseDefinitionShapeWasRemoved = false;
 		Optional<Shape> shapeToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
 				.filter(s -> s.getId().equals(event.getRemovedBlockId())).findAny();
 
@@ -1019,7 +1018,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				commandHandler.addShapeToBeforeSnapshot(shapeToBeRemovedFromProgramArea.get());
 //				currentSnapshot.addShapeToSnapshot(shapeToBeRemovedFromProgramArea.get());
 
-				removeCallShapeBecauseDefinitionShapeWasRemoved = true;
 				// Move all shapes under this shape up
 				if (event.getBeforeRemoveBlockId() != "") {
 					Set<String> shapeIDs;
@@ -1050,7 +1048,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		programArea.clearAlreadyFilledInCoordinates();
 
-		if (!removeCallShapeBecauseDefinitionShapeWasRemoved) {
+//		if (!removeCallShapeBecauseDefinitionShapeWasRemoved) {
+		if (!event.areMoreRelatedEventsComing()) {
 			// update internals of controlshapes
 			determineTotalHeightBodyCavityShapes();
 			updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(new HashSet<String>());

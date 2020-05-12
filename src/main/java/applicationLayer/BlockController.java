@@ -3,14 +3,13 @@ package applicationLayer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.BodyCavityBlock;
-import domainLayer.blocks.CallFunctionBlock;
-import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.DefinitionBlock;
 import domainLayer.blocks.ExecutableBlock;
 import events.BlockAddedEvent;
@@ -70,9 +69,9 @@ public class BlockController implements GUISubject, DomainSubject {
 		}
 	}
 
-	private void fireBlockRemoved(Set<String> idsToBeRemoved, String connectedBlock, ConnectionType connectionType) {
+	private void fireBlockRemoved(Set<String> idsToBeRemoved, String connectedBlock, ConnectionType connectionType, boolean areMoreRelatedEventsComing) {
 		for (String id : idsToBeRemoved) {
-			BlockRemovedEvent event = new BlockRemovedEvent(id, connectedBlock, connectionType, idsToBeRemoved);
+			BlockRemovedEvent event = new BlockRemovedEvent(id, connectedBlock, connectionType, idsToBeRemoved, false);
 			connectedBlock = "";
 			connectionType = ConnectionType.NOCONNECTION;
 			for (GUIListener listener : guiListeners) {
@@ -285,9 +284,10 @@ public class BlockController implements GUISubject, DomainSubject {
 					break;
 				}
 
-				Set<String> callIdsToBeRemoved = programBlockRepository.removeBlock(callBlock.getBlockId(), false);
+				Set<String> callIdsToBeRemoved = programBlockRepository.removeBlock(callBlock.getBlockId(), false);				
+				
 				fireBlockRemoved(callIdsToBeRemoved, callerParent != null ? callerParent.getBlockId() : "",
-						ConnectionType.valueOf(previousConnectionCallBlock.get(0)));
+						ConnectionType.valueOf(previousConnectionCallBlock.get(0)), true);
 			}
 		}
 
@@ -301,7 +301,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		if (maxBlocksReachedBeforeRemove) {
 			firePanelChangedEvent(true);
 		}
-		fireBlockRemoved(idsToBeRemoved, previousConnection.get(1), ConnectionType.valueOf(previousConnection.get(0)));
+		fireBlockRemoved(idsToBeRemoved, previousConnection.get(1), ConnectionType.valueOf(previousConnection.get(0)), false);
 
 		return snapshot;
 	}

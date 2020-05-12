@@ -34,7 +34,7 @@ public class BlockRemovedEventTest {
 	}
 
 	/**
-	 * Test method for {@link events.BlockRemovedEvent#BlockRemovedEvent(java.lang.String, java.lang.String, types.ConnectionType, Set)}.
+	 * Test method for {@link events.BlockRemovedEvent#BlockRemovedEvent(java.lang.String, java.lang.String, types.ConnectionType, Set, boolean)}.
 	 */
 	@Test
 	public void testBlockRemovedEvent() {

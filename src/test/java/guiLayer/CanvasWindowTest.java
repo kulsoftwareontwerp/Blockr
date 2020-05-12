@@ -151,7 +151,7 @@ public class CanvasWindowTest implements Constants {
 		blockAddedEventWithLinkedShapeLEFT_parentControl = new BlockAddedEvent("20", "10", ConnectionType.LEFT , BlockType.NOT, null, false);
 		blockAddedEventWithLinkedShapeNOCONNECTION = new BlockAddedEvent("0", "1", ConnectionType.NOCONNECTION , moveForward, null, false);
 		blockAddedEventWithLinkedShapeOPERAND = new BlockAddedEvent("0", "1", ConnectionType.OPERAND , moveForward, null, false);
-		blockRemovedEvent = Mockito.spy(new BlockRemovedEvent("0", "", ConnectionType.NOCONNECTION, null));
+		blockRemovedEvent = Mockito.spy(new BlockRemovedEvent("0", "", ConnectionType.NOCONNECTION, null, false));
 		Set<String> changedBlocks = new HashSet<>();
 		changedBlocks.add("11");
 		blockChangedEvent =  Mockito.spy(new BlockChangeEvent("11", "11", "", ConnectionType.NOCONNECTION, "10", ConnectionType.DOWN, changedBlocks ));
