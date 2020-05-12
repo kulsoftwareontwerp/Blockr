@@ -45,6 +45,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	
 
+
 	private CommandHandler commandHandler;
 
 	private ProgramArea programArea;
@@ -65,6 +66,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private MaskedKeyBag maskedKeyBag;
 
 	private GuiSnapshot currentSnapshot;
+	private int programAndGameBorder=INITIAL_PROGRAM_GAME_BORDER_X;
 
 	// This Constructor is only used for Testing Purposes. This should NEVER be
 	// called upon, and is only public for the purpose of instantiating the
@@ -123,7 +125,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		this.blocksUnderneath = new HashSet<String>();
 		resetShapesInMovement();
-
 	}
 
 	/**
@@ -326,10 +327,22 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	protected void paint(Graphics g) {
 		if (alertMessage == null) {
-			calculateWindowHeight();
-
-			Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, PROGRAM_END_X, super.height);
-			Graphics gameAreaGraphics = g.create(GAME_START_X, ORIGIN, WIDTH - GAME_START_X, super.height);
+//			calculateWindowHeight();
+			int tempGameBorder = g.getClipBounds().width - GAME_WIDTH;
+			if(tempGameBorder>=INITIAL_PROGRAM_GAME_BORDER_X) {
+				programAndGameBorder=tempGameBorder;
+				programArea.setProgramAndGameBorder(programAndGameBorder);
+			}
+			int windowHeight =g.getClipBounds().height;
+			
+			Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, programAndGameBorder, windowHeight );
+			
+			int yPositionGameArea = ORIGIN;
+			if(windowHeight>GAME_HEIGHT) {
+				yPositionGameArea = (windowHeight-GAME_HEIGHT)/2;
+			}
+			
+			Graphics gameAreaGraphics = g.create(programAndGameBorder, yPositionGameArea, GAME_WIDTH, GAME_HEIGHT);
 
 			// only for debugging purposes
 			if (debugModus == DebugModus.FILLINGS) {
@@ -342,6 +355,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			paletteArea.paint(blockrGraphics);
 
+			g.fill3DRect(programAndGameBorder, ORIGIN, GAME_WIDTH, windowHeight, true);
 			domainController.paint(gameAreaGraphics);
 
 			programArea.draw(blockrGraphics, domainController);
@@ -417,7 +431,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		}
 
-		if (id == MouseEvent.MOUSE_PRESSED && x > PROGRAM_START_X && x < PROGRAM_END_X) {
+		if (id == MouseEvent.MOUSE_PRESSED && x > PROGRAM_START_X && x < programAndGameBorder) {
 			Shape shape = programArea.getShapeFromCoordinate(x, y);
 			if (shape != null) {
 				blocksUnderneath = domainController.getAllBlockIDsUnderneath(shape.getId());
