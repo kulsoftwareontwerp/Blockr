@@ -104,7 +104,7 @@ public class GameController implements DomainListener, GUISubject {
 		try {
 			if (getCurrentState().getNextState() == null) {
 				// This is not a resettingState.
-				toState(new ResettingState(this, null));
+				toState(new ResettingState(this, getCurrentState().getNextActionBlockToBeExecuted()));
 			} else {
 				// TODO: How to test this?
 				Constructor<? extends GameState> constructor = getCurrentState().getNextState()
@@ -119,7 +119,9 @@ public class GameController implements DomainListener, GUISubject {
 	}
 
 	/**
-	 * @return
+	 * Retrieve a map with the callStacks of all definitionBlocks
+	 * 
+	 * @return a map with the callStacks of all definitionBlocks
 	 */
 	private Map<String, Stack<String>> getAllCallStacks() {
 		Map<String, Stack<String>> callStacks = programBlockRepository.getAllDefinitionBlocks().stream()
@@ -196,20 +198,15 @@ public class GameController implements DomainListener, GUISubject {
 	 * @return The next actionBlock in the program.
 	 */
 	public ActionBlock findNextActionBlockToBeExecuted(Block previousBlock, Block currentBlock) {
-		// ExecutableBlock nextBlock = block.getNextBlock();
 		if (currentBlock == null) {
 			if (previousBlock instanceof ExecutableBlock) {
-
 				if (previousBlock instanceof CallFunctionBlock && previousBlock.getNextBlock() != null) {
 					return findNextActionBlockToBeExecuted(currentBlock, previousBlock.getNextBlock());
 				} else {
-
 					BodyCavityBlock cb = programBlockRepository
 							.getEnclosingBodyCavityBlock((ExecutableBlock) previousBlock);
 					if (cb == null) {
-
 						return null;
-
 					} else if (cb instanceof ControlBlock) {
 						if (cb instanceof IfBlock) {
 							return findNextActionBlockToBeExecuted((ControlBlock) cb,

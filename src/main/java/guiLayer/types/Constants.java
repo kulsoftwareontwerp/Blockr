@@ -10,7 +10,7 @@ package guiLayer.types;
 public interface Constants {
 	
 	public static final int MASKEDKEY_DURATION = 500;
-
+	public static final int ALERTMESSAGE_DURATION = 10000;
 	
 	public final static int HEIGHT = 600;
 	public final static int WIDTH = 1000;

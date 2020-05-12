@@ -86,12 +86,21 @@ public class ExecutionSnapshot {
 		HashMap<String, Stack<String>> copy = new HashMap<String, Stack<String>>();
 	    for (Map.Entry<String, Stack<String>> entry : this.callStacks.entrySet())
 	    {
-	    	Stack<String> temp=new Stack<String>();
-	    	temp.addAll(entry.getValue());
-	    	copy.put(entry.getKey(),temp);
+	    	
+	    	
+	    	copy.put(entry.getKey(),copyCallStack(entry.getValue()));
 	    }
 		return copy;
 	}
 	
+	
+	private Stack<String> copyCallStack(Stack<String> callStack) {
+		Stack<String> tempCallStack = new Stack<String>();
+
+		for (int i = 0; i < callStack.size(); i++) {
+			tempCallStack.add(i, callStack.get(i));
+		}
+		return tempCallStack;
+	}
 
 }

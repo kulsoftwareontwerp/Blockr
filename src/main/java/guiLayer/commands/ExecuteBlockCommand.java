@@ -18,6 +18,7 @@ public class ExecuteBlockCommand extends GameWorldCommand {
 
 	/**
 	 * Create a new ExecuteBlockCommand
+	 * 
 	 * @param controller The DomainController to perform this command on.
 	 */
 	public ExecuteBlockCommand(DomainController controller) {
@@ -28,13 +29,12 @@ public class ExecuteBlockCommand extends GameWorldCommand {
 
 	@Override
 	public void execute() {
-		if(executed) {
-			controller.redo();
-		}
-		else {
-			controller.executeBlock();
-			executed =true;
-		}
+			if (executed) {
+				controller.redo();
+			} else {
+				controller.executeBlock();
+				executed = true;
+			}
 	}
 
 }

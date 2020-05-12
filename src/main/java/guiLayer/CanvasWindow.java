@@ -30,6 +30,7 @@ import guiLayer.shapes.ControlShape;
 import guiLayer.shapes.DefinitionShape;
 import guiLayer.shapes.Shape;
 import guiLayer.shapes.ShapeFactory;
+import guiLayer.types.AlertTask;
 import guiLayer.types.Constants;
 import guiLayer.types.Coordinate;
 import guiLayer.types.DebugModus;
@@ -41,6 +42,8 @@ import types.BlockType;
 import types.ConnectionType;
 
 public class CanvasWindow extends CanvasResource implements GUIListener, Constants {
+
+	
 
 	private CommandHandler commandHandler;
 
@@ -54,6 +57,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private Set<Shape> shapeClonesInMovement;
 
 	private Set<String> blocksUnderneath;
+	private String alertMessage;
 
 	private Shape currentShape = null;
 	private Shape movedShape = null;
@@ -79,6 +83,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		this.shapeClonesInMovement = new HashSet<Shape>();
 		this.domainController = domainController;
 		this.paletteArea = paletteArea;
+		this.alertMessage = null;
 	}
 
 	private boolean undoMode;
@@ -118,6 +123,17 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		this.blocksUnderneath = new HashSet<String>();
 		resetShapesInMovement();
+
+	}
+
+	/**
+	 * Show the given alert message
+	 * 
+	 * @param message the message to show
+	 */
+	public void showAlert(String message) {
+		this.alertMessage = message;
+		super.repaint();
 
 	}
 
@@ -309,45 +325,60 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	protected void paint(Graphics g) {
-		calculateWindowHeight();
+		if (alertMessage == null) {
+			calculateWindowHeight();
 
-		Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, PROGRAM_END_X, super.height);
-		Graphics gameAreaGraphics = g.create(GAME_START_X, ORIGIN, WIDTH - GAME_START_X, super.height);
+			Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, PROGRAM_END_X, super.height);
+			Graphics gameAreaGraphics = g.create(GAME_START_X, ORIGIN, WIDTH - GAME_START_X, super.height);
 
-		// only for debugging purposes
-		if (debugModus == DebugModus.FILLINGS) {
-			for (Coordinate filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
-				g.drawOval(filledInCoordinate.getX(), filledInCoordinate.getY(), 1, 1);
-			}
-		}
-
-		// Partition CanvasWindow in different sections
-
-		paletteArea.paint(blockrGraphics);
-
-		domainController.paint(gameAreaGraphics);
-
-		programArea.draw(blockrGraphics, domainController);
-
-		// Draw the shapes in movement
-		blockrGraphics.setColor(Color.black);
-		if (getCurrentShape() != null)
-			getCurrentShape().draw(blockrGraphics);
-
-		for (Shape shape : getShapesInMovement()) {
-			if (shape != getCurrentShape())
-				shape.draw(blockrGraphics);
-		}
-
-		blockrGraphics.setColor(Color.black);
-		if (DebugModus.CONNECTIONS.compareTo(CanvasWindow.debugModus) <= 0) {
-			for (Shape shape : getShapesInMovement()) {
-				for (var p : shape.getCoordinateConnectionMap().values()) {
-					int tempx = p.getX() - 3;
-					int tempy = p.getY();
-					blockrGraphics.drawOval(tempx, tempy, 6, 6);
+			// only for debugging purposes
+			if (debugModus == DebugModus.FILLINGS) {
+				for (Coordinate filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
+					g.drawOval(filledInCoordinate.getX(), filledInCoordinate.getY(), 1, 1);
 				}
 			}
+
+			// Partition CanvasWindow in different sections
+
+			paletteArea.paint(blockrGraphics);
+
+			domainController.paint(gameAreaGraphics);
+
+			programArea.draw(blockrGraphics, domainController);
+
+			// Draw the shapes in movement
+			blockrGraphics.setColor(Color.black);
+			if (getCurrentShape() != null)
+				getCurrentShape().draw(blockrGraphics);
+
+			for (Shape shape : getShapesInMovement()) {
+				if (shape != getCurrentShape())
+					shape.draw(blockrGraphics);
+			}
+
+			blockrGraphics.setColor(Color.black);
+			if (DebugModus.CONNECTIONS.compareTo(CanvasWindow.debugModus) <= 0) {
+				for (Shape shape : getShapesInMovement()) {
+					for (var p : shape.getCoordinateConnectionMap().values()) {
+						int tempx = p.getX() - 3;
+						int tempy = p.getY();
+						blockrGraphics.drawOval(tempx, tempy, 6, 6);
+					}
+				}
+			}
+		}else{
+			int w = g.getClipBounds().width;
+			int h = g.getClipBounds().height;
+			int mW = 7 * alertMessage.length();
+			int mH = 30;
+			g.setColor(Color.RED);
+			
+			g.fillRect(0, 0,w , h);
+			g.setColor(Color.WHITE);
+			
+			g.fillRect((w-mW)/2, (h-20)/2, mW,20);
+			g.setColor(Color.BLACK);
+			g.drawString(alertMessage, ((w-mW)/2)+20, ((h-20)/2)+10);
 		}
 
 	}
@@ -760,46 +791,18 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	protected void handleKeyEvent(int id, int keyCode, char keyChar) {
-		if (id == KeyEvent.KEY_PRESSED) {
-			if (keyCode == KeyEvent.VK_CONTROL) {
-				if (maskedKeyTimer != null) {
-					maskedKeyTimer.cancel();
-					maskedKeyBag.pressShift(false);
-				}
-				maskedKeyTimer = new Timer();
-				maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, false), MASKEDKEY_DURATION);
-				maskedKeyBag.pressCtrl(true);
-			}
-			if (keyCode == KeyEvent.VK_SHIFT) {
-				if (maskedKeyTimer != null) {
-					maskedKeyTimer.cancel();
-				}
-				maskedKeyTimer = new Timer();
-				maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, true), MASKEDKEY_DURATION);
-				maskedKeyBag.pressShift(true);
-			}
-			if (keyCode == KeyEvent.VK_F5) {
-				// F5-Key
-				if (domainController.isGameExecutionUseful()) {
-					commandHandler.handle(new ExecuteBlockCommand(domainController));
-				}
-			}
-			if (keyCode == KeyEvent.VK_ESCAPE) {
-				// ESC-Key
-				if (domainController.isGameResetUseful()) {
-					commandHandler.handle(new ResetCommand(domainController));
-				}
-			}
-			if (keyCode == KeyEvent.VK_Z) {
-				if (maskedKeyBag.isCtrlPressed() && !maskedKeyBag.isShiftPressed()) {
-					commandHandler.undo();
+		try {
+			if (id == KeyEvent.KEY_PRESSED) {
+				if (keyCode == KeyEvent.VK_CONTROL) {
 					if (maskedKeyTimer != null) {
 						maskedKeyTimer.cancel();
 						maskedKeyBag.pressShift(false);
 					}
+					maskedKeyTimer = new Timer();
+					maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, false), MASKEDKEY_DURATION);
+					maskedKeyBag.pressCtrl(true);
 				}
-				if (maskedKeyBag.isCtrlPressed() && maskedKeyBag.isShiftPressed()) {
-					commandHandler.redo();
+				if (keyCode == KeyEvent.VK_SHIFT) {
 					if (maskedKeyTimer != null) {
 						maskedKeyTimer.cancel();
 					}
@@ -807,24 +810,56 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, true), MASKEDKEY_DURATION);
 					maskedKeyBag.pressShift(true);
 				}
-			}
+				if (keyCode == KeyEvent.VK_F5) {
+					// F5-Key
+					if (domainController.isGameExecutionUseful()) {
+						commandHandler.handle(new ExecuteBlockCommand(domainController));
+					}
+				}
+				if (keyCode == KeyEvent.VK_ESCAPE) {
+					// ESC-Key
+					if (domainController.isGameResetUseful()) {
+						commandHandler.handle(new ResetCommand(domainController));
+					}
+				}
+				if (keyCode == KeyEvent.VK_Z) {
+					if (maskedKeyBag.isCtrlPressed() && !maskedKeyBag.isShiftPressed()) {
+						commandHandler.undo();
+						if (maskedKeyTimer != null) {
+							maskedKeyTimer.cancel();
+							maskedKeyBag.pressShift(false);
+						}
+					}
+					if (maskedKeyBag.isCtrlPressed() && maskedKeyBag.isShiftPressed()) {
+						commandHandler.redo();
+						if (maskedKeyTimer != null) {
+							maskedKeyTimer.cancel();
+						}
+						maskedKeyTimer = new Timer();
+						maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, true), MASKEDKEY_DURATION);
+						maskedKeyBag.pressShift(true);
+					}
+				}
 
-			if (keyCode == KeyEvent.VK_U) {
-				commandHandler.undo();
+				if (keyCode == KeyEvent.VK_U) {
+					commandHandler.undo();
+				}
+				if (keyCode == KeyEvent.VK_R) {
+					commandHandler.redo();
+				}
 			}
-			if (keyCode == KeyEvent.VK_R) {
-				commandHandler.redo();
+			if (id == KeyEvent.KEY_TYPED) {
+
+				if (keyChar == 'd') {
+					// d key 68
+					debugModus = debugModus.getNext();
+					repaint();
+				}
 			}
+		} catch (StackOverflowError e) {
+			Timer alertTimer = new Timer();
+			alertTimer.schedule(new AlertTask(this, "An error happened because you created an infinite loop. This message disappears in 10 seconds"), ALERTMESSAGE_DURATION);
 		}
-		if (id == KeyEvent.KEY_TYPED) {
-
-			if (keyChar == 'd') {
-				// d key 68
-				debugModus = debugModus.getNext();
-				repaint();
-			}
-		}
-
 	}
 
 	/**
@@ -874,9 +909,12 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	/**
 	 * Update the position of all shapes after the height of controlshapes has been
 	 * changed.
-	 * @param shapesToBeIgnoredWhileMoving The ids of shapes to exclude in the update position process
+	 * 
+	 * @param shapesToBeIgnoredWhileMoving The ids of shapes to exclude in the
+	 *                                     update position process
 	 */
-	private void updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(Set<String> shapesToBeIgnoredWhileMoving) {
+	private void updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(
+			Set<String> shapesToBeIgnoredWhileMoving) {
 		Set<ControlShape> changedControlShapes = programArea.getAllChangedControlShapes();
 
 		for (ControlShape c : changedControlShapes) {
@@ -888,9 +926,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					shapesToMove.removeIf(s -> currentSnapshot.getSavedCoordinates().containsKey(s.getId()));
 				}
 			}
-			
-			shapesToMove.removeIf(s -> s!=null && shapesToBeIgnoredWhileMoving.contains(s.getId()));
-			
+
+			shapesToMove.removeIf(s -> s != null && shapesToBeIgnoredWhileMoving.contains(s.getId()));
 
 			for (Shape shape : shapesToMove) {
 				if (shape != null) {
@@ -920,8 +957,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 	}
 
-	
-	private Set<String> comingEvents=new HashSet<String>();
+	private Set<String> comingEvents = new HashSet<String>();
+
 	@Override
 	public void onBlockAdded(BlockAddedEvent event) {
 		boolean redone = false;
@@ -961,14 +998,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		if (!event.areMoreRelatedEventsComing()) {
 			determineTotalHeightBodyCavityShapes();
-			Set<String> idsToBeIgnoredFromMovement= new HashSet<String>();
-			if(undoMode && event.getAddedBlockType()==BlockType.DEFINITION) {
+			Set<String> idsToBeIgnoredFromMovement = new HashSet<String>();
+			if (undoMode && event.getAddedBlockType() == BlockType.DEFINITION) {
 				idsToBeIgnoredFromMovement.addAll(comingEvents);
 			}
 			comingEvents.clear();
 			updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(idsToBeIgnoredFromMovement);
-		}
-		else {
+		} else {
 			comingEvents.add(event.getAddedBlockID());
 		}
 
