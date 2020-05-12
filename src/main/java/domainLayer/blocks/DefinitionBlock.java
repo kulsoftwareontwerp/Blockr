@@ -32,7 +32,8 @@ public class DefinitionBlock extends Block implements BodyCavityBlock {
 		super(blockID);
 		this.supportedConnectionTypes = new HashSet<ConnectionType>();
 		supportedConnectionTypes.add(ConnectionType.BODY);
-		setCallStack(null);
+		this.functionBlockCallStack = new Stack<String>();
+//		setCallStack(null);
 	}
 
 	@Override
@@ -79,9 +80,9 @@ public class DefinitionBlock extends Block implements BodyCavityBlock {
 	 * @param callStack The callStack to give to this block.
 	 */
 	public void setCallStack(Stack<String> callStack) {
-		if (callStack == null) {
-			this.functionBlockCallStack = new Stack<String>();
-		} else {
+		if (callStack != null && callStack.size()!=0 ) {
+//			this.functionBlockCallStack = new Stack<String>();
+//		} else {
 			this.functionBlockCallStack = copyCallStack(callStack);
 		}
 	}

@@ -110,6 +110,7 @@ public class GameController implements DomainListener, GUISubject {
 				Constructor<? extends GameState> constructor = getCurrentState().getNextState()
 						.getConstructor(GameController.class);
 				GameState newState = (GameState) constructor.newInstance(this);
+				
 				toState(newState);
 			}
 		} catch (Exception e) {
@@ -278,9 +279,11 @@ public class GameController implements DomainListener, GUISubject {
 	 */
 	public ExecutionSnapshot performAction(ActionBlock block) {
 		GameWorldSnapshot gameSnapshot = gameWorld.saveState();
+		
+		Map<String,Stack<String>> callStacks = getAllCallStacks();
 		ActionBlock nextBlockToBeExecuted = getCurrentState().getNextActionBlockToBeExecuted();
 		ExecutionSnapshot snapshot = createNewExecutionSnapshot(nextBlockToBeExecuted, gameSnapshot, getCurrentState(),
-				getAllCallStacks());
+				callStacks);
 		gameWorld.performAction(block.getAction());
 
 		ActionBlock newNextActionBlockToBeExecuted = findNextActionBlockToBeExecuted(block, block.getNextBlock());
