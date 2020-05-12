@@ -71,7 +71,7 @@ public class BlockController implements GUISubject, DomainSubject {
 
 	private void fireBlockRemoved(Set<String> idsToBeRemoved, String connectedBlock, ConnectionType connectionType, boolean areMoreRelatedEventsComing) {
 		for (String id : idsToBeRemoved) {
-			BlockRemovedEvent event = new BlockRemovedEvent(id, connectedBlock, connectionType, idsToBeRemoved, false);
+			BlockRemovedEvent event = new BlockRemovedEvent(id, connectedBlock, connectionType, idsToBeRemoved, areMoreRelatedEventsComing);
 			connectedBlock = "";
 			connectionType = ConnectionType.NOCONNECTION;
 			for (GUIListener listener : guiListeners) {
