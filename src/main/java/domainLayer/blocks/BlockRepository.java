@@ -893,30 +893,42 @@ public class BlockRepository {
 	 */
 	public boolean CheckIfChainIsValid(Block nextBlockInChain) {
 		while (nextBlockInChain != null) {
-			if (nextBlockInChain instanceof ControlBlock)
-				if (!checkIfValidControlBlock((ControlBlock) nextBlockInChain))
+			if (nextBlockInChain instanceof BodyCavityBlock) {
+				if (!CheckIfChainIsValid(nextBlockInChain.getFirstBlockOfBody())) {
 					return false;
+				}
+			}
+			if (nextBlockInChain instanceof ControlBlock) {
+				if (!checkIfValidStatement(nextBlockInChain.getConditionBlock())) {
+					return false;
+				}
+			}
+
 			nextBlockInChain = nextBlockInChain.getNextBlock();
+
 		}
 		return true;
 	}
 
-	/**
-	 * Method used to check if ControlBlock is in a valid state.
-	 * 
-	 * @param block The controlblock that needs to be checked.
-	 * @return A flag indicating if the controlBlock is in a valid state or not.
-	 */
-	public boolean checkIfValidControlBlock(ControlBlock block) {
-		if (block.getConditionBlock() == null)
-			return false;
-		if (block.getConditionBlock() instanceof OperatorBlock)
-			return checkIfValidStatement(block.getConditionBlock());
-		if (block.getFirstBlockOfBody() != null) {
-			return CheckIfChainIsValid(block.getFirstBlockOfBody());
-		}
-		return true;
-	}
+//	/**
+//	 * Method used to check if ControlBlock is in a valid state.
+//	 * 
+//	 * @param block The controlblock that needs to be checked.
+//	 * @return A flag indicating if the controlBlock is in a valid state or not.
+//	 */
+//	boolean checkIfValidControlBlock(ControlBlock block) {
+//		if (block.getConditionBlock() == null)
+//			return false;
+//		if (block.getConditionBlock() instanceof OperatorBlock)
+//			return checkIfValidStatement(block.getConditionBlock());
+//		
+//		
+//		
+//		if (block.getFirstBlockOfBody() != null) {
+//			return CheckIfChainIsValid(block.getFirstBlockOfBody());
+//		}
+//		return true;
+//	}
 
 	/**
 	 * method used to check if a chain of operand finishes with a conditionBlock.
@@ -927,8 +939,9 @@ public class BlockRepository {
 	 */
 	public boolean checkIfValidStatement(Block block) {
 		if (block != null) {
-			if (block.getOperand() instanceof ConditionBlock)
+			if(block instanceof ConditionBlock) {
 				return true;
+			}
 			return checkIfValidStatement(block.getOperand());
 		}
 		return false;
@@ -1282,8 +1295,10 @@ public class BlockRepository {
 				addBlockToAllBlocks(cb);
 
 			} else {
-				//ID will always be available in connectedBlocks, otherwise a nosuchElementException will be thrown
-				addBlockToHeadBlocks(connectedBlocks.stream().filter(s->s.getBlockId().equals(snapshot.getBlock().getBlockId())).findFirst().get());
+				// ID will always be available in connectedBlocks, otherwise a
+				// nosuchElementException will be thrown
+				addBlockToHeadBlocks(connectedBlocks.stream()
+						.filter(s -> s.getBlockId().equals(snapshot.getBlock().getBlockId())).findFirst().get());
 			}
 
 			// remove all blocks from the headblocks that are also underneath the restored

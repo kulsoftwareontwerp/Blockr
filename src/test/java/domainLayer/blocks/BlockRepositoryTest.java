@@ -812,65 +812,65 @@ public class BlockRepositoryTest {
 		assertTrue(blockRepo.CheckIfChainIsValid(actionBlock));
 	}
 	
-	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#CheckIfChainIsValid(domainLayer.blocks.Block)}.
-	 */
-	@Test
-	public void testCheckIfChainIsValid_blockControlBlock_ValidControlBlock_Positive() {
-		Mockito.doReturn(true).when(blockRepo).checkIfValidControlBlock(ifBlock);
-		when(ifBlock.getNextBlock()).thenReturn(null);
-		assertTrue(blockRepo.CheckIfChainIsValid(ifBlock));
-	}
+//	/**
+//	 * Test method for {@link domainLayer.blocks.BlockRepository#CheckIfChainIsValid(domainLayer.blocks.Block)}.
+//	 */
+//	@Test
+//	public void testCheckIfChainIsValid_blockControlBlock_ValidControlBlock_Positive() {
+//		Mockito.doReturn(true).when(blockRepo).checkIfValidControlBlock(ifBlock);
+//		when(ifBlock.getNextBlock()).thenReturn(null);
+//		assertTrue(blockRepo.CheckIfChainIsValid(ifBlock));
+//	}
 	
-	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#CheckIfChainIsValid(domainLayer.blocks.Block)}.
-	 */
-	@Test
-	public void testCheckIfChainIsValid_blockControlBlock_InValidControlBlock_Positive() {
-		Mockito.doReturn(false).when(blockRepo).checkIfValidControlBlock(ifBlock);
-		when(ifBlock.getNextBlock()).thenReturn(null);
-		assertFalse(blockRepo.CheckIfChainIsValid(ifBlock));
-	}
+//	/**
+//	 * Test method for {@link domainLayer.blocks.BlockRepository#CheckIfChainIsValid(domainLayer.blocks.Block)}.
+//	 */
+//	@Test
+//	public void testCheckIfChainIsValid_blockControlBlock_InValidControlBlock_Positive() {
+//		Mockito.doReturn(false).when(blockRepo).checkIfValidControlBlock(ifBlock);
+//		when(ifBlock.getNextBlock()).thenReturn(null);
+//		assertFalse(blockRepo.CheckIfChainIsValid(ifBlock));
+//	}
 
-	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
-	 */
-	@Test
-	public void testCheckIfValidControlBlock_ConditionBlockOperatorBlock_Positive() {
-		when(ifBlock.getConditionBlock()).thenReturn(notBlock);
-		Mockito.doReturn(true).when(blockRepo).checkIfValidStatement(notBlock);
-		assertTrue(blockRepo.checkIfValidControlBlock(ifBlock));
-	}
+//	/**
+//	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
+//	 */
+//	@Test
+//	public void testCheckIfValidControlBlock_ConditionBlockOperatorBlock_Positive() {
+//		when(ifBlock.getConditionBlock()).thenReturn(notBlock);
+//		Mockito.doReturn(true).when(blockRepo).checkIfValidStatement(notBlock);
+//		assertTrue(blockRepo.checkIfValidControlBlock(ifBlock));
+//	}
+//	
+//	/**
+//	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
+//	 */
+//	@Test
+//	public void testCheckIfValidControlBlock_ConditionBlockNotOperatorBlock_FirstBlockOfBodyNotNull_Positive() {
+//		when(ifBlock.getConditionBlock()).thenReturn(movedConditionBlock);
+//		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlock);
+//		Mockito.doReturn(true).when(blockRepo).CheckIfChainIsValid(actionBlock);
+//		assertTrue(blockRepo.checkIfValidControlBlock(ifBlock));
+//	}
+//	
+//	/**
+//	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
+//	 */
+//	@Test
+//	public void testCheckIfValidControlBlock_ConditionBlockNotOperatorBlock_FirstBlockOfBodyNull_Positive() {
+//		when(ifBlock.getConditionBlock()).thenReturn(movedConditionBlock);
+//		when(ifBlock.getFirstBlockOfBody()).thenReturn(null);
+//		assertTrue(blockRepo.checkIfValidControlBlock(ifBlock));
+//	}
 	
-	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
-	 */
-	@Test
-	public void testCheckIfValidControlBlock_ConditionBlockNotOperatorBlock_FirstBlockOfBodyNotNull_Positive() {
-		when(ifBlock.getConditionBlock()).thenReturn(movedConditionBlock);
-		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlock);
-		Mockito.doReturn(true).when(blockRepo).CheckIfChainIsValid(actionBlock);
-		assertTrue(blockRepo.checkIfValidControlBlock(ifBlock));
-	}
-	
-	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
-	 */
-	@Test
-	public void testCheckIfValidControlBlock_ConditionBlockNotOperatorBlock_FirstBlockOfBodyNull_Positive() {
-		when(ifBlock.getConditionBlock()).thenReturn(movedConditionBlock);
-		when(ifBlock.getFirstBlockOfBody()).thenReturn(null);
-		assertTrue(blockRepo.checkIfValidControlBlock(ifBlock));
-	}
-	
-	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
-	 */
-	@Test
-	public void testCheckIfValidControlBlock_ConditionBlockNull_Positive() {
-		when(ifBlock.getConditionBlock()).thenReturn(null);
-		assertFalse(blockRepo.checkIfValidControlBlock(ifBlock));
-	}	
+//	/**
+//	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
+//	 */
+//	@Test
+//	public void testCheckIfValidControlBlock_ConditionBlockNull_Positive() {
+//		when(ifBlock.getConditionBlock()).thenReturn(null);
+//		assertFalse(blockRepo.checkIfValidControlBlock(ifBlock));
+//	}	
 
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidStatement(domainLayer.blocks.Block)}.
