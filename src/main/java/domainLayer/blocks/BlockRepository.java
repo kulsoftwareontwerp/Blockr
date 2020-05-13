@@ -1282,7 +1282,8 @@ public class BlockRepository {
 				addBlockToAllBlocks(cb);
 
 			} else {
-				addBlockToHeadBlocks(snapshot.getBlock());
+				//ID will always be available in connectedBlocks, otherwise a nosuchElementException will be thrown
+				addBlockToHeadBlocks(connectedBlocks.stream().filter(s->s.getBlockId().equals(snapshot.getBlock().getBlockId())).findFirst().get());
 			}
 
 			// remove all blocks from the headblocks that are also underneath the restored
