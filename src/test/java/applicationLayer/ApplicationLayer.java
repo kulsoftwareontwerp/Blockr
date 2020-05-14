@@ -5,7 +5,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ BlockControllerTest.class, DomainControllerTest.class, GameControllerTest.class, MoveBlockBCTest.class})
+@SuiteClasses({ BlockControllerTest.class, DomainControllerTest.class, GameControllerTest.class})
 public class ApplicationLayer {
 
 }

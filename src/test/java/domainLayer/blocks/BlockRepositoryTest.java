@@ -1086,10 +1086,7 @@ public class BlockRepositoryTest {
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getBlockIdToPerformMoveOn(java.lang.String, java.lang.String, types.ConnectionType)}.
 	 */
-	@Test
-	public void testGetBlockIdToPerformMoveOn() {
-		fail("Not yet implemented");
-	}
+	//tested in TestMoveBlockBlockRepository
 
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.

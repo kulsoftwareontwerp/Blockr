@@ -74,6 +74,8 @@ public class TestMoveBlockBlockRepository {
 
 	private WhileBlock connectedWhileBlockA;
 	private WhileBlock connectedWhileBlockB;
+	
+	private DefinitionBlock definitionBlock;
 
 	private BlockType type;
 
@@ -118,6 +120,8 @@ public class TestMoveBlockBlockRepository {
 		movedNotBlock = spy(new NotBlock("13"));
 		connectedNotBlockA = spy(new NotBlock("14"));
 		connectedNotBlockB = spy(new NotBlock("15"));
+		
+		definitionBlock = spy(new DefinitionBlock("20"));
 
 		mockAllBlocks.put(movedActionBlock.getBlockId(), movedActionBlock);
 		mockAllBlocks.put(connectedMoveForwardBlockA.getBlockId(), connectedMoveForwardBlockA);
@@ -1890,7 +1894,6 @@ public class TestMoveBlockBlockRepository {
 	}
 	
 	
-	
 
 	// TEST USED METHODS FOR MOVE
 
@@ -1898,6 +1901,10 @@ public class TestMoveBlockBlockRepository {
 	public void testBRParentIfExtistsPositive() {
 
 		movedMoveForwardBlock = Mockito.spy(new ActionBlock("17", type));
+		
+		definitionBlock = spy(new DefinitionBlock("20"));
+		mockAllBlocks.put(definitionBlock.getBlockId(), definitionBlock);
+		
 		ActionBlock movedMoveForwardBlockB = Mockito.spy(new ActionBlock("18", type));
 		mockAllBlocks.put(movedMoveForwardBlock.getBlockId(), movedMoveForwardBlock);
 		mockAllBlocks.put(movedMoveForwardBlockB.getBlockId(), movedMoveForwardBlockB);
@@ -1926,6 +1933,10 @@ public class TestMoveBlockBlockRepository {
 		ArrayList<String> parentInfo6 = new ArrayList<String>();
 		parentInfo6.add("DOWN");
 		parentInfo6.add("9");
+		
+		ArrayList<String> parentInfo7 = new ArrayList<String>();
+		parentInfo7.add("BODY");
+		parentInfo7.add("20");
 
 
 
@@ -1938,6 +1949,8 @@ public class TestMoveBlockBlockRepository {
 		when(movedWhileBlock.getConditionBlock()).thenReturn(movedNotBlock);
 		when(movedNotBlock.getOperand()).thenReturn(connectedNotBlockA);
 		when(connectedNotBlockA.getOperand()).thenReturn(connectedNotBlockB);
+		
+		when(definitionBlock.getFirstBlockOfBody()).thenReturn(movedActionBlock);
 
 		assertEquals(parentInfo, blockRepository.getConnectedParentIfExists(connectedMoveForwardBlockA.getBlockId()));
 		assertEquals(parentInfo2, blockRepository.getConnectedParentIfExists(movedNotBlock.getBlockId()));
@@ -1945,7 +1958,7 @@ public class TestMoveBlockBlockRepository {
 		assertEquals(parentInfo4, blockRepository.getConnectedParentIfExists(connectedNotBlockB.getBlockId()));
 		assertEquals(parentInfo5, blockRepository.getConnectedParentIfExists(movedMoveForwardBlock.getBlockId()));
 		assertEquals(parentInfo6, blockRepository.getConnectedParentIfExists(movedMoveForwardBlockB.getBlockId()));
-
+		assertEquals(parentInfo7, blockRepository.getConnectedParentIfExists(movedActionBlock.getBlockId()));
 	}
 
 	@Test
