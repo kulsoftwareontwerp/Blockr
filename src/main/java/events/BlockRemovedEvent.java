@@ -17,6 +17,7 @@ public class BlockRemovedEvent implements EventObject {
 	private String beforeRemoveBlockId;
 	private ConnectionType beforeRemoveConnection;
 	private Set<String> changedBlocks;
+	private boolean moreRelatedEventsComing;
 
 	/**
 	 * Create the blockRemovedEvent
@@ -27,8 +28,9 @@ public class BlockRemovedEvent implements EventObject {
 	 * @param beforeRemoveConnection The connection on which the removed block was
 	 *                               connected before it was removed.
 	 * @param changedBlocks 		 The id's of all blocks associated with the remove operation.
+	 * @param areMoreRelatedEventsComing TODO
 	 */
-	public BlockRemovedEvent(String removedBlockId, String beforeRemoveBlockId, ConnectionType beforeRemoveConnection, Set<String> changedBlocks) {
+	public BlockRemovedEvent(String removedBlockId, String beforeRemoveBlockId, ConnectionType beforeRemoveConnection, Set<String> changedBlocks, boolean areMoreRelatedEventsComing) {
 		this.removedBlockId = removedBlockId;
 		this.beforeRemoveBlockId=beforeRemoveBlockId;
 		this.beforeRemoveConnection=beforeRemoveConnection;
@@ -36,6 +38,7 @@ public class BlockRemovedEvent implements EventObject {
 			changedBlocks=new HashSet<String>();
 		}
 		this.changedBlocks=changedBlocks;
+		this.moreRelatedEventsComing=areMoreRelatedEventsComing;
 	}
 	
 	/**
@@ -77,6 +80,15 @@ public class BlockRemovedEvent implements EventObject {
 	 */
 	public ConnectionType getBeforeRemoveConnection() {
 		return beforeRemoveConnection;
+	}
+
+	
+	/**
+	 * Retrieve if there are more related events coming.
+	 * @return if there are more related events coming.
+	 */
+	public boolean areMoreRelatedEventsComing() {
+		return moreRelatedEventsComing;
 	}
 
 }

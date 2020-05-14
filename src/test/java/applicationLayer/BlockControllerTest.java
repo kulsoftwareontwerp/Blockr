@@ -153,7 +153,7 @@ public class BlockControllerTest {
 
 		actionBlockSpy = spy(new ActionBlock("2", new BlockType("Action", BlockCategory.ACTION)));
 		controlBlock = spy(new IfBlock("ifBlock"));
-		snapshot = spy(new BlockSnapshot(actionBlock0, null, null, new HashSet<Block>()));
+		snapshot = spy(new BlockSnapshot(actionBlock0, null, null, new HashSet<Block>(), null));
 		
 //		bc.addListener(mockGuiListener);
 		bc.addDomainListener(mockDomainListener);
@@ -329,14 +329,14 @@ public class BlockControllerTest {
 		ArrayList<String> previousConnection = new ArrayList<String>();
 		previousConnection.add("UP");
 		previousConnection.add("1");
-		BlockSnapshot blockSnapShot = new BlockSnapshot(actionBlock0, actionBlock1, null, new HashSet<Block>());
+		BlockSnapshot blockSnapShot = new BlockSnapshot(actionBlock0, actionBlock1, null, new HashSet<Block>(), null);
 		
 		when(blockRepository.getConnectedParentIfExists(blockIDParam)).thenReturn(previousConnection);
 		when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(false);
 		when(blockRepository.getBlockByID("0")).thenReturn(actionBlock0);
 		when(blockRepository.getBlockByID("1")).thenReturn(actionBlock1);
 		when(blockRepository.getAllBlocksConnectedToAndAfterACertainBlock(actionBlock0)).thenReturn(new HashSet<Block>());
-		when(bc.createNewBlockSnapshot(actionBlock0, actionBlock1, null, new HashSet<Block>())).thenReturn(blockSnapShot);
+		when(bc.createNewBlockSnapshot(actionBlock0, actionBlock1, null, new HashSet<Block>(), null)).thenReturn(blockSnapShot);
 		when(blockRepository.removeBlock(blockIDParam, isChainParam)).thenReturn(new HashSet<String>());
 		
 		assertEquals(blockSnapShot, bc.removeBlock(blockIDParam, isChainParam));
@@ -352,14 +352,14 @@ public class BlockControllerTest {
 		ArrayList<String> previousConnection = new ArrayList<String>();
 		previousConnection.add("UP");
 		previousConnection.add("1");
-		BlockSnapshot blockSnapShot = new BlockSnapshot(actionBlock0, null, null, new HashSet<Block>());
+		BlockSnapshot blockSnapShot = new BlockSnapshot(actionBlock0, null, null, new HashSet<Block>(), null);
 		
 		when(blockRepository.getConnectedBlockBeforeRemove(blockIDParam)).thenReturn(previousConnection);
 		when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(true);
 		when(blockRepository.getBlockByID("0")).thenReturn(actionBlock0);
 		when(blockRepository.getBlockByID("1")).thenReturn(null);
 		when(blockRepository.getAllBlocksConnectedToAndAfterACertainBlock(actionBlock0)).thenReturn(new HashSet<Block>());
-		when(bc.createNewBlockSnapshot(actionBlock0, null, null, new HashSet<Block>())).thenReturn(blockSnapShot);
+		when(bc.createNewBlockSnapshot(actionBlock0, null, null, new HashSet<Block>(), null)).thenReturn(blockSnapShot);
 		HashSet<String> idsToBeRemoved = new HashSet<String>();
 		idsToBeRemoved.add("idToBeRemoved");
 		when(blockRepository.removeBlock(blockIDParam, isChainParam)).thenReturn(idsToBeRemoved);
@@ -587,32 +587,32 @@ public class BlockControllerTest {
 	}
 	
 	/**
-	 * Test method for {@link applicationLayer.BlockController#getEnclosingControlBlock(java.lang.String)}.
+	 * Test method for {@link applicationLayer.BlockController#getEnclosingBodyCavityBlock(java.lang.String)}.
 	 */
 	@Test
 	public void testGetEnclosingControlBlock_Positive() {
 		String blockIdParam = "blockId";
 		when(blockRepository.getBlockByID(blockIdParam)).thenReturn(actionBlock0);
-		when(blockRepository.getEnclosingControlBlock(actionBlock0)).thenReturn(controlBlock);
+		when(blockRepository.getEnclosingBodyCavityBlock(actionBlock0)).thenReturn(controlBlock);
 		String controlBlockId = controlBlock.getBlockId();
 		
-		assertEquals(controlBlockId, bc.getEnclosingControlBlock(blockIdParam));
+		assertEquals(controlBlockId, bc.getEnclosingBodyCavityBlock(blockIdParam));
 	}
 	
 	/**
-	 * Test method for {@link applicationLayer.BlockController#getEnclosingControlBlock(java.lang.String)}.
+	 * Test method for {@link applicationLayer.BlockController#getEnclosingBodyCavityBlock(java.lang.String)}.
 	 */
 	@Test
 	public void testGetEnclosingControlBlock_EnclosingBlockNull_Positive() {
 		String blockIdParam = "blockId";
 		when(blockRepository.getBlockByID(blockIdParam)).thenReturn(actionBlock0);
-		when(blockRepository.getEnclosingControlBlock(actionBlock0)).thenReturn(null);
+		when(blockRepository.getEnclosingBodyCavityBlock(actionBlock0)).thenReturn(null);
 		
-		assertEquals(null, bc.getEnclosingControlBlock(blockIdParam));
+		assertEquals(null, bc.getEnclosingBodyCavityBlock(blockIdParam));
 	}
 	
 	/**
-	 * Test method for {@link applicationLayer.BlockController#getEnclosingControlBlock(java.lang.String)}.
+	 * Test method for {@link applicationLayer.BlockController#getEnclosingBodyCavityBlock(java.lang.String)}.
 	 */
 	@Test
 	public void testGetEnclosingControlBlock_GivenBlockNull_NoSuchConnectedBlockException() {
@@ -624,18 +624,18 @@ public class BlockControllerTest {
 		exceptionRule.expectMessage(excMessage);
 		
 		try {
-			bc.getEnclosingControlBlock(blockIdParam);
+			bc.getEnclosingBodyCavityBlock(blockIdParam);
 		} catch (NoSuchConnectedBlockException e) {
 			assertEquals(excMessage, e.getMessage());
 		}
 		
-		verify(blockRepository, Mockito.times(0)).getEnclosingControlBlock(Mockito.any(ActionBlock.class));
+		verify(blockRepository, Mockito.times(0)).getEnclosingBodyCavityBlock(Mockito.any(ActionBlock.class));
 		
-		bc.getEnclosingControlBlock(blockIdParam);
+		bc.getEnclosingBodyCavityBlock(blockIdParam);
 	}
 	
 	/**
-	 * Test method for {@link applicationLayer.BlockController#getEnclosingControlBlock(java.lang.String)}.
+	 * Test method for {@link applicationLayer.BlockController#getEnclosingBodyCavityBlock(java.lang.String)}.
 	 */
 	@Test
 	public void testGetEnclosingControlBlock_BlockNoExecutableBlock_InvalidBlockTypeException() {
@@ -645,14 +645,14 @@ public class BlockControllerTest {
 		exceptionRule.expect(InvalidBlockTypeException.class);
 		
 		try {
-			bc.getEnclosingControlBlock(blockIdParam);
+			bc.getEnclosingBodyCavityBlock(blockIdParam);
 		} catch (InvalidBlockTypeException e) {
 			
 		}
 		
-		verify(blockRepository, Mockito.times(0)).getEnclosingControlBlock(Mockito.any(ActionBlock.class));
+		verify(blockRepository, Mockito.times(0)).getEnclosingBodyCavityBlock(Mockito.any(ActionBlock.class));
 		
-		bc.getEnclosingControlBlock(blockIdParam);
+		bc.getEnclosingBodyCavityBlock(blockIdParam);
 	}
 
 	/**

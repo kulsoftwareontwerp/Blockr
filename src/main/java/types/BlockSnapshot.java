@@ -17,6 +17,7 @@ public class BlockSnapshot {
 	private Block connectedBlockAfterSnapshot;
 	private Block connectedBlockBeforeSnapshot;
 	private Set<Block> changingBlocks;
+	private Set<BlockSnapshot> associatedSnapshots;
 
 	/**
 	 * Create a new BlockSnapshot
@@ -28,10 +29,11 @@ public class BlockSnapshot {
 	 *                                     can be null.
 	 * @param changingBlocks               A set with all the blocks affected by the
 	 *                                     change.
+	 * @param associatedSnapshots 		   A set with all the snapshots associated with this snapshot.
 	 * @throws NullPointerException When the block is null.
 	 */
 	public BlockSnapshot(Block block, Block connectedBlockBeforeSnapshot, Block connectedBlockAfterSnapshot,
-			Set<Block> changingBlocks) {
+			Set<Block> changingBlocks, Set<BlockSnapshot> associatedSnapshots) {
 		super();
 		if (block == null) {
 			throw new NullPointerException("No valid snapshot");
@@ -44,10 +46,19 @@ public class BlockSnapshot {
 		if (connectedBlockBeforeSnapshot != null) {
 			this.connectedBlockBeforeSnapshot = (Block) connectedBlockBeforeSnapshot.clone();
 		}
+		
 		this.changingBlocks = new HashSet<Block>();
 		if (changingBlocks != null) {
 			for (Block b : changingBlocks) {
 				this.changingBlocks.add(b.clone());
+			}
+		}
+		
+		this.associatedSnapshots = new HashSet<BlockSnapshot>();
+		if (associatedSnapshots != null) {
+			for (BlockSnapshot b : associatedSnapshots) {
+				//BlockSnapshots are immutable, no clone needed.
+				this.associatedSnapshots.add(b);
 			}
 		}
 
@@ -96,5 +107,15 @@ public class BlockSnapshot {
 	public Set<Block> getChangingBlocks() {
 		return new HashSet<Block>(changingBlocks);
 	}
+
+	/**
+	 * Retrieve the associated snapshots
+	 * @return the associatedSnapshots
+	 */
+	public Set<BlockSnapshot> getAssociatedSnapshots() {
+		return new HashSet<BlockSnapshot>(associatedSnapshots);
+	}
+	
+	
 
 }

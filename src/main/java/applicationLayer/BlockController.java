@@ -3,13 +3,14 @@ package applicationLayer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
-import domainLayer.blocks.ControlBlock;
+import domainLayer.blocks.BodyCavityBlock;
+import domainLayer.blocks.DefinitionBlock;
 import domainLayer.blocks.ExecutableBlock;
 import events.BlockAddedEvent;
 import events.BlockChangeEvent;
@@ -25,6 +26,7 @@ import exceptions.InvalidBlockConnectionException;
 import exceptions.InvalidBlockTypeException;
 import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
+import types.BlockCategory;
 import types.BlockSnapshot;
 import types.BlockType;
 import types.ConnectionType;
@@ -59,17 +61,17 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	private void fireBlockAdded(String newBlockId, String linkedBlockId, ConnectionType linkedConnection,
-			BlockType type, Set<String> changedBlocks) {
-		BlockAddedEvent event = new BlockAddedEvent(newBlockId, linkedBlockId, linkedConnection, type, changedBlocks);
+			BlockType type, Set<String> changedBlocks, boolean moreRelatedEventsComing) {
+		BlockAddedEvent event = new BlockAddedEvent(newBlockId, linkedBlockId, linkedConnection, type, changedBlocks, moreRelatedEventsComing);
 
 		for (GUIListener listener : guiListeners) {
 			listener.onBlockAdded(event);
 		}
 	}
 
-	private void fireBlockRemoved(Set<String> idsToBeRemoved, String connectedBlock, ConnectionType connectionType) {
+	private void fireBlockRemoved(Set<String> idsToBeRemoved, String connectedBlock, ConnectionType connectionType, boolean areMoreRelatedEventsComing) {
 		for (String id : idsToBeRemoved) {
-			BlockRemovedEvent event = new BlockRemovedEvent(id, connectedBlock, connectionType, idsToBeRemoved);
+			BlockRemovedEvent event = new BlockRemovedEvent(id, connectedBlock, connectionType, idsToBeRemoved, areMoreRelatedEventsComing);
 			connectedBlock = "";
 			connectionType = ConnectionType.NOCONNECTION;
 			for (GUIListener listener : guiListeners) {
@@ -151,6 +153,13 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * @return The id of the block that has been added.
 	 */
 	public BlockSnapshot addBlock(BlockType blockType, String connectedBlockId, ConnectionType connection) {
+		Block definitionBlock = programBlockRepository.getBlockByID(blockType.definition());
+		if (blockType.cat() == BlockCategory.CALL
+				&& (definitionBlock == null || !(definitionBlock instanceof DefinitionBlock))) {
+			throw new NoSuchConnectedBlockException(
+					"There is no DefinitionBlock in the domain with the given definitionBlockID.");
+		}
+
 		if (programBlockRepository.checkIfMaxNbOfBlocksReached()) {
 			throw new MaxNbOfBlocksReachedException("The maximum number of blocks has already been reached.");
 		}
@@ -161,7 +170,7 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		HashSet<Block> addedBlocks = new HashSet<Block>();
 		addedBlocks.add(programBlockRepository.getBlockByID(newBlockId).clone());
-		BlockSnapshot snapshot = new BlockSnapshot(newBlock, null, connectedBlock, addedBlocks);
+		BlockSnapshot snapshot = new BlockSnapshot(newBlock, null, connectedBlock, addedBlocks, null);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
@@ -177,7 +186,7 @@ public class BlockController implements GUISubject, DomainSubject {
 			caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 		}
 		fireBlockAdded(newBlockId, caID, after, blockType,
-				addedBlocks.stream().map(s -> s.getBlockId()).collect(Collectors.toSet()));
+				addedBlocks.stream().map(s -> s.getBlockId()).collect(Collectors.toSet()), false);
 
 		return snapshot;
 	}
@@ -223,8 +232,67 @@ public class BlockController implements GUISubject, DomainSubject {
 				? programBlockRepository.getBlockByID(previousConnection.get(1)).clone()
 				: null;
 
+		Set<BlockSnapshot> associatedSnapshots = new HashSet<BlockSnapshot>();
+		if (deletedBlock instanceof DefinitionBlock) {
+			final Set<Block> tempCallBlocks = programBlockRepository
+					.getCallerBlocksByDefinition(deletedBlock.getBlockId());
+
+			// Filter out the callBlocks that are lower in the chain of another callBlock or
+			// that are in their own definitionBlock
+
+			Set<Block> callBlocks = tempCallBlocks.stream()
+					.filter(s -> !(tempCallBlocks.stream().anyMatch(
+							j -> s != j && programBlockRepository.getAllBlockIDsUnderneath(j).contains(s.getBlockId()))
+							|| programBlockRepository.getAllBlockIDsInBody((BodyCavityBlock) deletedBlock)
+									.contains(s.getBlockId())))
+					.collect(Collectors.toSet());
+
+			callBlocks = callBlocks.stream().map(s -> s.clone()).collect(Collectors.toSet());
+
+			ArrayList<String> previousConnectionCallBlock;
+			for (Block callBlock : callBlocks) {
+				previousConnectionCallBlock = programBlockRepository.getConnectedParentIfExists(callBlock.getBlockId());
+
+				Block connectedBlockBeforeDeleteCallBlock = programBlockRepository
+						.getBlockByID(previousConnectionCallBlock.get(1)) != null
+								? programBlockRepository.getBlockByID(previousConnectionCallBlock.get(1)).clone()
+								: null;
+
+				Set<Block> blocksUnderneathCallBlock = programBlockRepository
+						.getAllBlocksConnectedToAndAfterACertainBlock(callBlock);
+
+				associatedSnapshots.add(createNewBlockSnapshot(callBlock, connectedBlockBeforeDeleteCallBlock, null,
+						blocksUnderneathCallBlock, null));
+
+			}
+
+			callBlocks = tempCallBlocks.stream().filter(s -> !(programBlockRepository
+					.getAllBlockIDsInBody((BodyCavityBlock) deletedBlock).contains(s.getBlockId())))
+					.collect(Collectors.toSet());
+			for (Block callBlock : callBlocks) {
+				previousConnectionCallBlock = programBlockRepository.getConnectedParentIfExists(callBlock.getBlockId());
+
+				Block callerParent = programBlockRepository.getBlockByID(previousConnectionCallBlock.get(1));
+				switch (ConnectionType.valueOf(previousConnectionCallBlock.get(0))) {
+				case BODY:
+					callerParent.setFirstBlockOfBody(callBlock.getNextBlock());
+					break;
+				case DOWN:
+					callerParent.setNextBlock(callBlock.getNextBlock());
+					break;
+				default:
+					break;
+				}
+
+				Set<String> callIdsToBeRemoved = programBlockRepository.removeBlock(callBlock.getBlockId(), false);				
+				
+				fireBlockRemoved(callIdsToBeRemoved, callerParent != null ? callerParent.getBlockId() : "",
+						ConnectionType.valueOf(previousConnectionCallBlock.get(0)), true);
+			}
+		}
+
 		BlockSnapshot snapshot = createNewBlockSnapshot(deletedBlock, connectedBlockBeforeDelete, null,
-				programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(deletedBlock));
+				programBlockRepository.getAllBlocksConnectedToAndAfterACertainBlock(deletedBlock), associatedSnapshots);
 
 		Set<String> idsToBeRemoved = programBlockRepository.removeBlock(blockID, isChain);
 
@@ -233,15 +301,16 @@ public class BlockController implements GUISubject, DomainSubject {
 		if (maxBlocksReachedBeforeRemove) {
 			firePanelChangedEvent(true);
 		}
-		fireBlockRemoved(idsToBeRemoved, previousConnection.get(1), ConnectionType.valueOf(previousConnection.get(0)));
+		fireBlockRemoved(idsToBeRemoved, previousConnection.get(1), ConnectionType.valueOf(previousConnection.get(0)), false);
 
 		return snapshot;
 	}
-	
+
 	// For testing purposes
-	BlockSnapshot createNewBlockSnapshot(Block block, Block connectedBlockBeforeSnapshot, Block connectedBlockAfterSnapshot,
-			Set<Block> changingBlocks) {
-		return new BlockSnapshot(block, connectedBlockBeforeSnapshot, connectedBlockAfterSnapshot, changingBlocks);
+	BlockSnapshot createNewBlockSnapshot(Block block, Block connectedBlockBeforeSnapshot,
+			Block connectedBlockAfterSnapshot, Set<Block> changingBlocks, Set<BlockSnapshot> associatedSnapshots) {
+		return new BlockSnapshot(block, connectedBlockBeforeSnapshot, connectedBlockAfterSnapshot, changingBlocks,
+				associatedSnapshots);
 	}
 
 	/**
@@ -259,16 +328,38 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		ConnectionType before;
 
-		if(programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId())!=null) {
+		if (programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId()) != null) {
 			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
 					programBlockRepository.getBlockByID(snapshot.getBlock().getBlockId()));
-			
-		}else {
+
+		} else {
 			before = programBlockRepository.getConnectionType(snapshot.getConnectedBlockBeforeSnapshot(),
 					snapshot.getBlock());
 		}
-		
-		
+
+		for (BlockSnapshot associatedSnapshot : snapshot.getAssociatedSnapshots()) {
+			programBlockRepository.restoreBlockSnapshot(associatedSnapshot);
+			Set<Block> allCallers = programBlockRepository
+					.getAllBlocksConnectedToAndAfterACertainBlock(associatedSnapshot.getBlock()).stream()
+					.filter(s -> s.getBlockType().definition()
+							.equals(associatedSnapshot.getBlock().getBlockType().definition()))
+					.collect(Collectors.toSet());
+
+			for (Block caller : allCallers) {
+
+				ArrayList<String> parentIdentifiers = programBlockRepository
+						.getConnectedParentIfExists(caller.getBlockId());
+
+				ConnectionType after = ConnectionType.valueOf(parentIdentifiers.get(0));
+				String caID = "";
+				if (parentIdentifiers.get(1) != null) {
+					caID = parentIdentifiers.get(1);
+				}
+				fireBlockAdded(caller.getBlockId(), caID, after, caller.getBlockType(), null, true);
+			}
+
+		}
+
 		Boolean removed = programBlockRepository.restoreBlockSnapshot(snapshot);
 
 		if (removed) {
@@ -285,7 +376,7 @@ public class BlockController implements GUISubject, DomainSubject {
 				if (snapshot.getConnectedBlockAfterSnapshot() != null) {
 					caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 				}
-				fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType(), null);
+				fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType(), null, false);
 			}
 		} else {
 
@@ -318,26 +409,28 @@ public class BlockController implements GUISubject, DomainSubject {
 			caID = snapshot.getConnectedBlockAfterSnapshot().getBlockId();
 		}
 		fireBlockAdded(snapshot.getBlock().getBlockId(), caID, after, snapshot.getBlock().getBlockType(),
-				programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock()));
+				programBlockRepository.getAllBlockIDsUnderneath(snapshot.getBlock()), false);
 
 		Block toAdd = snapshot.getBlock();
 
 		// TODO: How best to test this?
-		// 	See testRestoreBlockSnapshot_RemovedTrue_MaxBlocksReachedTrue_IsChainTrue_AllOptionsInFireBlockAdded_Positive in BlockControllerTest
+		// See
+		// testRestoreBlockSnapshot_RemovedTrue_MaxBlocksReachedTrue_IsChainTrue_AllOptionsInFireBlockAdded_Positive
+		// in BlockControllerTest
 		if (toAdd.getConditionBlock() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getConditionBlock(), null, toAdd, null);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getConditionBlock(), null, toAdd, null, null);
 			fireBlockAdded(s);
 		}
 		if (toAdd.getFirstBlockOfBody() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getFirstBlockOfBody(), null, toAdd, null);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getFirstBlockOfBody(), null, toAdd, null, null);
 			fireBlockAdded(s);
 		}
 		if (toAdd.getNextBlock() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getNextBlock(), null, toAdd, null);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getNextBlock(), null, toAdd, null, null);
 			fireBlockAdded(s);
 		}
 		if (toAdd.getOperand() != null) {
-			BlockSnapshot s = new BlockSnapshot(toAdd.getOperand(), null, toAdd, null);
+			BlockSnapshot s = new BlockSnapshot(toAdd.getOperand(), null, toAdd, null, null);
 			fireBlockAdded(s);
 		}
 	}
@@ -412,7 +505,7 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		Block connectedBlockAfterMove = programBlockRepository.getBlockByID(connectedAfterMoveBlockId);
 		BlockSnapshot snapshot = new BlockSnapshot(movedBlock, connectedBlockBeforeMove, connectedBlockAfterMove,
-				movedBlocks);
+				movedBlocks, null);
 
 		fireUpdateGameState();
 		fireResetExecutionEvent();
@@ -449,16 +542,16 @@ public class BlockController implements GUISubject, DomainSubject {
 	}
 
 	/**
-	 * Returns all the blockID's in the body of a given ControlBlock
+	 * Returns all the blockID's in the body of a given BodyCavityBlock
 	 * 
-	 * @param blockID The blockID of the controlBlock of which you want to retrieve
-	 *                all Blocks in the body.
+	 * @param blockID The blockID of the BodyCavityBlock of which you want to
+	 *                retrieve all Blocks in the body.
 	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
 	 *                                       is not present in the domain.
 	 * @throws InvalidBlockTypeException     Is thrown when given blockID isn't the
-	 *                                       ID of a ControlBlock.
+	 *                                       ID of a BodyCavityBlock.
 	 * @return A set containing the blockID of the blocks in the body of the given
-	 *         ControlBlock.
+	 *         BodyCavityBlock.
 	 */
 	public Set<String> getAllBlockIDsInBody(String blockID) {
 		Block block = programBlockRepository.getBlockByID(blockID);
@@ -466,10 +559,10 @@ public class BlockController implements GUISubject, DomainSubject {
 
 		if (block == null) {
 			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
-		} else if (!(block instanceof ControlBlock)) {
-			throw new InvalidBlockTypeException(ControlBlock.class, block.getClass());
+		} else if (!(block instanceof BodyCavityBlock)) {
+			throw new InvalidBlockTypeException(BodyCavityBlock.class, block.getClass());
 		} else {
-			blockIDsInBody = programBlockRepository.getAllBlockIDsInBody((ControlBlock) block);
+			blockIDsInBody = programBlockRepository.getAllBlockIDsInBody((BodyCavityBlock) block);
 		}
 
 		return blockIDsInBody;
@@ -479,32 +572,31 @@ public class BlockController implements GUISubject, DomainSubject {
 	 * Finds the id of the enclosing controlblock of the given block.
 	 * 
 	 * @param id The ID of the block to find the enclosing controlblock of.
-	 * @return The id of the enclosing controlblock. 
-	 * 	If there is no enclosing block, the method returns null.
+	 * @return The id of the enclosing controlblock. If there is no enclosing block,
+	 *         the method returns null.
 	 */
-	public String getEnclosingControlBlock(String id) {
+	public String getEnclosingBodyCavityBlock(String id) {
 		Block givenBlock = programBlockRepository.getBlockByID(id);
-		ControlBlock block = null;
+		BodyCavityBlock block = null;
 		if (givenBlock == null) {
 			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
-		}
-		else if (!(givenBlock instanceof ExecutableBlock)) {
+		} else if (!(givenBlock instanceof ExecutableBlock)) {
 			throw new InvalidBlockTypeException(ExecutableBlock.class, givenBlock.getClass());
-		}
-		else {
-			block = programBlockRepository.getEnclosingControlBlock((ExecutableBlock) givenBlock);
+		} else {
+			block = programBlockRepository.getEnclosingBodyCavityBlock((ExecutableBlock) givenBlock);
 		}
 
 		if (block == null)
 			return null;
 
-		return block.getBlockId();
+		return ((Block) block).getBlockId();
 	}
 
 	/**
 	 * Finds all the ID's of the blocks that are below the given block.
 	 * 
-	 * @param blockID The ID of the block from which we want to find all blocks below.
+	 * @param blockID The ID of the block from which we want to find all blocks
+	 *                below.
 	 * @return A set of blockID's of the blocks below the given block.
 	 */
 	public Set<String> getAllBlockIDsBelowCertainBlock(String blockID) {
@@ -523,7 +615,8 @@ public class BlockController implements GUISubject, DomainSubject {
 	/**
 	 * Finds the ID's of all the controlblocks who are not in another controlBlock.
 	 * 
-	 * @return A set of the ID's of all the controlblocks who are not in another controlBlock.
+	 * @return A set of the ID's of all the controlblocks who are not in another
+	 *         controlBlock.
 	 */
 	public Set<String> getAllHeadControlBlocks() {
 		return programBlockRepository.getAllHeadControlBlocks().stream().map(e -> e.getBlockId())

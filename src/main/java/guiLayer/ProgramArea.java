@@ -30,6 +30,7 @@ public class ProgramArea implements Constants {
 
 	private HashSet<Shape> shapesInProgramArea;
 	private Shape highlightedShapeForExecution;
+	private int programAndGameBorder= INITIAL_PROGRAM_GAME_BORDER_X;
 
 	/**
 	 * Create a new ProgramArea
@@ -39,6 +40,13 @@ public class ProgramArea implements Constants {
 		shapesInProgramArea = new HashSet<Shape>();
 	}
 
+	
+	/**
+	 * @param programAndGameBorder the programAndGameBorder to set
+	 */
+	public void setProgramAndGameBorder(int programAndGameBorder) {
+		this.programAndGameBorder = programAndGameBorder;
+	}
 	/**
 	 * Retrieve a set with all the shapes in the programArea
 	 * 
@@ -98,7 +106,7 @@ public class ProgramArea implements Constants {
 	 *         programArea.
 	 */
 	public boolean checkIfInProgramArea(int x) {
-		return x > PROGRAM_START_X && x < PROGRAM_END_X;
+		return x > PROGRAM_START_X && x < programAndGameBorder;
 	}
 
 	/**
@@ -146,7 +154,7 @@ public class ProgramArea implements Constants {
 	public boolean checkIfPlaceable(Shape shapeToPlace) {
 		boolean placeable = !((shapeToPlace.getCoordinatesShape().stream()
 				.anyMatch(i -> this.alreadyFilledInCoordinates.contains(i))))
-				&& shapeToPlace.getX_coord() + shapeToPlace.getWidth() < PROGRAM_END_X;
+				&& shapeToPlace.getX_coord() + shapeToPlace.getWidth() < programAndGameBorder;
 
 		if ((shapeToPlace.getType() == BlockType.IF || shapeToPlace.getType() == BlockType.WHILE)
 				&& (getHighlightedShapeForConnections() != null
@@ -224,7 +232,6 @@ public class ProgramArea implements Constants {
 	 *                       won't be available
 	 */
 	void draw(Graphics blockrGraphics, DomainController controller) {
-
 		// draw all shapes in shapesInProgramArea
 		if (getShapesInProgramArea() != null && !getShapesInProgramArea().isEmpty()) {
 			getShapesInProgramArea().stream().forEach(((Shape e) -> e.draw(blockrGraphics)));

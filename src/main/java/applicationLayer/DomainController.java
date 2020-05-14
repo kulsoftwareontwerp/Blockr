@@ -62,8 +62,8 @@ public class DomainController {
 	}
 
 	/**
-	 * Construct a domainController and it's dependencies. 
-	 * The commandHandler,  GameController and the BlockController
+	 * Construct a domainController and it's dependencies. The commandHandler,
+	 * GameController and the BlockController
 	 * 
 	 * @param gameWorld The GameWorld to work with.
 	 */
@@ -71,7 +71,7 @@ public class DomainController {
 		CommandHandler handler = new CommandHandler();
 		initializeDomainController(new GameController(gameWorld, handler), new BlockController(), gameWorld, handler);
 	}
-	
+
 	// Used for mockinjection in the tests
 	@SuppressWarnings("unused")
 	private DomainController(GameWorld gw, GameController gc, BlockController bc, CommandHandler ch) {
@@ -85,13 +85,13 @@ public class DomainController {
 	 * Add a block of the given blockType to the domain and connect it with the
 	 * given connectedBlockId on the given connection
 	 * 
-	 * @param blockType        The type of block to be added, this parameter is
-	 *                         required.
-	 * @param connectedBlockId The ID of the block to connect to, can be empty.
-	 * @param connection       The connection of the connected block on which the
-	 *                         new block must be connected. If no connectedBlockId
-	 *                         was given, this parameter must be set to
-	 *                         "ConnectionType.NOCONNECTION".
+	 * @param blockType         The type of block to be added, this parameter is
+	 *                          required.
+	 * @param connectedBlockId  The ID of the block to connect to, can be empty.
+	 * @param connection        The connection of the connected block on which the
+	 *                          new block must be connected. If no connectedBlockId
+	 *                          was given, this parameter must be set to
+	 *                          "ConnectionType.NOCONNECTION".
 	 * @throws IllegalArgumentException        There can't be a block added with the
 	 *                                         given parameters because either: -
 	 *                                         the given blockType or the given
@@ -102,6 +102,8 @@ public class DomainController {
 	 *                                         given connectedBlockId is not empty
 	 *                                         and the connection is equal to
 	 *                                         ConnectionType.NOCONNECTION
+	 * @throws IllegalArgumentException        When the blockType is Call and there
+	 *                                         is no definitionBlockID present.
 	 * @throws InvalidBlockConnectionException The given combination of the
 	 *                                         blockType,connectedBlockId and
 	 *                                         connection is impossible. - an
@@ -136,6 +138,8 @@ public class DomainController {
 		} else if ((connectedBlockId != null && !connectedBlockId.equals(""))
 				&& connection == ConnectionType.NOCONNECTION) {
 			throw new IllegalArgumentException("No connection given for connected block.");
+		} else if (blockType.cat() == BlockCategory.CALL && (blockType.definition() == null)) {
+			throw new IllegalArgumentException("When the blockType is Call there must be a definitionBlockID present");
 		} else {
 			BlockCommand command = new AddBlockCommand(blockController, blockType, connectedBlockId, connection);
 			commandHandler.handle(command);
@@ -255,11 +259,11 @@ public class DomainController {
 	}
 
 	/**
-	 * Executes the next block to be executed if the gamestate is in a valid state or an in execution state. 
-	 * 	If this is not the case, nothing happens.
+	 * Executes the next block to be executed if the gamestate is in a valid state
+	 * or an in execution state. If this is not the case, nothing happens.
 	 * 
-	 * @event UpdateHighlightingEvent
-	 * 		  Fires a UpdateHighlightingEvent if the program was in a valid state or an in executing state.
+	 * @event UpdateHighlightingEvent Fires a UpdateHighlightingEvent if the program
+	 *        was in a valid state or an in executing state.
 	 */
 	public void executeBlock() {
 		gameController.executeBlock();
@@ -268,8 +272,8 @@ public class DomainController {
 	/**
 	 * Resets the game execution.
 	 * 
-	 * @event UpdateHighlightingEvent
-	 * 		  Fires a UpdateHighlightingEvent if the program was in an executing state.
+	 * @event UpdateHighlightingEvent Fires a UpdateHighlightingEvent if the program
+	 *        was in an executing state.
 	 */
 	public void resetGameExecution() {
 		gameController.resetGameExecution();
@@ -348,18 +352,18 @@ public class DomainController {
 	}
 
 	/**
-	 * Returns all the blockID's in the body of a given ControlBlock
+	 * Returns all the blockID's in the body of a given BodyCavityBlock
 	 * 
-	 * @param blockID The blockID of the controlBlock of which you want to retrieve
+	 * @param blockID The blockID of the BodyCavityBlock of which you want to retrieve
 	 *                all Blocks in the body.
 	 * @throws IllegalArgumentException      Is thrown when the given blockID is
 	 *                                       empty or null.
 	 * @throws NoSuchConnectedBlockException Is thrown when a blockID is given that
 	 *                                       is not present in the domain.
 	 * @throws InvalidBlockTypeException     Is thrown when given blockID isn't the
-	 *                                       ID of a ControlBlock.
+	 *                                       ID of a BodyCavityBlock.
 	 * @return A set containing the blockID of the blocks in the body of the given
-	 *         ControlBlock.
+	 *         BodyCavityBlock.
 	 * 
 	 */
 	public Set<String> getAllBlockIDsInBody(String blockID) {

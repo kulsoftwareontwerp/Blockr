@@ -3,6 +3,11 @@
  */
 package types;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+
 import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
 
 import domainLayer.blocks.ActionBlock;
@@ -17,6 +22,7 @@ import domainLayer.gamestates.GameState;
  */
 public class ExecutionSnapshot {
 
+	private Map<String,Stack<String>> callStacks;
 	private ActionBlock nextBlockToBeExecuted;
 	private GameWorldSnapshot gameSnapshot;
 	private GameState state;
@@ -26,10 +32,11 @@ public class ExecutionSnapshot {
 	 * @param nextBlockToBeExecuted The next block to be executed
 	 * @param gameSnapshot the gameWorld snapshot before the execution has been performed.
 	 * @param state the saved state of an execution
+	 * @param callStacks The callStacks of all the definitionBlocks.
 	 * @throws NullPointerException when the gameSnapshot is null
 	 * @throws NullPointerException when the state is null
 	 */
-	public ExecutionSnapshot(ActionBlock nextBlockToBeExecuted, GameWorldSnapshot gameSnapshot, GameState state) {
+	public ExecutionSnapshot(ActionBlock nextBlockToBeExecuted, GameWorldSnapshot gameSnapshot, GameState state, Map<String, Stack<String>> callStacks) {
 		super();
 		if(gameSnapshot==null) {
 			throw new NullPointerException("the gameSnapshot of an ExecutionSnapshot can't be null");
@@ -37,9 +44,13 @@ public class ExecutionSnapshot {
 		if(state==null) {
 			throw new NullPointerException("the state of an ExecutionSnapshot can't be null");
 		}
+		if(callStacks==null) {
+			throw new NullPointerException("the callStacks of an ExecutionSnapshot can't be null");
+		}
 		this.nextBlockToBeExecuted = nextBlockToBeExecuted;
 		this.gameSnapshot = gameSnapshot;
 		this.state = state;
+		this.callStacks=callStacks;
 	}
 
 	/**
@@ -64,6 +75,32 @@ public class ExecutionSnapshot {
 	 */
 	public GameState getState() {
 		return state;
+	}
+	
+	
+	/**
+	 * Retrieve the callStacks from this snapshot.
+	 * @return the callStacks from this snapshot.
+	 */
+	public Map<String, Stack<String>> getCallStacks(){
+		HashMap<String, Stack<String>> copy = new HashMap<String, Stack<String>>();
+	    for (Map.Entry<String, Stack<String>> entry : this.callStacks.entrySet())
+	    {
+	    	
+	    	
+	    	copy.put(entry.getKey(),copyCallStack(entry.getValue()));
+	    }
+		return copy;
+	}
+	
+	
+	private Stack<String> copyCallStack(Stack<String> callStack) {
+		Stack<String> tempCallStack = new Stack<String>();
+
+		for (int i = 0; i < callStack.size(); i++) {
+			tempCallStack.add(i, callStack.get(i));
+		}
+		return tempCallStack;
 	}
 
 }

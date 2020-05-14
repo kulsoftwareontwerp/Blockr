@@ -10,7 +10,7 @@ package guiLayer.types;
 public interface Constants {
 	
 	public static final int MASKEDKEY_DURATION = 500;
-
+	public static final int ALERTMESSAGE_DURATION = 10000;
 	
 	public final static int HEIGHT = 600;
 	public final static int WIDTH = 1000;
@@ -23,8 +23,6 @@ public interface Constants {
 	
 	public static final int OFFSET_GAMEAREA_CELLS = 4;
 	
-	public final static int HEIGHT_GAME_AREA = 4;
-	public final static int WIDTH_GAME_AREA = 5;
 
 
 	public final static int PALETTE_START_X = 0;
@@ -32,10 +30,12 @@ public interface Constants {
 	public final static int PALETTE_OFFSET_BLOCKS = 5;
 
 	public final static int PROGRAM_START_X = 100;
-	public final static int PROGRAM_END_X = 750;
+	public final static int INITIAL_PROGRAM_GAME_BORDER_X = 750;
 
-	public final static int GAME_START_X = 750;
-	public final static int GAME_END_X = 1000;
+
+	public static final int GAME_HEIGHT = 600;
+	public static final int GAME_WIDTH = 250;
+	public final static int INITIAL_GAME_END_X = 1000;
 	
 	
 	

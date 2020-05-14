@@ -1,6 +1,7 @@
 package guiLayer.commands;
 
 import guiLayer.CanvasWindow;
+import guiLayer.shapes.Shape;
 import guiLayer.types.Constants;
 import guiLayer.types.GuiSnapshot;
 
@@ -64,6 +65,16 @@ public abstract class BlockCommand implements Command, Constants {
 	@Override
 	public void undo() {
 		canvas.setCurrentSnapshot(beforeSnapshot);
+	}
+
+	
+	/**
+	 * Add the given shape to the beforeSnapeShot of this command
+	 * @param shape the shape to add to the before snapshot.
+	 */
+	public void addShapeToBeforeSnapshot(Shape shape) {
+		beforeSnapshot.addShapeToSnapshot(shape);
+		
 	}
 
 }

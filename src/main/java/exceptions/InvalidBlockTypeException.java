@@ -10,7 +10,7 @@ import domainLayer.blocks.Block;
  */
 public class InvalidBlockTypeException extends RuntimeException {
 	private static final long serialVersionUID = -1610735208954128656L;
-	private Class<? extends Block> expected;
+	private Class<? extends Object> expected;
 	private Class<? extends Block> actual;
 
 	/**
@@ -20,7 +20,7 @@ public class InvalidBlockTypeException extends RuntimeException {
 	 * @param 		actual
 	 * 				The actual blockType
 	 */
-	public InvalidBlockTypeException(Class<? extends Block> expected,Class<? extends Block> actual) {
+	public InvalidBlockTypeException(Class<? extends Object> expected,Class<? extends Block> actual) {
 		super();
 
 		
@@ -34,7 +34,7 @@ public class InvalidBlockTypeException extends RuntimeException {
 	 * 
 	 * @return The expected class
 	 */
-	public Class<? extends Block> getExpected() {
+	public Class<? extends Object> getExpected() {
 		return expected;
 	}
 

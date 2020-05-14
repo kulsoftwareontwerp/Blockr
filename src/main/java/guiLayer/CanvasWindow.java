@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Timer;
 import java.util.stream.Collectors;
@@ -24,19 +25,26 @@ import guiLayer.commands.DomainMoveCommand;
 import guiLayer.commands.ExecuteBlockCommand;
 import guiLayer.commands.GuiMoveCommand;
 import guiLayer.commands.ResetCommand;
+import guiLayer.shapes.CallFunctionShape;
 import guiLayer.shapes.ControlShape;
+import guiLayer.shapes.DefinitionShape;
 import guiLayer.shapes.Shape;
 import guiLayer.shapes.ShapeFactory;
+import guiLayer.types.AlertTask;
 import guiLayer.types.Constants;
 import guiLayer.types.Coordinate;
 import guiLayer.types.DebugModus;
 import guiLayer.types.GuiSnapshot;
 import guiLayer.types.MaskedKeyBag;
 import guiLayer.types.MaskedKeyPressed;
+import types.BlockCategory;
 import types.BlockType;
 import types.ConnectionType;
 
 public class CanvasWindow extends CanvasResource implements GUIListener, Constants {
+
+	
+
 
 	private CommandHandler commandHandler;
 
@@ -50,6 +58,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private Set<Shape> shapeClonesInMovement;
 
 	private Set<String> blocksUnderneath;
+	private String alertMessage;
 
 	private Shape currentShape = null;
 	private Shape movedShape = null;
@@ -57,6 +66,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private MaskedKeyBag maskedKeyBag;
 
 	private GuiSnapshot currentSnapshot;
+	private int programAndGameBorder=INITIAL_PROGRAM_GAME_BORDER_X;
 
 	// This Constructor is only used for Testing Purposes. This should NEVER be
 	// called upon, and is only public for the purpose of instantiating the
@@ -75,8 +85,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		this.shapeClonesInMovement = new HashSet<Shape>();
 		this.domainController = domainController;
 		this.paletteArea = paletteArea;
+		this.alertMessage = null;
 	}
-
 
 	private boolean undoMode;
 
@@ -100,9 +110,43 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		this.undoMode = false;
 
+		calculateWindowHeight();
+
+		commandHandler = new CommandHandler(this);
+
+		maskedKeyBag = new MaskedKeyBag(false, false);
+
+		super.width = WIDTH;
+		this.domainController = dc;
+		this.domainController.addGameListener(this);
+		setShapeFactory(new ShapeFactory());
+		this.programArea = new ProgramArea();
+		this.paletteArea = new PaletteArea(getShapeFactory());
+
+		this.blocksUnderneath = new HashSet<String>();
+		resetShapesInMovement();
+	}
+
+	/**
+	 * Show the given alert message
+	 * 
+	 * @param message the message to show
+	 */
+	public void showAlert(String message) {
+		this.alertMessage = message;
+		super.repaint();
+
+	}
+
+	/**
+	 * Sets the height of the window to accommodate all the shapes
+	 * 
+	 * @return if the windowheight has been changed
+	 */
+	private Boolean calculateWindowHeight() {
 		// Calculate Total Height of the CanvasWindow based on the different type of
 		// blocks
-		int totalHeight = 160; // 4x40px for the titles in the palette
+		int totalHeight = 200; // 5x40px for the titles in the palette
 		for (var type : BlockType.values()) {
 			switch (type.cat()) {
 			case ACTION:
@@ -117,29 +161,25 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			case OPERATOR:
 				totalHeight += 35;
 				break;
+			case DEFINITION:
+				totalHeight += 105;
+				break;
+			case CALL:
+				totalHeight += 45;
+				break;
 			default:
 				break;
 			}
 		}
 
-		totalHeight += 25; // Padding at the bottom
-
-		commandHandler = new CommandHandler(this);
-
-		maskedKeyBag = new MaskedKeyBag(false, false);
-
-		super.height = totalHeight;
-		System.out.println(totalHeight);
-		super.width = WIDTH;
-		this.domainController = dc;
-		this.domainController.addGameListener(this);
-		setShapeFactory(new ShapeFactory());
-		this.programArea = new ProgramArea();
-		this.paletteArea = new PaletteArea(getShapeFactory());
-
-		this.blocksUnderneath = new HashSet<String>();
-		resetShapesInMovement();
-
+		totalHeight += 55; // Padding at the bottom
+		if (super.height != totalHeight) {
+			super.height = totalHeight;
+			System.out.println(totalHeight);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -153,7 +193,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				BlockType type = domainController.getBlockType(IdAndCoordinate.getKey());
 
 				Shape shape = shapeFactory.createShape(IdAndCoordinate.getKey(), type, IdAndCoordinate.getValue());
-				determineTotalHeightControlShapes();
+				determineTotalHeightBodyCavityShapes();
 				shape.setCoordinatesShape();
 				programArea.addToAlreadyFilledInCoordinates(shape);
 				shape.defineConnectionTypes();
@@ -161,7 +201,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			}
 			programArea.clearAlreadyFilledInCoordinates();
 
-			determineTotalHeightControlShapes();
+			determineTotalHeightBodyCavityShapes();
 			programArea.placeShapes();
 
 		}
@@ -286,44 +326,73 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	protected void paint(Graphics g) {
-
-		Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, PROGRAM_END_X, super.height);
-		Graphics gameAreaGraphics = g.create(GAME_START_X, ORIGIN, WIDTH - GAME_START_X, super.height);
-
-		// only for debugging purposes
-		if (debugModus == DebugModus.FILLINGS) {
-			for (Coordinate filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
-				g.drawOval(filledInCoordinate.getX(), filledInCoordinate.getY(), 1, 1);
+		if (alertMessage == null) {
+//			calculateWindowHeight();
+			int tempGameBorder = g.getClipBounds().width - GAME_WIDTH;
+			if(tempGameBorder>=INITIAL_PROGRAM_GAME_BORDER_X) {
+				programAndGameBorder=tempGameBorder;
+				programArea.setProgramAndGameBorder(programAndGameBorder);
 			}
-		}
+			int windowHeight =g.getClipBounds().height;
+			
+			Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, programAndGameBorder, windowHeight );
+			
+			int yPositionGameArea = ORIGIN;
+			if(windowHeight>GAME_HEIGHT) {
+				yPositionGameArea = (windowHeight-GAME_HEIGHT)/2;
+			}
+			
+			Graphics gameAreaGraphics = g.create(programAndGameBorder, yPositionGameArea, GAME_WIDTH, GAME_HEIGHT);
 
-		// Partition CanvasWindow in different sections
-
-		paletteArea.paint(blockrGraphics);
-
-		domainController.paint(gameAreaGraphics);
-
-		programArea.draw(blockrGraphics, domainController);
-
-		// Draw the shapes in movement
-		blockrGraphics.setColor(Color.black);
-		if (getCurrentShape() != null)
-			getCurrentShape().draw(blockrGraphics);
-
-		for (Shape shape : getShapesInMovement()) {
-			if (shape != getCurrentShape())
-				shape.draw(blockrGraphics);
-		}
-
-		blockrGraphics.setColor(Color.black);
-		if (DebugModus.CONNECTIONS.compareTo(CanvasWindow.debugModus) <= 0) {
-			for (Shape shape : getShapesInMovement()) {
-				for (var p : shape.getCoordinateConnectionMap().values()) {
-					int tempx = p.getX() - 3;
-					int tempy = p.getY();
-					blockrGraphics.drawOval(tempx, tempy, 6, 6);
+			// only for debugging purposes
+			if (debugModus == DebugModus.FILLINGS) {
+				for (Coordinate filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
+					g.drawOval(filledInCoordinate.getX(), filledInCoordinate.getY(), 1, 1);
 				}
 			}
+
+			// Partition CanvasWindow in different sections
+
+			paletteArea.paint(blockrGraphics);
+
+			g.fill3DRect(programAndGameBorder, ORIGIN, GAME_WIDTH, windowHeight, true);
+			domainController.paint(gameAreaGraphics);
+
+			programArea.draw(blockrGraphics, domainController);
+
+			// Draw the shapes in movement
+			blockrGraphics.setColor(Color.black);
+			if (getCurrentShape() != null)
+				getCurrentShape().draw(blockrGraphics);
+
+			for (Shape shape : getShapesInMovement()) {
+				if (shape != getCurrentShape())
+					shape.draw(blockrGraphics);
+			}
+
+			blockrGraphics.setColor(Color.black);
+			if (DebugModus.CONNECTIONS.compareTo(CanvasWindow.debugModus) <= 0) {
+				for (Shape shape : getShapesInMovement()) {
+					for (var p : shape.getCoordinateConnectionMap().values()) {
+						int tempx = p.getX() - 3;
+						int tempy = p.getY();
+						blockrGraphics.drawOval(tempx, tempy, 6, 6);
+					}
+				}
+			}
+		}else{
+			int w = g.getClipBounds().width;
+			int h = g.getClipBounds().height;
+			int mW = 7 * alertMessage.length();
+			int mH = 30;
+			g.setColor(Color.RED);
+			
+			g.fillRect(0, 0,w , h);
+			g.setColor(Color.WHITE);
+			
+			g.fillRect((w-mW)/2, (h-20)/2, mW,20);
+			g.setColor(Color.BLACK);
+			g.drawString(alertMessage, ((w-mW)/2)+20, ((h-20)/2)+10);
 		}
 
 	}
@@ -362,7 +431,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		}
 
-		if (id == MouseEvent.MOUSE_PRESSED && x > PROGRAM_START_X && x < PROGRAM_END_X) {
+		if (id == MouseEvent.MOUSE_PRESSED && x > PROGRAM_START_X && x < programAndGameBorder) {
 			Shape shape = programArea.getShapeFromCoordinate(x, y);
 			if (shape != null) {
 				blocksUnderneath = domainController.getAllBlockIDsUnderneath(shape.getId());
@@ -432,7 +501,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 							int originalChangedShapeY = movedShape.getY_coord();
 							movedShape.clipOn(programArea.getHighlightedShapeForConnections(),
 									movedShape.getConnectedVia());
-
 
 							// Only if the shape that's being dragged is the moved shape than it should
 							// be decoupled from the chain it's in
@@ -507,7 +575,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				movedShape = null;
 				offsetCurrentShape = new Coordinate(0, 0);
 
-
 				resetShapesInMovement();
 				blocksUnderneath = new HashSet<String>();
 			} else {
@@ -578,7 +645,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			// The setConnectedVia of all shapes in movement will be reverted
 			shapeInMovement.persistConnectedVia(false);
 
-
 			if (isConnectionOpen(shapeInMovement, ConnectionType.DOWN)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.UP),
 							shapeInMovement.getTriggerSet(ConnectionType.DOWN))) {
@@ -604,7 +670,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
 
-
 			} else if (isConnectionOpen(shapeInMovement, ConnectionType.UP)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.BODY),
 							shapeInMovement.getTriggerSet(ConnectionType.UP))) {
@@ -618,7 +683,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shape.setConnectedVia(ConnectionType.UP, false);
 				movedShape = shapeInMovement;
 
-
 			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.CONDITION),
 							shapeInMovement.getTriggerSet(ConnectionType.LEFT))) {
@@ -631,7 +695,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				shapeInMovement.setConnectedVia(ConnectionType.CONDITION, false);
 				shape.setConnectedVia(ConnectionType.LEFT, false);
 				movedShape = shapeInMovement;
-
 
 			} else if (isConnectionOpen(shapeInMovement, ConnectionType.LEFT)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.OPERAND),
@@ -722,67 +785,38 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private void revertMove() {
 		for (Iterator<Shape> iterator = getShapesInMovement().iterator(); iterator.hasNext();) {
 			Shape shape = (Shape) iterator.next();
-	
+
 			if (shape.getPreviousX_coord() == INVALID_COORDINATE || shape.getPreviousY_coord() == INVALID_COORDINATE) {
 				iterator.remove();
 			} else {
 				shape.setX_coord(shape.getPreviousX_coord());
 				shape.setY_coord(shape.getPreviousY_coord());
-	
+
 				shape.setCoordinatesShape();
 				programArea.addToAlreadyFilledInCoordinates(shape);
 				shape.defineConnectionTypes();
 				programArea.addShapeToProgramArea(shape);
 			}
-	
+
 		}
-	
+
 		getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia(), true);
 	}
 
-
 	@Override
 	protected void handleKeyEvent(int id, int keyCode, char keyChar) {
-		if (id == KeyEvent.KEY_PRESSED) {
-			if (keyCode == KeyEvent.VK_CONTROL) {
-				if (maskedKeyTimer != null) {
-					maskedKeyTimer.cancel();
-					maskedKeyBag.pressShift(false);
-				}
-				maskedKeyTimer = new Timer();
-				maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, false), MASKEDKEY_DURATION);
-				maskedKeyBag.pressCtrl(true);
-			}
-			if (keyCode == KeyEvent.VK_SHIFT) {
-				if (maskedKeyTimer != null) {
-					maskedKeyTimer.cancel();
-				}
-				maskedKeyTimer = new Timer();
-				maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, true), MASKEDKEY_DURATION);
-				maskedKeyBag.pressShift(true);
-			}
-			if (keyCode == KeyEvent.VK_F5) {
-				// F5-Key
-				if (domainController.isGameExecutionUseful()) {
-					commandHandler.handle(new ExecuteBlockCommand(domainController));
-				}
-			}
-			if (keyCode == KeyEvent.VK_ESCAPE) {
-				// ESC-Key
-				if (domainController.isGameResetUseful()) {
-					commandHandler.handle(new ResetCommand(domainController));
-				}
-			}
-			if (keyCode == KeyEvent.VK_Z) {
-				if (maskedKeyBag.isCtrlPressed() && !maskedKeyBag.isShiftPressed()) {
-					commandHandler.undo();
+		try {
+			if (id == KeyEvent.KEY_PRESSED) {
+				if (keyCode == KeyEvent.VK_CONTROL) {
 					if (maskedKeyTimer != null) {
 						maskedKeyTimer.cancel();
 						maskedKeyBag.pressShift(false);
 					}
+					maskedKeyTimer = new Timer();
+					maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, false), MASKEDKEY_DURATION);
+					maskedKeyBag.pressCtrl(true);
 				}
-				if (maskedKeyBag.isCtrlPressed() && maskedKeyBag.isShiftPressed()) {
-					commandHandler.redo();
+				if (keyCode == KeyEvent.VK_SHIFT) {
 					if (maskedKeyTimer != null) {
 						maskedKeyTimer.cancel();
 					}
@@ -790,24 +824,56 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, true), MASKEDKEY_DURATION);
 					maskedKeyBag.pressShift(true);
 				}
-			}
+				if (keyCode == KeyEvent.VK_F5) {
+					// F5-Key
+					if (domainController.isGameExecutionUseful()) {
+						commandHandler.handle(new ExecuteBlockCommand(domainController));
+					}
+				}
+				if (keyCode == KeyEvent.VK_ESCAPE) {
+					// ESC-Key
+					if (domainController.isGameResetUseful()) {
+						commandHandler.handle(new ResetCommand(domainController));
+					}
+				}
+				if (keyCode == KeyEvent.VK_Z) {
+					if (maskedKeyBag.isCtrlPressed() && !maskedKeyBag.isShiftPressed()) {
+						commandHandler.undo();
+						if (maskedKeyTimer != null) {
+							maskedKeyTimer.cancel();
+							maskedKeyBag.pressShift(false);
+						}
+					}
+					if (maskedKeyBag.isCtrlPressed() && maskedKeyBag.isShiftPressed()) {
+						commandHandler.redo();
+						if (maskedKeyTimer != null) {
+							maskedKeyTimer.cancel();
+						}
+						maskedKeyTimer = new Timer();
+						maskedKeyTimer.schedule(new MaskedKeyPressed(maskedKeyBag, true), MASKEDKEY_DURATION);
+						maskedKeyBag.pressShift(true);
+					}
+				}
 
-			if (keyCode == KeyEvent.VK_U) {
-				commandHandler.undo();
+				if (keyCode == KeyEvent.VK_U) {
+					commandHandler.undo();
+				}
+				if (keyCode == KeyEvent.VK_R) {
+					commandHandler.redo();
+				}
 			}
-			if (keyCode == KeyEvent.VK_R) {
-				commandHandler.redo();
+			if (id == KeyEvent.KEY_TYPED) {
+
+				if (keyChar == 'd') {
+					// d key 68
+					debugModus = debugModus.getNext();
+					repaint();
+				}
 			}
+		} catch (StackOverflowError e) {
+			Timer alertTimer = new Timer();
+			alertTimer.schedule(new AlertTask(this, "An error happened because you created an infinite loop. This message disappears in 10 seconds"), ALERTMESSAGE_DURATION);
 		}
-		if (id == KeyEvent.KEY_TYPED) {
-
-			if (keyChar == 'd') {
-				// d key 68
-				debugModus = debugModus.getNext();
-				repaint();
-			}
-		}
-
 	}
 
 	/**
@@ -841,8 +907,9 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	/**
 	 * Determine the height of all the controlshapes
 	 */
-	private void determineTotalHeightControlShapes() {
-		for (Shape shape : programArea.getShapesInProgramArea().stream().filter(s -> s instanceof ControlShape)
+	private void determineTotalHeightBodyCavityShapes() {
+		for (Shape shape : programArea.getShapesInProgramArea().stream()
+				.filter(s -> (s instanceof ControlShape) || (s instanceof DefinitionShape))
 				.collect(Collectors.toSet())) {
 			if (shape != null && domainController.isBlockPresent(shape.getId())) {
 				shape.determineTotalHeight(mapSetOfIdsToShapes(domainController.getAllBlockIDsInBody(shape.getId())));
@@ -856,17 +923,25 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	/**
 	 * Update the position of all shapes after the height of controlshapes has been
 	 * changed.
+	 * 
+	 * @param shapesToBeIgnoredWhileMoving The ids of shapes to exclude in the
+	 *                                     update position process
 	 */
-	private void updatePositionOfAllShapesAccordingToChangesOfTheControlShapes() {
+	private void updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(
+			Set<String> shapesToBeIgnoredWhileMoving) {
 		Set<ControlShape> changedControlShapes = programArea.getAllChangedControlShapes();
 
 		for (ControlShape c : changedControlShapes) {
 			Set<Shape> shapesToMove = domainController.getAllBlockIDsBelowCertainBlock(c.getId()).stream()
 					.filter(s -> !s.equals(c.getId())).map(s -> programArea.getShapeById(s))
 					.collect(Collectors.toSet());
-			if (c.getHeightDiff() < 0 && undoMode) {
-				shapesToMove.removeIf(s -> currentSnapshot.getSavedCoordinates().containsKey(s.getId()));
+			if (undoMode) {
+				if (c.getHeightDiff() < 0) {
+					shapesToMove.removeIf(s -> currentSnapshot.getSavedCoordinates().containsKey(s.getId()));
+				}
 			}
+
+			shapesToMove.removeIf(s -> s != null && shapesToBeIgnoredWhileMoving.contains(s.getId()));
 
 			for (Shape shape : shapesToMove) {
 				if (shape != null) {
@@ -896,11 +971,17 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		}
 	}
 
+	private Set<String> comingEvents = new HashSet<String>();
+
 	@Override
 	public void onBlockAdded(BlockAddedEvent event) {
+		boolean redone = false;
 		Coordinate newCoordinate;
 		if (currentSnapshot.getSavedCoordinates().containsKey(event.getAddedBlockID())) {
+			// shape was present in the programArea at one point in time
 			newCoordinate = currentSnapshot.getSavedCoordinates().get(event.getAddedBlockID());
+			redone = true;
+
 		} else if (currentSnapshot.getSavedCoordinates().containsKey(PALETTE_BLOCK_IDENTIFIER)) {
 			newCoordinate = currentSnapshot.getSavedCoordinates().get(PALETTE_BLOCK_IDENTIFIER);
 		} else {
@@ -918,8 +999,28 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		programArea.addShapeToProgramArea(toAdd);
 		programArea.clearAlreadyFilledInCoordinates();
 
-		determineTotalHeightControlShapes();
-		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+		if (redone && event.getAddedBlockType().cat() == BlockCategory.CALL) {
+			for (Shape shape : domainController.getAllBlockIDsUnderneath(event.getAddedBlockID()).stream()
+					.filter(s -> !s.equals(event.getAddedBlockID())).map(s -> programArea.getShapeById(s))
+					.collect(Collectors.toSet())) {
+				if (shape != null && !shape.getType().definition().equals(toAdd.getType().definition())
+						&& !domainController.getAllHeadBlocks().contains(toAdd.getId())) {
+					shape.setY_coord(shape.getY_coord() + toAdd.getHeight());
+				}
+			}
+		}
+
+		if (!event.areMoreRelatedEventsComing()) {
+			determineTotalHeightBodyCavityShapes();
+			Set<String> idsToBeIgnoredFromMovement = new HashSet<String>();
+			if (undoMode && event.getAddedBlockType() == BlockType.DEFINITION) {
+				idsToBeIgnoredFromMovement.addAll(comingEvents);
+			}
+			comingEvents.clear();
+			updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(idsToBeIgnoredFromMovement);
+		} else {
+			comingEvents.add(event.getAddedBlockID());
+		}
 
 		programArea.placeShapes();
 
@@ -942,10 +1043,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		programArea.clearAlreadyFilledInCoordinates();
 
 		// update internals of controlshapes
-		determineTotalHeightControlShapes();
+		determineTotalHeightBodyCavityShapes();
 		// handle add to programArea in practice, all coordinates etc are set.
 
-		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
+		updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(new HashSet<String>());
 
 		programArea.placeShapes();
 
@@ -956,21 +1057,52 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 	@Override
 	public void onBlockRemoved(BlockRemovedEvent event) {
-		Set<Shape> shapesToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
-				.filter(s -> s.getId().equals(event.getRemovedBlockId())).collect(Collectors.toSet());
+		Optional<Shape> shapeToBeRemovedFromProgramArea = programArea.getShapesInProgramArea().stream()
+				.filter(s -> s.getId().equals(event.getRemovedBlockId())).findAny();
 
+		System.out.println(shapeToBeRemovedFromProgramArea);
 
-		System.out.println(shapesToBeRemovedFromProgramArea);
+		// Only in the case of the removal of a DefinitionShape this will be true
+		if (shapeToBeRemovedFromProgramArea.isPresent()) {
+			if (shapeToBeRemovedFromProgramArea.get() instanceof CallFunctionShape) {
+				commandHandler.addShapeToBeforeSnapshot(shapeToBeRemovedFromProgramArea.get());
 
-		for (Shape shape : shapesToBeRemovedFromProgramArea) {
-			programArea.removeShapeFromProgramArea(shape);
+				// Move all shapes under this shape up
+				if (event.getBeforeRemoveBlockId() != "") {
+					Set<String> shapeIDs;
+					BlockType bfrm = domainController.getBlockType(event.getBeforeRemoveBlockId());
+					if ((bfrm == BlockType.IF || bfrm == BlockType.WHILE)) {
+						if (event.getBeforeRemoveConnection() == ConnectionType.BODY) {
+							shapeIDs = domainController.getAllBlockIDsInBody(event.getBeforeRemoveBlockId());
+						} else {
+							shapeIDs = domainController.getAllBlockIDsBelowCertainBlock(event.getBeforeRemoveBlockId());
+						}
+					} else {
+						shapeIDs = domainController.getAllBlockIDsUnderneath(event.getBeforeRemoveBlockId());
+					}
+
+					for (Shape s : shapeIDs.stream().map(i -> programArea.getShapeById(i))
+							.filter(j -> !(j.getId().equals(event.getBeforeRemoveBlockId()) || j.getType().definition()
+									.equals(shapeToBeRemovedFromProgramArea.get().getType().definition())))
+							.collect(Collectors.toSet())) {
+						s.setY_coord(s.getY_coord() - shapeToBeRemovedFromProgramArea.get().getHeight());
+
+					}
+				}
+
+			}
+
+			programArea.removeShapeFromProgramArea(shapeToBeRemovedFromProgramArea.get());
 		}
+
 		programArea.clearAlreadyFilledInCoordinates();
 
-		// update internals of controlshapes
-		determineTotalHeightControlShapes();
-		updatePositionOfAllShapesAccordingToChangesOfTheControlShapes();
-
+//		if (!removeCallShapeBecauseDefinitionShapeWasRemoved) {
+		if (!event.areMoreRelatedEventsComing()) {
+			// update internals of controlshapes
+			determineTotalHeightBodyCavityShapes();
+			updatePositionOfAllShapesAccordingToChangesOfTheBodyCavityShapes(new HashSet<String>());
+		}
 		// handle add to programArea in practice, all coordinates etc are set.
 		programArea.placeShapes();
 

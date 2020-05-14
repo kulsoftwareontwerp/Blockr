@@ -34,6 +34,13 @@ public class ShapeFactory {
 			return new UnaryOperatorShape(id, type, coordinate);
 		case CONDITION: 
 			return new ConditionShape(id, type, coordinate);
+		case DEFINITION:
+			return new DefinitionShape(id, type, coordinate);
+		case CALL:
+			if(type.definition() == null) {
+				throw new IllegalArgumentException("A functionCall needs an associated definitionShapeID.");
+			}
+			return new CallFunctionShape(id, type, coordinate);
 
 		default: return null;
 		}		

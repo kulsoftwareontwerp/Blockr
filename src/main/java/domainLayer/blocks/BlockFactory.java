@@ -1,5 +1,6 @@
 package domainLayer.blocks;
 
+import types.BlockCategory;
 import types.BlockType;
 
 /**
@@ -13,13 +14,13 @@ public class BlockFactory {
 	private BlockIDGenerator blockIDGenerator;
 
 	public BlockFactory() {
-		blockIDGenerator= BlockIDGenerator.getInstance();
+		blockIDGenerator = BlockIDGenerator.getInstance();
 	}
 
 	/**
 	 * Create a block of a certain BlockType.
-	 * @param 	type
-	 * 			The BlockType of which a block must be added.
+	 * 
+	 * @param type The BlockType of which a block must be added.
 	 */
 	public Block createBlock(BlockType type) {
 		String blockId = blockIDGenerator.generateBlockID();
@@ -39,6 +40,11 @@ public class BlockFactory {
 			return new ActionBlock(blockId, type);
 		case CONDITION:
 			return new ConditionBlock(blockId, type);
+		case DEFINITION:
+			new BlockType("Call "+ blockId, BlockCategory.CALL,blockId);
+			return new DefinitionBlock(blockId);
+		case CALL:
+			return new CallFunctionBlock(blockId,type);
 		default:
 			return null;
 		}
