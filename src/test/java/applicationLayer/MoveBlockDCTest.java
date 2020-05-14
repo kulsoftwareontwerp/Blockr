@@ -2,48 +2,29 @@ package applicationLayer;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 
-import domainLayer.blocks.IfBlock;
-import domainLayer.blocks.NotBlock;
-import domainLayer.blocks.WhileBlock;
-import exceptions.InvalidBlockConnectionException;
-import exceptions.NoSuchConnectedBlockException;
-import types.BlockType;
+import commands.*;
 import types.ConnectionType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MoveBlockDCTest {
 	
 	private ArrayList<ConnectionType> connectionTypes = new ArrayList<ConnectionType>();
-	private ArrayList<BlockType> executableBlockTypes = new ArrayList<BlockType>();
-	private ArrayList<BlockType> assessableBlockTypes = new ArrayList<BlockType>();
-	private Set<String> blockIdsInRepository = new HashSet<String>();
 	
 	@Mock(name = "gameWorld")
 	private GameWorld gameWorld;
-
+	@Spy
+	private CommandHandler handler;
 	@Mock (name = "gameController")
 	GameController gameController;
 	@Mock(name = "blockController")
@@ -170,12 +151,15 @@ public class MoveBlockDCTest {
 
 			dc.moveBlock("1", "2", "3", connectionType);
 			verify(mockBlockController).moveBlock("1", "2", "3", connectionType);
+			
+			verify(handler,atLeast(2)).handle(any(MoveBlockCommand.class));
 		}
 		
 		dc.moveBlock("1", null, "", ConnectionType.NOCONNECTION);
-		
 		dc.moveBlock("1", "", "", ConnectionType.NOCONNECTION);
+		verify(handler,atLeast(2)).handle(any(MoveBlockCommand.class));
 		verify(mockBlockController,times(2)).moveBlock("1", "", "", ConnectionType.NOCONNECTION);
+
 	}
 
 		
