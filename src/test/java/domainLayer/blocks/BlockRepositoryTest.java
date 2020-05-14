@@ -552,10 +552,6 @@ public class BlockRepositoryTest {
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#moveBlock(java.lang.String, java.lang.String, types.ConnectionType)}.
 	 */
-	@Test
-	public void testMoveBlock() {
-		fail("Not yet implemented");
-	}
 
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectedBlockBeforeRemove(String)}.

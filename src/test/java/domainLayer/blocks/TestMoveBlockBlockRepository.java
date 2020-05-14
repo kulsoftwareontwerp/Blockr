@@ -35,7 +35,7 @@ import types.BlockType;
 import types.ConnectionType;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MoveBlockBRTest {
+public class TestMoveBlockBlockRepository {
 
 	private ArrayList<ConnectionType> connectionTypes = new ArrayList<ConnectionType>();
 
@@ -1304,7 +1304,7 @@ public class MoveBlockBRTest {
 
 		ArrayList<ConnectionType> connectionTypesB;
 
-		String excMessage = "The requested block doesn't exist in the domain.";
+		String excMessage = "The requested block doesn't exist in the domain";
 
 		connectionTypesB = new ArrayList<ConnectionType>();
 
@@ -1676,7 +1676,7 @@ public class MoveBlockBRTest {
 		}).when(blockRepository).getConnectedParentIfExists(any());
 
 		blockRepository.moveBlock(movedActionBlock.getBlockId(), movedActionBlock.getBlockId(), "" , ConnectionType.NOCONNECTION);
-		verify(connectedMoveForwardBlockA).setNextBlock(null);
+		verify(connectedMoveForwardBlockA,times(2)).setNextBlock(null);
 		verify(mockHeadBlocks).add(movedActionBlock);
 	}
 
@@ -1833,7 +1833,7 @@ public class MoveBlockBRTest {
 
 		blockRepository.moveBlock(movedNotBlock.getBlockId(), movedNotBlock.getBlockId(), "" , ConnectionType.NOCONNECTION);
 		verify(mockHeadBlocks).add(movedNotBlock);
-		verify(connectedNotBlockA).setOperand(null);
+		verify(connectedNotBlockA,times(2)).setOperand(null);
 	}
 	
 	@Test
