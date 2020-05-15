@@ -55,7 +55,6 @@ public class ExecuteBlockCommandTest {
 	 */
 	@Test
 	public void testExecuteBlockCommand_Positive() {
-//		ExecuteBlockCommand command = new ExecuteBlockCommand(gameController, actionBlock);
 		try {
 			Field gameControllerField = ExecuteBlockCommand.class.getDeclaredField("gameController");
 			gameControllerField.setAccessible(true);
@@ -122,20 +121,3 @@ public class ExecuteBlockCommandTest {
 		}		
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

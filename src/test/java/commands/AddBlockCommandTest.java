@@ -137,20 +137,3 @@ public class AddBlockCommandTest {
 		verify(blockController,atLeastOnce()).removeBlock("blockId", false);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

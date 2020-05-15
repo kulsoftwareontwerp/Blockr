@@ -3,8 +3,6 @@ package commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -14,20 +12,15 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 
 import applicationLayer.BlockController;
-import applicationLayer.GameController;
-import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.Block;
 import domainLayer.blocks.IfBlock;
 import types.BlockSnapshot;
 import types.ConnectionType;
-import types.ExecutionSnapshot;
 
 public class MoveBlockCommandTest {
 	
@@ -156,20 +149,3 @@ public class MoveBlockCommandTest {
 		}		
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
