@@ -6,7 +6,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({ CommandHandlerTest.class, AddBlockCommandTest.class, ExecuteBlockCommandTest.class, 
-	MoveBlockCommandTest.class, RemoveBlockCommand.class })
+	MoveBlockCommandTest.class, RemoveBlockCommandTest.class, ResetCommandTest.class })
 public class Commands {
 
 }
