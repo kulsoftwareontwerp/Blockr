@@ -8,23 +8,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
-import java.util.Stack;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-
-import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
 
 import applicationLayer.BlockController;
 import domainLayer.blocks.Block;
 import domainLayer.blocks.IfBlock;
-import domainLayer.gamestates.InExecutionState;
 import types.BlockSnapshot;
 import types.BlockType;
 import types.ConnectionType;
@@ -127,7 +120,7 @@ public class AddBlockCommandTest {
 	}
 	
 	/**
-	 * Test method for {@link commands.AddBlockCommand#execute()}.
+	 * Test method for {@link commands.AddBlockCommand#undo()}.
 	 */
 	@Test
 	public void testUndo_Positive() {
