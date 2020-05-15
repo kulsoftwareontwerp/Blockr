@@ -74,7 +74,7 @@ public class ExecuteBlockCommandTest {
 	 * Test method for {@link commands.ExecuteBlockCommand#execute()}.
 	 */
 	@Test
-	public void testExecute_SnapshotNull_Positive() {
+	public void testExecute_Positive() {
 		when(gameController.performAction(actionBlock)).thenReturn(snapshotMock);
 		
 		command.execute();
