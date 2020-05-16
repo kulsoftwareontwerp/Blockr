@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
@@ -18,22 +17,13 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.objenesis.instantiator.annotations.Instantiator;
 
-import applicationLayer.BlockController;
 import applicationLayer.DomainController;
-import commands.AddBlockCommand;
-import domainLayer.blocks.Block;
-import domainLayer.blocks.IfBlock;
 import guiLayer.CanvasWindow;
 import guiLayer.types.GuiSnapshot;
-import types.BlockSnapshot;
-import types.BlockType;
-import types.ConnectionType;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DomainMoveCommandTest {
@@ -159,14 +149,3 @@ public class DomainMoveCommandTest {
 		verify(canvas,atLeastOnce()).setCurrentSnapshot(null);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
