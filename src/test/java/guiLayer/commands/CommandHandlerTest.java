@@ -19,6 +19,7 @@ import org.mockito.Spy;
 
 import applicationLayer.DomainController;
 import guiLayer.CanvasWindow;
+import guiLayer.shapes.Shape;
 import guiLayer.types.GuiSnapshot;
 
 public class CommandHandlerTest {
@@ -44,6 +45,8 @@ public class CommandHandlerTest {
 	private BlockCommand blockCommand;
 	@Mock
 	private ResetCommand resetCommand;
+	@Mock
+	private Shape shape;
 	
 	/**
 	 * @throws java.lang.Exception
@@ -255,6 +258,31 @@ public class CommandHandlerTest {
 		
 		verify(blockCommand,atLeastOnce()).execute();
 		assertTrue(executedBlockCommands.contains(blockCommand));
+	}
+	
+	/**
+	 * Test method for {@link guiLayer.commands.CommandHandler#addShapeToBeforeSnapshot(guiLayer.shapes.Shape)}.
+	 */
+	@Test
+	public void testAddShapeToBeforeSnapshot_CurrentlyHandledBlockCommandNotNull_Positive() {
+		ch.addShapeToBeforeSnapshot(shape);
+		
+		verify(mock,atLeastOnce()).addShapeToBeforeSnapshot(shape);
+	}
+	
+	/**
+	 * Test method for {@link guiLayer.commands.CommandHandler#addShapeToBeforeSnapshot(guiLayer.shapes.Shape)}.
+	 */
+	@Test
+	public void testAddShapeToBeforeSnapshot_CurrentlyHandledBlockCommandNull_Positive() {
+		Stack<BlockCommand> executedBlockCommands = new Stack<BlockCommand>();
+		executedBlockCommands.add(blockCommand);
+		CommandHandler commandHandler = new CommandHandler(canvas, executedBlockCommands, undoneBlockCommands, 
+				executedGameWorldCommands, undoneGameWorldCommands, null);
+		
+		commandHandler.addShapeToBeforeSnapshot(shape);
+		
+		verify(blockCommand,atLeastOnce()).addShapeToBeforeSnapshot(shape);
 	}
 	
 }
