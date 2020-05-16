@@ -5,7 +5,8 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ CommandHandlerTest.class, DomainMoveCommandTest.class, GuiMoveCommandTest.class})
+@SuiteClasses({ CommandHandlerTest.class, DomainMoveCommandTest.class, GuiMoveCommandTest.class,
+	ExecuteBlockCommandTest.class, ResetCommandTest.class})
 public class Commands {
 
 }

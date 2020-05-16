@@ -8,7 +8,8 @@ import events.Events;
 import guiLayer.GuiLayer;
 
 @RunWith(Suite.class)
-@SuiteClasses({ ApplicationLayer.class,DomainLayer.class,GuiLayer.class,Events.class,Commands.class})
+@SuiteClasses({ ApplicationLayer.class,DomainLayer.class,GuiLayer.class,Events.class,
+	Commands.class, guiLayer.commands.Commands.class})
 public class TestSuite {
 	
 }

@@ -28,6 +28,9 @@ import guiLayer.types.GuiSnapshot;
 @RunWith(MockitoJUnitRunner.class)
 public class ResetCommandTest {
 	
+	@Rule
+	public ExpectedException exceptionRule = ExpectedException.none();
+	
 	@Mock(name="controller")
 	private DomainController controller;
 	
@@ -100,5 +103,34 @@ public class ResetCommandTest {
 
 		verify(controller,atLeastOnce()).redo();
 	}
+	
+	
+	// Tests for GameWorldCommand
+	/**
+	 * Test method for {@link guiLayer.commands.GameWorldCommand#GameWorldCommand(DomainController)}.
+	 */
+	@Test
+	public void testGameWorldCommand_ControllerNull_IllegalArgumentException() {		
+		String excMessage = "A GameWorldCommand needs a DomainController.";
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage(excMessage);
+		
+		try {
+			ResetCommand command = new ResetCommand(null);
+		} catch (IllegalArgumentException e) {
+			assertEquals(excMessage, e.getMessage());
+		}
+		
+		ResetCommand command = new ResetCommand(null);
+	}
 
+	/**
+	 * Test method for {@link guiLayer.commands.GameWorldCommand#undo()}.
+	 */
+	@Test
+	public void testGameWorldCommandUndo_Positive() {
+		command.undo();
+		
+		verify(controller,atLeastOnce()).undo();
+	}
 }
