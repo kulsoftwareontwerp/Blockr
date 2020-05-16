@@ -1,15 +1,19 @@
 package guiLayer.commands;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.lang.reflect.Field;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -19,10 +23,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import applicationLayer.DomainController;
 import guiLayer.CanvasWindow;
+import guiLayer.shapes.Shape;
 import guiLayer.types.GuiSnapshot;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GuiMoveCommandTest {
+	
+	@Rule
+	public ExpectedException exceptionRule = ExpectedException.none();
 
 	@Mock(name="canvas")
 	private CanvasWindow canvas;
@@ -33,6 +41,9 @@ public class GuiMoveCommandTest {
 	
 	@Spy @InjectMocks
 	private GuiMoveCommand command;
+	
+	@Mock
+	private Shape shape;
 
 	
 	/**
@@ -93,5 +104,81 @@ public class GuiMoveCommandTest {
 		
 		verify(canvas,atLeastOnce()).placeShapes();
 		verify(canvas,atLeastOnce()).setCurrentSnapshot(null);
+	}
+	
+	
+	// Tests for abstract class BlockCommand
+	/**
+	 * Test method for {@link guiLayer.commands.BlockCommand#BlockCommand(CanvasWindow, GuiSnapshot, GuiSnapshot)}.
+	 */
+	@Test
+	public void testBlockCommand_CanvasNull_IllegalArgumentException() {
+		String excMessage = "A BlockCommand needs a CanvasWindow.";
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage(excMessage);
+		
+		try {
+			GuiMoveCommand command = new GuiMoveCommand(null, beforeSnapshot, afterSnapshot);
+		} catch (IllegalArgumentException e) {
+			assertEquals(excMessage, e.getMessage());
+		}
+		
+		GuiMoveCommand command = new GuiMoveCommand(null, beforeSnapshot, afterSnapshot);
+	}
+	
+	/**
+	 * Test method for {@link guiLayer.commands.BlockCommand#setAddedID(String)}.
+	 */
+	@Test
+	public void testSetAddedID_BeforeSnapshotNotNull_AfterSnapshotNotNull_Positive() {
+		command.setAddedID("id");
+		
+		verify(beforeSnapshot,atLeastOnce()).setID("id");
+		verify(afterSnapshot,atLeastOnce()).setID("id");
+	}
+	
+	/**
+	 * Test method for {@link guiLayer.commands.BlockCommand#setAddedID(String)}.
+	 */
+	@Test
+	public void testSetAddedID_BeforeSnapshotNull_AfterSnapshotNull_Positive() {
+		GuiMoveCommand command = new GuiMoveCommand(canvas, null, null);
+		
+		command.setAddedID("id");
+		
+		verifyNoInteractions(beforeSnapshot);
+		verifyNoInteractions(afterSnapshot);
+	}
+	
+	/**
+	 * Test method for {@link guiLayer.commands.BlockCommand#setAfterActionHeight(String, int)}.
+	 */
+	@Test
+	public void testSetAfterActionHeight_AfterSnapshotNotNull_Positive() {
+		command.setAfterActionHeight("id", 10);
+		
+		verify(afterSnapshot,atLeastOnce()).setHeight("id", 10);
+	}
+	
+	/**
+	 * Test method for {@link guiLayer.commands.BlockCommand#setAfterActionHeight(String, int)}.
+	 */
+	@Test
+	public void testSetAfterActionHeight_AfterSnapshotNull_Positive() {
+		GuiMoveCommand command = new GuiMoveCommand(canvas, beforeSnapshot, null);
+		
+		command.setAfterActionHeight("id", 10);
+		
+		verifyNoInteractions(afterSnapshot);
+	}
+	
+	/**
+	 * Test method for {@link guiLayer.commands.BlockCommand#addShapeToBeforeSnapshot(guiLayer.shapes.Shape)}.
+	 */
+	@Test
+	public void testAddShapeToBeforeSnapshot_Positive() {
+		command.addShapeToBeforeSnapshot(shape);
+		
+		verify(beforeSnapshot,atLeastOnce()).addShapeToSnapshot(shape);
 	}
 }
