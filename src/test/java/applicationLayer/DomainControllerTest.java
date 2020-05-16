@@ -7,13 +7,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,7 +32,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
@@ -40,7 +45,7 @@ import commands.AddBlockCommand;
 import commands.BlockCommand;
 import commands.CommandHandler;
 import commands.RemoveBlockCommand;
-
+import types.BlockCategory;
 import types.BlockType;
 import types.ConnectionType;
 import types.DynaEnum;
@@ -126,7 +131,7 @@ public class DomainControllerTest {
 		} catch (IllegalArgumentException e) {
 			pass = e.getMessage().equals(excMessage);
 		}
-		assertTrue("addBlock failed in the domainController for combination: BlockType=" + bt.toString()
+		assertTrue("addBlock failed in the domainController for combination: BlockType=" + bt
 				+ " ConnectedBlockId=" + cb + " ConnectionType=" + ct.toString(), pass);
 	}
 
@@ -137,11 +142,7 @@ public class DomainControllerTest {
 	@Test
 	public void testAddBlockNegativeNoBlockType() {
 		String excMessage = "No blockType given.";
-		exceptionRule.expect(IllegalArgumentException.class);
-		exceptionRule.expectMessage(excMessage);
-
 		for (ConnectionType c : ConnectionType.values()) {
-			dc.addBlock(null, "", c);
 			assertExceptionDCAddBlockCombination(null, "", c, excMessage);
 			verifyNoInteractions(commandHandler);
 		}
@@ -154,11 +155,8 @@ public class DomainControllerTest {
 	@Test
 	public void testAddBlockNegativeConnectedBlockNoConnection() {
 		String excMessage = "No connection given for connected block.";
-		exceptionRule.expect(IllegalArgumentException.class);
-		exceptionRule.expectMessage(excMessage);
 
 		for (DynaEnum<? extends DynaEnum<?>> b : BlockType.values()) {
-			dc.addBlock((BlockType) b, "connectedBlockId", ConnectionType.NOCONNECTION);
 			assertExceptionDCAddBlockCombination((BlockType) b, "connectedBlockId", ConnectionType.NOCONNECTION,
 					excMessage);
 			verifyNoInteractions(commandHandler);
@@ -180,13 +178,19 @@ public class DomainControllerTest {
 		verifyNoInteractions(commandHandler);
 	}
 	
+	@Test
+	public void testAddNegativeBlockCaterogry() {
+		String excMessage = "When the blockType is Call there must be a definitionBlockID present";
+		
+		BlockType mockType = Mockito.spy(new BlockType("Call 1", BlockCategory.CALL));
+		assertExceptionDCAddBlockCombination(mockType, null, ConnectionType.NOCONNECTION, excMessage);
+		verifyNoInteractions(commandHandler);
+		BlockType.removeBlockType("1");
+	}
+	
 	/**
 	 * Test method for {@link applicationLayer.DomainController#moveBlock(java.lang.String, java.lang.String, java.lang.String, types.ConnectionType)}.
 	 */
-	@Test
-	public void testMoveBlock() {
-		fail("Not yet implemented");
-	}
 
 	/**
 	 * Test method for

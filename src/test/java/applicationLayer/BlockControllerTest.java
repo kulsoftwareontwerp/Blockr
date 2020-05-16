@@ -7,47 +7,24 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.notNull;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
-import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
-
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.rules.ExpectedException;
+import org.mockito.*;
 
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
@@ -58,6 +35,7 @@ import domainLayer.blocks.Block;
 import domainLayer.blocks.BlockRepository;
 import domainLayer.blocks.ConditionBlock;
 import domainLayer.blocks.ControlBlock;
+import domainLayer.blocks.DefinitionBlock;
 import domainLayer.blocks.IfBlock;
 import domainLayer.blocks.NotBlock;
 import domainLayer.blocks.OperatorBlock;
@@ -73,6 +51,7 @@ import events.ResetExecutionEvent;
 import events.UpdateGameStateEvent;
 
 import exceptions.InvalidBlockTypeException;
+import exceptions.MaxNbOfBlocksReachedException;
 import exceptions.NoSuchConnectedBlockException;
 import types.BlockCategory;
 import types.BlockSnapshot;
@@ -134,6 +113,8 @@ public class BlockControllerTest {
 
 
 	private WhileBlock newWhileBlock;
+	
+	private DefinitionBlock newDefinitionBlock;
 
 
 	
@@ -166,6 +147,7 @@ public class BlockControllerTest {
 		blockIdsInRepository.add("controlBlock");
 		blockIdsInRepository.add("actionBlock");
 		blockIdsInRepository.add("noBlock");
+		blockIdsInRepository.add("definitionBlock");
 
 
 		connectedActionBlock = spy(new ActionBlock("connectedActionBlock",new BlockType("random", BlockCategory.ACTION)));
@@ -181,6 +163,8 @@ public class BlockControllerTest {
 
 		newNotBlock = spy(new NotBlock("newNotBlock"));
 		newWhileBlock = spy(new WhileBlock("newWhileBlock"));
+		
+		newDefinitionBlock = spy(new DefinitionBlock("newDefinitionBlock"));
 
 		allBlocksInTest.add(connectedActionBlock);
 		allBlocksInTest.add(connectedControlBlock);
@@ -190,6 +174,7 @@ public class BlockControllerTest {
 		allBlocksInTest.add(newNotBlock);
 		allBlocksInTest.add(newActionBlock);
 		allBlocksInTest.add(newWhileBlock);	
+		allBlocksInTest.add(newDefinitionBlock);
 		
 		
 		
@@ -213,6 +198,8 @@ public class BlockControllerTest {
 					}
 				case OPERATOR:
 					return newNotBlock.getBlockId();
+				case DEFINITION:
+					return newDefinitionBlock.getBlockId();
 				default:
 					return null;
 				
@@ -275,14 +262,13 @@ public class BlockControllerTest {
 	 */
 	@Test
 	public void testAddBlockPositiveMaxNbOfBlocksReached() {
-
-		
 		ArgumentCaptor<BlockType> blockType = ArgumentCaptor.forClass(BlockType.class);
 		ArgumentCaptor<ConnectionType> connectionType = ArgumentCaptor.forClass(ConnectionType.class);
 		ArgumentCaptor<String> connectedBlock = ArgumentCaptor.forClass(String.class);
-
+		
 		for (DynaEnum<? extends DynaEnum<?>> b : BlockType.values()) {
 			for (ConnectionType c : ConnectionType.values()) {
+				
 				when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(false, true);
 				String cb = "connectedActionBlock";
 				BlockSnapshot s = bc.addBlock((BlockType) b, cb, c);
@@ -308,7 +294,112 @@ public class BlockControllerTest {
 			}
 		}
 	}
+	
+	@Test
+	public void testAddBlockMaxNumberOfBlocksReached() {
+		String excMessage = "The maximum number of blocks has already been reached.";
+		exceptionRule.expect(MaxNbOfBlocksReachedException.class);
+		exceptionRule.expectMessage(excMessage);
+		
+		when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(true);
+		bc.addBlock(mock(BlockType.class), null, ConnectionType.NOCONNECTION);
+	}
+	
+	private void assertExceptionBCAddBlockCombination(BlockType bt, String cb, ConnectionType ct, String excMessage) {
+		boolean pass = false;
+		try {
+			bc.addBlock(bt, cb, ct);
+		} catch (NoSuchConnectedBlockException e) {
+			pass = e.getMessage().equals(excMessage);
+		}
+		assertTrue("addBlock failed in the blockController for combination: BlockType=" + bt
+				+ " ConnectedBlockId=" + cb + " ConnectionType=" + ct.toString(), pass);
+	}
+	
+	@Test
+	public void testAddBlockNegativeDefinitionBlockNull() {
+		String excMessage = "There is no DefinitionBlock in the domain with the given definitionBlockID.";
+		
+		BlockType mockType = Mockito.spy(new BlockType("Call 1", BlockCategory.CALL));
+		assertExceptionBCAddBlockCombination(mockType, null, ConnectionType.NOCONNECTION, excMessage);
+		verifyNoInteractions(mockGuiListener);
+		verifyNoInteractions(mockDomainListener);
+		BlockType.removeBlockType("1");
+	}
 
+	@Test
+	public void testFireBlockAddedControlBlock() {
+		when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
+		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
+		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
+		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
+		
+		BlockSnapshot bsnap = mock(BlockSnapshot.class);
+		when(bsnap.getBlock()).thenReturn(controlBlock);
+
+		bc.fireBlockAdded(bsnap);
+
+//		verify(actionBlockSpy.getNextBlock());
+		verify(controlBlock,times(2)).getConditionBlock();
+		verify(controlBlock,times(2)).getFirstBlockOfBody();
+//		verify(connectedOperatorBlock.getOperand());
+	}
+	
+	@Test
+	public void testFireBlockAddedActionBlock() {
+		when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
+		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
+		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
+		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
+	
+		BlockSnapshot bsnap = mock(BlockSnapshot.class);
+		when(bsnap.getBlock()).thenReturn(actionBlockSpy);
+
+		bc.fireBlockAdded(bsnap);
+
+		verify(actionBlockSpy).getNextBlock();
+//		verify(controlBlock.getConditionBlock());
+//		verify(controlBlock.getFirstBlockOfBody());
+//		verify(connectedOperatorBlock.getOperand());
+	}
+	
+	
+	@Test
+	public void testFireBlockAddedOperandBlock() {
+		when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
+		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
+		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
+		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
+		
+		BlockSnapshot bsnap = mock(BlockSnapshot.class);
+		when(bsnap.getBlock()).thenReturn(connectedOperatorBlock);
+
+		bc.fireBlockAdded(bsnap);
+
+//		verify(actionBlockSpy.getNextBlock());
+//		verify(controlBlock.getConditionBlock());
+//		verify(controlBlock.getFirstBlockOfBody());
+		verify(connectedOperatorBlock,times(2)).getOperand();
+	}
+	
+	
+	@Ignore
+	public void testFireBlockAddedRecursively() {
+		when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
+		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
+		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
+		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
+		
+		BlockSnapshot bsnap = mock(BlockSnapshot.class);
+		when(bsnap.getBlock()).thenReturn(connectedOperatorBlock);
+
+		bc.fireBlockAdded(bsnap);
+		
+		verify(actionBlockSpy).getNextBlock();
+		verify(controlBlock).getConditionBlock();
+		verify(controlBlock).getFirstBlockOfBody();
+		verify(connectedOperatorBlock).getOperand();
+	}
 	/**
 	 * Test method for {@link applicationLayer.BlockController#getMaxNbOfBlocks()}.
 	 */
@@ -488,11 +579,6 @@ public class BlockControllerTest {
 	/**
 	 * Test method for {@link applicationLayer.BlockController#moveBlock(java.lang.String, java.lang.String, java.lang.String, types.ConnectionType)}.
 	 */
-	@Test
-	public void testMoveBlock() {
-		fail("Not yet implemented");
-	}
-
 	/**
 	 * Test method for {@link applicationLayer.BlockController#getAllBlockIDsUnderneath(java.lang.String)}.
 	 */
