@@ -357,7 +357,7 @@ public class BlockControllerTest {
 
 		bc.fireBlockAdded(bsnap);
 
-		verify(actionBlockSpy).getNextBlock();
+		verify(actionBlockSpy,times(2)).getNextBlock();
 //		verify(controlBlock.getConditionBlock());
 //		verify(controlBlock.getFirstBlockOfBody());
 //		verify(connectedOperatorBlock.getOperand());
