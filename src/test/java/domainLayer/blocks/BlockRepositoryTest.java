@@ -56,6 +56,7 @@ public class BlockRepositoryTest {
 	private OperatorBlock notBlock;
 	private OperatorBlock notBlock2;
 	private ActionBlock actionBlockNotInHeadBlocks;
+	private DefinitionBlock definitionBlock;
 	
 	/**
 	 * @throws java.lang.Exception
@@ -69,11 +70,13 @@ public class BlockRepositoryTest {
 		notBlock = spy(new NotBlock("notBlockId"));
 		notBlock2 = spy(new NotBlock("notBlock2Id"));
 		actionBlockNotInHeadBlocks = spy(new ActionBlock("actionBlockNotInHeadBlocksId", new BlockType("Action", BlockCategory.ACTION)));
+		definitionBlock = spy(new DefinitionBlock("definitionBlockId"));
 		
 		allBlocks.put(actionBlock.getBlockId(), actionBlock);
 		allBlocks.put(ifBlock.getBlockId(), ifBlock);
 		allBlocks.put(notBlock.getBlockId(), notBlock);
 		allBlocks.put(movedConditionBlock.getBlockId(), movedConditionBlock);
+		allBlocks.put(definitionBlock.getBlockId(), definitionBlock);
 		
 		headBlocks.add(actionBlock);
 		
@@ -550,6 +553,21 @@ public class BlockRepositoryTest {
 	}
 	
 	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#removeBlock(java.lang.String, Boolean)}.
+	 */
+	@Test
+	public void testRemoveBlock_BlockDefinitionBlock_Positive() {
+		String removedBlockId = "removedBlockId";
+		Mockito.doReturn(definitionBlock).when(blockRepo).getBlockByID(removedBlockId);
+		
+		blockRepo.removeBlock(removedBlockId, true);
+		
+		// BlockType.removeBlockType("definitionBlockId") should be verified, but as of now,
+		//	Mockito does not support testing for static methods.
+//		verify(BlockType,atLeastOnce()).removeBlockType("definitionBlockId");
+	}
+	
+	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#moveBlock(java.lang.String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
@@ -768,6 +786,21 @@ public class BlockRepositoryTest {
 	}
 	
 	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectedParentIfExists(java.lang.String)}.
+	 */
+	@Test
+	public void testGetConnectedParentIfExists_BlockDefinitionBlock_Positive() {
+		String blockIdParam = "movedActionBlockId";
+		Mockito.doReturn(movedActionBlock).when(blockRepo).getBlockByID(blockIdParam);
+		when(definitionBlock.getFirstBlockOfBody()).thenReturn(movedActionBlock);
+		
+		ArrayList<String> expectedConnectedBlockInfo = new ArrayList<String>();
+		expectedConnectedBlockInfo.add("BODY");
+		expectedConnectedBlockInfo.add("definitionBlockId");
+		assertEquals(expectedConnectedBlockInfo, blockRepo.getConnectedParentIfExists(blockIdParam));
+	}
+	
+	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidProgram()}.
 	 */
 	@Test
@@ -796,82 +829,60 @@ public class BlockRepositoryTest {
 	}
 
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#CheckIfChainIsValid(domainLayer.blocks.Block)}.
+	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidProgram()}.
+	 */
+	@Test
+	public void testCheckIfValidProgram_NotValidBreak_Positive() {
+		HashSet<Block> headBlocks = new HashSet<Block>(Arrays.asList(actionBlock));
+		HashMap<String, Block> allBlocks = new HashMap<String, Block>();
+		allBlocks.put(actionBlock.getBlockId(), actionBlock);
+		blockRepo = spy(new BlockRepository(headBlocks, allBlocks));
+		Mockito.doReturn(false).when(blockRepo).checkIfChainIsValid(actionBlock);
+		
+		assertFalse(blockRepo.checkIfValidProgram());
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfChainIsValid(domainLayer.blocks.Block)}.
 	 */
 	@Test
 	public void testCheckIfChainIsValid_blockNull_Positive() {
-		assertTrue(blockRepo.CheckIfChainIsValid(null));
+		assertTrue(blockRepo.checkIfChainIsValid(null));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfChainIsValid(domainLayer.blocks.Block)}.
+	 */
+	@Test
+	public void testCheckIfChainIsValid_blockNotBodyCavityBlock_Positive() {
+		when(actionBlock.getNextBlock()).thenReturn(null);
+		assertTrue(blockRepo.checkIfChainIsValid(actionBlock));
 	}
 	
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#CheckIfChainIsValid(domainLayer.blocks.Block)}.
 	 */
 	@Test
-	public void testCheckIfChainIsValid_blockNotControlBlock_Positive() {
-		when(actionBlock.getNextBlock()).thenReturn(null);
-		assertTrue(blockRepo.CheckIfChainIsValid(actionBlock));
+	public void testCheckIfChainIsValid_blockControlBlock_FirstBlockOfBodyNotValid_Positive() {
+		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlock);
+		Mockito.doReturn(false).when(blockRepo).checkIfChainIsValid(actionBlock);
+		assertFalse(blockRepo.checkIfChainIsValid(ifBlock));
+	}
+
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#CheckIfChainIsValid(domainLayer.blocks.Block)}.
+	 */
+	@Test
+	public void testCheckIfChainIsValid_blockControlBlock_ConditionBlockNotValid_Positive() {
+		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlock);
+		Mockito.doReturn(true).when(blockRepo).checkIfChainIsValid(actionBlock);
+		when(ifBlock.getConditionBlock()).thenReturn(movedConditionBlock);
+		Mockito.doReturn(false).when(blockRepo).checkIfValidStatement(movedConditionBlock);
+
+		
+		assertFalse(blockRepo.checkIfChainIsValid(ifBlock));
 	}
 	
-//	/**
-//	 * Test method for {@link domainLayer.blocks.BlockRepository#CheckIfChainIsValid(domainLayer.blocks.Block)}.
-//	 */
-//	@Test
-//	public void testCheckIfChainIsValid_blockControlBlock_ValidControlBlock_Positive() {
-//		Mockito.doReturn(true).when(blockRepo).checkIfValidControlBlock(ifBlock);
-//		when(ifBlock.getNextBlock()).thenReturn(null);
-//		assertTrue(blockRepo.CheckIfChainIsValid(ifBlock));
-//	}
-	
-//	/**
-//	 * Test method for {@link domainLayer.blocks.BlockRepository#CheckIfChainIsValid(domainLayer.blocks.Block)}.
-//	 */
-//	@Test
-//	public void testCheckIfChainIsValid_blockControlBlock_InValidControlBlock_Positive() {
-//		Mockito.doReturn(false).when(blockRepo).checkIfValidControlBlock(ifBlock);
-//		when(ifBlock.getNextBlock()).thenReturn(null);
-//		assertFalse(blockRepo.CheckIfChainIsValid(ifBlock));
-//	}
-
-//	/**
-//	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
-//	 */
-//	@Test
-//	public void testCheckIfValidControlBlock_ConditionBlockOperatorBlock_Positive() {
-//		when(ifBlock.getConditionBlock()).thenReturn(notBlock);
-//		Mockito.doReturn(true).when(blockRepo).checkIfValidStatement(notBlock);
-//		assertTrue(blockRepo.checkIfValidControlBlock(ifBlock));
-//	}
-//	
-//	/**
-//	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
-//	 */
-//	@Test
-//	public void testCheckIfValidControlBlock_ConditionBlockNotOperatorBlock_FirstBlockOfBodyNotNull_Positive() {
-//		when(ifBlock.getConditionBlock()).thenReturn(movedConditionBlock);
-//		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlock);
-//		Mockito.doReturn(true).when(blockRepo).CheckIfChainIsValid(actionBlock);
-//		assertTrue(blockRepo.checkIfValidControlBlock(ifBlock));
-//	}
-//	
-//	/**
-//	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
-//	 */
-//	@Test
-//	public void testCheckIfValidControlBlock_ConditionBlockNotOperatorBlock_FirstBlockOfBodyNull_Positive() {
-//		when(ifBlock.getConditionBlock()).thenReturn(movedConditionBlock);
-//		when(ifBlock.getFirstBlockOfBody()).thenReturn(null);
-//		assertTrue(blockRepo.checkIfValidControlBlock(ifBlock));
-//	}
-	
-//	/**
-//	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidControlBlock(domainLayer.blocks.ControlBlock)}.
-//	 */
-//	@Test
-//	public void testCheckIfValidControlBlock_ConditionBlockNull_Positive() {
-//		when(ifBlock.getConditionBlock()).thenReturn(null);
-//		assertFalse(blockRepo.checkIfValidControlBlock(ifBlock));
-//	}	
-
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfValidStatement(domainLayer.blocks.Block)}.
 	 */
@@ -909,6 +920,19 @@ public class BlockRepositoryTest {
 		blockRepo = new BlockRepository(headBlocks, allBlocks);
 		
 		assertEquals(actionBlock, blockRepo.findFirstBlockToBeExecuted());
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#findFirstBlockToBeExecuted()}.
+	 */
+	@Test
+	public void testFindFirstBlockToBeExecuted_NotPresent_Positive() {
+		HashSet<Block> headBlocks = new HashSet<Block>();
+		HashMap<String, Block> allBlocks = new HashMap<String, Block>();
+		allBlocks.put(actionBlock.getBlockId(), actionBlock);
+		blockRepo = new BlockRepository(headBlocks, allBlocks);
+		
+		assertEquals(null, blockRepo.findFirstBlockToBeExecuted());
 	}
 
 	/**
@@ -1009,6 +1033,9 @@ public class BlockRepositoryTest {
 		
 		assertEquals(firstControlBlocks, blockRepo.getAllHeadControlBlocks());		
 	}
+	
+	
+	
 
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getEnclosingBodyCavityBlock(domainLayer.blocks.ExecutableBlock)}.

@@ -876,7 +876,7 @@ public class BlockRepository {
 		Boolean valid = true;
 		for (Block block : headBlocks) {
 			headBlock = allBlocks.get(block.getBlockId());
-			valid = CheckIfChainIsValid(headBlock);
+			valid = checkIfChainIsValid(headBlock);
 			if (!valid) {
 				break;
 			}
@@ -891,10 +891,10 @@ public class BlockRepository {
 	 * @param nextBlockInChain First block of the chain to check.
 	 * @return A flag indicating if the chain is valid or not.
 	 */
-	public boolean CheckIfChainIsValid(Block nextBlockInChain) {
+	public boolean checkIfChainIsValid(Block nextBlockInChain) {
 		while (nextBlockInChain != null) {
 			if (nextBlockInChain instanceof BodyCavityBlock) {
-				if (!CheckIfChainIsValid(nextBlockInChain.getFirstBlockOfBody())) {
+				if (!checkIfChainIsValid(nextBlockInChain.getFirstBlockOfBody())) {
 					return false;
 				}
 			}
@@ -909,26 +909,6 @@ public class BlockRepository {
 		}
 		return true;
 	}
-
-//	/**
-//	 * Method used to check if ControlBlock is in a valid state.
-//	 * 
-//	 * @param block The controlblock that needs to be checked.
-//	 * @return A flag indicating if the controlBlock is in a valid state or not.
-//	 */
-//	boolean checkIfValidControlBlock(ControlBlock block) {
-//		if (block.getConditionBlock() == null)
-//			return false;
-//		if (block.getConditionBlock() instanceof OperatorBlock)
-//			return checkIfValidStatement(block.getConditionBlock());
-//		
-//		
-//		
-//		if (block.getFirstBlockOfBody() != null) {
-//			return CheckIfChainIsValid(block.getFirstBlockOfBody());
-//		}
-//		return true;
-//	}
 
 	/**
 	 * method used to check if a chain of operand finishes with a conditionBlock.
