@@ -23,12 +23,15 @@ import org.junit.rules.ExpectedException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
 import com.kuleuven.swop.group17.GameWorldApi.Action;
 
 import applicationLayer.GameController;
+import exceptions.NoSuchConnectedBlockException;
 import types.BlockCategory;
+import types.BlockSnapshot;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -57,6 +60,10 @@ public class BlockRepositoryTest {
 	private OperatorBlock notBlock2;
 	private ActionBlock actionBlockNotInHeadBlocks;
 	private DefinitionBlock definitionBlock;
+	private CallFunctionBlock callBlock;
+	
+	@Mock
+	private BlockSnapshot blockSnapshot;
 	
 	/**
 	 * @throws java.lang.Exception
@@ -71,16 +78,21 @@ public class BlockRepositoryTest {
 		notBlock2 = spy(new NotBlock("notBlock2Id"));
 		actionBlockNotInHeadBlocks = spy(new ActionBlock("actionBlockNotInHeadBlocksId", new BlockType("Action", BlockCategory.ACTION)));
 		definitionBlock = spy(new DefinitionBlock("definitionBlockId"));
+		callBlock = spy(new CallFunctionBlock("callBlockId", new BlockType("Call", BlockCategory.CALL, "definitionBlockId")));
 		
 		allBlocks.put(actionBlock.getBlockId(), actionBlock);
 		allBlocks.put(ifBlock.getBlockId(), ifBlock);
 		allBlocks.put(notBlock.getBlockId(), notBlock);
 		allBlocks.put(movedConditionBlock.getBlockId(), movedConditionBlock);
 		allBlocks.put(definitionBlock.getBlockId(), definitionBlock);
+		allBlocks.put(callBlock.getBlockId(), callBlock);
 		
 		headBlocks.add(actionBlock);
+		headBlocks.add(definitionBlock);
 		
 		blockRepo = spy(new BlockRepository(headBlocks, allBlocks));
+		
+		MockitoAnnotations.initMocks(this);
 	}
 
 	/**
@@ -107,12 +119,12 @@ public class BlockRepositoryTest {
 	}
 	
 	/**
-	 * Test method for {@link domainLayer.blocks.BlockRepository#}.
+	 * Test method for {@link domainLayer.blocks.BlockRepository#checkIfConnectionIsOpen(Block, ConnectionType, Block)}.
 	 */
 	@Test
 	public void testCheckIfConnectionIsOpen_Up_ConnectedBlockNull_NoSuchConnectedBlockException() {
 		String excMessage = "The requested blockId does not exist in the domain.";
-		exceptionRule.expect(NullPointerException.class);
+		exceptionRule.expect(NoSuchConnectedBlockException.class);
 		exceptionRule.expectMessage(excMessage);
 		
 		blockRepo.checkIfConnectionIsOpen(null, ConnectionType.UP, null);
@@ -955,20 +967,19 @@ public class BlockRepositoryTest {
 		assertTrue(blockRepo.checkIfMaxNbOfBlocksReached());
 	}
 
-	// TODO: how to test this?
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getInstance()}.
 	 */
 	@Test
 	public void testGetInstance() {
-		fail("Not yet implemented");
+		assertTrue(BlockRepository.getInstance() instanceof BlockRepository);
 	}
 
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getAllBlockIDsUnderneath(domainLayer.blocks.Block)}.
 	 */
 	@Test
-	public void testGetAllBlockIDsUnderneathBlock() {
+	public void testGetAllBlockIDsUnderneathBlock_Positive() {
 		Set<String> blockIDsUnderNeath = new HashSet<String>();
 		blockIDsUnderNeath.add("BlockIdUnderneath");
 		Set<Block> blocksUnderNeath = new HashSet<Block>();
@@ -1001,7 +1012,7 @@ public class BlockRepositoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getAllBlockIDsInBody(domainLayer.blocks.ControlBlock)}.
 	 */
 	@Test
-	public void testGetAllBlockIDsInBody() {
+	public void testGetAllBlockIDsInBody_Positive() {
 		Set<String> blockIDsInBody = new HashSet<String>();
 		blockIDsInBody.add("BlockIdInBody");
 		Set<Block> connectedBlocks = new HashSet<Block>();
@@ -1018,7 +1029,7 @@ public class BlockRepositoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getMaxNbOfBlocks()}.
 	 */
 	@Test
-	public void testGetMaxNbOfBlocks() {
+	public void testGetMaxNbOfBlocks_Positive() {
 		assertEquals(20, blockRepo.getMaxNbOfBlocks());
 	}
 
@@ -1026,7 +1037,7 @@ public class BlockRepositoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getAllHeadControlBlocks()}.
 	 */
 	@Test
-	public void testGetAllHeadControlBlocks() {
+	public void testGetAllHeadControlBlocks_Positive() {
 		Set<ControlBlock> firstControlBlocks = new HashSet<ControlBlock>();
 		firstControlBlocks.add(ifBlock);
 		when(actionBlock.getNextBlock()).thenReturn(ifBlock);
@@ -1034,8 +1045,16 @@ public class BlockRepositoryTest {
 		assertEquals(firstControlBlocks, blockRepo.getAllHeadControlBlocks());		
 	}
 	
-	
-	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getAllHeadControlBlocks()}.
+	 */
+	@Test
+	public void testGetAllDefinitionBlocks_Positive() {
+		Set<DefinitionBlock> definitionBlocks = new HashSet<DefinitionBlock>();
+		definitionBlocks.add(definitionBlock);
+		
+		assertEquals(definitionBlocks, blockRepo.getAllDefinitionBlocks());		
+	}	
 
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getEnclosingBodyCavityBlock(domainLayer.blocks.ExecutableBlock)}.
@@ -1110,6 +1129,7 @@ public class BlockRepositoryTest {
 	public void testGetAllHeadBlocks() {
 		Set<Block> headBlocks = new HashSet<Block>();
 		headBlocks.add(actionBlock);
+		headBlocks.add(definitionBlock);
 		
 		assertEquals(headBlocks, blockRepo.getAllHeadBlocks());
 	}
@@ -1121,7 +1141,200 @@ public class BlockRepositoryTest {
 	public void testGetBlockIdToPerformMoveOn() {
 		fail("Not yet implemented");
 	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedTrue_NoDefinitionNotRemoved_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(actionBlock);
+		Set<Block> connectedBlocks = new HashSet<Block>();
+		connectedBlocks.add(actionBlock);
+		connectedBlocks.add(definitionBlock);
+		Mockito.doReturn(null).when(blockRepo).getBlockByID("actionBlockId");
+		Mockito.doReturn(connectedBlocks).when(blockRepo).getAllBlocksConnectedToAndAfterACertainBlock(actionBlock);
 
+		assertTrue(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		assertFalse(headBlocks.contains(definitionBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedTrue_DefinitionAndRemoved_ContainsBlock_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(definitionBlock);
+		when(blockSnapshot.getConnectedBlockAfterSnapshot()).thenReturn(actionBlock);
+		Mockito.doReturn(null).when(blockRepo).getBlockByID("definitionBlockId");
+		
+		Set<String> blockIDsBelow = new HashSet<String>();
+		blockIDsBelow.add("actionBlockId");
+		Mockito.doReturn(blockIDsBelow).when(blockRepo).getAllBlockIDsBelowCertainBlock(definitionBlock);
+		
+		assertTrue(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		assertFalse(headBlocks.contains(actionBlock));
+		assertTrue(headBlocks.contains(definitionBlock));
+		assertTrue(allBlocks.containsValue(actionBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedTrue_DefinitionAndRemoved_DoesNotContainBlock_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(definitionBlock);
+		when(blockSnapshot.getConnectedBlockAfterSnapshot()).thenReturn(actionBlock);
+		Mockito.doReturn(null).when(blockRepo).getBlockByID("definitionBlockId");
+		
+		Set<String> blockIDsBelow = new HashSet<String>();
+		Mockito.doReturn(blockIDsBelow).when(blockRepo).getAllBlockIDsBelowCertainBlock(definitionBlock);
+		
+		// TODO: testing of deepReplace methods is too complex, but would be still needed here.
+		
+		assertTrue(blockRepo.restoreBlockSnapshot(blockSnapshot));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedFalse_ConnectedBlockBeforeAndAfterNull_Positive() {
+		assertFalse(blockRepo.restoreBlockSnapshot(blockSnapshot));
+	}
+
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedFalse_ConnectedBlockBeforeNotNull_If1True_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(movedConditionBlock);
+		when(blockSnapshot.getConnectedBlockBeforeSnapshot()).thenReturn(ifBlock);
+		when(ifBlock.getConditionBlock()).thenReturn(movedConditionBlock);		
+		
+		assertFalse(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		verify(ifBlock,atLeastOnce()).setConditionBlock(null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedFalse_ConnectedBlockBeforeNotNull_If2True_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(actionBlock);
+		when(blockSnapshot.getConnectedBlockBeforeSnapshot()).thenReturn(ifBlock);
+		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlock);		
+		
+		assertFalse(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		verify(ifBlock,atLeastOnce()).setFirstBlockOfBody(null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedFalse_ConnectedBlockBeforeNotNull_If3True_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(movedConditionBlock);
+		when(blockSnapshot.getConnectedBlockBeforeSnapshot()).thenReturn(notBlock);
+		when(notBlock.getOperand()).thenReturn(movedConditionBlock);		
+		
+		assertFalse(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		verify(notBlock,atLeastOnce()).setOperand(null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedFalse_ConnectedBlockBeforeNotNull_If4True_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(actionBlock);
+		when(blockSnapshot.getConnectedBlockBeforeSnapshot()).thenReturn(ifBlock);
+		when(ifBlock.getNextBlock()).thenReturn(actionBlock);		
+		
+		assertFalse(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		verify(ifBlock,atLeastOnce()).setNextBlock(null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedFalse_ConnectedBlockBeforeNotNull_If5True_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(ifBlock);
+		when(blockSnapshot.getConnectedBlockBeforeSnapshot()).thenReturn(movedConditionBlock);
+		when(ifBlock.getConditionBlock()).thenReturn(movedConditionBlock);		
+		
+		assertFalse(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		verify(ifBlock,atLeastOnce()).setConditionBlock(null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedFalse_ConnectedBlockBeforeNotNull_If6True_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(ifBlock);
+		when(blockSnapshot.getConnectedBlockBeforeSnapshot()).thenReturn(actionBlock);
+		when(ifBlock.getFirstBlockOfBody()).thenReturn(actionBlock);		
+		
+		assertFalse(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		verify(ifBlock,atLeastOnce()).setFirstBlockOfBody(null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedFalse_ConnectedBlockBeforeNotNull_If7True_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(notBlock);
+		when(blockSnapshot.getConnectedBlockBeforeSnapshot()).thenReturn(movedConditionBlock);
+		when(notBlock.getOperand()).thenReturn(movedConditionBlock);		
+		
+		assertFalse(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		verify(notBlock,atLeastOnce()).setOperand(null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedFalse_ConnectedBlockBeforeNotNull_If8True_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(ifBlock);
+		when(blockSnapshot.getConnectedBlockBeforeSnapshot()).thenReturn(actionBlock);
+		when(ifBlock.getNextBlock()).thenReturn(actionBlock);		
+		
+		assertFalse(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		verify(ifBlock,atLeastOnce()).setNextBlock(null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedFalse_ConnectedBlockAfterNotNull_AfterBlockInHeadBlocks_GetBlockInHeadBlocks_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(definitionBlock);
+		when(blockSnapshot.getConnectedBlockAfterSnapshot()).thenReturn(actionBlock);	
+		
+		assertFalse(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		assertTrue(allBlocks.containsValue(actionBlock));
+		assertTrue(headBlocks.contains(actionBlock));
+		assertFalse(headBlocks.contains(definitionBlock));
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#restoreBlockSnapshot(types.BlockSnapshot)}.
+	 */
+	@Test
+	public void testrestoreBlockSnapshot_IsRemovedFalse_ConnectedBlockAfterNotNull_AfterBlockNotInHeadBlocks_GetBlockNotInHeadBlocks_Positive() {
+		when(blockSnapshot.getBlock()).thenReturn(ifBlock);
+		when(blockSnapshot.getConnectedBlockAfterSnapshot()).thenReturn(notBlock);
+		Set<Block> changingBlocks = new HashSet<Block>();
+		changingBlocks.add(actionBlock);
+		when(blockSnapshot.getChangingBlocks()).thenReturn(changingBlocks);
+		
+		assertFalse(blockRepo.restoreBlockSnapshot(blockSnapshot));
+		assertFalse(headBlocks.contains(actionBlock));
+	}
+	
 	/**
 	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
 	 */
@@ -1220,4 +1433,16 @@ public class BlockRepositoryTest {
 		assertEquals(ConnectionType.NOCONNECTION, blockRepo.getConnectionType(ifBlock, ifBlock));
 	}
 	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockRepository#getConnectionType(Block, Block)}.
+	 */
+	@Test
+	public void testGetCallerBlocksByDefinition_Positive() {
+		Set<Block> callBlocks = new HashSet<Block>();
+		callBlocks.add(callBlock);
+		
+		assertEquals(callBlocks, blockRepo.getCallerBlocksByDefinition("definitionBlockId"));
+	}
+
+		
 }
