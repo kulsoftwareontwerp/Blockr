@@ -3,11 +3,25 @@
  */
 package guiLayer.shapes;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Spy;
+
+import guiLayer.types.Constants;
+import guiLayer.types.Coordinate;
+import types.BlockType;
+import types.ConnectionType;
 
 /**
  * ShapeTest
@@ -16,7 +30,10 @@ import org.junit.Test;
  * @author group17
  *
  */
-public class ShapeTest {
+public class ShapeTest implements Constants {
+	
+	@Spy
+	private Shape shape= new ControlShape("test", BlockType.IF, new Coordinate(0,0));
 
 	/**
 	 * @throws java.lang.Exception
@@ -37,7 +54,8 @@ public class ShapeTest {
 	 */
 	@Test
 	public void testHashCode() {
-		fail("Not yet implemented");
+		assertEquals("test".hashCode()+BlockType.IF.hashCode(),shape.hashCode());
+		
 	}
 
 	/**
@@ -45,15 +63,84 @@ public class ShapeTest {
 	 */
 	@Test
 	public void testGetPreviouslyConnectedVia() {
-		fail("Not yet implemented");
+		assertEquals(ConnectionType.NOCONNECTION, shape.getPreviouslyConnectedVia());
+		shape.setConnectedVia(ConnectionType.BODY, true);
+		assertEquals(ConnectionType.NOCONNECTION, shape.getPreviouslyConnectedVia());
+		shape.setConnectedVia(ConnectionType.UP, true);
+		assertEquals(ConnectionType.BODY, shape.getPreviouslyConnectedVia());
+
 	}
 
 	/**
 	 * Test method for {@link guiLayer.shapes.Shape#Shape(java.lang.String, types.BlockType, guiLayer.types.Coordinate)}.
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testShape() {
-		fail("Not yet implemented");
+		Shape shape = new ControlShape("test",BlockType.IF , new Coordinate(0,0));
+		try {
+			Field f;
+			f = Shape.class.getDeclaredField("id");
+			f.setAccessible(true);
+			assertNotNull(f.get(shape));
+			assertEquals("test", f.get(shape));
+					
+			f = Shape.class.getDeclaredField("type");
+			f.setAccessible(true);
+			assertNotNull(f.get(shape));
+			assertEquals(BlockType.IF, f.get(shape));
+
+			
+			f = Shape.class.getDeclaredField("coordinate");
+			f.setAccessible(true);
+			assertNotNull(f.get(shape));
+			assertEquals(new Coordinate(0,0), f.get(shape));
+			
+			f = Shape.class.getDeclaredField("previousCoordinate");
+			f.setAccessible(true);
+			assertNotNull(f.get(shape));
+			assertEquals(new Coordinate(INVALID_COORDINATE,INVALID_COORDINATE), f.get(shape));
+			
+			f = Shape.class.getDeclaredField("coordinatesShape");
+			f.setAccessible(true);
+			assertNotNull(f.get(shape));
+			assertTrue(((HashSet<Shape>)f.get(shape)).size()!=0);
+			
+			f = Shape.class.getDeclaredField("coordinateConnectionMap");
+			f.setAccessible(true);
+			assertNotNull(f.get(shape));
+			assertTrue(((HashMap<ConnectionType, Coordinate>)f.get(shape)).size()!=0);
+			
+			f = Shape.class.getDeclaredField("connectedVia");
+			f.setAccessible(true);
+			assertNotNull(f.get(shape));
+			
+			f = Shape.class.getDeclaredField("previouslyConnectedVia");
+			f.setAccessible(true);
+			assertNotNull(f.get(shape));
+			
+			f = Shape.class.getDeclaredField("height");
+			f.setAccessible(true);
+			assertNotEquals(0,f.get(shape));
+			
+			f = Shape.class.getDeclaredField("previousHeight");
+			f.setAccessible(true);
+			assertNotNull(f.get(shape));
+			
+			f = Shape.class.getDeclaredField("width");
+			f.setAccessible(true);
+			assertNotEquals(0,f.get(shape));
+			
+			f = Shape.class.getDeclaredField("cloneSupported");
+			f.setAccessible(true);
+			assertNotNull(f.get(shape));
+
+			
+			
+			
+		}catch(Exception e) {
+			fail("not all fields were initialized correctly");
+		}
 	}
 
 	/**
