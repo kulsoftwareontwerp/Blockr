@@ -50,19 +50,19 @@ public abstract class Shape implements Constants, Cloneable {
 	 * @param coordinate the coordinate for the shape.
 	 */
 	public Shape(String id, BlockType type, Coordinate coordinate) {
-		cloneSupported=true;
+		cloneSupported = true;
 		setId(id);
 		setType(type);
 		setCoordinate(coordinate);
-	
+
 		setPreviousX_coord(INVALID_COORDINATE);
 		setPreviousY_coord(INVALID_COORDINATE);
-	
+
 		// note: order here is important, don't change if you don't know what you're
 		// doing.
 		setConnectedVia(ConnectionType.NOCONNECTION, true);
 		setPreviouslyConnectedVia(ConnectionType.NOCONNECTION);
-	
+
 		initDimensions(); // setWidth & setHeight
 		coordinatesShape = fillShapeWithCoordinates();
 		coordinateConnectionMap = new HashMap<ConnectionType, Coordinate>();
@@ -70,8 +70,11 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 	/**
-	 * Retrieve the ID of the DefinitionShape associated with this shape. Returns Null when there is no associated DefinitionShape.
-	 * @return the ID of the DefinitionShape associated with this shape. Returns Null when there is no associated DefinitionShape.
+	 * Retrieve the ID of the DefinitionShape associated with this shape. Returns
+	 * Null when there is no associated DefinitionShape.
+	 * 
+	 * @return the ID of the DefinitionShape associated with this shape. Returns
+	 *         Null when there is no associated DefinitionShape.
 	 */
 	public String getDefinitionShapeID() {
 		return null;
@@ -79,6 +82,7 @@ public abstract class Shape implements Constants, Cloneable {
 
 	/**
 	 * Retrieve the id for this shape
+	 * 
 	 * @return the id for this shape
 	 */
 	public String getId() {
@@ -87,6 +91,7 @@ public abstract class Shape implements Constants, Cloneable {
 
 	/**
 	 * Set the id of this shape
+	 * 
 	 * @param id the id to set this shape to
 	 */
 	public void setId(String id) {
@@ -95,6 +100,7 @@ public abstract class Shape implements Constants, Cloneable {
 
 	/**
 	 * Retrieve the type of this shape
+	 * 
 	 * @return the BlockType associated with this shape
 	 */
 	public BlockType getType() {
@@ -103,11 +109,12 @@ public abstract class Shape implements Constants, Cloneable {
 
 	/**
 	 * Set the BlockType of this shape
+	 * 
 	 * @param type the blockType for this shape
 	 * @throws NullPointerException when type is null
 	 */
 	public void setType(BlockType type) {
-		if(type==null) {
+		if (type == null) {
 			throw new NullPointerException("there must be a type set for the shape");
 		}
 		this.type = type;
@@ -325,6 +332,7 @@ public abstract class Shape implements Constants, Cloneable {
 
 	/**
 	 * Retrieve the previously connectedVia ConnectionType of this shape
+	 * 
 	 * @return the previously connectedVia connectionType of this shape
 	 */
 	public ConnectionType getPreviouslyConnectedVia() {
@@ -408,23 +416,25 @@ public abstract class Shape implements Constants, Cloneable {
 
 	/**
 	 * Retrieve the triggerSet for this shape at the given connection
+	 * 
 	 * @param connection the connection to get the triggerSet of
-	 * @return a Set of Coordinates containing all the coordinates associated with the given connection's Trigger
+	 * @return a Set of Coordinates containing all the coordinates associated with
+	 *         the given connection's Trigger
 	 */
 	public Set<Coordinate> getTriggerSet(ConnectionType connection) {
 		HashSet<Coordinate> triggerSet = new HashSet<Coordinate>();
-	
+
 		if (getCoordinateConnectionMap().keySet().contains(connection)) {
 			int x_current = getCoordinateConnectionMap().get(connection).getX();
 			int y_current = getCoordinateConnectionMap().get(connection).getY();
-	
+
 			for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
 				for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
 					triggerSet.add(new Coordinate(i, j));
 				}
 			}
 		}
-	
+
 		return triggerSet;
 	}
 
@@ -456,7 +466,8 @@ public abstract class Shape implements Constants, Cloneable {
 	 * @param internals all blocks contained in this block.
 	 */
 	public void determineTotalHeight(Set<Shape> internals) {
-
+		defineConnectionTypes();
+		setCoordinatesShape();
 	}
 
 	/**
@@ -484,15 +495,15 @@ public abstract class Shape implements Constants, Cloneable {
 		Shape s = null;
 		try {
 
-			if(cloneSupported) {
-			s = (Shape) super.clone();
-			s.coordinateConnectionMap = new HashMap<ConnectionType, Coordinate>(this.coordinateConnectionMap);
-			s.coordinatesShape = new HashSet<Coordinate>(this.coordinatesShape);
+			if (cloneSupported) {
+				s = (Shape) super.clone();
+				s.coordinateConnectionMap = new HashMap<ConnectionType, Coordinate>(this.coordinateConnectionMap);
+				s.coordinatesShape = new HashSet<Coordinate>(this.coordinatesShape);
 			} else {
 				throw new CloneNotSupportedException();
 			}
 		} catch (CloneNotSupportedException e) {
-			new RuntimeException(e);
+			throw new RuntimeException(e);
 		}
 		return s;
 	}
