@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.any;
@@ -66,6 +67,7 @@ import domainLayer.blocks.ControlBlock;
 import domainLayer.blocks.IfBlock;
 import domainLayer.blocks.NotBlock;
 import events.BlockAddedEvent;
+import events.BlockChangeEvent;
 import events.DomainListener;
 import events.GUIListener;
 import events.PanelChangeEvent;
@@ -117,6 +119,9 @@ public class BlockControllerTest {
 	private ArrayList<Block> allBlocksInTest = new ArrayList<Block>();
 
 	private ArrayList<String> blockIdsInRepository = new ArrayList<String>();
+	
+	private ArrayList<ConnectionType> connectionTypes = new ArrayList<ConnectionType>();
+	
 	
 	private ActionBlock connectedActionBlock;
 
@@ -236,6 +241,15 @@ public class BlockControllerTest {
 			}
 			
 		});
+		
+		
+		connectionTypes.add(ConnectionType.BODY);
+		connectionTypes.add(ConnectionType.CONDITION);
+		connectionTypes.add(ConnectionType.LEFT);
+		connectionTypes.add(ConnectionType.DOWN);
+		connectionTypes.add(ConnectionType.NOCONNECTION);
+		connectionTypes.add(ConnectionType.OPERAND);
+		connectionTypes.add(ConnectionType.UP);
 		
 	}
 
@@ -489,8 +503,49 @@ public class BlockControllerTest {
 	 * Test method for {@link applicationLayer.BlockController#moveBlock(java.lang.String, java.lang.String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
-	public void testMoveBlock() {
-		fail("Not yet implemented");
+	public void testBCMoveBlockPositive() {//TODO maken van verschillende blocks door nieuwe implementatie van methode.
+		bc.addDomainListener(mockDomainListener);
+		bc.addListener(mockGuiListener);
+		
+		// mockDomainListeners.add(mockDomainListener);
+		InOrder updateMoveOrder = inOrder(mockDomainListener, mockGuiListener);
+		blockIdsInRepository.add("1");
+		blockIdsInRepository.add("2");
+		blockIdsInRepository.add("3");
+
+		// when(mockBlockReprository.moveBlock("1","",ConnectionType.NOCONNECTION)).thenReturn(blockIdsInRepository);
+
+		ArrayList<ConnectionType> ConnectionsWithoutNoConnection = (ArrayList<ConnectionType>) connectionTypes.clone();
+		ConnectionsWithoutNoConnection.remove(ConnectionType.NOCONNECTION);
+		
+		ArrayList<String> parentInfo = new ArrayList<String>();
+		parentInfo.add("DOWN");
+		parentInfo.add("2");
+	
+		when(blockRepository.getConnectedParentIfExists((any(String.class)))).thenReturn(parentInfo);
+		when(blockRepository.moveBlock(any(String.class), any(String.class),any(String.class), any(ConnectionType.class))).thenReturn("1");
+		when(blockRepository.getBlockIdToPerformMoveOn(any(String.class), any(String.class), any(ConnectionType.class))).thenReturn("1");
+		
+		when(blockRepository.getBlockByID("1")).thenReturn(actionBlock0);
+		when(blockRepository.getBlockByID("2")).thenReturn(actionBlock1);
+		when(blockRepository.getBlockByID("3")).thenReturn(controlBlock);
+		when(blockRepository.getBlockByID("1").clone()).thenReturn(actionBlock0);
+
+		for (ConnectionType connectionType : ConnectionsWithoutNoConnection) {
+			
+			bc.moveBlock("1", "", "3", connectionType);
+			verify(blockRepository).moveBlock("1","1", "3", connectionType);
+
+			updateMoveOrder.verify(mockDomainListener, atLeastOnce())
+					.onUpdateGameStateEvent(any(UpdateGameStateEvent.class));
+
+			updateMoveOrder.verify(mockDomainListener, atLeastOnce())
+					.onResetExecutionEvent(any(ResetExecutionEvent.class));
+
+			updateMoveOrder.verify(mockGuiListener, atLeastOnce())
+					.onBlockChangeEvent(any(BlockChangeEvent.class));
+
+		}
 	}
 
 	/**
