@@ -296,6 +296,27 @@ public class BlockControllerTest {
 	}
 	
 	@Test
+	public void testAddBlockNegativeInstanceOf() {
+		String excMessage = "There is no DefinitionBlock in the domain with the given definitionBlockID.";
+		
+		BlockType newType = new BlockType("Call 1", BlockCategory.CALL,"1");
+		Block definition = spy(new ActionBlock("1", BlockType.IF));
+		when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(true);
+		
+		assertExceptionBCAddBlockCombination(newType, null, ConnectionType.NOCONNECTION, excMessage);
+		
+		verifyNoInteractions(mockGuiListener);
+		verifyNoInteractions(mockDomainListener);
+
+		BlockType.removeBlockType("1");
+	}
+	
+	@Test
+	public void testAddBlockSnapShotNull() {
+		
+	}
+	
+	@Test
 	public void testAddBlockMaxNumberOfBlocksReached() {
 		String excMessage = "The maximum number of blocks has already been reached.";
 		exceptionRule.expect(MaxNbOfBlocksReachedException.class);
