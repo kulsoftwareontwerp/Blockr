@@ -158,6 +158,7 @@ public class GameController implements DomainListener, GUISubject {
 	 * Updates the current state of the program.
 	 */
 	public void updateState() {
+		GameState currentState = getCurrentState();
 		currentState.update();
 	}
 

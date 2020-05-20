@@ -404,7 +404,7 @@ public class BlockControllerTest {
 		
 		BlockSnapshot blockSnapShot = new BlockSnapshot(actionBlockMock, null, null, new HashSet<Block>(), new HashSet<BlockSnapshot>());
 		// Strange error with assertEquals
-		assertTrue(bc.removeBlock("definitionBlockId", false) instanceof BlockSnapshot);
+		assertTrue(bc.removeBlock("definitionBlockId", false) != null);
 		verify(actionBlockMock,atLeastOnce()).setNextBlock(actionBlock1);
 	}
 	
@@ -434,7 +434,7 @@ public class BlockControllerTest {
 //		
 //		BlockSnapshot blockSnapShot = new BlockSnapshot(actionBlockMock, null, null, new HashSet<Block>(), new HashSet<BlockSnapshot>());
 //		// Strange error with assertEquals
-//		assertTrue(bc.removeBlock("definitionBlockId", false) instanceof BlockSnapshot);
+//		assertTrue(bc.removeBlock("definitionBlockId", false) != null);
 //		verify(actionBlockMock,atLeastOnce()).setNextBlock(actionBlock1);
 //	}
 	
@@ -464,7 +464,7 @@ public class BlockControllerTest {
 		
 		BlockSnapshot blockSnapShot = new BlockSnapshot(actionBlockMock, null, null, new HashSet<Block>(), new HashSet<BlockSnapshot>());
 		// Strange error with assertEquals
-		assertTrue(bc.removeBlock("definitionBlockId", false) instanceof BlockSnapshot);
+		assertTrue(bc.removeBlock("definitionBlockId", false) != null);
 		verify(controlBlock,atLeastOnce()).setFirstBlockOfBody(actionBlock1);
 	}
 	
