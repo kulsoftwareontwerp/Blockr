@@ -47,6 +47,7 @@ public class BlocksTest {
 	private GameWorld gameWorld;
 	private NotBlock notBlock;
 	private DefinitionBlock definitionBlock;
+	private CallFunctionBlock callBlock;
 		
 	/**
 	 * @throws java.lang.Exception
@@ -65,6 +66,7 @@ public class BlocksTest {
 		whileBlock = new WhileBlock("whileBlockId");
 		notBlock = spy(new NotBlock("notBlockId"));
 		definitionBlock = spy(new DefinitionBlock("definitionBlock"));
+		callBlock = spy(new CallFunctionBlock("CallBlock", new BlockType("Call "+ "DefinitionBlock", BlockCategory.CALL, "DefinitionBlock")));
 	}
 
 	/**
@@ -484,6 +486,19 @@ public class BlocksTest {
 	public void testDefinitionBlockClearCallStack_Positive() {
 		definitionBlock.clearCallStack();
 		assertEquals(null, definitionBlock.popFromCallStack());
+	}
+	
+	// ----- TESTS FOR CALLFUNCTIONBLOCK -----
+	/**
+	 * Test method for {@link domainLayer.blocks.NotBlock#assess(com.kuleuven.swop.group17.GameWorldApi.GameWorld)}.
+	 */
+	@Test
+	public void testCallFunctionBlockGetSupportedConnectionTypes_Positive() {
+		Set<ConnectionType> supportedConnectionTypes = new HashSet<ConnectionType>();
+		supportedConnectionTypes.add(ConnectionType.UP);
+		supportedConnectionTypes.add(ConnectionType.DOWN);
+		
+		assertEquals(supportedConnectionTypes, callBlock.getSupportedConnectionTypes());
 	}
 
 }
