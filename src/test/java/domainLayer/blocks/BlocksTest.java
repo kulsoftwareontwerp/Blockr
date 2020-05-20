@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Stack;
 
 import org.junit.After;
 import org.junit.Before;
@@ -45,6 +46,7 @@ public class BlocksTest {
 	@Mock
 	private GameWorld gameWorld;
 	private NotBlock notBlock;
+	private DefinitionBlock definitionBlock;
 		
 	/**
 	 * @throws java.lang.Exception
@@ -62,6 +64,7 @@ public class BlocksTest {
 		unaryOperatorBlock = new NotBlock("unaryOperatorBlockId");
 		whileBlock = new WhileBlock("whileBlockId");
 		notBlock = spy(new NotBlock("notBlockId"));
+		definitionBlock = spy(new DefinitionBlock("definitionBlock"));
 	}
 
 	/**
@@ -399,7 +402,7 @@ public class BlocksTest {
 		assertEquals(BlockType.IF, block.getBlockType());
 	}
 	
-	// ----- TESTS FOR IFBLOCK -----
+	// ----- TESTS FOR NOTBLOCK -----
 	/**
 	 * Test method for {@link domainLayer.blocks.NotBlock#assess(com.kuleuven.swop.group17.GameWorldApi.GameWorld)}.
 	 */
@@ -430,11 +433,57 @@ public class BlocksTest {
 		assertEquals(BlockType.NOT, notBlock.getBlockType());
 	}
 
+	// ----- TESTS FOR DEFINITIONBLOCK -----
+	/**
+	 * Test method for {@link domainLayer.blocks.NotBlock#assess(com.kuleuven.swop.group17.GameWorldApi.GameWorld)}.
+	 */
+	@Test
+	public void testDefinitionBlockGetSupportedConnectionTypes_Positive() {
+		Set<ConnectionType> supportedConnectionTypes = new HashSet<ConnectionType>();
+		supportedConnectionTypes.add(ConnectionType.BODY);
+		
+		assertEquals(supportedConnectionTypes, definitionBlock.getSupportedConnectionTypes());
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.NotBlock#assess(com.kuleuven.swop.group17.GameWorldApi.GameWorld)}.
+	 */
+	@Test
+	public void testDefinitionBlockSetGetCallStack_Positive() {
+		Stack<String> callStack = new Stack<String>();
+		callStack.add("id");
+		definitionBlock.setCallStack(callStack);
+		
+		assertEquals(callStack, definitionBlock.getCallStack());
+	}
 
-
-
-
-
-
+	/**
+	 * Test method for {@link domainLayer.blocks.NotBlock#assess(com.kuleuven.swop.group17.GameWorldApi.GameWorld)}.
+	 */
+	@Test
+	public void testDefinitionBlockSetGetFirstBlockOfBody_Positive() {
+		definitionBlock.setFirstBlockOfBody(block);
+		assertEquals(block, definitionBlock.getFirstBlockOfBody());
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.NotBlock#assess(com.kuleuven.swop.group17.GameWorldApi.GameWorld)}.
+	 */
+	@Test
+	public void testDefinitionBlockPopFromCallStack_Positive() {
+		CallFunctionBlock callBlock = new CallFunctionBlock("CallBlock", new BlockType("Call "+ "definitionBlock", BlockCategory.CALL, "definitionBlock"));
+		
+		definitionBlock.pushToCallStack(callBlock);
+		assertTrue(definitionBlock.popFromCallStack() != null);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.NotBlock#assess(com.kuleuven.swop.group17.GameWorldApi.GameWorld)}.
+	 */
+	@Test
+	public void testDefinitionBlockClearCallStack_Positive() {
+		definitionBlock.clearCallStack();
+		assertEquals(null, definitionBlock.popFromCallStack());
+	}
 
 }
