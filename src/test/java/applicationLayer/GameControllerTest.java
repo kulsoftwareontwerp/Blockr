@@ -12,6 +12,10 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,7 +94,8 @@ public class GameControllerTest {
 		assessableBlock = spy(new ConditionBlock("ConditionBlock", new BlockType("ConditionBlock", BlockCategory.CONDITION)));
 		inExecutionState = spy(new InExecutionState(gc, actionBlock));
 		validProgramState = spy(new ValidProgramState(gc));
-		snapshot = spy(new ExecutionSnapshot(actionBlock, snapshotMock, inExecutionState, null));
+		Map<String, Stack<String>> callStacks = new HashMap<String, Stack<String>>();
+		snapshot = spy(new ExecutionSnapshot(actionBlock, snapshotMock, inExecutionState, callStacks));
 		gc.addListener(mockGuiListener);
 	}
 

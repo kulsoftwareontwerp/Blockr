@@ -110,6 +110,7 @@ public class BlockControllerTest {
 	private ActionBlock actionBlockSpy;
 	private ControlBlock controlBlock;
 	private BlockSnapshot snapshot;
+	private BlockSnapshot associatedSnapshot;
 	
 	@Mock
 	private DomainListener mockDomainListener;
@@ -157,7 +158,8 @@ public class BlockControllerTest {
 		
 		actionBlockSpy = spy(new ActionBlock("2", new BlockType("Action", BlockCategory.ACTION)));
 		controlBlock = spy(new IfBlock("ifBlock"));
-		snapshot = spy(new BlockSnapshot(actionBlock0, null, null, new HashSet<Block>(), null));
+		snapshot = spy(new BlockSnapshot(actionBlock0, null, null, new HashSet<Block>(), new HashSet<BlockSnapshot>()));
+		associatedSnapshot = spy(new BlockSnapshot(actionBlock1, null, null, new HashSet<Block>(), new HashSet<BlockSnapshot>()));
 		
 //		bc.addListener(mockGuiListener);
 		bc.addDomainListener(mockDomainListener);
@@ -187,7 +189,7 @@ public class BlockControllerTest {
 		newWhileBlock = spy(new WhileBlock("newWhileBlock"));
 		
 		definitionBlock = spy(new DefinitionBlock("definitionBlockId"));
-		callBlock = spy(new CallFunctionBlock("CallBlock", new BlockType("Call", BlockCategory.CALL)));
+		callBlock = spy(new CallFunctionBlock("CallBlock", new BlockType("Call "+ "definitionBlockId", BlockCategory.CALL, "definitionBlockId")));
 		
 		allBlocksInTest.add(connectedActionBlock);
 		allBlocksInTest.add(connectedControlBlock);
@@ -582,6 +584,44 @@ public class BlockControllerTest {
 		Mockito.verifyNoInteractions(blockRepository);
 		
 		bc.restoreBlockSnapshot(null, true);
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.BlockController#restoreBlockSnapshot(BlockSnapshot, boolean)}.
+	 */
+	@Test
+	public void testRestoreBlockSnapshot_BeforeNull_WithAssociatedSnapshots_Positive() {
+		when(snapshot.getConnectedBlockBeforeSnapshot()).thenReturn(null);
+		when(snapshot.getBlock()).thenReturn(actionBlockSpy);
+		when(blockRepository.getConnectionType(null, actionBlockSpy)).thenReturn(ConnectionType.NOCONNECTION);
+		when(blockRepository.restoreBlockSnapshot(snapshot)).thenReturn(false);
+		when(snapshot.getConnectedBlockBeforeSnapshot()).thenReturn(actionBlockSpy);
+		when(snapshot.getConnectedBlockAfterSnapshot()).thenReturn(actionBlockSpy);
+		
+		when(blockRepository.getBlockByID("2")).thenReturn(actionBlock0);
+		
+		// Mocks related to the associatedSnapshots
+		Set<BlockSnapshot> associatedSnapshots = new HashSet<BlockSnapshot>();
+		associatedSnapshots.add(associatedSnapshot);
+		when(snapshot.getAssociatedSnapshots()).thenReturn(associatedSnapshots);
+		when(associatedSnapshot.getBlock()).thenReturn(callBlock);
+		Set<Block> allCallers = new HashSet<Block>();
+		allCallers.add(callBlock);
+		when(blockRepository.getAllBlocksConnectedToAndAfterACertainBlock(callBlock)).thenReturn(allCallers);
+		BlockType callTypeMock = new BlockType("Call "+ "definitionBlockId", BlockCategory.CALL, "definitionBlockId");
+		when(callBlock.getBlockType()).thenReturn(callTypeMock);
+		ArrayList<String> parentIdentifiers = new ArrayList<String>();
+		parentIdentifiers.add("UP");
+		parentIdentifiers.add("1");
+		when(blockRepository.getConnectedParentIfExists("CallBlock")).thenReturn(parentIdentifiers);
+		
+		bc.restoreBlockSnapshot(snapshot, false);
+		
+		verify(mockDomainListener,atLeastOnce()).onUpdateGameStateEvent(Mockito.any(UpdateGameStateEvent.class));
+		verify(mockDomainListener,atLeastOnce()).onResetExecutionEvent(Mockito.any(ResetExecutionEvent.class));
+		verify(actionBlockSpy,atLeastOnce()).getBlockId();
+		
+		verify(blockRepository,atLeastOnce()).restoreBlockSnapshot(associatedSnapshot);
 	}
 
 	/**
