@@ -49,21 +49,18 @@ import types.BlockType;
 @RunWith(MockitoJUnitRunner.class)
 public class GuiSnapshotTest implements Constants {
 
-
 	private HashSet<Shape> shapesInMovement;
-	
+
 	@Spy
 	private HashMap<String, Coordinate> savedCoordinates;
-	
+
 	@Spy
 	private HashMap<String, Integer> savedHeights;
 
 	private GuiSnapshot snapshot;
 
-	
-
 	private UnaryOperatorShape newShape;
-	
+
 	private ControlShape controlShape;
 	@Captor
 	private ArgumentCaptor<String> idCaptor;
@@ -85,11 +82,11 @@ public class GuiSnapshotTest implements Constants {
 
 	@SuppressWarnings("unchecked")
 	private GuiSnapshot fillData() {
-		
-		shapesInMovement= new HashSet<Shape>();
-		
+
+		shapesInMovement = new HashSet<Shape>();
+
 		newShape = mock(UnaryOperatorShape.class);
-		controlShape= mock(ControlShape.class);
+		controlShape = mock(ControlShape.class);
 		when(newShape.getId()).thenReturn(PALETTE_BLOCK_IDENTIFIER);
 		when(newShape.getCoordinate()).thenReturn(new Coordinate(1, 5));
 		when(controlShape.getId()).thenReturn("height");
@@ -101,35 +98,35 @@ public class GuiSnapshotTest implements Constants {
 		shapesInMovement.add(spy(new ControlShape("2", BlockType.WHILE, new Coordinate(3, 2))));
 		shapesInMovement.add(newShape);
 		shapesInMovement.add(controlShape);
-		
+
 		if (shapesInMovement != null) {
 			for (Shape s : shapesInMovement) {
 				this.savedCoordinates.put(s.getId(), s.getCoordinate());
-				if(s instanceof ControlShape) {
+				if (s instanceof ControlShape) {
 					this.savedHeights.put(s.getId(), s.getHeight());
 				}
 			}
 		}
-		
+
 		GuiSnapshot snapshot = null;
-		
+
 		try {
-	        @SuppressWarnings("rawtypes")
+			@SuppressWarnings("rawtypes")
 			Class[] cArg = new Class[3];
-	         cArg[0] = (new HashMap<String, Coordinate>()).getClass();
-	         cArg[1] = (new HashMap<String, Integer>()).getClass();
-	         cArg[2] = Class.forName("java.util.Set");
+			cArg[0] = (new HashMap<String, Coordinate>()).getClass();
+			cArg[1] = (new HashMap<String, Integer>()).getClass();
+			cArg[2] = Class.forName("java.util.Set");
 			Constructor<GuiSnapshot> c = GuiSnapshot.class.getDeclaredConstructor(cArg);
 			c.setAccessible(true);
-			snapshot = c.newInstance(savedCoordinates,savedHeights,shapesInMovement);
-			
-		}catch(Exception e) {
+			snapshot = c.newInstance(savedCoordinates, savedHeights, shapesInMovement);
+
+		} catch (Exception e) {
 			System.err.println("Exception during injection");
 			System.out.println(e);
 		}
 		clearInvocations(savedCoordinates);
 		clearInvocations(savedHeights);
-		
+
 		return snapshot;
 	}
 
@@ -147,17 +144,38 @@ public class GuiSnapshotTest implements Constants {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testGuiSnapshot() {
-		
+
 		GuiSnapshot snapshot = new GuiSnapshot(shapesInMovement);
 		assertNotNull(snapshot);
 		try {
 			Field f;
 			f = GuiSnapshot.class.getDeclaredField("savedCoordinates");
 			f.setAccessible(true);
-			assertEquals(savedCoordinates.entrySet(),  ((HashMap<String,Coordinate>)f.get(snapshot)).entrySet());
+			assertEquals(savedCoordinates.entrySet(), ((HashMap<String, Coordinate>) f.get(snapshot)).entrySet());
 			f = GuiSnapshot.class.getDeclaredField("savedHeights");
 			f.setAccessible(true);
-			assertEquals(savedHeights.entrySet(), ((HashMap<String,Coordinate>)f.get(snapshot)).entrySet());
+			assertEquals(savedHeights.entrySet(), ((HashMap<String, Coordinate>) f.get(snapshot)).entrySet());
+		} catch (Exception e) {
+			fail("fields not initialized");
+		}
+	}
+
+	/**
+	 * Test method for
+	 * {@link guiLayer.types.GuiSnapshot#GuiSnapshot(java.util.Set)}.
+	 */
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testAddShapeToSnapshot() {
+		Shape addShape = new ControlShape("testAdd", BlockType.WHILE, new Coordinate(99, 99));
+
+		snapshot.addShapeToSnapshot(addShape);
+		try {
+			Field f;
+			f = GuiSnapshot.class.getDeclaredField("savedCoordinates");
+			f.setAccessible(true);
+
+			assertEquals(new Coordinate(99, 99), ((HashMap<String, Coordinate>) f.get(snapshot)).get("testAdd"));
 		} catch (Exception e) {
 			fail("fields not initialized");
 		}
@@ -192,8 +210,7 @@ public class GuiSnapshotTest implements Constants {
 		assertEquals(savedCoordinates.size(), snapshot.getSavedCoordinates().size());
 		assertTrue(savedCoordinates.values().containsAll(snapshot.getSavedCoordinates().values()));
 		assertTrue(snapshot.getSavedCoordinates().values().containsAll(savedCoordinates.values()));
-		
-	
+
 	}
 
 	/**
@@ -205,7 +222,7 @@ public class GuiSnapshotTest implements Constants {
 		assertEquals(savedHeights.size(), snapshot.getSavedHeights().size());
 		assertTrue(savedHeights.values().containsAll(snapshot.getSavedHeights().values()));
 		assertTrue(snapshot.getSavedHeights().values().containsAll(savedHeights.values()));
-	
+
 	}
 
 	/**
@@ -234,14 +251,14 @@ public class GuiSnapshotTest implements Constants {
 	public void testSetIDWithoutIdToSet() {
 		savedCoordinates.remove(PALETTE_BLOCK_IDENTIFIER);
 		clearInvocations(savedCoordinates);
-		
+
 		snapshot.setID("newId");
 
 		verify(savedCoordinates, never()).remove(any());
 		verify(savedCoordinates, never()).put(any(String.class), any(Coordinate.class));
 
 	}
-	
+
 	/**
 	 * Test method for {@link guiLayer.types.GuiSnapshot#setID(java.lang.String)}.
 	 */
@@ -267,6 +284,7 @@ public class GuiSnapshotTest implements Constants {
 		verify(savedCoordinates, never()).remove(any());
 		verify(savedCoordinates, never()).put(any(String.class), any(Coordinate.class));
 	}
+
 	/**
 	 * Test method for {@link guiLayer.types.GuiSnapshot#setID(java.lang.String)}.
 	 */
@@ -279,6 +297,7 @@ public class GuiSnapshotTest implements Constants {
 		verify(savedCoordinates, never()).remove(any());
 		verify(savedCoordinates, never()).put(any(String.class), any(Coordinate.class));
 	}
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.types.GuiSnapshot#setHeight(java.lang.String, int)}.
@@ -289,11 +308,11 @@ public class GuiSnapshotTest implements Constants {
 		clearInvocations(savedHeights);
 		snapshot.setHeight("height", 80);
 
-		verify(savedHeights,times(1)).put(idCaptor.capture(),heightCaptor.capture());
+		verify(savedHeights, times(1)).put(idCaptor.capture(), heightCaptor.capture());
 		assertEquals("height", idCaptor.getValue());
 		assertEquals(Integer.valueOf(80), heightCaptor.getValue());
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.types.GuiSnapshot#setHeight(java.lang.String, int)}.
@@ -305,7 +324,7 @@ public class GuiSnapshotTest implements Constants {
 		clearInvocations(savedHeights);
 		snapshot.setHeight("height", 80);
 
-		verify(savedHeights, never()).put(any(),any());
+		verify(savedHeights, never()).put(any(), any());
 //		verify(savedHeights,times(1)).put(idCaptor.capture(),heightCaptor.capture());
 //		assertEquals("height", idCaptor.getValue());
 //		assertEquals(Integer.valueOf(80), heightCaptor.getValue());
