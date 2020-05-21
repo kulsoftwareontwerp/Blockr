@@ -144,6 +144,7 @@ public class GuiSnapshotTest implements Constants {
 	 * Test method for
 	 * {@link guiLayer.types.GuiSnapshot#GuiSnapshot(java.util.Set)}.
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testGuiSnapshot() {
 		
@@ -152,11 +153,11 @@ public class GuiSnapshotTest implements Constants {
 		try {
 			Field f;
 			f = GuiSnapshot.class.getDeclaredField("savedCoordinates");
-			f.canAccess(true);
-			assertEquals(savedCoordinates, f.get(snapshot));
+			f.setAccessible(true);
+			assertEquals(savedCoordinates.entrySet(),  ((HashMap<String,Coordinate>)f.get(snapshot)).entrySet());
 			f = GuiSnapshot.class.getDeclaredField("savedHeights");
-			f.canAccess(true);
-			assertEquals(savedHeights, f.get(snapshot));
+			f.setAccessible(true);
+			assertEquals(savedHeights.entrySet(), ((HashMap<String,Coordinate>)f.get(snapshot)).entrySet());
 		} catch (Exception e) {
 			fail("fields not initialized");
 		}
