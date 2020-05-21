@@ -29,12 +29,12 @@ public class ExecuteBlockCommand extends GameWorldCommand {
 
 	@Override
 	public void execute() {
-			if (executed) {
-				controller.redo();
-			} else {
-				controller.executeBlock();
-				executed = true;
-			}
+		if (executed) {
+			controller.redo();
+		} else {
+			controller.executeBlock();
+			executed = true;
+		}
 	}
 
 }
