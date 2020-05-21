@@ -98,32 +98,6 @@ public class BlockRepositoryTest {
 
 	}
 
-	/**
-	 * Test method for
-	 * {@link domainLayer.blocks.BlockRepository#addBlock(types.BlockType, java.lang.String, types.ConnectionType)}.
-	 */
-	@Ignore
-	public void testAddBlockPositive() {
-		doAnswer(new Answer<Boolean>() {
-			@Override
-			public Boolean answer(InvocationOnMock invocation) throws Throwable {
-				return true;
-			}
-		}).when(blockRepo).checkIfConnectionIsOpen(any(), any(), any());
-
-		for (DynaEnum<? extends DynaEnum<?>> b : BlockType.values()) {
-			for (BlockCategory c : BlockCategory.values()) {
-				for (ConnectionType ct : ConnectionType.values()) {
-					if (ct == ConnectionType.NOCONNECTION)
-						blockRepo.addBlock((BlockType) b, null, ConnectionType.NOCONNECTION);
-					else if (ct != ConnectionType.CONDITION && ct != ConnectionType.OPERAND)
-						blockRepo.addBlock((BlockType) b, "ifBlock", ct);
-				}
-
-			}
-		}
-	}
-
 	@Test
 	public void testAddBlockPositiveNOCONNECTION() {
 		doAnswer(new Answer<Boolean>() {
@@ -132,15 +106,19 @@ public class BlockRepositoryTest {
 				return true;
 			}
 		}).when(blockRepo).checkIfConnectionIsOpen(any(), any(), any());
-
 		for (DynaEnum<? extends DynaEnum<?>> b : BlockType.values()) {
 			for (BlockCategory c : BlockCategory.values()) {
-				blockRepo.addBlock((BlockType) b, null, ConnectionType.NOCONNECTION);
-				verify(headBlocks, atLeast(2)).add(any(Block.class));// 1 time in setup
-				verify(allBlocks, atLeast(5)).put(any(String.class), any(Block.class));// 4 times in setup
+				if(b.type() == "WrongType") {
+					
+				}
+				else {
+						blockRepo.addBlock((BlockType) b, null, ConnectionType.NOCONNECTION);
+					}
+					verify(headBlocks, atLeast(2)).add(any(Block.class));// 1 time in setup
+					verify(allBlocks, atLeast(5)).put(any(String.class), any(Block.class));// 4 times in setup
+				}
 			}
 		}
-	}
 
 	@Test
 	public void testAddBlockPositiveConnection() {
