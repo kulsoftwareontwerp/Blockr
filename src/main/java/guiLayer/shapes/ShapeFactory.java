@@ -1,7 +1,5 @@
 package guiLayer.shapes;
 
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import guiLayer.types.Coordinate;
 import types.BlockType;
@@ -13,7 +11,6 @@ import types.BlockType;
  * @author group17
  *
  */
-@RunWith(MockitoJUnitRunner.class)
 public class ShapeFactory {
 	/**
 	 * Create a new shapeFactory
