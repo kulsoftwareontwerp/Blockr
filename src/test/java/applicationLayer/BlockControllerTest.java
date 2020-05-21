@@ -278,10 +278,10 @@ public class BlockControllerTest {
 		ArgumentCaptor<BlockType> blockType = ArgumentCaptor.forClass(BlockType.class);
 		ArgumentCaptor<ConnectionType> connectionType = ArgumentCaptor.forClass(ConnectionType.class);
 		ArgumentCaptor<String> connectedBlock = ArgumentCaptor.forClass(String.class);
-		
+		//when(blockRepository.getBlockByID("definitionBlockId")).thenReturn(definitionBlock);
+		BlockType.removeBlockType("definitionBlockId");
 		for (DynaEnum<? extends DynaEnum<?>> b : BlockType.values()) {
 			for (ConnectionType c : ConnectionType.values()) {
-				
 				when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(false, true);
 				String cb = "connectedActionBlock";
 				BlockSnapshot s = bc.addBlock((BlockType) b, cb, c);
@@ -314,7 +314,7 @@ public class BlockControllerTest {
 		
 		BlockType newType = new BlockType("Call 1", BlockCategory.CALL,"1");
 		Block definition = spy(new ActionBlock("1", BlockType.IF));
-		when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(true);
+//		when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(true);
 		
 		assertExceptionBCAddBlockCombination(newType, null, ConnectionType.NOCONNECTION, excMessage);
 		
@@ -363,9 +363,9 @@ public class BlockControllerTest {
 
 	@Test
 	public void testFireBlockAddedControlBlock() {
-		when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
+		//when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
 		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
-		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
+		//when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
 		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
 		
 		BlockSnapshot bsnap = mock(BlockSnapshot.class);
@@ -382,9 +382,9 @@ public class BlockControllerTest {
 	@Test
 	public void testFireBlockAddedActionBlock() {
 		when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
-		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
-		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
-		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
+//		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
+//		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
+//		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
 	
 		BlockSnapshot bsnap = mock(BlockSnapshot.class);
 		when(bsnap.getBlock()).thenReturn(actionBlockSpy);
@@ -400,10 +400,10 @@ public class BlockControllerTest {
 	
 	@Test
 	public void testFireBlockAddedOperandBlock() {
-		when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
-		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
+		//when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
+		//when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
 		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
-		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
+		//when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
 		
 		BlockSnapshot bsnap = mock(BlockSnapshot.class);
 		when(bsnap.getBlock()).thenReturn(connectedOperatorBlock);
@@ -670,7 +670,7 @@ public class BlockControllerTest {
 	public void testRestoreBlockSnapshot_RemovedFalse_ConnectedBlockBeforeAndAfterSnapshotNotNull_Positive() {
 		when(snapshot.getConnectedBlockBeforeSnapshot()).thenReturn(null);
 		when(snapshot.getBlock()).thenReturn(actionBlockSpy);
-		when(blockRepository.getConnectionType(null, actionBlockSpy)).thenReturn(ConnectionType.NOCONNECTION);
+//		when(blockRepository.getConnectionType(null, actionBlockSpy)).thenReturn(ConnectionType.NOCONNECTION);
 		when(blockRepository.restoreBlockSnapshot(snapshot)).thenReturn(false);
 		when(snapshot.getConnectedBlockBeforeSnapshot()).thenReturn(actionBlockSpy);
 		when(snapshot.getConnectedBlockAfterSnapshot()).thenReturn(actionBlockSpy);
@@ -709,7 +709,7 @@ public class BlockControllerTest {
 	public void testRestoreBlockSnapshot_BeforeNull_WithAssociatedSnapshots_Positive() {
 		when(snapshot.getConnectedBlockBeforeSnapshot()).thenReturn(null);
 		when(snapshot.getBlock()).thenReturn(actionBlockSpy);
-		when(blockRepository.getConnectionType(null, actionBlockSpy)).thenReturn(ConnectionType.NOCONNECTION);
+//		when(blockRepository.getConnectionType(null, actionBlockSpy)).thenReturn(ConnectionType.NOCONNECTION);
 		when(blockRepository.restoreBlockSnapshot(snapshot)).thenReturn(false);
 		when(snapshot.getConnectedBlockBeforeSnapshot()).thenReturn(actionBlockSpy);
 		when(snapshot.getConnectedBlockAfterSnapshot()).thenReturn(actionBlockSpy);
@@ -959,7 +959,7 @@ public class BlockControllerTest {
 		String blockIdParam = "blockId";
 		when(blockRepository.getBlockByID(blockIdParam)).thenReturn(controlBlock);
 		Set<String> blockIDsUnderNeath = new HashSet<String>();
-		when(blockRepository.getAllBlockIDsInBody(controlBlock)).thenReturn(blockIDsUnderNeath);
+//		when(blockRepository.getAllBlockIDsInBody(controlBlock)).thenReturn(blockIDsUnderNeath);
 		
 		assertEquals(blockIDsUnderNeath, bc.getAllBlockIDsBelowCertainBlock(blockIdParam));
 	}
@@ -1125,7 +1125,7 @@ public class BlockControllerTest {
 		Set<ConnectionType> supportedTypes = new HashSet<ConnectionType>();
 		supportedTypes.add(ConnectionType.BODY);
 		when(actionBlockSpy.getSupportedConnectionTypes()).thenReturn(supportedTypes);
-		when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, null)).thenReturn(true);
+		//when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, null)).thenReturn(true);
 		
 		when(blockRepository.getBlockByID("anyBlockId")).thenReturn(controlBlock);
 		when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, controlBlock)).thenReturn(true);
@@ -1145,7 +1145,7 @@ public class BlockControllerTest {
 		Set<ConnectionType> supportedTypes = new HashSet<ConnectionType>();
 		supportedTypes.add(ConnectionType.BODY);
 		when(actionBlockSpy.getSupportedConnectionTypes()).thenReturn(supportedTypes);
-		when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, null)).thenReturn(true);
+//		when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, null)).thenReturn(true);
 		
 		when(blockRepository.getBlockByID("anyBlockId")).thenReturn(controlBlock);
 		when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, controlBlock)).thenReturn(false);
