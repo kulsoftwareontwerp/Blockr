@@ -10,7 +10,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Mock;
+import org.mockito.*;
+import org.mockito.Mockito.*;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import types.BlockCategory;
@@ -96,6 +98,15 @@ public class BlockFactoryTest {
 		assertTrue(factory.createBlock(new BlockType("WrongType", BlockCategory.CONTROL)) instanceof WhileBlock);
 	}
 	
+	@Test
+	public void testCreateBlock_Definition_Positive() {
+		assertTrue(factory.createBlock(new BlockType("Definition", BlockCategory.DEFINITION)) instanceof DefinitionBlock);
+	}
+	
+	@Test
+	public void testCreateBlock_Call_Positive() {
+		assertTrue(factory.createBlock(new BlockType("Call", BlockCategory.CALL)) instanceof CallFunctionBlock);
+	}
 	
 
 }
