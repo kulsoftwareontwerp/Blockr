@@ -385,7 +385,7 @@ public class BlockRepository {
 		Block bfm = null;
 
 		if (movedBlock == null)
-			throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+			throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain");
 
 		ArrayList<String> beforeMoveTopBlock = getConnectedParentIfExists(topOfMovedChainBlockId);
 //		beforeMove = getConnectedParentIfExists(topOfMovedChainBlockId);
@@ -401,7 +401,7 @@ public class BlockRepository {
 		if (connectionBeforeMove == ConnectionType.NOCONNECTION) {
 			// indien no connection dan is er hier geen nood aan verandering
 			if (afm == null)
-				throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain.");
+				throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain");
 
 			addBlockToHeadBlocks(topMovedBlock);
 
@@ -425,7 +425,7 @@ public class BlockRepository {
 						nextBlockInChain = nextBlockInChain.getNextBlock();
 					}
 					nextBlockInChain.setNextBlock(afm);
-					movedBlockID = nextBlockInChain.getBlockId();
+					movedBlockID = nextBlockInChain.getBlockId(); //toevoegen van getBlockID op de movedBlockID indine movedBlockid niet doorgegeven worden bij method call.
 				} else {
 					movedBlock.setNextBlock(afm);
 				}
@@ -486,7 +486,7 @@ public class BlockRepository {
 			}
 		} else {
 			if (bfm == null)
-				throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+				throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain");
 
 			if (connectionBeforeMove == ConnectionType.DOWN) {
 				if (bfm.getNextBlock() != null && !bfm.getNextBlock().equals(movedBlock))
@@ -498,7 +498,7 @@ public class BlockRepository {
 					addBlockToHeadBlocks(movedBlock);
 				} else {
 					if (afm == null)
-						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+						throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain");
 
 					if (connectionAfterMove == ConnectionType.DOWN) {
 						if (afm.getNextBlock() != null)
@@ -534,19 +534,15 @@ public class BlockRepository {
 						if (!headBlocks.contains(afm))
 							throw new InvalidBlockConnectionException("This socket is not free");
 
-						//
-
 						addBlockToHeadBlocks(movedBlock);
 						removeBlockFromHeadBlocks(afm);
-						if (movedBlock.getOperand() != null) {
-							Block nextChainBlock = movedBlock;
+						if (movedBlock.getConditionBlock() != null) {
+							Block nextChainBlock = movedBlock.getConditionBlock();
 							while (nextChainBlock.getOperand() != null) {
 								nextChainBlock = nextChainBlock.getOperand();
 							}
 							nextChainBlock.setOperand(afm);
 							movedBlockID = nextChainBlock.getBlockId();
-						} else {
-							movedBlock.setOperand(afm);
 						}
 					}
 				}
@@ -566,7 +562,7 @@ public class BlockRepository {
 
 				} else {
 					if (afm == null)
-						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+						throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain");
 
 					if (connectionAfterMove == ConnectionType.CONDITION) {
 						if (afm.getConditionBlock() != null)
@@ -611,7 +607,7 @@ public class BlockRepository {
 					addBlockToHeadBlocks(movedBlock);
 				} else {
 					if (afm == null)
-						throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+						throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain");
 
 					if (connectionAfterMove == ConnectionType.CONDITION) {
 						if (afm.getConditionBlock() != null)
@@ -635,7 +631,7 @@ public class BlockRepository {
 						// effectieve move op gedaan wordt.
 						// Er is hier dus nood aan 2 blokken
 						disconnectParentTopOfChain(topOfMovedChainBlockId);
-						if (movedBlock.getNextBlock() != null) {
+						if (movedBlock.getOperand() != null) {
 							Block nextBlockInChain = movedBlock;
 							while (nextBlockInChain.getOperand() != null) {
 								nextBlockInChain = nextBlockInChain.getOperand();
@@ -668,7 +664,7 @@ public class BlockRepository {
 						addBlockToHeadBlocks(movedBlock);
 					} else {
 						if (afm == null)
-							throw new NoSuchConnectedBlockException("The requested block doens't exist in the domain");
+							throw new NoSuchConnectedBlockException("The requested block doesn't exist in the domain");
 
 						if (connectionAfterMove == ConnectionType.DOWN) {
 							if (afm.getNextBlock() != null)

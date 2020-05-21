@@ -6,7 +6,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({ CoordinateTest.class, DebugModusTest.class, GuiSnapshotTest.class, MaskedKeyBagTest.class,
-		MaskedKeyPressedTest.class })
+		MaskedKeyPressedTest.class,AlertTaskTest.class })
 public class Types {
 
 }

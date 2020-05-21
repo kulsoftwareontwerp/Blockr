@@ -7,13 +7,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,7 +34,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
 
 import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
@@ -39,8 +46,9 @@ import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 import commands.AddBlockCommand;
 import commands.BlockCommand;
 import commands.CommandHandler;
+import commands.MoveBlockCommand;
 import commands.RemoveBlockCommand;
-
+import types.BlockCategory;
 import types.BlockType;
 import types.ConnectionType;
 import types.DynaEnum;
@@ -84,12 +92,20 @@ public class DomainControllerTest {
 	@Mock
 	private Action mockAction;
 	
+	private ArrayList<ConnectionType> connectionTypes = new ArrayList<ConnectionType>();
 	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
+		connectionTypes.add(ConnectionType.BODY);
+		connectionTypes.add(ConnectionType.CONDITION);
+		connectionTypes.add(ConnectionType.LEFT);
+		connectionTypes.add(ConnectionType.DOWN);
+		connectionTypes.add(ConnectionType.NOCONNECTION);
+		connectionTypes.add(ConnectionType.OPERAND);
+		connectionTypes.add(ConnectionType.UP);
 	}
 
 	/**
@@ -126,7 +142,7 @@ public class DomainControllerTest {
 		} catch (IllegalArgumentException e) {
 			pass = e.getMessage().equals(excMessage);
 		}
-		assertTrue("addBlock failed in the domainController for combination: BlockType=" + bt.toString()
+		assertTrue("addBlock failed in the domainController for combination: BlockType=" + bt
 				+ " ConnectedBlockId=" + cb + " ConnectionType=" + ct.toString(), pass);
 	}
 
@@ -137,11 +153,7 @@ public class DomainControllerTest {
 	@Test
 	public void testAddBlockNegativeNoBlockType() {
 		String excMessage = "No blockType given.";
-		exceptionRule.expect(IllegalArgumentException.class);
-		exceptionRule.expectMessage(excMessage);
-
 		for (ConnectionType c : ConnectionType.values()) {
-			dc.addBlock(null, "", c);
 			assertExceptionDCAddBlockCombination(null, "", c, excMessage);
 			verifyNoInteractions(commandHandler);
 		}
@@ -154,11 +166,8 @@ public class DomainControllerTest {
 	@Test
 	public void testAddBlockNegativeConnectedBlockNoConnection() {
 		String excMessage = "No connection given for connected block.";
-		exceptionRule.expect(IllegalArgumentException.class);
-		exceptionRule.expectMessage(excMessage);
 
 		for (DynaEnum<? extends DynaEnum<?>> b : BlockType.values()) {
-			dc.addBlock((BlockType) b, "connectedBlockId", ConnectionType.NOCONNECTION);
 			assertExceptionDCAddBlockCombination((BlockType) b, "connectedBlockId", ConnectionType.NOCONNECTION,
 					excMessage);
 			verifyNoInteractions(commandHandler);
@@ -180,12 +189,122 @@ public class DomainControllerTest {
 		verifyNoInteractions(commandHandler);
 	}
 	
+	@Test
+	public void testAddNegativeBlockCaterogry() {
+		String excMessage = "When the blockType is Call there must be a definitionBlockID present";
+		
+		BlockType mockType = Mockito.spy(new BlockType("Call 1", BlockCategory.CALL));
+		assertExceptionDCAddBlockCombination(mockType, null, ConnectionType.NOCONNECTION, excMessage);
+		verifyNoInteractions(commandHandler);
+		BlockType.removeBlockType("1");
+	}
+	
 	/**
 	 * Test method for {@link applicationLayer.DomainController#moveBlock(java.lang.String, java.lang.String, java.lang.String, types.ConnectionType)}.
 	 */
 	@Test
-	public void testMoveBlock() {
-		fail("Not yet implemented");
+	public void testDCMoveBlockNegativeConnectionTypeNull() {
+
+		try {
+			dc.moveBlock("", "", "", null);
+		} catch (Exception e) {
+
+			verify(blockController,times(0)).moveBlock(any(), any(), any(), any());
+		}
+
+		try {
+			dc.moveBlock("1", "", "", null);
+
+		} catch (Exception e) {
+			verify(blockController,times(0)).moveBlock(any(), any(), any(), any());
+		}
+
+		try {
+			dc.moveBlock("1", "", "", null);
+
+		} catch (Exception e) {
+			verify(blockController,times(0)).moveBlock(any(), any(), any(), any());
+		}
+
+		try {
+			dc.moveBlock("1", "", "2", null);
+
+		} catch (Exception e) {
+			verify(blockController,times(0)).moveBlock(any(), any(), any(), any());
+		}
+
+		try {
+			dc.moveBlock("1", "", "3", null);
+
+		} catch (Exception e) {
+			verify(blockController,times(0)).moveBlock(any(), any(), any(), any());
+		}
+
+	}
+
+	@Test
+	public void testDCMoveBlockNegativeExceptions() {
+		String noMovedBlockIdMsg = "No movedBlockID given";
+		String NullAndNoConnectionMsg = "Null given as connection, use ConnectionType.NOCONNECTION.";
+		String NoConnectedAfterMsg = "No blockId given for connectedAfterMovedBlockID";
+
+		// topOfMovedChainBlockId
+		for (ConnectionType c : connectionTypes) {
+			try {
+				dc.moveBlock("", "", "", c);
+			} catch (IllegalArgumentException e) {
+				assertEquals(e.getClass(), IllegalArgumentException.class);
+				assertTrue(e.getMessage().equals(noMovedBlockIdMsg));
+			}
+
+			try {
+				dc.moveBlock(null, "", "", c);
+			} catch (IllegalArgumentException e) {
+				assertEquals(e.getClass(), IllegalArgumentException.class);
+				assertTrue(e.getMessage().equals(noMovedBlockIdMsg));
+			}
+		}
+
+		// connectionAfterMove
+		try {
+			dc.moveBlock("1", "", null, null);
+		} catch (IllegalArgumentException e) {
+			assertEquals(e.getClass(), IllegalArgumentException.class);
+			assertTrue(e.getMessage().equals(NullAndNoConnectionMsg));
+
+		}
+
+		// ConnectionAfterMove = "" and Connection Is not Noconnection.
+		ArrayList<ConnectionType> ConnectionsWithoutNoConnection = (ArrayList<ConnectionType>) connectionTypes.clone();
+		ConnectionsWithoutNoConnection.remove(ConnectionType.NOCONNECTION);
+
+		for (ConnectionType c : ConnectionsWithoutNoConnection) {
+			try {
+				dc.moveBlock("1", "", "", c);
+			} catch (IllegalArgumentException e) {
+				assertEquals(e.getClass(), IllegalArgumentException.class);
+				assertTrue(e.getMessage().equals(NoConnectedAfterMsg));
+			}
+		}
+	}
+
+	@Test
+	public void testDCMovePositive() {
+
+		ArrayList<ConnectionType> ConnectionsWithoutNoConnection = (ArrayList<ConnectionType>) connectionTypes.clone();
+		ConnectionsWithoutNoConnection.remove(ConnectionType.NOCONNECTION);
+
+		for (ConnectionType connectionType : ConnectionsWithoutNoConnection) {
+
+			dc.moveBlock("1", "", "3", connectionType);
+			dc.moveBlock("1", "2", "3", connectionType);
+			verify(commandHandler,atLeast(2)).handle(any(MoveBlockCommand.class));
+		}
+
+		dc.moveBlock("1", null, "", ConnectionType.NOCONNECTION);
+		dc.moveBlock("1", "", "", ConnectionType.NOCONNECTION);
+		verify(commandHandler,atLeast(2)).handle(any(MoveBlockCommand.class));
+
 	}
 
 	/**

@@ -10,7 +10,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Mock;
+import org.mockito.*;
+import org.mockito.Mockito.*;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import types.BlockCategory;

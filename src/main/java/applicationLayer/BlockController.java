@@ -400,7 +400,7 @@ public class BlockController implements GUISubject, DomainSubject {
 		fireResetExecutionEvent();
 	}
 
-	private void fireBlockAdded(BlockSnapshot snapshot) {
+	 void fireBlockAdded(BlockSnapshot snapshot) {
 
 		ConnectionType after = programBlockRepository.getConnectionType(snapshot.getConnectedBlockAfterSnapshot(),
 				snapshot.getBlock());

@@ -6,7 +6,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({ BlockFactoryTest.class, BlockIDGeneratorTest.class, BlockRepositoryTest.class, BlocksTest.class,
-		MoveBlockBRTest.class })
+		TestMoveBlockBlockRepository.class })
 public class Blocks {
 
 }
