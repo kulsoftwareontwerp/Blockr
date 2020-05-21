@@ -41,7 +41,9 @@ public class BlockIDGeneratorTest {
 	 */
 	@Test
 	public void testGenerateBlockID() {
-		assertEquals("0", gen.generateBlockID());
+		String id1 = gen.generateBlockID();
+		String id2 = gen.generateBlockID();
+		assertTrue(id1 != null && id2 != null && !id1.equals(id2));
 	}
 
 }
