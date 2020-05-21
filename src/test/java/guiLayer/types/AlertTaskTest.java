@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 
 import java.lang.reflect.Field;
@@ -22,6 +22,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 
 import applicationLayer.DomainController;
 import guiLayer.CanvasWindow;
@@ -49,7 +51,10 @@ public class AlertTaskTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		window = spy(new CanvasWindow("test", mock(DomainController.class)));
+	
+		
+		DomainController dc= mock(DomainController.class);
+		window=spy(new CanvasWindow("test", dc));
 	}
 
 	/**
@@ -99,15 +104,6 @@ public class AlertTaskTest {
 		exceptionRule.expectMessage(excMessage);
 		
 		AlertTask at = new AlertTask(null, "test");
-		try {
-			Field f = AlertTask.class.getDeclaredField("window");
-			f.setAccessible(true);
-			assertEquals(window,f.get(at));
-		} catch (Exception e) {
-			fail("fields not initialized");
-		}
-	
-		verify(window,times(0)).showAlert(message.capture());	
 	}
 
 }
