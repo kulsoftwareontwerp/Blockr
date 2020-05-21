@@ -32,6 +32,8 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.kuleuven.swop.group17.Graphics.CanvasResource;
+
 import applicationLayer.DomainController;
 import events.BlockAddedEvent;
 import events.BlockChangeEvent;
@@ -633,7 +635,7 @@ public class CanvasWindowTest implements Constants {
 	 * Test method for {@link guiLayer.CanvasWindow#handleKeyEvent(int, int, char)}.
 	 */
 	@Test
-	public void testHandleKeyEvent_Typed_R_KEY() {
+	public void testHandleKeyEvent_Typed_D_KEY() {
 		
 		DebugModus debugModus = Mockito.spy(DebugModus.NONE);
 		try {
@@ -645,11 +647,12 @@ public class CanvasWindowTest implements Constants {
 			System.out.println("Exception while injecting");
 		}
 		
-		when(debugModus.getNext()).thenReturn(DebugModus.CONNECTIONS);
-		
 		canvasWindow.handleKeyEvent(KeyEvent.KEY_TYPED, KeyEvent.VK_UNDEFINED, 'd');
 		
-		verify(canvasWindow,atLeastOnce()).repaint();
+		
+		
+		
+		verify(canvasWindow,atLeastOnce()).superRepaint();
 		
 	}
 

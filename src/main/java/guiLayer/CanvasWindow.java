@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.stream.Collectors;
 
+import com.kuleuven.swop.group17.Graphics.CanvasResource;
+
 import applicationLayer.DomainController;
 import events.BlockAddedEvent;
 import events.BlockChangeEvent;
@@ -43,9 +45,6 @@ import types.ConnectionType;
 
 public class CanvasWindow extends CanvasResource implements GUIListener, Constants {
 
-	
-
-
 	private CommandHandler commandHandler;
 
 	private ProgramArea programArea;
@@ -66,7 +65,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private MaskedKeyBag maskedKeyBag;
 
 	private GuiSnapshot currentSnapshot;
-	private int programAndGameBorder=INITIAL_PROGRAM_GAME_BORDER_X;
+	private int programAndGameBorder = INITIAL_PROGRAM_GAME_BORDER_X;
 
 	// This Constructor is only used for Testing Purposes. This should NEVER be
 	// called upon, and is only public for the purpose of instantiating the
@@ -174,6 +173,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		totalHeight += 55; // Padding at the bottom
 		if (super.height != totalHeight) {
+
 			super.height = totalHeight;
 			System.out.println(totalHeight);
 			return true;
@@ -329,19 +329,19 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		if (alertMessage == null) {
 //			calculateWindowHeight();
 			int tempGameBorder = g.getClipBounds().width - GAME_WIDTH;
-			if(tempGameBorder>=INITIAL_PROGRAM_GAME_BORDER_X) {
-				programAndGameBorder=tempGameBorder;
+			if (tempGameBorder >= INITIAL_PROGRAM_GAME_BORDER_X) {
+				programAndGameBorder = tempGameBorder;
 				programArea.setProgramAndGameBorder(programAndGameBorder);
 			}
-			int windowHeight =g.getClipBounds().height;
-			
-			Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, programAndGameBorder, windowHeight );
-			
+			int windowHeight = g.getClipBounds().height;
+
+			Graphics blockrGraphics = g.create(PALETTE_START_X, ORIGIN, programAndGameBorder, windowHeight);
+
 			int yPositionGameArea = ORIGIN;
-			if(windowHeight>GAME_HEIGHT) {
-				yPositionGameArea = (windowHeight-GAME_HEIGHT)/2;
+			if (windowHeight > GAME_HEIGHT) {
+				yPositionGameArea = (windowHeight - GAME_HEIGHT) / 2;
 			}
-			
+
 			Graphics gameAreaGraphics = g.create(programAndGameBorder, yPositionGameArea, GAME_WIDTH, GAME_HEIGHT);
 
 			// only for debugging purposes
@@ -380,19 +380,19 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					}
 				}
 			}
-		}else{
+		} else {
 			int w = g.getClipBounds().width;
 			int h = g.getClipBounds().height;
 			int mW = 7 * alertMessage.length();
 			int mH = 30;
 			g.setColor(Color.RED);
-			
-			g.fillRect(0, 0,w , h);
+
+			g.fillRect(0, 0, w, h);
 			g.setColor(Color.WHITE);
-			
-			g.fillRect((w-mW)/2, (h-20)/2, mW,20);
+
+			g.fillRect((w - mW) / 2, (h - 20) / 2, mW, 20);
 			g.setColor(Color.BLACK);
-			g.drawString(alertMessage, ((w-mW)/2)+20, ((h-20)/2)+10);
+			g.drawString(alertMessage, ((w - mW) / 2) + 20, ((h - 20) / 2) + 10);
 		}
 
 	}
@@ -803,6 +803,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia(), true);
 	}
 
+	/**
+	 * Call super.repaint
+	 */
+	void superRepaint() {
+		repaint();
+	}
+
 	@Override
 	protected void handleKeyEvent(int id, int keyCode, char keyChar) {
 		try {
@@ -867,12 +874,14 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 				if (keyChar == 'd') {
 					// d key 68
 					debugModus = debugModus.getNext();
-					repaint();
+					superRepaint();
 				}
 			}
 		} catch (StackOverflowError e) {
 			Timer alertTimer = new Timer();
-			alertTimer.schedule(new AlertTask(this, "An error happened because you created an infinite loop. This message disappears in 10 seconds"), ALERTMESSAGE_DURATION);
+			alertTimer.schedule(new AlertTask(this,
+					"An error happened because you created an infinite loop. This message disappears in 10 seconds"),
+					ALERTMESSAGE_DURATION);
 		}
 	}
 

@@ -1,7 +1,5 @@
 package guiLayer.shapes;
 
-import static org.junit.Assert.assertEquals;
-
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
