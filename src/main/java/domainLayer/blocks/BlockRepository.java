@@ -872,7 +872,7 @@ public class BlockRepository {
 		Boolean valid = true;
 		for (Block block : headBlocks) {
 			headBlock = allBlocks.get(block.getBlockId());
-			valid = CheckIfChainIsValid(headBlock);
+			valid = checkIfChainIsValid(headBlock);
 			if (!valid) {
 				break;
 			}
@@ -887,10 +887,10 @@ public class BlockRepository {
 	 * @param nextBlockInChain First block of the chain to check.
 	 * @return A flag indicating if the chain is valid or not.
 	 */
-	public boolean CheckIfChainIsValid(Block nextBlockInChain) {
+	public boolean checkIfChainIsValid(Block nextBlockInChain) {
 		while (nextBlockInChain != null) {
 			if (nextBlockInChain instanceof BodyCavityBlock) {
-				if (!CheckIfChainIsValid(nextBlockInChain.getFirstBlockOfBody())) {
+				if (!checkIfChainIsValid(nextBlockInChain.getFirstBlockOfBody())) {
 					return false;
 				}
 			}
@@ -905,26 +905,6 @@ public class BlockRepository {
 		}
 		return true;
 	}
-
-//	/**
-//	 * Method used to check if ControlBlock is in a valid state.
-//	 * 
-//	 * @param block The controlblock that needs to be checked.
-//	 * @return A flag indicating if the controlBlock is in a valid state or not.
-//	 */
-//	boolean checkIfValidControlBlock(ControlBlock block) {
-//		if (block.getConditionBlock() == null)
-//			return false;
-//		if (block.getConditionBlock() instanceof OperatorBlock)
-//			return checkIfValidStatement(block.getConditionBlock());
-//		
-//		
-//		
-//		if (block.getFirstBlockOfBody() != null) {
-//			return CheckIfChainIsValid(block.getFirstBlockOfBody());
-//		}
-//		return true;
-//	}
 
 	/**
 	 * method used to check if a chain of operand finishes with a conditionBlock.
@@ -1008,7 +988,8 @@ public class BlockRepository {
 		if (connectedBlock.isPresent()) {
 			// index 1: ID
 			// index 0: connection
-			ArrayList<String> parentInfo = getConnectedParentIfExists(connectedBlock.get().getBlockId());
+			String temp = connectedBlock.get().getBlockId();
+			ArrayList<String> parentInfo = getConnectedParentIfExists(temp);
 
 			Block firstParent = getBlockByID(parentInfo.get(1));
 
@@ -1056,7 +1037,6 @@ public class BlockRepository {
 		return this.getMaxNbOfBlocks() <= this.allBlocks.size();
 	}
 
-	// TODO: how to test this?
 	/**
 	 * Retrieve the instantiation of BlockRepository.
 	 * 
@@ -1302,7 +1282,6 @@ public class BlockRepository {
 			getAllBlocksConnectedToAndAfterACertainBlock(snapshot.getBlock()).stream()
 					.filter(s -> (!s.getBlockId().equals(snapshot.getBlock().getBlockId()) && headBlocks.contains(s)))
 					.forEach(s -> headBlocks.remove(s));
-			;
 
 			for (Block b : connectedBlocks) {
 				addBlockToAllBlocks(b);
@@ -1341,8 +1320,7 @@ public class BlockRepository {
 				}
 
 				if (getAllBlockIDsUnderneath(getBlockByID(b.getBlockId())).contains(cb.getBlockId())) {
-					addBlockToHeadBlocks(cb);
-//					addBlockToHeadBlocks(b);					
+					addBlockToHeadBlocks(cb);				
 				} else {
 					addBlockToHeadBlocks(b);
 				}
@@ -1363,33 +1341,6 @@ public class BlockRepository {
 				if (headBlocks.stream().anyMatch(s -> s.getBlockId().equals(b.getBlockId()))) {
 					removeBlockFromHeadBlocks(b);
 				} else {
-					/**
-					 * This part of the code looks for the top of a chain within the changed blocks
-					 * of a snapshot.
-					 */
-
-//					boolean foundParent = true;
-//					Block topOfMoveBlock=b;
-//					String topOfMoveBlockId = b.getBlockId();
-//					while (foundParent) {
-//						Optional<Block> topOfMoveBlockCheck = snapshot.getChangingBlocks().stream()
-//								.filter(s -> (s.getConditionBlock() != null
-//										&& s.getConditionBlock().getBlockId().equals(topOfMoveBlockId))
-//										|| (s.getNextBlock() != null
-//												&& s.getNextBlock().getBlockId().equals(topOfMoveBlockId))
-//										|| (s.getFirstBlockOfBody() != null
-//												&& s.getFirstBlockOfBody().getBlockId().equals(topOfMoveBlockId))
-//										|| (s.getConditionBlock() != null
-//												&& s.getConditionBlock().getBlockId().equals(topOfMoveBlockId))
-//										|| (s.getOperand() != null
-//												&& s.getOperand().getBlockId().equals(topOfMoveBlockId)))
-//								.findFirst();
-//						foundParent=topOfMoveBlockCheck.isPresent();
-//						if(foundParent) {
-//							topOfMoveBlock=topOfMoveBlockCheck.get();
-//							topOfMoveBlockId=topOfMoveBlock.getBlockId();
-//						}
-//					}
 					Optional<Block> topOfMoveBlock = snapshot.getChangingBlocks().stream()
 							.filter(s -> headBlocks.stream().anyMatch(d -> d.getBlockId().equals(s.getBlockId())))
 							.findFirst();

@@ -90,6 +90,22 @@ public class BlockFactoryTest {
 	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType)}.
 	 */
 	@Test
+	public void testCreateBlock_Definition_Positive() {		
+		assertTrue(factory.createBlock(new BlockType("Definition", BlockCategory.DEFINITION)) instanceof DefinitionBlock);
+	}
+
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType)}.
+	 */
+	@Test
+	public void testCreateBlock_CallFunctionBlock_Positive() {		
+		assertTrue(factory.createBlock(new BlockType("Call", BlockCategory.CALL)) instanceof CallFunctionBlock);
+	}
+	
+	/**
+	 * Test method for {@link domainLayer.blocks.BlockFactory#createBlock(types.BlockType)}.
+	 */
+	@Test
 	public void testCreateBlock_WrongControl_IllegalArgumentException() {		
 		String excMessage = "Unexpected value: WrongType";
 		exceptionRule.expect(IllegalArgumentException.class);
@@ -97,16 +113,5 @@ public class BlockFactoryTest {
 		
 		assertTrue(factory.createBlock(new BlockType("WrongType", BlockCategory.CONTROL)) instanceof WhileBlock);
 	}
-	
-	@Test
-	public void testCreateBlock_Definition_Positive() {
-		assertTrue(factory.createBlock(new BlockType("Definition", BlockCategory.DEFINITION)) instanceof DefinitionBlock);
-	}
-	
-	@Test
-	public void testCreateBlock_Call_Positive() {
-		assertTrue(factory.createBlock(new BlockType("Call", BlockCategory.CALL)) instanceof CallFunctionBlock);
-	}
-	
 
 }
