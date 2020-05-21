@@ -26,8 +26,6 @@ public abstract class Shape implements Constants, Cloneable {
 	private Coordinate coordinate;
 
 	private Coordinate previousCoordinate;
-	private int previousHeight;
-
 	private HashSet<Coordinate> coordinatesShape;
 
 	private HashMap<ConnectionType, Coordinate> coordinateConnectionMap; // Plugs and Sockets
@@ -37,22 +35,12 @@ public abstract class Shape implements Constants, Cloneable {
 
 	private ConnectionType previouslyConnectedVia;
 
-	/**
-	 * Retrieve the previously connectedVia ConnectionType of this shape
-	 * @return the previously connectedVia connectionType of this shape
-	 */
-	public ConnectionType getPreviouslyConnectedVia() {
-		return previouslyConnectedVia;
-	}
-
-	private void setPreviouslyConnectedVia(ConnectionType previouslyConnectedVia) {
-		this.previouslyConnectedVia = previouslyConnectedVia;
-	}
-
 	private int height = 0;
-	private int width = 0;
-	private boolean cloneSupported;
 
+	private int previousHeight;
+	private int width = 0;
+
+	private boolean cloneSupported;
 
 	/**
 	 * Create a new shape with the given id, type and coordinate
@@ -62,7 +50,7 @@ public abstract class Shape implements Constants, Cloneable {
 	 * @param coordinate the coordinate for the shape.
 	 */
 	public Shape(String id, BlockType type, Coordinate coordinate) {
-		cloneSupported=true;
+		cloneSupported = true;
 		setId(id);
 		setType(type);
 		setCoordinate(coordinate);
@@ -82,70 +70,19 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 	/**
-	 * Clip this shape on the given connection of the given shape
+	 * Retrieve the ID of the DefinitionShape associated with this shape. Returns
+	 * Null when there is no associated DefinitionShape.
 	 * 
-	 * @param shape      the shape to clip on
-	 * @param connection the connection to clip on
+	 * @return the ID of the DefinitionShape associated with this shape. Returns
+	 *         Null when there is no associated DefinitionShape.
 	 */
-	public abstract void clipOn(Shape shape, ConnectionType connection);
-
-	/**
-	 * Draw this shape
-	 * 
-	 * @param g The graphics object to draw on.
-	 */
-	public abstract void draw(Graphics g); // Each Type of Shape implements its own method
-
-	/**
-	 * Fill the shape with it's coordinates, retrieve the coordinates of its filling
-	 * 
-	 * @return the coordinates filling a shape.
-	 */
-	abstract HashSet<Coordinate> fillShapeWithCoordinates();
-
-	/**
-	 * Determine the height of the shape
-	 * 
-	 * @param internals all blocks contained in this block.
-	 */
-	public void determineTotalHeight(Set<Shape> internals) {
-
-	}
-
-	/**
-	 * Retrieve the standard height of a shape
-	 * 
-	 * @return The standard height of a shape.
-	 */
-	protected Integer getStandardHeight() {
-		return STANDARD_HEIGHT_BLOCK;
-	}
-
-	
-	/**
-	 * Retrieve the triggerSet for this shape at the given connection
-	 * @param connection the connection to get the triggerSet of
-	 * @return a Set of Coordinates containing all the coordinates associated with the given connection's Trigger
-	 */
-	public Set<Coordinate> getTriggerSet(ConnectionType connection) {
-		HashSet<Coordinate> triggerSet = new HashSet<Coordinate>();
-
-		if (getCoordinateConnectionMap().keySet().contains(connection)) {
-			int x_current = getCoordinateConnectionMap().get(connection).getX();
-			int y_current = getCoordinateConnectionMap().get(connection).getY();
-
-			for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
-				for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
-					triggerSet.add(new Coordinate(i, j));
-				}
-			}
-		}
-
-		return triggerSet;
+	public String getDefinitionShapeID() {
+		return null;
 	}
 
 	/**
 	 * Retrieve the id for this shape
+	 * 
 	 * @return the id for this shape
 	 */
 	public String getId() {
@@ -154,6 +91,7 @@ public abstract class Shape implements Constants, Cloneable {
 
 	/**
 	 * Set the id of this shape
+	 * 
 	 * @param id the id to set this shape to
 	 */
 	public void setId(String id) {
@@ -162,6 +100,7 @@ public abstract class Shape implements Constants, Cloneable {
 
 	/**
 	 * Retrieve the type of this shape
+	 * 
 	 * @return the BlockType associated with this shape
 	 */
 	public BlockType getType() {
@@ -170,14 +109,38 @@ public abstract class Shape implements Constants, Cloneable {
 
 	/**
 	 * Set the BlockType of this shape
+	 * 
 	 * @param type the blockType for this shape
 	 * @throws NullPointerException when type is null
 	 */
 	public void setType(BlockType type) {
-		if(type==null) {
+		if (type == null) {
 			throw new NullPointerException("there must be a type set for the shape");
 		}
 		this.type = type;
+	}
+
+	/**
+	 * Retrieve the coordinate of this shape
+	 * 
+	 * @return the coordinate of this shape.
+	 */
+	public Coordinate getCoordinate() {
+		return coordinate;
+	}
+
+	/**
+	 * Set the coordinate for this shape
+	 * 
+	 * @param coordinate the coordinate for this shape, if Null is given a
+	 *                   coordinate with x=0 and y=0 will be set.
+	 */
+	public void setCoordinate(Coordinate coordinate) {
+		if (coordinate == null) {
+			this.coordinate = new Coordinate(0, 0);
+		} else {
+			this.coordinate = coordinate;
+		}
 	}
 
 	/**
@@ -235,156 +198,6 @@ public abstract class Shape implements Constants, Cloneable {
 	}
 
 	/**
-	 * Set the coordinate for this shape
-	 * 
-	 * @param coordinate the coordinate for this shape, if Null is given a
-	 *                   coordinate with x=0 and y=0 will be set.
-	 */
-	public void setCoordinate(Coordinate coordinate) {
-		if (coordinate == null) {
-			this.coordinate = new Coordinate(0, 0);
-		} else {
-			this.coordinate = coordinate;
-		}
-	}
-
-	/**
-	 * Retrieve all the coordinates within this shape, execute setCoordinatesShape
-	 * first to retrieve the latest coordinates of this shape
-	 * 
-	 * @return all coordinates within this shape
-	 */
-	public HashSet<Coordinate> getCoordinatesShape() {
-		return coordinatesShape;
-	}
-
-	/**
-	 * Set the coordinates of this shape, all coordinates contained within this
-	 * shape will be set and will be accessible trough getCoordinatesShape.
-	 */
-	public void setCoordinatesShape() {
-		this.coordinatesShape = fillShapeWithCoordinates();
-	}
-
-	/**
-	 * Retrieve the coordinateConnectionMap of this shape
-	 * 
-	 * @return the coordinateConnectionMap of this shape
-	 */
-	public HashMap<ConnectionType, Coordinate> getCoordinateConnectionMap() {
-		return coordinateConnectionMap;
-	}
-
-	/**
-	 * Set the coordinateConnectionMap of this shape
-	 * 
-	 * @param coordinateConnectionMap the coordinateConnectionMap of this shape
-	 */
-	protected void setCoordinateConnectionMap(HashMap<ConnectionType, Coordinate> coordinateConnectionMap) {
-		this.coordinateConnectionMap = coordinateConnectionMap;
-	}
-
-	/**
-	 * Retrieve the ID of the DefinitionShape associated with this shape. Returns Null when there is no associated DefinitionShape.
-	 * @return the ID of the DefinitionShape associated with this shape. Returns Null when there is no associated DefinitionShape.
-	 */
-	public String getDefinitionShapeID() {
-		return null;
-	}
-	
-	/**
-	 * Retrieve the connectedVia of this shape If a temporary connectedvia was set
-	 * this will be returned
-	 * 
-	 * @return connectedvia or temporary connectedvia if it has been set.
-	 */
-	public ConnectionType getConnectedVia() {
-		if (tempConnectedVia != null) {
-			return tempConnectedVia;
-		} else {
-			return connectedVia;
-		}
-	}
-
-	/**
-	 * Set the connectedVia of this shape
-	 * 
-	 * @param connectedVia The ConnectionType to set the connectedvia of this shape
-	 *                     to.
-	 * @param persist      a flag indicating if the currently set connectedVia must
-	 *                     be preserved or can be forgotten after a revert.
-	 */
-	public void setConnectedVia(ConnectionType connectedVia, Boolean persist) {
-		if (persist) {
-			tempConnectedVia = null;
-			setPreviouslyConnectedVia(this.getConnectedVia());
-			this.connectedVia = connectedVia;
-		} else {
-			tempConnectedVia = connectedVia;
-		}
-	}
-
-	/**
-	 * Persist or revert the temporary connectedvia If no temporary connectedvia is
-	 * assigned this method will do nothing.
-	 * 
-	 * @param persist True if the temporary connectedVia needs to be saved. False if
-	 *                the temporary connectedVia needs to be discarded.
-	 */
-	public void persistConnectedVia(Boolean persist) {
-		if (persist && tempConnectedVia != null) {
-			setConnectedVia(tempConnectedVia, true);
-		} else {
-			tempConnectedVia = null;
-		}
-	}
-
-	/**
-	 * Retrieve the height of this shape
-	 * 
-	 * @return the height of this shape
-	 */
-	public int getHeight() {
-		return height;
-	}
-
-	/**
-	 * Set the height of this shape, updates the previous height with the previous
-	 * height.
-	 * 
-	 * @param height the height to set this shape to.
-	 */
-	public void setHeight(int height) {
-		setPreviousHeight(getHeight());
-		this.height = height;
-	}
-
-	/**
-	 * Retrieve the width of a shape
-	 * 
-	 * @return the width of a shape
-	 */
-	public int getWidth() {
-		return width;
-	}
-
-	/**
-	 * Set the width of a shape
-	 * 
-	 * @param width the width to set to the shape
-	 */
-	public void setWidth(int width) {
-		this.width = width;
-	}
-
-	/**
-	 * Define the connections, and their Coordinates.
-	 */
-	public abstract void defineConnectionTypes();
-
-	abstract void initDimensions();
-
-	/**
 	 * Retrieve the previous x coordinate.
 	 * 
 	 * @return the previous x coordinate
@@ -434,35 +247,140 @@ public abstract class Shape implements Constants, Cloneable {
 		}
 	}
 
-	@Override
-	public int hashCode() {
-		return getId().hashCode() + getType().hashCode();
+	/**
+	 * Retrieve all the coordinates within this shape, execute setCoordinatesShape
+	 * first to retrieve the latest coordinates of this shape
+	 * 
+	 * @return all coordinates within this shape
+	 */
+	public HashSet<Coordinate> getCoordinatesShape() {
+		return coordinatesShape;
 	}
 
-	@Override
-	public Shape clone() {
-		Shape s = null;
-		try {
+	/**
+	 * Set the coordinates of this shape, all coordinates contained within this
+	 * shape will be set and will be accessible trough getCoordinatesShape.
+	 */
+	public void setCoordinatesShape() {
+		this.coordinatesShape = fillShapeWithCoordinates();
+	}
 
-			if(cloneSupported) {
-			s = (Shape) super.clone();
-			s.coordinateConnectionMap = new HashMap<ConnectionType, Coordinate>(this.coordinateConnectionMap);
-			s.coordinatesShape = new HashSet<Coordinate>(this.coordinatesShape);
-			} else {
-				throw new CloneNotSupportedException();
-			}
-		} catch (CloneNotSupportedException e) {
-			new RuntimeException(e);
+	/**
+	 * Retrieve the coordinateConnectionMap of this shape
+	 * 
+	 * @return the coordinateConnectionMap of this shape
+	 */
+	public HashMap<ConnectionType, Coordinate> getCoordinateConnectionMap() {
+		return coordinateConnectionMap;
+	}
+
+	/**
+	 * Set the coordinateConnectionMap of this shape
+	 * 
+	 * @param coordinateConnectionMap the coordinateConnectionMap of this shape
+	 */
+	protected void setCoordinateConnectionMap(HashMap<ConnectionType, Coordinate> coordinateConnectionMap) {
+		this.coordinateConnectionMap = coordinateConnectionMap;
+	}
+
+	/**
+	 * Retrieve the connectedVia of this shape If a temporary connectedvia was set
+	 * this will be returned
+	 * 
+	 * @return connectedvia or temporary connectedvia if it has been set.
+	 */
+	public ConnectionType getConnectedVia() {
+		if (tempConnectedVia != null) {
+			return tempConnectedVia;
+		} else {
+			return connectedVia;
 		}
-		return s;
 	}
 
-	@Override
-	public boolean equals(Object o) {
-		if (!(o instanceof Shape))
-			return false;
-		Shape shapeo = (Shape) o;
-		return this.getId().equals(shapeo.getId()) && getType().equals(shapeo.getType());
+	/**
+	 * Set the connectedVia of this shape
+	 * 
+	 * @param connectedVia The ConnectionType to set the connectedvia of this shape
+	 *                     to.
+	 * @param persist      a flag indicating if the currently set connectedVia must
+	 *                     be preserved or can be forgotten after a revert.
+	 */
+	public void setConnectedVia(ConnectionType connectedVia, Boolean persist) {
+		if (persist) {
+			tempConnectedVia = null;
+			setPreviouslyConnectedVia(this.getConnectedVia());
+			this.connectedVia = connectedVia;
+		} else {
+			tempConnectedVia = connectedVia;
+		}
+	}
+
+	/**
+	 * Persist or revert the temporary connectedvia If no temporary connectedvia is
+	 * assigned this method will do nothing.
+	 * 
+	 * @param persist True if the temporary connectedVia needs to be saved. False if
+	 *                the temporary connectedVia needs to be discarded.
+	 */
+	public void persistConnectedVia(Boolean persist) {
+		if (persist && tempConnectedVia != null) {
+			setConnectedVia(tempConnectedVia, true);
+		} else {
+			tempConnectedVia = null;
+		}
+	}
+
+	/**
+	 * Retrieve the previously connectedVia ConnectionType of this shape
+	 * 
+	 * @return the previously connectedVia connectionType of this shape
+	 */
+	public ConnectionType getPreviouslyConnectedVia() {
+		return previouslyConnectedVia;
+	}
+
+	private void setPreviouslyConnectedVia(ConnectionType previouslyConnectedVia) {
+		this.previouslyConnectedVia = previouslyConnectedVia;
+	}
+
+	/**
+	 * Retrieve the standard height of a shape
+	 * 
+	 * @return The standard height of a shape.
+	 */
+	protected Integer getStandardHeight() {
+		return STANDARD_HEIGHT_BLOCK;
+	}
+
+	/**
+	 * Retrieve the height of this shape
+	 * 
+	 * @return the height of this shape
+	 */
+	public int getHeight() {
+		return height;
+	}
+
+	/**
+	 * Retrieve the height difference between the previous height and the current
+	 * height.
+	 * 
+	 * @return the height difference between the previous height and the current
+	 *         height.
+	 */
+	public int getHeightDiff() {
+		return getHeight() - getPreviousHeight();
+	}
+
+	/**
+	 * Set the height of this shape, updates the previous height with the previous
+	 * height.
+	 * 
+	 * @param height the height to set this shape to.
+	 */
+	public void setHeight(int height) {
+		setPreviousHeight(getHeight());
+		this.height = height;
 	}
 
 	/**
@@ -476,6 +394,118 @@ public abstract class Shape implements Constants, Cloneable {
 
 	private void setPreviousHeight(int previousHeight) {
 		this.previousHeight = previousHeight;
+	}
+
+	/**
+	 * Retrieve the width of a shape
+	 * 
+	 * @return the width of a shape
+	 */
+	public int getWidth() {
+		return width;
+	}
+
+	/**
+	 * Set the width of a shape
+	 * 
+	 * @param width the width to set to the shape
+	 */
+	public void setWidth(int width) {
+		this.width = width;
+	}
+
+	/**
+	 * Retrieve the triggerSet for this shape at the given connection
+	 * 
+	 * @param connection the connection to get the triggerSet of
+	 * @return a Set of Coordinates containing all the coordinates associated with
+	 *         the given connection's Trigger
+	 */
+	public Set<Coordinate> getTriggerSet(ConnectionType connection) {
+		HashSet<Coordinate> triggerSet = new HashSet<Coordinate>();
+
+		if (getCoordinateConnectionMap().keySet().contains(connection)) {
+			int x_current = getCoordinateConnectionMap().get(connection).getX();
+			int y_current = getCoordinateConnectionMap().get(connection).getY();
+
+			for (int i = x_current - TRIGGER_RADIUS_CLIPON; i < x_current + TRIGGER_RADIUS_CLIPON; i++) {
+				for (int j = y_current - TRIGGER_RADIUS_CLIPON; j < y_current + TRIGGER_RADIUS_CLIPON; j++) {
+					triggerSet.add(new Coordinate(i, j));
+				}
+			}
+		}
+
+		return triggerSet;
+	}
+
+	/**
+	 * Clip this shape on the given connection of the given shape
+	 * 
+	 * @param shape      the shape to clip on
+	 * @param connection the connection to clip on
+	 */
+	public abstract void clipOn(Shape shape, ConnectionType connection);
+
+	/**
+	 * Draw this shape
+	 * 
+	 * @param g The graphics object to draw on.
+	 */
+	public abstract void draw(Graphics g); // Each Type of Shape implements its own method
+
+	/**
+	 * Fill the shape with it's coordinates, retrieve the coordinates of its filling
+	 * 
+	 * @return the coordinates filling a shape.
+	 */
+	abstract HashSet<Coordinate> fillShapeWithCoordinates();
+
+	/**
+	 * Determine the height of the shape
+	 * 
+	 * @param internals all blocks contained in this block.
+	 */
+	public void determineTotalHeight(Set<Shape> internals) {
+		defineConnectionTypes();
+		setCoordinatesShape();
+	}
+
+	/**
+	 * Define the connections, and their Coordinates.
+	 */
+	public abstract void defineConnectionTypes();
+
+	abstract void initDimensions();
+
+	@Override
+	public int hashCode() {
+		return getId().hashCode() + getType().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof Shape))
+			return false;
+		Shape shapeo = (Shape) o;
+		return this.getId().equals(shapeo.getId()) && getType().equals(shapeo.getType());
+	}
+
+	@Override
+	public Shape clone() {
+		Shape s = null;
+		try {
+
+			if (cloneSupported) {
+				s = (Shape) super.clone();
+				s.coordinateConnectionMap = new HashMap<ConnectionType, Coordinate>(this.coordinateConnectionMap);
+				s.coordinatesShape = new HashSet<Coordinate>(this.coordinatesShape);
+			} else {
+				throw new CloneNotSupportedException();
+			}
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+		return s;
 	}
 
 	/**
@@ -501,26 +531,6 @@ public abstract class Shape implements Constants, Cloneable {
 		builder.append(coordinate);
 		builder.append("]");
 		return builder.toString();
-	}
-
-	/**
-	 * Retrieve the coordinate of this shape
-	 * 
-	 * @return the coordinate of this shape.
-	 */
-	public Coordinate getCoordinate() {
-		return coordinate;
-	}
-
-	/**
-	 * Retrieve the height difference between the previous height and the current
-	 * height.
-	 * 
-	 * @return the height difference between the previous height and the current
-	 *         height.
-	 */
-	public int getHeightDiff() {
-		return getHeight() - getPreviousHeight();
 	}
 
 }
