@@ -33,16 +33,16 @@ import types.ConnectionType;
 import types.DynaEnum;
 
 /**
- * /** ConditionShapeTest
+ * /** UnaryOperatorShapeTest
  * 
  * @version 0.1
  * @author group17
  *
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ConditionShapeTest {
+public class UnaryOperatorShapeTest {
 	@Spy
-	ConditionShape shape = new ConditionShape("test", new BlockType("test", BlockCategory.CONDITION),
+	UnaryOperatorShape shape = new UnaryOperatorShape("test", new BlockType("test", BlockCategory.OPERATOR),
 			new Coordinate(0, 0));
 
 	private static class TestType extends DynaEnum<TestType> {
@@ -76,7 +76,7 @@ public class ConditionShapeTest {
 
 	/**
 	 * Test method for
-	 * {@link guiLayer.shapes.ConditionShape#clipOn(guiLayer.shapes.Shape, types.ConnectionType)}.
+	 * {@link guiLayer.shapes.UnaryOperatorShape#clipOn(guiLayer.shapes.Shape, types.ConnectionType)}.
 	 */
 	@Test
 	public void testClipOn() {
@@ -91,6 +91,10 @@ public class ConditionShapeTest {
 				assertEquals(clip.getX_coord() + 80, shape.getX_coord());
 				assertEquals(clip.getY_coord(), shape.getY_coord());
 				break;
+			case LEFT:
+				assertEquals(clip.getX_coord() - 80, shape.getX_coord());
+				assertEquals(clip.getY_coord(), shape.getY_coord());
+				break;
 			default:
 				assertEquals(previous, shape.getCoordinate());
 				break;
@@ -101,7 +105,7 @@ public class ConditionShapeTest {
 
 	/**
 	 * Test method for
-	 * {@link guiLayer.shapes.ConditionShape#draw(java.awt.Graphics)}.
+	 * {@link guiLayer.shapes.UnaryOperatorShape#draw(java.awt.Graphics)}.
 	 */
 	@Test
 	public void testDraw() {
@@ -117,7 +121,7 @@ public class ConditionShapeTest {
 
 	/**
 	 * Test method for
-	 * {@link guiLayer.shapes.ConditionShape#fillShapeWithCoordinates()}.
+	 * {@link guiLayer.shapes.UnaryOperatorShape#fillShapeWithCoordinates()}.
 	 */
 	@Test
 	public void testFillShapeWithCoordinates() {
@@ -127,7 +131,7 @@ public class ConditionShapeTest {
 
 	/**
 	 * Test method for
-	 * {@link guiLayer.shapes.ConditionShape#defineConnectionTypes()}.
+	 * {@link guiLayer.shapes.UnaryOperatorShape#defineConnectionTypes()}.
 	 */
 	@Test
 	public void testDefineConnectionTypes() {
@@ -142,6 +146,7 @@ public class ConditionShapeTest {
 
 			HashMap<ConnectionType, Coordinate> connectionMap = shape.getCoordinateConnectionMap();
 			connectionMap.put(ConnectionType.LEFT, new Coordinate(shape.getX_coord() + 10, shape.getY_coord() + 15));
+			connectionMap.put(ConnectionType.OPERAND, new Coordinate(shape.getX_coord() + 90, shape.getY_coord() + 15));
 
 			assertEquals(connectionMap, f.get(shape));
 
@@ -151,7 +156,7 @@ public class ConditionShapeTest {
 	}
 
 	/**
-	 * Test method for {@link guiLayer.shapes.ConditionShape#initDimensions()}.
+	 * Test method for {@link guiLayer.shapes.UnaryOperatorShape#initDimensions()}.
 	 */
 	@Test
 	public void testInitDimensions() {
@@ -164,12 +169,12 @@ public class ConditionShapeTest {
 
 	/**
 	 * Test method for
-	 * {@link guiLayer.shapes.ConditionShape#ConditionShape(java.lang.String, types.BlockType, guiLayer.types.Coordinate)}.
+	 * {@link guiLayer.shapes.UnaryOperatorShape#UnaryOperatorShape(java.lang.String, types.BlockType, guiLayer.types.Coordinate)}.
 	 */
 	@Test
-	public void testConditionShape() {
-		BlockType t = new BlockType("test2", BlockCategory.CONDITION);
-		ConditionShape shape = new ConditionShape("test",t,
+	public void testUnaryOperatorShape() {
+		BlockType t = new BlockType("test2", BlockCategory.OPERATOR);
+		UnaryOperatorShape shape = new UnaryOperatorShape("test", t,
 				new Coordinate(0, 0));
 		try {
 			Field f;
