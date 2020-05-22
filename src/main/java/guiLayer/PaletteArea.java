@@ -151,7 +151,7 @@ public class PaletteArea implements Constants {
 			if (type.cat() == BlockCategory.ACTION) {
 				shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
 						new Coordinate(ACTION_BLOCK_INIT_OFFSET, tempHeight)));
-
+				System.out.println(type+"action" + tempHeight);
 				tempHeight += 45;
 			}
 		}
@@ -162,6 +162,7 @@ public class PaletteArea implements Constants {
 
 				shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
 						new Coordinate(CONTROL_BLOCK_INIT_OFFSET, tempHeight)));
+				System.out.println(type+"control" + tempHeight);
 				tempHeight += 105;
 
 			}
@@ -173,6 +174,7 @@ public class PaletteArea implements Constants {
 
 				shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
 						new Coordinate(OPERATOR_BLOCK_INIT_OFFSET, tempHeight)));
+				System.out.println(type+"operator" + tempHeight);
 				tempHeight += 35;
 
 			}
@@ -185,6 +187,7 @@ public class PaletteArea implements Constants {
 
 				shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
 						new Coordinate(CONDITION_BLOCK_INIT_OFFSET, tempHeight)));
+				System.out.println(type+"condition" + tempHeight);
 				tempHeight += 35;
 
 			}
@@ -193,12 +196,14 @@ public class PaletteArea implements Constants {
 		tempHeight += 40;
 		shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.DEFINITION,
 				new Coordinate(CONTROL_BLOCK_INIT_OFFSET, tempHeight)));
+		System.out.println("Definition"+"control" + tempHeight);
 		tempHeight += 105;
 
 		for (var type : BlockType.values()) {
 			if (type.cat() == BlockCategory.CALL) {
 				shapesInPalette.add(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, (BlockType) type,
 						new Coordinate(ACTION_BLOCK_INIT_OFFSET, tempHeight)));
+				System.out.println(type+"action" + tempHeight);
 				tempHeight += 45;
 
 			}
@@ -207,6 +212,8 @@ public class PaletteArea implements Constants {
 		if (currentDrawHeight == 0) {
 			currentDrawHeight = tempHeight;
 		}
+		
+		shapesInPalette.remove(null);
 	}
 
 	/**

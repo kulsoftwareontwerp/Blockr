@@ -40,6 +40,7 @@ import guiLayer.types.MaskedKeyPressed;
 import types.BlockCategory;
 import types.BlockType;
 import types.ConnectionType;
+import types.DynaEnum;
 
 public class CanvasWindow extends CanvasResource implements GUIListener, Constants {
 
@@ -143,11 +144,11 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 * 
 	 * @return if the windowheight has been changed
 	 */
-	private Boolean calculateWindowHeight() {
+	Boolean calculateWindowHeight() {
 		// Calculate Total Height of the CanvasWindow based on the different type of
 		// blocks
 		int totalHeight = 200; // 5x40px for the titles in the palette
-		for (var type : BlockType.values()) {
+		for (var type : getAllBlockTypes()) {
 			switch (type.cat()) {
 			case ACTION:
 				totalHeight += 45;
@@ -180,6 +181,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		} else {
 			return false;
 		}
+	}
+
+	DynaEnum<? extends DynaEnum<?>>[] getAllBlockTypes() {
+		return BlockType.values();
 	}
 
 	/**
@@ -645,6 +650,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			// The setConnectedVia of all shapes in movement will be reverted
 			shapeInMovement.persistConnectedVia(false);
 
+			var temp = isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.UP),
+					shapeInMovement.getTriggerSet(ConnectionType.DOWN));
+			var temp1 = shapesInProgramAreaConnectionMap.get(ConnectionType.LEFT);
+			var temp2 = shapeInMovement.getTriggerSet(ConnectionType.CONDITION);
 			if (isConnectionOpen(shapeInMovement, ConnectionType.DOWN)
 					&& isConnectionPresent(shapesInProgramAreaConnectionMap.get(ConnectionType.UP),
 							shapeInMovement.getTriggerSet(ConnectionType.DOWN))) {
@@ -745,8 +754,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 * @param connection The connection to check if it's open.
 	 * @return a flag indicating if a connection is open and can be used to try and
 	 *         make a connection.
+	 *         
+	 * This method should be defined private, but due to testing purposes is now defined as package private
 	 */
-	private Boolean isConnectionOpen(Shape shape, ConnectionType connection) {
+	Boolean isConnectionOpen(Shape shape, ConnectionType connection) {
 		return shape.getId().equals(PALETTE_BLOCK_IDENTIFIER)
 				|| domainController.checkIfConnectionIsOpen(shape.getId(), connection, null)
 				|| (shape == getCurrentShape()
@@ -764,8 +775,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	 *                                         certain connection to try and fit to
 	 *                                         one of the shapes in the programArea.
 	 * @return a flag indicating if there is a connection between 2 triggerSets.
+	 * 
+	 * This method should be defined private, but due to testing purposes is now defined as package private
 	 */
-	private boolean isConnectionPresent(Map<Shape, Coordinate> shapesInProgramAreaConnectionMap,
+	boolean isConnectionPresent(Map<Shape, Coordinate> shapesInProgramAreaConnectionMap,
 			Set<Coordinate> connectionTriggerSet) {
 		for (Map.Entry<Shape, Coordinate> s : shapesInProgramAreaConnectionMap.entrySet()) {
 			if (connectionTriggerSet.contains(s.getValue())) {
@@ -802,10 +815,16 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		getCurrentShape().setConnectedVia(getCurrentShape().getPreviouslyConnectedVia(), true);
 	}
+	
+	private boolean triggerStackOverflow=false;
 
 	@Override
 	protected void handleKeyEvent(int id, int keyCode, char keyChar) {
 		try {
+			if(triggerStackOverflow) {
+				throw new StackOverflowError();
+			}
+			
 			if (id == KeyEvent.KEY_PRESSED) {
 				if (keyCode == KeyEvent.VK_CONTROL) {
 					if (maskedKeyTimer != null) {
@@ -870,6 +889,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					repaint();
 				}
 			}
+			
+			
 		} catch (StackOverflowError e) {
 			Timer alertTimer = new Timer();
 			alertTimer.schedule(new AlertTask(this, "An error happened because you created an infinite loop. This message disappears in 10 seconds"), ALERTMESSAGE_DURATION);
@@ -1013,7 +1034,8 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		if (!event.areMoreRelatedEventsComing()) {
 			determineTotalHeightBodyCavityShapes();
 			Set<String> idsToBeIgnoredFromMovement = new HashSet<String>();
-			if (undoMode && event.getAddedBlockType() == BlockType.DEFINITION) {
+			var temp =  event.getAddedBlockType();
+			if (undoMode && event.getAddedBlockType().equals(BlockType.DEFINITION)) {
 				idsToBeIgnoredFromMovement.addAll(comingEvents);
 			}
 			comingEvents.clear();
@@ -1079,12 +1101,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 						}
 					} else {
 						shapeIDs = domainController.getAllBlockIDsUnderneath(event.getBeforeRemoveBlockId());
-					}
-
+					}			
+					
 					for (Shape s : shapeIDs.stream().map(i -> programArea.getShapeById(i))
 							.filter(j -> !(j.getId().equals(event.getBeforeRemoveBlockId()) || j.getType().definition()
 									.equals(shapeToBeRemovedFromProgramArea.get().getType().definition())))
 							.collect(Collectors.toSet())) {
+						
 						s.setY_coord(s.getY_coord() - shapeToBeRemovedFromProgramArea.get().getHeight());
 
 					}
@@ -1108,6 +1131,13 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		resetGlobalVariables();
 		super.repaint();
+	}
+	
+	/**
+	 * Call super.repaint
+	 */
+	void superRepaint() {
+		repaint();
 	}
 
 }

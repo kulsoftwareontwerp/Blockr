@@ -37,7 +37,7 @@ public class ProgramArea implements Constants {
 	 */
 	public ProgramArea() {
 		alreadyFilledInCoordinates = new HashSet<Coordinate>();
-		shapesInProgramArea = new HashSet<Shape>();
+		this.shapesInProgramArea = new HashSet<Shape>();
 	}
 
 	
@@ -299,7 +299,7 @@ public class ProgramArea implements Constants {
 	 * 
 	 * @return the shape that's highlighted for execution
 	 */
-	private Shape getHighlightedShapeForExecution() {
+	Shape getHighlightedShapeForExecution() {
 		return highlightedShapeForExecution;
 	}
 
