@@ -301,7 +301,7 @@ public class BlockControllerTest {
 		ArgumentCaptor<ConnectionType> connectionType = ArgumentCaptor.forClass(ConnectionType.class);
 		ArgumentCaptor<String> connectedBlock = ArgumentCaptor.forClass(String.class);
 		//when(blockRepository.getBlockByID("definitionBlockId")).thenReturn(definitionBlock);
-		BlockType.removeBlockType("definitionBlockId");
+		TestType.removeFromDynaEnum(callBlock.getBlockType());
 		for (DynaEnum<? extends DynaEnum<?>> b : TestType.values()) {
 			for (ConnectionType c : ConnectionType.values()) {
 				when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(false, true);
