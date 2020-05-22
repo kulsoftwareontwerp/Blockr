@@ -98,6 +98,8 @@ public class BlockRepositoryTest {
 		blockRepo = spy(new BlockRepository(headBlocks, allBlocks));
 		
 		MockitoAnnotations.initMocks(this);
+		clearInvocations(headBlocks);
+		clearInvocations(allBlocks);
 	}
 
 	/**
@@ -123,6 +125,7 @@ public class BlockRepositoryTest {
 
 	@Test
 	public void testAddBlockPositiveNOCONNECTION() {
+
 		doAnswer(new Answer<Boolean>() {
 			@Override
 			public Boolean answer(InvocationOnMock invocation) throws Throwable {
@@ -137,7 +140,7 @@ public class BlockRepositoryTest {
 				else {
 						blockRepo.addBlock((BlockType) b, null, ConnectionType.NOCONNECTION);
 					}
-					verify(headBlocks, atLeast(1)).add(any(Block.class));// 1 time in setup
+					verify(headBlocks, atLeast(1)).add(any(Block.class));
 					verify(allBlocks, atLeast(1)).put(any(String.class), any(Block.class));// 4 times in setup
 				}
 			}

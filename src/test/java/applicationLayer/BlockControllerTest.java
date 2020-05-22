@@ -26,8 +26,10 @@ import org.mockito.stubbing.Answer;
 import org.junit.rules.ExpectedException;
 import org.mockito.*;
 
+import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
+import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.AssessableBlock;
@@ -268,6 +270,23 @@ public class BlockControllerTest {
 			fail("One or more of the required fields were not declared.");
 		}
 	}
+	
+	private static class TestType extends DynaEnum<TestType>{
+
+		protected TestType(String type, BlockCategory cat, Action action, Predicate predicate, String definition) {
+			super(type, cat, action, predicate, definition);
+		}
+		
+		@SuppressWarnings("unused")
+		public static void removeFromDynaEnum(DynaEnum<?> literal ) {
+			remove(literal);
+		}
+		
+		public static <E> DynaEnum<? extends DynaEnum<?>>[]  values() {
+			return values(BlockType.class);
+		}
+		
+	}
 
 	/**
 	 * Test method for
@@ -275,12 +294,15 @@ public class BlockControllerTest {
 	 */
 	@Test
 	public void testAddBlockPositiveMaxNbOfBlocksReached() {
+		
+		
+		
 		ArgumentCaptor<BlockType> blockType = ArgumentCaptor.forClass(BlockType.class);
 		ArgumentCaptor<ConnectionType> connectionType = ArgumentCaptor.forClass(ConnectionType.class);
 		ArgumentCaptor<String> connectedBlock = ArgumentCaptor.forClass(String.class);
 		//when(blockRepository.getBlockByID("definitionBlockId")).thenReturn(definitionBlock);
 		BlockType.removeBlockType("definitionBlockId");
-		for (DynaEnum<? extends DynaEnum<?>> b : BlockType.values()) {
+		for (DynaEnum<? extends DynaEnum<?>> b : TestType.values()) {
 			for (ConnectionType c : ConnectionType.values()) {
 				when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(false, true);
 				String cb = "connectedActionBlock";
