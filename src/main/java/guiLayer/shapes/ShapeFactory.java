@@ -1,5 +1,6 @@
 package guiLayer.shapes;
 
+
 import guiLayer.types.Coordinate;
 import types.BlockType;
 
@@ -25,6 +26,12 @@ public class ShapeFactory {
 	 * @return a new shape with the given id, type and coordinate
 	 */
 	public Shape createShape(String id, BlockType type, Coordinate coordinate) {
+		if(type==null) {
+			throw new NullPointerException("A shape needs a type.");
+		}
+		if(type.cat()==null) {
+			throw new NullPointerException("A shape needs a category for its type.");
+		}
 		switch (type.cat()) {
 		case ACTION:
 			return new ActionShape(id, type, coordinate);
@@ -42,7 +49,8 @@ public class ShapeFactory {
 			}
 			return new CallFunctionShape(id, type, coordinate);
 
-		default: return null;
+		default:
+			throw new IllegalArgumentException("This factory does not handle the given BlockCategory.");
 		}		
 	}
 

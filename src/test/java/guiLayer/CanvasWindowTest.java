@@ -45,6 +45,8 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.kuleuven.swop.group17.Graphics.CanvasResource;
+
 import applicationLayer.DomainController;
 import commands.AddBlockCommand;
 import events.BlockAddedEvent;
@@ -151,9 +153,9 @@ public class CanvasWindowTest implements Constants {
 
 	private ControlShape testControlShape;
 	private ControlShape testControlShapeUnder;
-	
+
 	private UnaryOperatorShape testUnaryShape;
-	
+
 	private CallFunctionShape testCallFunctionShape;
 	private CallFunctionShape testCallFunctionShape2;
 	private CallFunctionShape testCallFunctionShape3;
@@ -192,8 +194,10 @@ public class CanvasWindowTest implements Constants {
 				false);
 		blockRemovedEvent = Mockito.spy(new BlockRemovedEvent("0", "", ConnectionType.NOCONNECTION, null, false));
 		blockRemovedEventNew = Mockito.spy(new BlockRemovedEvent("40", "", ConnectionType.NOCONNECTION, null, false));
-		blockRemovedEventWithBeforeMove = Mockito.spy(new BlockRemovedEvent("40", "10", ConnectionType.NOCONNECTION, null, false));
-		blockRemovedEventWithBeforeMoveWithBody = Mockito.spy(new BlockRemovedEvent("40", "10", ConnectionType.BODY, null, false));
+		blockRemovedEventWithBeforeMove = Mockito
+				.spy(new BlockRemovedEvent("40", "10", ConnectionType.NOCONNECTION, null, false));
+		blockRemovedEventWithBeforeMoveWithBody = Mockito
+				.spy(new BlockRemovedEvent("40", "10", ConnectionType.BODY, null, false));
 		Set<String> changedBlocks = new HashSet<>();
 		changedBlocks.add("11");
 		blockChangedEvent = Mockito.spy(new BlockChangeEvent("11", "11", "", ConnectionType.NOCONNECTION, "10",
@@ -213,21 +217,20 @@ public class CanvasWindowTest implements Constants {
 
 		testOperandShape = Mockito.spy(new ConditionShape("20", BlockType.NOT, coordinate));
 		testOperandShape2 = Mockito.spy(new ConditionShape("21", BlockType.NOT, coordinate));
-		
+
 		testUnaryShape = Mockito.spy(new UnaryOperatorShape("30", BlockType.NOT, coordinate));
 
 		testPaletteActionShape = Mockito.spy(new ActionShape(PALETTE_BLOCK_IDENTIFIER, moveForward, coordinate));
-		
-		
+
 		BlockType call = new BlockType("t1", BlockCategory.CALL, "def");
 		testCallFunctionShape = Mockito.spy(new CallFunctionShape("40", call, coordinate));
-		
+
 		BlockType condition = new BlockType("t2", BlockCategory.CONDITION, "def");
 		testCallFunctionShape2 = Mockito.spy(new CallFunctionShape("40", condition, coordinate));
-		
+
 		BlockType definition = new BlockType("Definition", BlockCategory.DEFINITION, "Definition");
 		testCallFunctionShape3 = Mockito.spy(new CallFunctionShape("41", definition, coordinate));
-		
+
 		blockAddedEventWithCall = new BlockAddedEvent("0", "", null, call, null, false);
 		blockAddedEventWithCall2 = new BlockAddedEvent("40", "", null, call, null, false);
 		blockAddedEventWithCall3 = Mockito.spy(new BlockAddedEvent("41", "", null, definition, null, false));
@@ -268,7 +271,7 @@ public class CanvasWindowTest implements Constants {
 			f3.setAccessible(true);
 			assertNotNull(f3.get(cw));
 
-			assertEquals(cw.width, WIDTH);
+			assertEquals(cw.getWindowWidth(), WIDTH);
 
 			Field f4 = CanvasWindow.class.getDeclaredField("domainController");
 			f4.setAccessible(true);
@@ -311,23 +314,22 @@ public class CanvasWindowTest implements Constants {
 		// verify(CanvasResource., atLeastOnce()).getX_coord();
 
 	}
-	
+
 	/**
 	 * 
 	 */
 	@Test
 	public void testOnCalculateWindowHeight_SameWindowHeight() {
-		
+
 		try {
 			Field f = CanvasResource.class.getDeclaredField("height");
 			f.setAccessible(true);
 			f.set(canvasWindow, 730);
-			}catch (Exception e) {
-				fail("field not init");
-			}
+		} catch (Exception e) {
+			fail("field not init");
+		}
 
 		canvasWindow.calculateWindowHeight();
-
 
 	}
 
@@ -344,7 +346,7 @@ public class CanvasWindowTest implements Constants {
 			assertNotNull(f1.get(canvasWindow));
 			assertEquals("TEST", f1.get(canvasWindow));
 
-		//	verify(canvasWindow).repaint();
+			// verify(canvasWindow).repaint();
 		} catch (Exception e) {
 			fail("fields have not been initialized.");
 		}
@@ -399,7 +401,7 @@ public class CanvasWindowTest implements Constants {
 			when(currentSnapshot.getSavedCoordinates()).thenReturn(mapOfCoordinates);
 			canvasWindow.placeShapes();
 
-	//		verify(canvasWindow).repaint();
+			// verify(canvasWindow).repaint();
 		} catch (Exception e) {
 			fail("fields have not been initialized.");
 
@@ -435,7 +437,7 @@ public class CanvasWindowTest implements Constants {
 
 			canvasWindow.placeShapes();
 
-		//	verify(canvasWindow, atLeastOnce()).repaint();
+			// verify(canvasWindow, atLeastOnce()).repaint();
 		} catch (Exception e) {
 			fail("fields have not been initialized.");
 		}
@@ -454,7 +456,7 @@ public class CanvasWindowTest implements Constants {
 
 			canvasWindow.placeShapes();
 
-			//verify(canvasWindow).repaint();
+			// verify(canvasWindow).repaint();
 		} catch (Exception e) {
 			fail("fields have not been initialized.");
 		}
@@ -595,7 +597,7 @@ public class CanvasWindowTest implements Constants {
 //		Graphics g = Mockito.spy(Graphics.class);
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
-		
+
 		Graphics g = Mockito.spy(new Graphics() {
 			private Color c;
 
@@ -651,7 +653,7 @@ public class CanvasWindowTest implements Constants {
 
 			@Override
 			public Rectangle getClipBounds() {
-				return new Rectangle(6000,6000);
+				return new Rectangle(6000, 6000);
 			}
 
 			@Override
@@ -840,9 +842,9 @@ public class CanvasWindowTest implements Constants {
 		verify(testActionShapeWithZeroCoordinate, atLeastOnce()).draw(g);
 		verify(testActionShape, atLeastOnce()).draw(g);
 		verify(g, atLeastOnce()).drawOval(22, 5, 6, 6);
-		
+
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link com.kuleuven.swop.group17.RobotGameWorld.guiLayer.RobotCanvas#paint(java.awt.Graphics)}.
@@ -852,7 +854,7 @@ public class CanvasWindowTest implements Constants {
 //		Graphics g = Mockito.spy(Graphics.class);
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
-		
+
 		Graphics g = Mockito.spy(new Graphics() {
 			private Color c;
 
@@ -908,7 +910,7 @@ public class CanvasWindowTest implements Constants {
 
 			@Override
 			public Rectangle getClipBounds() {
-				return new Rectangle(6000,6000);
+				return new Rectangle(6000, 6000);
 			}
 
 			@Override
@@ -1094,12 +1096,12 @@ public class CanvasWindowTest implements Constants {
 		verify(domainController, atLeastOnce()).paint(g);
 		verify(g, atLeastOnce()).fill3DRect(4750, ORIGIN, GAME_WIDTH, 6000, true);
 		verify(programArea, atLeastOnce()).draw(g, domainController);
-		//verify(testActionShapeWithZeroCoordinate, atLeastOnce()).draw(g);
+		// verify(testActionShapeWithZeroCoordinate, atLeastOnce()).draw(g);
 		verify(testActionShape, atLeastOnce()).draw(g);
 		verify(g, atLeastOnce()).drawOval(22, 5, 6, 6);
-		
+
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link com.kuleuven.swop.group17.RobotGameWorld.guiLayer.RobotCanvas#paint(java.awt.Graphics)}.
@@ -1109,7 +1111,7 @@ public class CanvasWindowTest implements Constants {
 //		Graphics g = Mockito.spy(Graphics.class);
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
-		
+
 		Graphics g = Mockito.spy(new Graphics() {
 			private Color c;
 
@@ -1165,7 +1167,7 @@ public class CanvasWindowTest implements Constants {
 
 			@Override
 			public Rectangle getClipBounds() {
-				return new Rectangle(6000,6000);
+				return new Rectangle(6000, 6000);
 			}
 
 			@Override
@@ -1351,16 +1353,16 @@ public class CanvasWindowTest implements Constants {
 		verify(g, atLeastOnce()).fill3DRect(100, ORIGIN, GAME_WIDTH, 100, true);
 		verify(programArea, atLeastOnce()).draw(g, domainController);
 		verify(testActionShape, atLeastOnce()).draw(g);
-		
+
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link com.kuleuven.swop.group17.RobotGameWorld.guiLayer.RobotCanvas#paint(java.awt.Graphics)}.
 	 */
 	@Test
 	public void testPaint_WithAlert_TempGameBoardLargerThanInit_WindowHeightLarger_DebugModusFillings_CurrentShapeNotNull() {
-		
+
 		Graphics g = Mockito.spy(new Graphics() {
 			private Color c;
 
@@ -1416,7 +1418,7 @@ public class CanvasWindowTest implements Constants {
 
 			@Override
 			public Rectangle getClipBounds() {
-				return new Rectangle(6000,6000);
+				return new Rectangle(6000, 6000);
 			}
 
 			@Override
@@ -1589,12 +1591,14 @@ public class CanvasWindowTest implements Constants {
 		}
 
 		canvasWindow.paint(g);
-		
+
 		verify(g, atLeastOnce()).setColor(Color.WHITE);
 		verify(g, atLeastOnce()).setColor(Color.BLACK);
 		verify(g, atLeastOnce()).setColor(Color.RED);
-		verify(g, atLeastOnce()).fillRect(any(Integer.class), any(Integer.class), any(Integer.class), any(Integer.class));
-		//verify(g, atLeastOnce()).drawString(msg, any(Integer.class), any(Integer.class));		
+		verify(g, atLeastOnce()).fillRect(any(Integer.class), any(Integer.class), any(Integer.class),
+				any(Integer.class));
+		// verify(g, atLeastOnce()).drawString(msg, any(Integer.class),
+		// any(Integer.class));
 	}
 
 	/**
@@ -1711,8 +1715,6 @@ public class CanvasWindowTest implements Constants {
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
 
 	}
-	
-
 
 	/**
 	 * Test method for
@@ -1744,7 +1746,7 @@ public class CanvasWindowTest implements Constants {
 		// verify(commandHandler, atLeastOnce()).handle(dmc);
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -1754,7 +1756,7 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testPaletteActionShape;
 		Shape highlightedShape = testOperandShape;
 
@@ -1762,21 +1764,21 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.checkIfInProgramArea(x)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
-		
+
 		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
-		
+
 		verify(highlightedShape, atLeastOnce()).persistConnectedVia(true);
 		verify(currentShape, atLeastOnce()).persistConnectedVia(true);
 		verify(currentShape, atLeastOnce()).clipOn(highlightedShape, ConnectionType.NOCONNECTION);
 		verify(currentShape, atLeastOnce()).setCoordinatesShape();
 		verify(commandHandler, atLeastOnce()).handle((any(DomainMoveCommand.class)));
-		verify(domainController, atLeastOnce()).addBlock(currentShape.getType(), highlightedShape.getId(), ConnectionType.NOCONNECTION);
+		verify(domainController, atLeastOnce()).addBlock(currentShape.getType(), highlightedShape.getId(),
+				ConnectionType.NOCONNECTION);
 		verify(programArea, atLeastOnce()).setHighlightedShapeForConnections(null);
-		
-		
+
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("movedShape");
 			f.setAccessible(true);
@@ -1793,10 +1795,9 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception e) {
 			fail("fields have not been initialized.");
 		}
-		
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -1806,7 +1807,7 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testActionShape;
 		Shape highlightedShape = null;
 
@@ -1814,18 +1815,17 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.checkIfInProgramArea(x)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
-		
+
 		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
-		
+
 		verify(currentShape, atLeastOnce()).setCoordinatesShape();
 		verify(commandHandler, atLeastOnce()).handle((any(DomainMoveCommand.class)));
 		verify(domainController, atLeastOnce()).moveBlock(currentShape.getId(), "", "", ConnectionType.NOCONNECTION);
 		verify(programArea, atLeastOnce()).setHighlightedShapeForConnections(null);
-		
-		
+
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("movedShape");
 			f.setAccessible(true);
@@ -1842,10 +1842,9 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception e) {
 			fail("fields have not been initialized.");
 		}
-		
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -1855,13 +1854,13 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testActionShape;
 		Shape highlightedShape = null;
-		
+
 		HashSet<String> headBlocks = new HashSet<String>();
 		headBlocks.add(currentShape.getId());
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
 
@@ -1871,20 +1870,19 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 		when(domainController.getAllHeadBlocks()).thenReturn(headBlocks);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
-		
+
 		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
-		
+
 		verify(currentShape, atLeastOnce()).setCoordinatesShape();
 		verify(commandHandler, atLeastOnce()).handle(any(GuiMoveCommand.class));
 		verify(testActionShape, atLeastOnce()).setCoordinatesShape();
 		verify(programArea, atLeastOnce()).addShapeToProgramArea(testActionShape);
 		verify(programArea, atLeastOnce()).addToAlreadyFilledInCoordinates(testActionShape);
 		verify(programArea, atLeastOnce()).setHighlightedShapeForConnections(null);
-		
-		
+
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("movedShape");
 			f.setAccessible(true);
@@ -1901,10 +1899,9 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception e) {
 			fail("fields have not been initialized.");
 		}
-		
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -1914,7 +1911,7 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testActionShape;
 		Shape highlightedShape = testOperandShape;
 
@@ -1922,18 +1919,18 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.checkIfInProgramArea(x)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
-		
+
 		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
-		
+
 		verify(highlightedShape, atLeastOnce()).persistConnectedVia(true);
 		verify(currentShape, atLeastOnce()).setCoordinatesShape();
 		verify(commandHandler, atLeastOnce()).handle((any(DomainMoveCommand.class)));
 		verify(domainController, atLeastOnce()).moveBlock(currentShape.getId(), "", "", ConnectionType.NOCONNECTION);
-		verify(programArea, atLeastOnce()).setHighlightedShapeForConnections(null);		
-		
+		verify(programArea, atLeastOnce()).setHighlightedShapeForConnections(null);
+
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("movedShape");
 			f.setAccessible(true);
@@ -1950,10 +1947,9 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception e) {
 			fail("fields have not been initialized.");
 		}
-		
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -1963,7 +1959,7 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testActionShape;
 		Shape highlightedShape = testOperandShape;
 
@@ -1972,15 +1968,15 @@ public class CanvasWindowTest implements Constants {
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 		when(highlightedShape.getConnectedVia()).thenReturn(ConnectionType.UP);
-		
+
 		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
-		
+
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("movedShape");
 			f.setAccessible(true);
 			f.set(canvasWindow, testOperandShape);
-			
+
 			canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
 
 			Field f1 = CanvasWindow.class.getDeclaredField("offsetCurrentShape");
@@ -1994,15 +1990,16 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception e) {
 			fail("fields have not been initialized.");
 		}
-		
+
 		verify(highlightedShape, atLeastOnce()).persistConnectedVia(true);
 		verify(currentShape, atLeastOnce()).setCoordinatesShape();
 		verify(commandHandler, atLeastOnce()).handle((any(DomainMoveCommand.class)));
-		verify(domainController, atLeastOnce()).moveBlock(currentShape.getId(), testOperandShape.getId(), highlightedShape.getId(), ConnectionType.UP);
-		verify(programArea, atLeastOnce()).setHighlightedShapeForConnections(null);		
+		verify(domainController, atLeastOnce()).moveBlock(currentShape.getId(), testOperandShape.getId(),
+				highlightedShape.getId(), ConnectionType.UP);
+		verify(programArea, atLeastOnce()).setHighlightedShapeForConnections(null);
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2012,7 +2009,7 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testPaletteActionShape;
 		Shape highlightedShape = null;
 
@@ -2020,18 +2017,17 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.checkIfInProgramArea(x)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
-		
+
 		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
-		
+
 		verify(currentShape, atLeastOnce()).setCoordinatesShape();
 		verify(commandHandler, atLeastOnce()).handle((any(DomainMoveCommand.class)));
 		verify(domainController, atLeastOnce()).addBlock(currentShape.getType(), "", ConnectionType.NOCONNECTION);
 		verify(programArea, atLeastOnce()).setHighlightedShapeForConnections(null);
-		
-		
+
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("movedShape");
 			f.setAccessible(true);
@@ -2048,10 +2044,9 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception e) {
 			fail("fields have not been initialized.");
 		}
-		
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2061,10 +2056,10 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = null;
 		Shape highlightedShape = testOperandShape;
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
 
@@ -2072,12 +2067,11 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
-		
+
 		verify(programArea, atLeastOnce()).setHighlightedShapeForConnections(null);
-		
-		
+
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2087,10 +2081,10 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testActionShape;
 		Shape highlightedShape = testOperandShape;
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
 
@@ -2100,12 +2094,11 @@ public class CanvasWindowTest implements Constants {
 		when(paletteArea.checkIfInPalette(currentShape.getX_coord())).thenReturn(false);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
-		
+
 		verify(programArea, atLeastOnce()).setHighlightedShapeForConnections(null);
-		
-		
+
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2115,10 +2108,10 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testPaletteActionShape;
 		Shape highlightedShape = testOperandShape;
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
 
@@ -2126,13 +2119,13 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.checkIfInProgramArea(x)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
-		
+
 		when(programArea.checkIfPlaceable(currentShape)).thenReturn(false);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2142,10 +2135,10 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testActionShape;
 		Shape highlightedShape = testOperandShape;
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
 
@@ -2153,11 +2146,10 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.checkIfInProgramArea(x)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
-		
+
 		when(programArea.checkIfPlaceable(currentShape)).thenReturn(false);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 
-		
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("movedShape");
 			f.setAccessible(true);
@@ -2165,14 +2157,11 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
-		
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
-		
-		
-		
+
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2182,10 +2171,10 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testPaletteActionShape;
 		Shape highlightedShape = testOperandShape;
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
 
@@ -2193,15 +2182,15 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.checkIfInProgramArea(x)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
-		when(testActionShape.getPreviousY_coord()).thenReturn(y-1);
-		
+		when(testActionShape.getPreviousY_coord()).thenReturn(y - 1);
+
 		when(programArea.checkIfPlaceable(currentShape)).thenReturn(false);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
-		
+
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2211,10 +2200,10 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testPaletteActionShape;
 		Shape highlightedShape = testOperandShape;
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
 
@@ -2222,17 +2211,16 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.checkIfInProgramArea(x)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
-		
-		when(testActionShape.getPreviousX_coord()).thenReturn(x-1);
-		
+
+		when(testActionShape.getPreviousX_coord()).thenReturn(x - 1);
+
 		when(programArea.checkIfPlaceable(currentShape)).thenReturn(false);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
-		
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2242,10 +2230,10 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = testPaletteActionShape;
 		Shape highlightedShape = testOperandShape;
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
 
@@ -2253,23 +2241,23 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.checkIfInProgramArea(x)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
-		
+
 		when(programArea.checkIfPlaceable(currentShape)).thenReturn(false);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
-		
-		when(testActionShape.getPreviousX_coord()).thenReturn(x-1);
-		when(testActionShape.getPreviousY_coord()).thenReturn(y-1);
+
+		when(testActionShape.getPreviousX_coord()).thenReturn(x - 1);
+		when(testActionShape.getPreviousY_coord()).thenReturn(y - 1);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
-		
-		verify(testActionShape, atLeastOnce()).setX_coord(x-1);
-		verify(testActionShape, atLeastOnce()).setY_coord(y-1);
+
+		verify(testActionShape, atLeastOnce()).setX_coord(x - 1);
+		verify(testActionShape, atLeastOnce()).setY_coord(y - 1);
 		verify(testActionShape, atLeastOnce()).setCoordinatesShape();
 		verify(programArea, atLeastOnce()).addToAlreadyFilledInCoordinates(testActionShape);
 		verify(programArea, atLeastOnce()).addShapeToProgramArea(testActionShape);
 		verify(testActionShape, atLeastOnce()).defineConnectionTypes();
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2279,19 +2267,18 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 250;
 		int y = 60;
-		
+
 		Shape currentShape = null;
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testActionShape);
-		
+
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_DRAGGED, x, y, 1);
-		
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2301,31 +2288,33 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 0;
 		int y = -20;
-		
+
 		Shape currentShape = testPaletteActionShape;
 		currentShape.setCoordinatesShape();
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testPaletteActionShape);
-		
+
 		HashSet<Shape> shapesInProgramArea = new HashSet<Shape>();
 		shapesInProgramArea.add(testActionShapeWithZeroCoordinate);
-		
+
 		Set<Coordinate> shapeInMovementCoordSet = testActionShape.getCoordinatesShape();
-		
+
 		HashMap<Shape, Coordinate> shapesInProgramAreaConnectionMap = new HashMap<Shape, Coordinate>();
 		shapesInProgramAreaConnectionMap.put(testActionShapeWithZeroCoordinate, coordinate);
-		
-		Set<String> shapesInMovementString = shapesInMovement.stream().map(e-> e.getId()).collect(Collectors.toSet());
-		
+
+		Set<String> shapesInMovementString = shapesInMovement.stream().map(e -> e.getId()).collect(Collectors.toSet());
+
 		when(canvasWindow.isConnectionOpen(testActionShape, ConnectionType.DOWN)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
-		
+
 		for (var connection : ConnectionType.values()) {
-		when(domainController.checkIfConnectionIsOpen(testActionShapeWithZeroCoordinate.getId(), connection, shapesInMovementString)).thenReturn(true);
-		when(domainController.checkIfConnectionIsOpen(testActionShapeWithZeroCoordinate.getId(), connection, null)).thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testActionShapeWithZeroCoordinate.getId(), connection,
+					shapesInMovementString)).thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testActionShapeWithZeroCoordinate.getId(), connection, null))
+					.thenReturn(true);
 		}
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("offsetCurrentShape");
@@ -2335,7 +2324,7 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
-		
+
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_DRAGGED, x, y, 1);
 		verify(currentShape, atLeastOnce()).defineConnectionTypes();
 		verify(testActionShapeWithZeroCoordinate, atLeastOnce()).persistConnectedVia(false);
@@ -2346,7 +2335,6 @@ public class CanvasWindowTest implements Constants {
 			f.setAccessible(true);
 			f.set(canvasWindow, testPaletteActionShape);
 
-
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
@@ -2355,7 +2343,7 @@ public class CanvasWindowTest implements Constants {
 			verify(shape, atLeastOnce()).defineConnectionTypes();
 		}
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2365,31 +2353,33 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 0;
 		int y = 30;
-		
+
 		Shape currentShape = testPaletteActionShape;
 		currentShape.setCoordinatesShape();
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testPaletteActionShape);
-		
+
 		HashSet<Shape> shapesInProgramArea = new HashSet<Shape>();
 		shapesInProgramArea.add(testActionShapeWithZeroCoordinate);
-		
+
 		Set<Coordinate> shapeInMovementCoordSet = testActionShape.getCoordinatesShape();
-		
+
 		HashMap<Shape, Coordinate> shapesInProgramAreaConnectionMap = new HashMap<Shape, Coordinate>();
 		shapesInProgramAreaConnectionMap.put(testActionShapeWithZeroCoordinate, coordinate);
-		
-		Set<String> shapesInMovementString = shapesInMovement.stream().map(e-> e.getId()).collect(Collectors.toSet());
-		
+
+		Set<String> shapesInMovementString = shapesInMovement.stream().map(e -> e.getId()).collect(Collectors.toSet());
+
 		when(canvasWindow.isConnectionOpen(testActionShape, ConnectionType.UP)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
-		
+
 		for (var connection : ConnectionType.values()) {
-		when(domainController.checkIfConnectionIsOpen(testActionShapeWithZeroCoordinate.getId(), connection, shapesInMovementString)).thenReturn(true);
-		when(domainController.checkIfConnectionIsOpen(testActionShapeWithZeroCoordinate.getId(), connection, null)).thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testActionShapeWithZeroCoordinate.getId(), connection,
+					shapesInMovementString)).thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testActionShapeWithZeroCoordinate.getId(), connection, null))
+					.thenReturn(true);
 		}
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("offsetCurrentShape");
@@ -2399,7 +2389,7 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
-		
+
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_DRAGGED, x, y, 1);
 		verify(currentShape, atLeastOnce()).defineConnectionTypes();
 		verify(testActionShapeWithZeroCoordinate, atLeastOnce()).persistConnectedVia(false);
@@ -2410,7 +2400,6 @@ public class CanvasWindowTest implements Constants {
 			f.setAccessible(true);
 			f.set(canvasWindow, testPaletteActionShape);
 
-
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
@@ -2419,7 +2408,7 @@ public class CanvasWindowTest implements Constants {
 			verify(shape, atLeastOnce()).defineConnectionTypes();
 		}
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2429,31 +2418,32 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 15;
 		int y = 45;
-		
+
 		Shape currentShape = testPaletteActionShape;
 		currentShape.setCoordinatesShape();
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testPaletteActionShape);
-		
+
 		HashSet<Shape> shapesInProgramArea = new HashSet<Shape>();
 		shapesInProgramArea.add(testControlShape);
-		
+
 		Set<Coordinate> shapeInMovementCoordSet = testActionShape.getCoordinatesShape();
-		
+
 		HashMap<Shape, Coordinate> shapesInProgramAreaConnectionMap = new HashMap<Shape, Coordinate>();
 		shapesInProgramAreaConnectionMap.put(testControlShape, coordinate);
-		
-		Set<String> shapesInMovementString = shapesInMovement.stream().map(e-> e.getId()).collect(Collectors.toSet());
-		
+
+		Set<String> shapesInMovementString = shapesInMovement.stream().map(e -> e.getId()).collect(Collectors.toSet());
+
 		when(canvasWindow.isConnectionOpen(testActionShape, ConnectionType.UP)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
-		
+
 		for (var connection : ConnectionType.values()) {
-		when(domainController.checkIfConnectionIsOpen(testControlShape.getId(), connection, shapesInMovementString)).thenReturn(true);
-		when(domainController.checkIfConnectionIsOpen(testControlShape.getId(), connection, null)).thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testControlShape.getId(), connection, shapesInMovementString))
+					.thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testControlShape.getId(), connection, null)).thenReturn(true);
 		}
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("offsetCurrentShape");
@@ -2463,7 +2453,7 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
-		
+
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_DRAGGED, x, y, 1);
 		verify(currentShape, atLeastOnce()).defineConnectionTypes();
 		verify(testControlShape, atLeastOnce()).persistConnectedVia(false);
@@ -2474,7 +2464,6 @@ public class CanvasWindowTest implements Constants {
 			f.setAccessible(true);
 			f.set(canvasWindow, testPaletteActionShape);
 
-
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
@@ -2483,7 +2472,7 @@ public class CanvasWindowTest implements Constants {
 			verify(shape, atLeastOnce()).defineConnectionTypes();
 		}
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2493,31 +2482,32 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 85;
 		int y = 15;
-		
+
 		Shape currentShape = testOperandShape;
 		currentShape.setCoordinatesShape();
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testOperandShape);
-		
+
 		HashSet<Shape> shapesInProgramArea = new HashSet<Shape>();
 		shapesInProgramArea.add(testControlShape);
-		
+
 		Set<Coordinate> shapeInMovementCoordSet = testOperandShape.getCoordinatesShape();
-		
+
 		HashMap<Shape, Coordinate> shapesInProgramAreaConnectionMap = new HashMap<Shape, Coordinate>();
 		shapesInProgramAreaConnectionMap.put(testControlShape, coordinate);
-		
-		Set<String> shapesInMovementString = shapesInMovement.stream().map(e-> e.getId()).collect(Collectors.toSet());
-		
+
+		Set<String> shapesInMovementString = shapesInMovement.stream().map(e -> e.getId()).collect(Collectors.toSet());
+
 		when(canvasWindow.isConnectionOpen(testOperandShape, ConnectionType.LEFT)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
-		
+
 		for (var connection : ConnectionType.values()) {
-		when(domainController.checkIfConnectionIsOpen(testControlShape.getId(), connection, shapesInMovementString)).thenReturn(true);
-		when(domainController.checkIfConnectionIsOpen(testControlShape.getId(), connection, null)).thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testControlShape.getId(), connection, shapesInMovementString))
+					.thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testControlShape.getId(), connection, null)).thenReturn(true);
 		}
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("offsetCurrentShape");
@@ -2527,7 +2517,7 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
-		
+
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_DRAGGED, x, y, 1);
 		verify(currentShape, atLeastOnce()).defineConnectionTypes();
 		verify(testControlShape, atLeastOnce()).persistConnectedVia(false);
@@ -2538,7 +2528,6 @@ public class CanvasWindowTest implements Constants {
 			f.setAccessible(true);
 			f.set(canvasWindow, testOperandShape);
 
-
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
@@ -2547,7 +2536,7 @@ public class CanvasWindowTest implements Constants {
 			verify(shape, atLeastOnce()).defineConnectionTypes();
 		}
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2557,31 +2546,32 @@ public class CanvasWindowTest implements Constants {
 
 		int x = -60;
 		int y = 15;
-		
+
 		Shape currentShape = testControlShape;
 		currentShape.setCoordinatesShape();
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testControlShape);
-		
+
 		HashSet<Shape> shapesInProgramArea = new HashSet<Shape>();
 		shapesInProgramArea.add(testOperandShape); //
-		
+
 		Set<Coordinate> shapeInMovementCoordSet = testControlShape.getCoordinatesShape();
-		
+
 		HashMap<Shape, Coordinate> shapesInProgramAreaConnectionMap = new HashMap<Shape, Coordinate>();
 		shapesInProgramAreaConnectionMap.put(testOperandShape, coordinate); //
-		
-		Set<String> shapesInMovementString = shapesInMovement.stream().map(e-> e.getId()).collect(Collectors.toSet());
-		
+
+		Set<String> shapesInMovementString = shapesInMovement.stream().map(e -> e.getId()).collect(Collectors.toSet());
+
 		when(canvasWindow.isConnectionOpen(testControlShape, ConnectionType.CONDITION)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
-		
+
 		for (var connection : ConnectionType.values()) {
-		when(domainController.checkIfConnectionIsOpen(testOperandShape.getId(), connection, shapesInMovementString)).thenReturn(true); //
-		when(domainController.checkIfConnectionIsOpen(testOperandShape.getId(), connection, null)).thenReturn(true); //
+			when(domainController.checkIfConnectionIsOpen(testOperandShape.getId(), connection, shapesInMovementString))
+					.thenReturn(true); //
+			when(domainController.checkIfConnectionIsOpen(testOperandShape.getId(), connection, null)).thenReturn(true); //
 		}
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("offsetCurrentShape");
@@ -2591,7 +2581,7 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
-		
+
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_DRAGGED, x, y, 1);
 		verify(currentShape, atLeastOnce()).defineConnectionTypes();
 		verify(testOperandShape, atLeastOnce()).persistConnectedVia(false); //
@@ -2602,7 +2592,6 @@ public class CanvasWindowTest implements Constants {
 			f.setAccessible(true);
 			f.set(canvasWindow, testOperandShape);
 
-
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
@@ -2611,7 +2600,7 @@ public class CanvasWindowTest implements Constants {
 			verify(shape, atLeastOnce()).defineConnectionTypes();
 		}
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2621,31 +2610,32 @@ public class CanvasWindowTest implements Constants {
 
 		int x = 95;
 		int y = 15;
-		
+
 		Shape currentShape = testOperandShape;
 		currentShape.setCoordinatesShape();
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testOperandShape);
-		
+
 		HashSet<Shape> shapesInProgramArea = new HashSet<Shape>();
 		shapesInProgramArea.add(testUnaryShape);
-		
+
 		Set<Coordinate> shapeInMovementCoordSet = testOperandShape.getCoordinatesShape();
-		
+
 		HashMap<Shape, Coordinate> shapesInProgramAreaConnectionMap = new HashMap<Shape, Coordinate>();
 		shapesInProgramAreaConnectionMap.put(testUnaryShape, coordinate);
-		
-		Set<String> shapesInMovementString = shapesInMovement.stream().map(e-> e.getId()).collect(Collectors.toSet());
-		
+
+		Set<String> shapesInMovementString = shapesInMovement.stream().map(e -> e.getId()).collect(Collectors.toSet());
+
 		when(canvasWindow.isConnectionOpen(testOperandShape, ConnectionType.LEFT)).thenReturn(true);
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
-		
+
 		for (var connection : ConnectionType.values()) {
-		when(domainController.checkIfConnectionIsOpen(testUnaryShape.getId(), connection, shapesInMovementString)).thenReturn(true);
-		when(domainController.checkIfConnectionIsOpen(testUnaryShape.getId(), connection, null)).thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testUnaryShape.getId(), connection, shapesInMovementString))
+					.thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testUnaryShape.getId(), connection, null)).thenReturn(true);
 		}
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("offsetCurrentShape");
@@ -2655,7 +2645,7 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
-		
+
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_DRAGGED, x, y, 1);
 		verify(currentShape, atLeastOnce()).defineConnectionTypes();
 		verify(testUnaryShape, atLeastOnce()).persistConnectedVia(false);
@@ -2666,7 +2656,6 @@ public class CanvasWindowTest implements Constants {
 			f.setAccessible(true);
 			f.set(canvasWindow, testOperandShape);
 
-
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
@@ -2675,7 +2664,7 @@ public class CanvasWindowTest implements Constants {
 			verify(shape, atLeastOnce()).defineConnectionTypes();
 		}
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#handleMouseEvent(int, int, int, int)}.
@@ -2685,31 +2674,32 @@ public class CanvasWindowTest implements Constants {
 
 		int x = -65;
 		int y = 15;
-		
+
 		Shape currentShape = testUnaryShape;//
 		currentShape.setCoordinatesShape();
-		
+
 		HashSet<Shape> shapesInMovement = new HashSet<Shape>();
 		shapesInMovement.add(testUnaryShape);//
-		
+
 		HashSet<Shape> shapesInProgramArea = new HashSet<Shape>();
 		shapesInProgramArea.add(testOperandShape);
-		
+
 		Set<Coordinate> shapeInMovementCoordSet = testUnaryShape.getCoordinatesShape();//
-		
+
 		HashMap<Shape, Coordinate> shapesInProgramAreaConnectionMap = new HashMap<Shape, Coordinate>();
 		shapesInProgramAreaConnectionMap.put(testOperandShape, coordinate);
-		
-		Set<String> shapesInMovementString = shapesInMovement.stream().map(e-> e.getId()).collect(Collectors.toSet());
-		
+
+		Set<String> shapesInMovementString = shapesInMovement.stream().map(e -> e.getId()).collect(Collectors.toSet());
+
 		when(canvasWindow.isConnectionOpen(testUnaryShape, ConnectionType.OPERAND)).thenReturn(true);//
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
-		
+
 		for (var connection : ConnectionType.values()) {
-		when(domainController.checkIfConnectionIsOpen(testOperandShape.getId(), connection, shapesInMovementString)).thenReturn(true);
-		when(domainController.checkIfConnectionIsOpen(testOperandShape.getId(), connection, null)).thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testOperandShape.getId(), connection, shapesInMovementString))
+					.thenReturn(true);
+			when(domainController.checkIfConnectionIsOpen(testOperandShape.getId(), connection, null)).thenReturn(true);
 		}
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("offsetCurrentShape");
@@ -2719,7 +2709,7 @@ public class CanvasWindowTest implements Constants {
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
-		
+
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_DRAGGED, x, y, 1);
 		verify(currentShape, atLeastOnce()).defineConnectionTypes();
 		verify(testOperandShape, atLeastOnce()).persistConnectedVia(false);
@@ -2730,7 +2720,6 @@ public class CanvasWindowTest implements Constants {
 			f.setAccessible(true);
 			f.set(canvasWindow, testUnaryShape);//
 
-
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
 		}
@@ -2739,7 +2728,7 @@ public class CanvasWindowTest implements Constants {
 			verify(shape, atLeastOnce()).defineConnectionTypes();
 		}
 	}
-	
+
 	/**
 	 * Test method for {@link guiLayer.CanvasWindow#handleKeyEvent(int, int, char)}.
 	 */
@@ -2755,11 +2744,10 @@ public class CanvasWindowTest implements Constants {
 		}
 
 		canvasWindow.handleKeyEvent(KeyEvent.KEY_PRESSED, KeyEvent.VK_CONTROL, ' ');
-		
-		//Nog een verify
+
+		// Nog een verify
 
 	}
-	
 
 	/**
 	 * Test method for {@link guiLayer.CanvasWindow#handleKeyEvent(int, int, char)}.
@@ -2897,7 +2885,7 @@ public class CanvasWindowTest implements Constants {
 		verify(maskedKeyBag, atLeastOnce()).pressShift(false);
 
 	}
-	
+
 	@Test
 	public void superRepaintTest() {
 		canvasWindow.superRepaint();
@@ -2961,8 +2949,7 @@ public class CanvasWindowTest implements Constants {
 	 * Test method for {@link guiLayer.CanvasWindow#handleKeyEvent(int, int, char)}.
 	 */
 	@Test
-	public void testHandleKeyEvent_Typed_R_KEY() {
-
+	public void testHandleKeyEvent_Typed_D_KEY() {
 		DebugModus debugModus = Mockito.spy(DebugModus.NONE);
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("debugModus");
@@ -2971,18 +2958,12 @@ public class CanvasWindowTest implements Constants {
 
 		} catch (Exception ex) {
 			System.out.println("Exception while injecting");
+
+			canvasWindow.handleKeyEvent(KeyEvent.KEY_TYPED, KeyEvent.VK_UNDEFINED, 'd');
+
+			verify(canvasWindow, atLeastOnce()).superRepaint();
 		}
-
-		when(debugModus.getNext()).thenReturn(DebugModus.CONNECTIONS);
-
-		canvasWindow.handleKeyEvent(KeyEvent.KEY_TYPED, KeyEvent.VK_UNDEFINED, 'd');
-
-	//	verify(canvasWindow, atLeastOnce()).repaint();
-
 	}
-
-
-
 
 	/**
 	 * Test method for
@@ -3009,7 +2990,7 @@ public class CanvasWindowTest implements Constants {
 //		verify(testActionShape, atLeastOnce()).defineConnectionTypes();
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#onBlockAdded(events.BlockAddedEvent)}.
@@ -3019,13 +3000,13 @@ public class CanvasWindowTest implements Constants {
 
 		coordinates.put("0", coordinate);
 		shapesInProgramArea.add(testActionShape);
-		
+
 		Set<String> iDsUnderneath = new HashSet<String>();
 		iDsUnderneath.add("11");
 
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithCall.getAddedBlockID(), blockAddedEventWithCall.getAddedBlockType(),
-				coordinate)).thenReturn(testActionShape);
+		when(shapeFactory.createShape(blockAddedEventWithCall.getAddedBlockID(),
+				blockAddedEventWithCall.getAddedBlockType(), coordinate)).thenReturn(testActionShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		when(domainController.getAllBlockIDsUnderneath("0")).thenReturn(iDsUnderneath);
 
@@ -3036,7 +3017,7 @@ public class CanvasWindowTest implements Constants {
 		verify(programArea, atLeastOnce()).clearAlreadyFilledInCoordinates();
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#onBlockAdded(events.BlockAddedEvent)}.
@@ -3046,13 +3027,13 @@ public class CanvasWindowTest implements Constants {
 
 		coordinates.put("40", coordinate);
 		shapesInProgramArea.add(testCallFunctionShape);
-		
+
 		Set<String> iDsUnderneath = new HashSet<String>();
 		iDsUnderneath.add("11");
 
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithCall2.getAddedBlockID(), blockAddedEventWithCall2.getAddedBlockType(),
-				coordinate)).thenReturn(testCallFunctionShape);
+		when(shapeFactory.createShape(blockAddedEventWithCall2.getAddedBlockID(),
+				blockAddedEventWithCall2.getAddedBlockType(), coordinate)).thenReturn(testCallFunctionShape);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		when(domainController.getAllBlockIDsUnderneath("40")).thenReturn(iDsUnderneath);
 		when(domainController.getAllHeadBlocks()).thenReturn(new HashSet<String>());
@@ -3065,7 +3046,7 @@ public class CanvasWindowTest implements Constants {
 		verify(programArea, atLeastOnce()).clearAlreadyFilledInCoordinates();
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#onBlockAdded(events.BlockAddedEvent)}.
@@ -3075,18 +3056,18 @@ public class CanvasWindowTest implements Constants {
 
 		coordinates.put("41", coordinate);
 		shapesInProgramArea.add(testCallFunctionShape3);
-		
+
 		Set<String> iDsUnderneath = new HashSet<String>();
 		iDsUnderneath.add("11");
 
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithCall3.getAddedBlockID(), blockAddedEventWithCall3.getAddedBlockType(),
-				coordinate)).thenReturn(testCallFunctionShape3);
+		when(shapeFactory.createShape(blockAddedEventWithCall3.getAddedBlockID(),
+				blockAddedEventWithCall3.getAddedBlockType(), coordinate)).thenReturn(testCallFunctionShape3);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		when(domainController.getAllBlockIDsUnderneath("41")).thenReturn(iDsUnderneath);
 		when(domainController.getAllHeadBlocks()).thenReturn(new HashSet<String>());
 		when(programArea.getShapeById("11")).thenReturn(testControlShapeUnder);
-		
+
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("undoMode");
 			f.setAccessible(true);
@@ -3103,7 +3084,7 @@ public class CanvasWindowTest implements Constants {
 		verify(programArea, atLeastOnce()).clearAlreadyFilledInCoordinates();
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#onBlockAdded(events.BlockAddedEvent)}.
@@ -3113,19 +3094,19 @@ public class CanvasWindowTest implements Constants {
 
 		coordinates.put("41", coordinate);
 		shapesInProgramArea.add(testCallFunctionShape3);
-		
+
 		Set<String> iDsUnderneath = new HashSet<String>();
 		iDsUnderneath.add("11");
 
 		when(currentSnapshot.getSavedCoordinates()).thenReturn(coordinates);
-		when(shapeFactory.createShape(blockAddedEventWithCall3.getAddedBlockID(), blockAddedEventWithCall3.getAddedBlockType(),
-				coordinate)).thenReturn(testCallFunctionShape3);
+		when(shapeFactory.createShape(blockAddedEventWithCall3.getAddedBlockID(),
+				blockAddedEventWithCall3.getAddedBlockType(), coordinate)).thenReturn(testCallFunctionShape3);
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
 		when(domainController.getAllBlockIDsUnderneath("41")).thenReturn(iDsUnderneath);
 		when(domainController.getAllHeadBlocks()).thenReturn(new HashSet<String>());
 		when(programArea.getShapeById("11")).thenReturn(testControlShapeUnder);
 		when(blockAddedEventWithCall3.areMoreRelatedEventsComing()).thenReturn(true);
-		
+
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("undoMode");
 			f.setAccessible(true);
@@ -3484,16 +3465,16 @@ public class CanvasWindowTest implements Constants {
 //		verify(testActionShapeWithZeroCoordinate, atLeastOnce()).defineConnectionTypes();
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#onBlockRemoved(events.BlockRemovedEvent)}.
 	 */
 	@Test
 	public void testOnBlockRemoved_CallFunctionShape_BeforeRemoveEmpty_NoFurtherEvents() {
-		
+
 		shapesInProgramArea.add(testCallFunctionShape);
-		
+
 		Set<Shape> shapesToBeRemovedFromProgramArea = new HashSet<Shape>();
 		shapesToBeRemovedFromProgramArea.add(testCallFunctionShape);
 
@@ -3514,16 +3495,16 @@ public class CanvasWindowTest implements Constants {
 		verify(commandHandler, atLeastOnce()).addShapeToBeforeSnapshot(testCallFunctionShape);
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#onBlockRemoved(events.BlockRemovedEvent)}.
 	 */
 	@Test
 	public void testOnBlockRemoved_CallFunctionShape_BeforeRemoveEmpty_FurtherEvents() {
-		
+
 		shapesInProgramArea.add(testCallFunctionShape);
-		
+
 		Set<Shape> shapesToBeRemovedFromProgramArea = new HashSet<Shape>();
 		shapesToBeRemovedFromProgramArea.add(testCallFunctionShape);
 
@@ -3545,25 +3526,25 @@ public class CanvasWindowTest implements Constants {
 		verify(commandHandler, atLeastOnce()).addShapeToBeforeSnapshot(testCallFunctionShape);
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#onBlockRemoved(events.BlockRemovedEvent)}.
 	 */
 	@Test
 	public void testOnBlockRemoved_CallFunctionShape_BeforeRemoveIF_NotBodyConnection_NoFurtherEvents() {
-		
+
 		shapesInProgramArea.add(testCallFunctionShape);
-		
+
 		Set<Shape> shapesToBeRemovedFromProgramArea = new HashSet<Shape>();
 		shapesToBeRemovedFromProgramArea.add(testCallFunctionShape);
 
 		Set<ControlShape> changedControlShapes = new HashSet<ControlShape>();
 		changedControlShapes.add(testControlShape);
-		
+
 		Set<String> blockIDsBelowCertainBlock = new HashSet<String>();
 		blockIDsBelowCertainBlock.add("11");
-		
+
 		BlockType bfrm = BlockType.IF;
 
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
@@ -3574,7 +3555,7 @@ public class CanvasWindowTest implements Constants {
 		when(domainController.getAllBlockIDsBelowCertainBlock("10")).thenReturn(blockIDsBelowCertainBlock);
 		when(programArea.getShapeById("11")).thenReturn(testControlShapeUnder);
 		when(testControlShape.getHeightDiff()).thenReturn(-1);
-		
+
 		try {
 			Field f = CanvasWindow.class.getDeclaredField("undoMode");
 			f.setAccessible(true);
@@ -3593,25 +3574,25 @@ public class CanvasWindowTest implements Constants {
 		verify(commandHandler, atLeastOnce()).addShapeToBeforeSnapshot(testCallFunctionShape);
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#onBlockRemoved(events.BlockRemovedEvent)}.
 	 */
 	@Test
 	public void testOnBlockRemoved_CallFunctionShape_BeforeRemoveIF_BodyConnection_NoFurtherEvents() {
-		
+
 		shapesInProgramArea.add(testCallFunctionShape);
-		
+
 		Set<Shape> shapesToBeRemovedFromProgramArea = new HashSet<Shape>();
 		shapesToBeRemovedFromProgramArea.add(testCallFunctionShape);
 
 		Set<ControlShape> changedControlShapes = new HashSet<ControlShape>();
 		changedControlShapes.add(testControlShape);
-		
+
 		Set<String> blockIDsBelowCertainBlock = new HashSet<String>();
 		blockIDsBelowCertainBlock.add("11");
-		
+
 		BlockType bfrm = BlockType.IF;
 
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
@@ -3631,25 +3612,25 @@ public class CanvasWindowTest implements Constants {
 		verify(commandHandler, atLeastOnce()).addShapeToBeforeSnapshot(testCallFunctionShape);
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#onBlockRemoved(events.BlockRemovedEvent)}.
 	 */
 	@Test
 	public void testOnBlockRemoved_CallFunctionShape_BeforeRemoveNOT_BodyConnection_NoFurtherEvents() {
-		
+
 		shapesInProgramArea.add(testCallFunctionShape);
-		
+
 		Set<Shape> shapesToBeRemovedFromProgramArea = new HashSet<Shape>();
 		shapesToBeRemovedFromProgramArea.add(testCallFunctionShape);
 
 		Set<ControlShape> changedControlShapes = new HashSet<ControlShape>();
 		changedControlShapes.add(testControlShape);
-		
+
 		Set<String> blockIDsBelowCertainBlock = new HashSet<String>();
 		blockIDsBelowCertainBlock.add("11");
-		
+
 		BlockType bfrm = BlockType.NOT;
 
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
@@ -3669,25 +3650,25 @@ public class CanvasWindowTest implements Constants {
 		verify(commandHandler, atLeastOnce()).addShapeToBeforeSnapshot(testCallFunctionShape);
 
 	}
-	
+
 	/**
 	 * Test method for
 	 * {@link guiLayer.CanvasWindow#onBlockRemoved(events.BlockRemovedEvent)}.
 	 */
 	@Test
 	public void testOnBlockRemoved_CallFunctionShape_BeforeRemoveNOT_BodyConnection_NoFurtherEvents_() {
-		
+
 		shapesInProgramArea.add(testCallFunctionShape2);
-		
+
 		Set<Shape> shapesToBeRemovedFromProgramArea = new HashSet<Shape>();
 		shapesToBeRemovedFromProgramArea.add(testCallFunctionShape2);
 
 		Set<ControlShape> changedControlShapes = new HashSet<ControlShape>();
 		changedControlShapes.add(testControlShape);
-		
+
 		Set<String> blockIDsBelowCertainBlock = new HashSet<String>();
 		blockIDsBelowCertainBlock.add("11");
-		
+
 		BlockType bfrm = BlockType.NOT;
 
 		when(programArea.getShapesInProgramArea()).thenReturn(shapesInProgramArea);
@@ -3707,8 +3688,6 @@ public class CanvasWindowTest implements Constants {
 		verify(commandHandler, atLeastOnce()).addShapeToBeforeSnapshot(testCallFunctionShape2);
 
 	}
-	
-	
 
 	/**
 	 * Test method for

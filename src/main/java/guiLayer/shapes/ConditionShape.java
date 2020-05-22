@@ -70,8 +70,16 @@ public class ConditionShape extends Shape {
 
 	@Override
 	public void clipOn(Shape shapeToClipTo, ConnectionType connection) {
-		setX_coord(shapeToClipTo.getX_coord() + 80);
-		setY_coord(shapeToClipTo.getY_coord());
+		switch (connection) {
+		case CONDITION:
+		case OPERAND:
+			setX_coord(shapeToClipTo.getX_coord() + 80);
+			setY_coord(shapeToClipTo.getY_coord());
+			break;
+		default:
+			break;
+
+		}
 	}
 
 }
