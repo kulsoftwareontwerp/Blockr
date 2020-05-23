@@ -359,12 +359,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			Graphics gameAreaGraphics = g.create(programAndGameBorder, yPositionGameArea, GAME_WIDTH, GAME_HEIGHT);
 
-			// only for debugging purposes
-			if (debugModus == DebugModus.FILLINGS) {
-				for (Coordinate filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
-					g.drawOval(filledInCoordinate.getX(), filledInCoordinate.getY(), 1, 1);
-				}
-			}
+
 
 			// Partition CanvasWindow in different sections
 
@@ -374,6 +369,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			domainController.paint(gameAreaGraphics);
 
 			programArea.draw(blockrGraphics, domainController);
+			
+			
+			
+			
 			
 			// Draw the counter for blocks
 			drawCounter(blockrGraphics);
@@ -423,10 +422,10 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	private void drawCounter(Graphics blockrGraphics) {
 		int counterX = programAndGameBorder-COUNTER_WIDTH - 10;
 		int counterY = ORIGIN + 10;
+		blockrGraphics.setColor(Color.BLACK);
 		blockrGraphics.fillRoundRect(counterX, counterY, COUNTER_WIDTH, COUNTER_HEIGHT,5,5);
 		blockrGraphics.setColor(Color.decode("#74EA57"));
 		String count = Integer.toString(domainController.getNumberOfRemainingBlocks());
-		System.out.println("count : "+count);
 		Font f = blockrGraphics.getFont();
 		blockrGraphics.setFont(Font.decode("calibri-bold-20"));
 		Rectangle2D countBounds =  blockrGraphics.getFontMetrics().getStringBounds(count, blockrGraphics);

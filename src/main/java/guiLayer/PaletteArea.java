@@ -1,5 +1,6 @@
 package guiLayer;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.HashSet;
 import java.util.Optional;
@@ -64,17 +65,22 @@ public class PaletteArea implements Constants {
 	 */
 	public void paint(Graphics g) {
 		// Palette
+		
+		// Rest of the Frame
+		g.fill3DRect(ORIGIN, ORIGIN, PALETTE_END_X,  g.getClipBounds().height, true);
 
 		if (!isPaletteVisible()) {
-
+			Color c = g.getColor();
+			g.setColor(Color.WHITE);
 			g.drawString("Too many blocks", 5, 30);
+			g.setColor(c);
 		}
 
-		// Rest of the Frame
-		g.drawLine(100, 0, 100, g.getClipBounds().height);
+		
+		
+//		g.drawLine(100, 0, 100, g.getClipBounds().height);
 		drawFullPalette(g);
 		
-
 	}
 
 	private void drawFullPalette(Graphics g) {
@@ -88,6 +94,8 @@ public class PaletteArea implements Constants {
 	}
 
 	private void drawTitles(Graphics g) {
+		Color c = g.getColor();
+		g.setColor(Color.WHITE);
 		int tempHeight = 30; // initial starting position in paletteArea to draw Strings
 		g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
 		g.drawString("Action Blocks", 15, tempHeight);
@@ -141,6 +149,8 @@ public class PaletteArea implements Constants {
 		g.drawString("Function Blocks", 10, tempHeight);
 		tempHeight += 20;
 		g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
+		
+		g.setColor(c);
 
 	}
 

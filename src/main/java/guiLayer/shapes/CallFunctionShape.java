@@ -3,6 +3,7 @@
  */
 package guiLayer.shapes;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,6 +58,14 @@ public class CallFunctionShape extends Shape {
 	public void draw(Graphics g) {
 		int startX = getX_coord();
 		int startY = getY_coord();
+		
+		Color c = g.getColor();
+		g.setColor(Color.white);	
+		g.fillArc(startX + 10, startY + 20, 20, 20, 0, -180);	
+		g.fillPolygon(new int[] {startX, startX + 10,startX+12, startX+15, startX+20,startX+25,startX+28,   startX+30,startX+90,startX+90,startX }, new int[] {startY,startY,startY+5,startY+8, startY+10,startY+8, startY+5, startY,startY,startY+30,startY+30}, 11);
+		g.setColor(c);
+		
+		
 		BlockType type = getType();
 
 		g.drawArc(startX + 10, startY - 10, 20, 20, 0, -180);

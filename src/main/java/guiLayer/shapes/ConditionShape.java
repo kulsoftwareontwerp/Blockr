@@ -1,5 +1,6 @@
 package guiLayer.shapes;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +32,18 @@ public class ConditionShape extends Shape {
 	public void draw(Graphics g) {
 		int startX = getX_coord();
 		int startY = getY_coord();
+		
+		
+		Color c = g.getColor();
+		g.setColor(Color.white);
+		g.fillPolygon(
+				new int[] {  startX + 10, startX + 90,  startX + 90, startX+10 },
+				new int[] {  startY,  startY,startY + 30, startY + 30},
+				4);
+		g.fillArc(startX, startY + 5, 20, 20, -90, -180);
+		g.setColor(c);
+		
+		
 		BlockType type = getType();
 
 		g.drawArc(startX, startY + 5, 20, 20, -90, -180);

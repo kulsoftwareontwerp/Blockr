@@ -3,11 +3,13 @@
  */
 package guiLayer.shapes;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import guiLayer.types.Constants;
 import guiLayer.types.Coordinate;
 import types.BlockType;
 import types.ConnectionType;
@@ -45,6 +47,22 @@ public class DefinitionShape extends Shape {
 
 		setCoordinatesShape();
 		int total = getHeight();
+		
+		
+		Color c = g.getColor();
+		g.setColor(Color.white);
+		g.fillArc(startX + 20, startY + 20, 20, 20, 0, -180);
+		g.fillPolygon(
+				new int[] { startX, startX + 90,  startX + 90, startX + 10, startX + 10, startX + 20,startX+22, 
+						startX+25, startX+30,startX+35,startX+38,   startX+40,       startX +90,startX+90,
+						startX+90,startX },
+				new int[] { startY, startY,startY + 30, startY + 30,startY + total - 30, startY + total - 30,startY + total - 30+5,
+						startY + total - 30+8,startY + total - 30+10,startY + total - 30+8,startY + total - 30+5,startY + total - 30,    startY + total-30,startY + total,
+						startY + total,startY + total},
+				16);
+		g.setColor(c);
+		
+		
 
 		g.drawArc(startX + getWidth() - 70, startY + 20, 20, 20, 0, -180);
 		g.drawArc(startX + getWidth() - 70, startY + total - 40, 20, 20, 0, -180);
@@ -61,7 +79,8 @@ public class DefinitionShape extends Shape {
 		g.drawLine(startX + 10, startY + 30, startX + 20, startY + 30);
 		g.drawLine(startX + 40, startY + 30, startX + getWidth(), startY + 30);
 
-		g.drawString(getType().toString() +" "+ getId(), startX + 10, startY + 23);
+
+		g.drawString(getType().toString() +" "+ idForDisplay(), startX + 10, startY + 23);
 	}
 	@Override
 	protected Integer getStandardHeight() {

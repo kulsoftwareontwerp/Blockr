@@ -263,6 +263,14 @@ public class ProgramArea implements Constants {
 						}
 
 						blockrGraphics.fillOval(tempx, tempy, 6, 6);
+						blockrGraphics.setColor(Color.black);
+					}
+					
+					// only for debugging purposes
+					if (CanvasWindow.debugModus == DebugModus.FILLINGS) {
+						for (Coordinate filledInCoordinate : getAlreadyFilledInCoordinates()) {
+							blockrGraphics.drawOval(filledInCoordinate.getX(), filledInCoordinate.getY(), 1, 1);
+						}
 					}
 				}
 			}

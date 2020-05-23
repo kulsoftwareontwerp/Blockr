@@ -1,5 +1,6 @@
 package guiLayer.shapes;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +37,24 @@ public class ControlShape extends Shape implements Constants {
 
 		setCoordinatesShape();
 		int total = getHeight();
+
+		Color c = g.getColor();
+		g.setColor(Color.white);
+		g.fillArc(startX + 20, startY + 20, 20, 20, 0, -180);
+		g.fillPolygon(
+				new int[] { startX, startX + 10, startX + 12, startX + 15, startX + 20, startX + 25, startX + 28,
+						startX + 30, startX + 90, startX + 90, startX + 85, startX + 82, startX + 80, startX + 82,
+						startX + 85, startX + 90, startX + 90, startX + 10, startX + 10, startX + 20,startX+22, 
+						startX+25, startX+30,startX+35,startX+38,   startX+40,       startX +90,startX+90,
+						startX+90,startX },
+				new int[] { startY, startY, startY + 5, startY + 8, startY + 10, startY + 8, startY + 5, 
+						startY, startY,startY + 5, startY + 7, startY + 10, startY + 15, startY + 20,
+						startY + 23, startY + 25,startY + 30, startY + 30,startY + total - 30, startY + total - 30,startY + total - 30+5,
+						startY + total - 30+8,startY + total - 30+10,startY + total - 30+8,startY + total - 30+5,startY + total - 30,    startY + total-30,startY + total,
+						startY + total,startY + total},
+				30);
+		g.fillArc(startX + 10, startY + total - 10, 20, 20, 0, -180);
+		g.setColor(c);
 
 		g.drawArc(startX + 10, startY - 10, 20, 20, 0, -180);
 		g.drawArc(startX + getWidth() - 70, startY + 20, 20, 20, 0, -180);
