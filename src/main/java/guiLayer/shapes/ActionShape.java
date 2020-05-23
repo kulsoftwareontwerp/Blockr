@@ -1,6 +1,7 @@
 package guiLayer.shapes;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Polygon;
 import java.util.HashMap;
@@ -38,10 +39,15 @@ public class ActionShape extends Shape {
 
 		
 		Color c = g.getColor();
-		g.setColor(Color.white);	
+		
+		if(c.equals(Color.BLACK)) {
+			g.setColor(Color.decode("#42C3FF"));				
+		}
+		
 		g.fillArc(startX + 10, startY + 20, 20, 20, 0, -180);	
 		g.fillPolygon(new int[] {startX, startX + 10,startX+12, startX+15, startX+20,startX+25,startX+28,   startX+30,startX+90,startX+90,startX }, new int[] {startY,startY,startY+5,startY+8, startY+10,startY+8, startY+5, startY,startY,startY+30,startY+30}, 11);
-		g.setColor(c);
+	
+		g.setColor(Color.BLACK);
 		
 		
 		
@@ -63,10 +69,11 @@ public class ActionShape extends Shape {
 		
 		
 
-		
+		Font f = g.getFont();
+		g.setFont(Font.decode("arial-bold-12"));
 		g.drawString(type.toString() + idForDisplay(), startX + 3, startY + 23);
 
-		
+		g.setFont(f);
 
 		
 		

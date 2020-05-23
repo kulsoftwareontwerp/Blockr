@@ -60,10 +60,13 @@ public class CallFunctionShape extends Shape {
 		int startY = getY_coord();
 		
 		Color c = g.getColor();
-		g.setColor(Color.white);	
+		
+		if(c.equals(Color.BLACK)) {
+			g.setColor(Color.decode("#B885FF"));				
+		}	
 		g.fillArc(startX + 10, startY + 20, 20, 20, 0, -180);	
 		g.fillPolygon(new int[] {startX, startX + 10,startX+12, startX+15, startX+20,startX+25,startX+28,   startX+30,startX+90,startX+90,startX }, new int[] {startY,startY,startY+5,startY+8, startY+10,startY+8, startY+5, startY,startY,startY+30,startY+30}, 11);
-		g.setColor(c);
+		g.setColor(Color.BLACK);
 		
 		
 		BlockType type = getType();

@@ -1,6 +1,7 @@
 package guiLayer;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.util.HashSet;
 import java.util.Optional;
@@ -70,10 +71,9 @@ public class PaletteArea implements Constants {
 		g.fill3DRect(ORIGIN, ORIGIN, PALETTE_END_X,  g.getClipBounds().height, true);
 
 		if (!isPaletteVisible()) {
-			Color c = g.getColor();
 			g.setColor(Color.WHITE);
 			g.drawString("Too many blocks", 5, 30);
-			g.setColor(c);
+			g.setColor(Color.BLACK);
 		}
 
 		
@@ -94,11 +94,14 @@ public class PaletteArea implements Constants {
 	}
 
 	private void drawTitles(Graphics g) {
-		Color c = g.getColor();
 		g.setColor(Color.WHITE);
+		Font f = g.getFont();
+		g.setFont(Font.decode("arial-bold-12"));
+		
+		
 		int tempHeight = 30; // initial starting position in paletteArea to draw Strings
 		g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
-		g.drawString("Action Blocks", 15, tempHeight);
+		g.drawString("Action Blocks", 3, tempHeight);
 		tempHeight += 20;
 		g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
 
@@ -110,7 +113,7 @@ public class PaletteArea implements Constants {
 
 		tempHeight += 20;
 		g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
-		g.drawString("Control Blocks", 10, tempHeight);
+		g.drawString("Control Blocks", 3, tempHeight);
 		tempHeight += 20;
 		g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
 
@@ -122,7 +125,7 @@ public class PaletteArea implements Constants {
 
 		tempHeight += 20;
 		g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
-		g.drawString("Operator Blocks", 5, tempHeight);
+		g.drawString("Operator Blocks", 3, tempHeight);
 		tempHeight += 20;
 		g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
 
@@ -134,7 +137,7 @@ public class PaletteArea implements Constants {
 
 		tempHeight += 25;
 		g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
-		g.drawString("Condition Blocks", 5, tempHeight);
+		g.drawString("Condition Blocks", 1, tempHeight);
 		tempHeight += 20;
 		g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
 
@@ -146,11 +149,12 @@ public class PaletteArea implements Constants {
 
 		tempHeight += 20;
 		g.drawLine(0, tempHeight - 20, 100, tempHeight - 20);
-		g.drawString("Function Blocks", 10, tempHeight);
+		g.drawString("Function Blocks", 3, tempHeight);
 		tempHeight += 20;
 		g.drawLine(0, tempHeight - 10, 100, tempHeight - 10);
 		
-		g.setColor(c);
+		g.setColor(Color.BLACK);
+		g.setFont(f);
 
 	}
 

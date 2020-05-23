@@ -1,6 +1,7 @@
 package guiLayer.shapes;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,13 +36,17 @@ public class ConditionShape extends Shape {
 		
 		
 		Color c = g.getColor();
-		g.setColor(Color.white);
+		
+		if(c.equals(Color.BLACK)) {
+			g.setColor(Color.decode("#61CCC3"));				
+		}
+		
 		g.fillPolygon(
 				new int[] {  startX + 10, startX + 90,  startX + 90, startX+10 },
 				new int[] {  startY,  startY,startY + 30, startY + 30},
 				4);
 		g.fillArc(startX, startY + 5, 20, 20, -90, -180);
-		g.setColor(c);
+		g.setColor(Color.BLACK);
 		
 		
 		BlockType type = getType();
@@ -52,7 +57,11 @@ public class ConditionShape extends Shape {
 		g.drawLine(startX + 10, startY, startX + 10, startY + 5);
 		g.drawLine(startX + 10, startY + 25, startX + 10, startY + 30);
 		g.drawLine(startX + 10, startY + 30, startX + 90, startY + 30);
+		
+		Font f = g.getFont();
+		g.setFont(Font.decode("arial-bold-12"));
 		g.drawString(type.toString() + idForDisplay(), startX + 15, startY + 19);
+		g.setFont(f);
 	}
 
 	@Override HashSet<Coordinate> fillShapeWithCoordinates() {

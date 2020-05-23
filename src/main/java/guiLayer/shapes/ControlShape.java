@@ -1,6 +1,7 @@
 package guiLayer.shapes;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,7 +40,11 @@ public class ControlShape extends Shape implements Constants {
 		int total = getHeight();
 
 		Color c = g.getColor();
-		g.setColor(Color.white);
+		
+		if(c.equals(Color.BLACK)) {
+			g.setColor(Color.decode("#FAB580"));				
+		}
+	
 		g.fillArc(startX + 20, startY + 20, 20, 20, 0, -180);
 		g.fillPolygon(
 				new int[] { startX, startX + 10, startX + 12, startX + 15, startX + 20, startX + 25, startX + 28,
@@ -54,7 +59,7 @@ public class ControlShape extends Shape implements Constants {
 						startY + total,startY + total},
 				30);
 		g.fillArc(startX + 10, startY + total - 10, 20, 20, 0, -180);
-		g.setColor(c);
+		g.setColor(Color.BLACK);
 
 		g.drawArc(startX + 10, startY - 10, 20, 20, 0, -180);
 		g.drawArc(startX + getWidth() - 70, startY + 20, 20, 20, 0, -180);
@@ -77,7 +82,10 @@ public class ControlShape extends Shape implements Constants {
 		g.drawLine(startX + getWidth() - 50, startY + 30, startX + getWidth(), startY + 30);
 		g.drawLine(startX + 30, startY + total, startX + getWidth(), startY + total);
 
+		Font f = g.getFont();
+		g.setFont(Font.decode("arial-bold-12"));
 		g.drawString(getType().toString() + idForDisplay(), startX + 10, startY + 23);
+		g.setFont(f);
 	}
 
 	@Override

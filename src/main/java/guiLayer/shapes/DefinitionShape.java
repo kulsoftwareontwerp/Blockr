@@ -4,13 +4,16 @@
 package guiLayer.shapes;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import guiLayer.CanvasWindow;
 import guiLayer.types.Constants;
 import guiLayer.types.Coordinate;
+import guiLayer.types.DebugModus;
 import types.BlockType;
 import types.ConnectionType;
 
@@ -50,7 +53,10 @@ public class DefinitionShape extends Shape {
 		
 		
 		Color c = g.getColor();
-		g.setColor(Color.white);
+		
+		if(c.equals(Color.BLACK)) {
+			g.setColor(Color.decode("#8770FA"));				
+		}
 		g.fillArc(startX + 20, startY + 20, 20, 20, 0, -180);
 		g.fillPolygon(
 				new int[] { startX, startX + 90,  startX + 90, startX + 10, startX + 10, startX + 20,startX+22, 
@@ -60,7 +66,7 @@ public class DefinitionShape extends Shape {
 						startY + total - 30+8,startY + total - 30+10,startY + total - 30+8,startY + total - 30+5,startY + total - 30,    startY + total-30,startY + total,
 						startY + total,startY + total},
 				16);
-		g.setColor(c);
+		g.setColor(Color.BLACK);
 		
 		
 
@@ -79,8 +85,15 @@ public class DefinitionShape extends Shape {
 		g.drawLine(startX + 10, startY + 30, startX + 20, startY + 30);
 		g.drawLine(startX + 40, startY + 30, startX + getWidth(), startY + 30);
 
-
-		g.drawString(getType().toString() +" "+ idForDisplay(), startX + 10, startY + 23);
+		
+		String idToShow = getId();
+		if ( idToShow.equals(PALETTE_BLOCK_IDENTIFIER)) {
+			idToShow= "";
+		}
+		Font f = g.getFont();
+		g.setFont(Font.decode("arial-bold-12"));
+		g.drawString(getType().toString() +" "+ idToShow, startX + 10, startY + 23);
+		g.setFont(f);
 	}
 	@Override
 	protected Integer getStandardHeight() {

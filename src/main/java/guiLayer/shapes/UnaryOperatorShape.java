@@ -1,6 +1,7 @@
 package guiLayer.shapes;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,8 +35,14 @@ public class UnaryOperatorShape extends Shape {
 		int startX = getX_coord();
 		int startY = getY_coord();
 		
+
+		
 		Color c = g.getColor();
-		g.setColor(Color.white);
+		
+		if(c.equals(Color.BLACK)) {
+			g.setColor(Color.decode("#E6517E"));				
+		}
+		
 		g.fillPolygon(
 				new int[] {  startX + 10, startX + 90, startX + 90, startX + 85, startX + 82, startX + 80, startX + 82,
 						startX + 85, startX + 90, startX + 90, startX+10 },
@@ -43,7 +50,7 @@ public class UnaryOperatorShape extends Shape {
 						startY + 23, startY + 25,startY + 30, startY + 30},
 				11);
 		g.fillArc(startX, startY + 5, 20, 20, -90, -180);
-		g.setColor(c);
+		g.setColor(Color.BLACK);
 		
 		
 
@@ -55,7 +62,10 @@ public class UnaryOperatorShape extends Shape {
 		g.drawLine(startX + 90, startY + 25, startX + 90, startY + 30);
 		g.drawLine(startX + 10, startY + 25, startX + 10, startY + 30);
 		g.drawLine(startX + 10, startY + 30, startX + 90, startY + 30);
+		Font f = g.getFont();
+		g.setFont(Font.decode("arial-bold-12"));
 		g.drawString(getType().toString() + idForDisplay(), startX + 35, startY + 19);
+		g.setFont(f);
 
 	}
 
