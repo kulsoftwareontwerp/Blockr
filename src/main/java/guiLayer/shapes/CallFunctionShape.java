@@ -4,6 +4,7 @@
 package guiLayer.shapes;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,8 +33,6 @@ public class CallFunctionShape extends Shape {
 		super(id, type, coordinate);
 	}
 
-
-
 	@Override
 	public void clipOn(Shape shape, ConnectionType connection) {
 		switch (connection) {
@@ -58,17 +57,21 @@ public class CallFunctionShape extends Shape {
 	public void draw(Graphics g) {
 		int startX = getX_coord();
 		int startY = getY_coord();
-		
+
 		Color c = g.getColor();
-		
-		if(c.equals(Color.BLACK)) {
-			g.setColor(Color.decode("#B885FF"));				
-		}	
-		g.fillArc(startX + 10, startY + 20, 20, 20, 0, -180);	
-		g.fillPolygon(new int[] {startX, startX + 10,startX+12, startX+15, startX+20,startX+25,startX+28,   startX+30,startX+90,startX+90,startX }, new int[] {startY,startY,startY+5,startY+8, startY+10,startY+8, startY+5, startY,startY,startY+30,startY+30}, 11);
+
+		if (c.equals(Color.BLACK)) {
+			g.setColor(Color.decode("#B885FF"));
+		}
+		g.fillArc(startX + 10, startY + 20, 20, 20, 0, -180);
+		g.fillPolygon(
+				new int[] { startX, startX + 10, startX + 12, startX + 15, startX + 20, startX + 25, startX + 28,
+						startX + 30, startX + 90, startX + 90, startX },
+				new int[] { startY, startY, startY + 5, startY + 8, startY + 10, startY + 8, startY + 5, startY, startY,
+						startY + 30, startY + 30 },
+				11);
 		g.setColor(Color.BLACK);
-		
-		
+
 		BlockType type = getType();
 
 		g.drawArc(startX + 10, startY - 10, 20, 20, 0, -180);
@@ -82,8 +85,10 @@ public class CallFunctionShape extends Shape {
 		g.drawLine(startX, startY + 30, startX + 10, startY + 30);
 		g.drawLine(startX + 30, startY + 30, startX + 90, startY + 30);
 
+		Font f = g.getFont();
+		g.setFont(Font.decode("arial-bold-12"));
 		g.drawString(type.toString() + idForDisplay(), startX + 3, startY + 23);
-
+		g.setFont(f);
 	}
 
 	@Override

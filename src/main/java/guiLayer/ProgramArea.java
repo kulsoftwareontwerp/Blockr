@@ -238,7 +238,7 @@ public class ProgramArea implements Constants {
 		}
 
 		if (getHighlightedShapeForExecution() != null) {
-			drawHighlightedBLUE(blockrGraphics, getHighlightedShapeForExecution());
+			drawHighlightedYELLOW(blockrGraphics, getHighlightedShapeForExecution());
 		}
 
 		if (getHighlightedShapeForConnections() != null) {
@@ -284,8 +284,8 @@ public class ProgramArea implements Constants {
 	 * @param g     The graphics object to draw on
 	 * @param shape the shape to draw
 	 */
-	private void drawHighlightedBLUE(Graphics g, Shape shape) {
-		g.setColor(Color.BLUE);
+	private void drawHighlightedYELLOW(Graphics g, Shape shape) {
+		g.setColor(Color.decode("#E1FF4D"));
 		shape.draw(g);
 		g.setColor(Color.BLACK);
 	}
