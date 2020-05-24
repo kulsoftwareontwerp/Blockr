@@ -16,61 +16,63 @@ import guiLayer.shapes.Shape;
  *
  */
 public class CommandHandler {
-	private Stack<BlockCommand> executedBlockCommands;
-	private Stack<BlockCommand> undoneBlockCommands;
-	private Stack<GameWorldCommand> executedGameWorldCommands;
-	private Stack<GameWorldCommand> undoneGameWorldCommands;
+	private Stack<Command> executedCommands;
+	private Stack<Command> undoneCommands;
+
 	private BlockCommand currentlyHandledBlockCommand;
 	private CanvasWindow canvas;
 
 	/**
 	 * Create a CommandHandler
+	 * 
 	 * @param canvas The canvas object that calls this commandHandler.
 	 */
 	public CommandHandler(CanvasWindow canvas) {
-		executedBlockCommands = new Stack<BlockCommand>();
-		undoneBlockCommands = new Stack<BlockCommand>();
-		executedGameWorldCommands = new Stack<GameWorldCommand>();
-		undoneGameWorldCommands = new Stack<GameWorldCommand>();
-		this.canvas=canvas;
+		executedCommands = new Stack<Command>();
+		undoneCommands = new Stack<Command>();
+		this.canvas = canvas;
 	}
-	
+
 	// For testing purposes
-	CommandHandler(CanvasWindow canvas, Stack<BlockCommand> executedBlockCommands, Stack<BlockCommand> undoneBlockCommands, 
-			Stack<GameWorldCommand> executedGameWorldCommands, Stack<GameWorldCommand> undoneGameWorldCommands,
-			BlockCommand currentlyHandledBlockCommand) {
-		this.canvas=canvas;
-		this.executedBlockCommands = executedBlockCommands;
-		this.undoneBlockCommands = undoneBlockCommands;
-		this.executedGameWorldCommands = executedGameWorldCommands;
-		this.undoneGameWorldCommands = undoneGameWorldCommands;
+	CommandHandler(CanvasWindow canvas, Stack<Command> executedCommands,
+			Stack<Command> undoneCommands, BlockCommand currentlyHandledBlockCommand) {
+		this.canvas = canvas;
 		this.currentlyHandledBlockCommand = currentlyHandledBlockCommand;
 	}
 
 	/**
-	 * Execute a BlockCommand and put it on the stack, all undone BlockCommands will be cleared as well as all GameWorldCommands, executed and undone alike.
+	 * Execute a BlockCommand and put it on the stack, all undone BlockCommands will
+	 * be cleared as well as all GameWorldCommands, executed and undone alike.
+	 * 
 	 * @param command the blockCommand to handle
 	 */
 	public void handle(BlockCommand command) {
 		// no undo operations for gameWorld possible anymore
-		executedGameWorldCommands.clear();
-		undoneGameWorldCommands.clear();
-		undoneBlockCommands.clear();
+		if (!(command instanceof GuiMoveCommand)) {
+			clearAllGameWorldCommands();
+			undoneCommands.clear();
+		}
 		currentlyHandledBlockCommand = command;
 		command.execute();
 		currentlyHandledBlockCommand = null;
-		executedBlockCommands.push(command);
+		executedCommands.push(command);
+	}
 
+	void clearAllGameWorldCommands() {
+		executedCommands.removeIf(s -> s instanceof GameWorldCommand);
+		undoneCommands.removeIf(s -> s instanceof GameWorldCommand);
 	}
 
 	/**
-	 * Execute a GameWorldCommand and put it on the stack, all undone GameWorldCommands will be cleared.
+	 * Execute a GameWorldCommand and put it on the stack, all undone
+	 * GameWorldCommands will be cleared.
+	 * 
 	 * @param command the GameWorldCommand to execute.
 	 */
 	public void handle(GameWorldCommand command) {
-		undoneGameWorldCommands.clear();
+		undoneCommands.clear();
 		command.execute();
-		executedGameWorldCommands.push(command);
+		executedCommands.push(command);
 	}
 
 	/**
@@ -100,19 +102,19 @@ public class CommandHandler {
 	 * Undo a command.
 	 */
 	public void undo() {
-		if (executedGameWorldCommands.size() != 0) {
-			GameWorldCommand c = executedGameWorldCommands.pop();
+		if (executedCommands.size() != 0) {
+			Command c = executedCommands.pop();
+			if (c instanceof BlockCommand) {
+				canvas.setUndoMode(true);
+				currentlyHandledBlockCommand = (BlockCommand) c;
+				if (c instanceof DomainMoveCommand) {
+					clearAllGameWorldCommands();
+				}
+			}
 			c.undo();
-			undoneGameWorldCommands.push(c);
-		} else if (executedBlockCommands.size() != 0) {
-			canvas.setUndoMode(true);
-			executedGameWorldCommands.clear();
-			undoneGameWorldCommands.clear();
-			BlockCommand c = executedBlockCommands.pop();
-			currentlyHandledBlockCommand = c;
-			c.undo();
+			
+			undoneCommands.push(c);
 			currentlyHandledBlockCommand = null;
-			undoneBlockCommands.push(c);
 			canvas.setUndoMode(false);
 		}
 	}
@@ -121,27 +123,25 @@ public class CommandHandler {
 	 * Redo an undone command.
 	 */
 	public void redo() {
-		if (undoneGameWorldCommands.size() != 0) {
-			GameWorldCommand c = undoneGameWorldCommands.pop();
+		if (undoneCommands.size() != 0) {
+			Command c = undoneCommands.pop();
+			if (c instanceof BlockCommand) {
+				currentlyHandledBlockCommand = (BlockCommand) c;
+				if (c instanceof DomainMoveCommand) {
+					clearAllGameWorldCommands();
+				}
+			}
 			c.execute();
-			executedGameWorldCommands.push(c);
-		} else if (undoneBlockCommands.size() != 0) {
-			executedGameWorldCommands.clear();
-			undoneGameWorldCommands.clear();
-			BlockCommand c = undoneBlockCommands.pop();
-			currentlyHandledBlockCommand = c;
-			c.execute();
+			
+			executedCommands.push(c);
 			currentlyHandledBlockCommand = null;
-			executedBlockCommands.push(c);
 		}
 	}
 
 	public void addShapeToBeforeSnapshot(Shape shape) {
 		if (currentlyHandledBlockCommand != null) {
 			currentlyHandledBlockCommand.addShapeToBeforeSnapshot(shape);
-		}else {
-			executedBlockCommands.peek().addShapeToBeforeSnapshot(shape);
-		}
+		} 
 	}
 
 }
