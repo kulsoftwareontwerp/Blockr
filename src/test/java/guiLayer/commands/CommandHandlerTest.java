@@ -24,20 +24,13 @@ import guiLayer.types.GuiSnapshot;
 
 public class CommandHandlerTest {
 
-//	@Spy
-//	private Stack<BlockCommand> executedBlockCommands;
-//	@Spy
-//	private Stack<BlockCommand> undoneBlockCommands;
-//	@Spy
-//	private Stack<GameWorldCommand> executedGameWorldCommands;
-//	
+
 	@Spy
 	private Stack<Command> executedCommands;
 	@Spy
 	private Stack<Command> undoneCommands;
 
-//	@Spy
-//	private Stack<GameWorldCommand> undoneGameWorldCommands;
+
 	@Mock
 	private CanvasWindow canvas;
 
