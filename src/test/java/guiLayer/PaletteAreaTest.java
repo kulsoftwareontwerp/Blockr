@@ -10,8 +10,9 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -218,6 +219,8 @@ public class PaletteAreaTest implements Constants {
 	public void testPaint_PaletteVisible_currentHeightNotZero() {
 		
 		Graphics g = Mockito.spy(Graphics.class);
+		when(g.getColor()).thenReturn(Color.GREEN);
+
 		when(g.getClipBounds()).thenReturn(new Rectangle(500,600));
 		
 		when(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.IF, new Coordinate(ACTION_BLOCK_INIT_OFFSET,135) )).thenReturn(testPaletteActionShape);
@@ -250,6 +253,7 @@ public class PaletteAreaTest implements Constants {
 	public void testPaint_PaletteVisible() {
 		
 		Graphics g = Mockito.spy(Graphics.class);
+		when(g.getColor()).thenReturn(Color.GREEN);
 		when(g.getClipBounds()).thenReturn(new Rectangle(500,600));
 		
 		when(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.IF, new Coordinate(ACTION_BLOCK_INIT_OFFSET,135) )).thenReturn(testPaletteActionShape);
@@ -274,6 +278,7 @@ public class PaletteAreaTest implements Constants {
 	public void testPaint_PaletteNotVisible() {
 		
 		Graphics g = Mockito.spy(Graphics.class);
+		when(g.getColor()).thenReturn(Color.GREEN);
 		when(g.getClipBounds()).thenReturn(new Rectangle(500,600));
 		
 		when(shapeFactory.createShape(PALETTE_BLOCK_IDENTIFIER, BlockType.IF, new Coordinate(ACTION_BLOCK_INIT_OFFSET,135) )).thenReturn(testPaletteActionShape);
@@ -305,6 +310,7 @@ public class PaletteAreaTest implements Constants {
 	public void testPaint_PaletteVisible_ShapesInPaletteDifferentSizeToBlockTypes() {
 		
 		Graphics g = Mockito.spy(Graphics.class);
+		when(g.getColor()).thenReturn(Color.green);
 		
 		HashSet<Shape> shapesInPalette = new HashSet<Shape>();
 		shapesInPalette.add(testPaletteActionShape);

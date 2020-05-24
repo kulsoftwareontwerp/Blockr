@@ -134,9 +134,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		return width;
 	}
 
-	int getWindowHeight() {
-		return height;
-	}
+
 
 	/**
 	 * Show the given alert message

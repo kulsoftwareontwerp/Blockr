@@ -4,7 +4,6 @@
 package guiLayer;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.*;
 
 import java.awt.Color;
@@ -497,11 +496,13 @@ public class ProgramAreaTest {
 		when(programArea.getHighlightedShapeForExecution()).thenReturn(testActionShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(testActionShape);
 		
-		Graphics g = Mockito.spy(Graphics.class);
 		DomainController dc = null;
+		Graphics g = Mockito.spy(Graphics.class);
+		when(g.getColor()).thenReturn(Color.GREEN);
 		programArea.draw(g, dc);
-		
-		
+		when(g.getColor()).thenReturn(Color.BLACK);
+		programArea.draw(g, dc);
+
 	}
 	
 	
@@ -530,12 +531,12 @@ public class ProgramAreaTest {
 		
 		doReturn(true,false).when(dc).checkIfConnectionIsOpen(any(String.class), any(ConnectionType.class), any());
 		
-				
+		when(g.getColor()).thenReturn(Color.GREEN);		
 		programArea.draw(g, dc);
 		verify(g,atLeastOnce()).setColor(colorCaptor.capture());
 		assertTrue(colorCaptor.getAllValues().contains(Color.GREEN));
 		
-		
+		when(g.getColor()).thenReturn(Color.BLACK);
 		programArea.draw(g, dc);
 		verify(g,atLeastOnce()).setColor(colorCaptor.capture());
 		assertTrue(colorCaptor.getAllValues().contains(Color.RED));
@@ -558,8 +559,11 @@ public class ProgramAreaTest {
 		when(programArea.getHighlightedShapeForExecution()).thenReturn(testActionShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(testActionShape);
 		
-		Graphics g = Mockito.spy(Graphics.class);
 		DomainController dc = null;
+		Graphics g = Mockito.spy(Graphics.class);
+		when(g.getColor()).thenReturn(Color.GREEN);
+		programArea.draw(g, dc);
+		when(g.getColor()).thenReturn(Color.BLACK);
 		programArea.draw(g, dc);
 	}
 	
@@ -576,7 +580,9 @@ public class ProgramAreaTest {
 		
 		Graphics g = Mockito.spy(Graphics.class);
 		DomainController dc = null;
-		
+		when(g.getColor()).thenReturn(Color.GREEN);
+		programArea.draw(g, dc);
+		when(g.getColor()).thenReturn(Color.BLACK);
 		programArea.draw(g, dc);
 	}
 
