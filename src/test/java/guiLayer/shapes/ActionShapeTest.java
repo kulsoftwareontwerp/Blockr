@@ -11,7 +11,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -154,8 +156,10 @@ public class ActionShapeTest {
 	public void testDraw() {
 
 		Graphics g = spy(Graphics.class);
+		when(g.getColor()).thenReturn(Color.GREEN);
 		shape.draw(g);
-		
+		when(g.getColor()).thenReturn(Color.BLACK);
+		shape.draw(g);
 		verify(g,atLeastOnce()).drawLine(any(Integer.class), any(Integer.class), any(Integer.class), any(Integer.class));
 		verify(g,atLeastOnce()).drawArc(any(Integer.class),any(Integer.class),any(Integer.class),any(Integer.class),any(Integer.class),any(Integer.class));
 		verify(g,atLeastOnce()).drawString(any(String.class), any(Integer.class), any(Integer.class));

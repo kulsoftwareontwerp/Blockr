@@ -351,6 +351,17 @@ public class BlockControllerTest {
 		
 	}
 	
+	/**
+	 * Test method for {@link applicationLayer.BlockController#getNumberOfRemainingBlocks()}.
+	 */
+	@Test
+	public void testgetNumberOfRemainingBlocks() {
+
+		bc.getNumberOfRemainingBlocks();
+		
+		verify(blockRepository, atLeastOnce()).getNumberOfRemainingBlocks();
+	}
+	
 	@Test
 	public void testAddBlockMaxNumberOfBlocksReached() {
 		String excMessage = "The maximum number of blocks has already been reached.";

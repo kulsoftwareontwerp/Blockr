@@ -37,7 +37,8 @@ public interface Constants {
 	public static final int GAME_WIDTH = 250;
 	public final static int INITIAL_GAME_END_X = 1000;
 	
-	
+	public static final int COUNTER_HEIGHT = 25;
+	public static final int COUNTER_WIDTH = 50;
 	
 	
 	public static final int INVALID_COORDINATE = -1;

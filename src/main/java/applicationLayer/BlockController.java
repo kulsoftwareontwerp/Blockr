@@ -722,4 +722,12 @@ public class BlockController implements GUISubject, DomainSubject {
 		return false;
 	}
 
+	/**
+	 * Retrieve the number of blocks that are still able to be added.
+	 * @return the number of blocks that are still able to be added.
+	 */
+	public int getNumberOfRemainingBlocks() {
+		return programBlockRepository.getNumberOfRemainingBlocks();
+	}
+
 }

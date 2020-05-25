@@ -1,9 +1,11 @@
 package guiLayer;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -132,9 +134,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 		return width;
 	}
 
-	int getWindowHeight() {
-		return height;
-	}
+
 
 	/**
 	 * Show the given alert message
@@ -341,7 +341,6 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 	@Override
 	protected void paint(Graphics g) {
 		if (alertMessage == null) {
-//			calculateWindowHeight();
 			int tempGameBorder = g.getClipBounds().width - GAME_WIDTH;
 			if (tempGameBorder >= INITIAL_PROGRAM_GAME_BORDER_X) {
 				programAndGameBorder = tempGameBorder;
@@ -358,12 +357,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 			Graphics gameAreaGraphics = g.create(programAndGameBorder, yPositionGameArea, GAME_WIDTH, GAME_HEIGHT);
 
-			// only for debugging purposes
-			if (debugModus == DebugModus.FILLINGS) {
-				for (Coordinate filledInCoordinate : programArea.getAlreadyFilledInCoordinates()) {
-					g.drawOval(filledInCoordinate.getX(), filledInCoordinate.getY(), 1, 1);
-				}
-			}
+
 
 			// Partition CanvasWindow in different sections
 
@@ -373,7 +367,15 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			domainController.paint(gameAreaGraphics);
 
 			programArea.draw(blockrGraphics, domainController);
+			
+			
+			
+			
+			
+			// Draw the counter for blocks
+			drawCounter(blockrGraphics);
 
+			
 			// Draw the shapes in movement
 			blockrGraphics.setColor(Color.black);
 			if (getCurrentShape() != null)
@@ -409,6 +411,25 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 			g.drawString(alertMessage, ((w - mW) / 2) + 20, ((h - 20) / 2) + 10);
 		}
 
+	}
+
+
+	/**
+	 * @param blockrGraphics
+	 */
+	private void drawCounter(Graphics blockrGraphics) {
+		int counterX = programAndGameBorder-COUNTER_WIDTH - 10;
+		int counterY = ORIGIN + 10;
+		blockrGraphics.setColor(Color.BLACK);
+		blockrGraphics.fillRoundRect(counterX, counterY, COUNTER_WIDTH, COUNTER_HEIGHT,5,5);
+		blockrGraphics.setColor(Color.decode("#74EA57"));
+		String count = Integer.toString(domainController.getNumberOfRemainingBlocks());
+		Font f = blockrGraphics.getFont();
+		blockrGraphics.setFont(Font.decode("calibri-bold-20"));
+		Rectangle2D countBounds =  blockrGraphics.getFontMetrics().getStringBounds(count, blockrGraphics);
+		blockrGraphics.drawString(count, counterX + Math.floorDiv((int) (COUNTER_WIDTH-countBounds.getWidth()), 2), counterY+20);
+		blockrGraphics.setFont(f);
+		blockrGraphics.setColor(Color.BLACK);
 	}
 
 	@Override

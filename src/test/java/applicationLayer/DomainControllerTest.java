@@ -707,6 +707,18 @@ public class DomainControllerTest {
 		verify(blockController, atLeastOnce()).checkIfConnectionIsOpen("someBlockId", ConnectionType.BODY, new HashSet<String>());
 	}
 	
+	
+	/**
+	 * Test method for {@link applicationLayer.DomainController#getNumberOfRemainingBlocks()}.
+	 */
+	@Test
+	public void testgetNumberOfRemainingBlocks() {
+
+		dc.getNumberOfRemainingBlocks();
+		
+		verify(blockController, atLeastOnce()).getNumberOfRemainingBlocks();
+	}
+	
 	/**
 	 * Test method for {@link applicationLayer.DomainController#getBlockType(String)}.
 	 */
