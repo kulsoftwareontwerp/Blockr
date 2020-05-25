@@ -8,7 +8,7 @@ import guiLayer.CanvasWindow;
 import guiLayer.types.GuiSnapshot;
 
 /**
- * /** DomainMoveCommand
+ * DomainMoveCommand
  * 
  * @version 0.1
  * @author group17

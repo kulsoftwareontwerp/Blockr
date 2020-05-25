@@ -515,7 +515,7 @@ public abstract class Shape implements Constants, Cloneable {
 	 * @return The string to display as an id.
 	 */
 	protected String idForDisplay() {
-		if (DebugModus.IDS.compareTo(CanvasWindow.debugModus) <= 0) {
+		if (DebugModus.IDS.compareTo(CanvasWindow.debugModus) <= 0 && !getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
 			return " " + getId();
 		} else {
 			return "";

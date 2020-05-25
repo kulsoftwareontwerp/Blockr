@@ -486,5 +486,16 @@ public class DomainController {
 	public boolean isGameResetUseful() {
 		return gameController.isGameResetUseful();
 	}
+	
+	
+	/**
+	 * Retrieve the number of blocks that are still able to be added.
+	 * @return the number of blocks that are still able to be added.
+	 */
+	public int getNumberOfRemainingBlocks() {
+		
+		return blockController.getNumberOfRemainingBlocks();
+	}
+	
 
 }

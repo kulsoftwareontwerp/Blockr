@@ -11,7 +11,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -21,6 +21,7 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.ImageObserver;
 import java.lang.reflect.Field;
 import java.text.AttributedCharacterIterator;
@@ -636,14 +637,20 @@ public class CanvasWindowTest implements Constants {
 
 			@Override
 			public FontMetrics getFontMetrics(Font f) {
-				// TODO Auto-generated method stub
-				return null;
+				return new FontMetrics(f) {
+
+					@Override
+					public Rectangle2D getStringBounds(String str, Graphics context) {
+						// TODO Auto-generated method stub
+						return new Rectangle(500, 300);
+					}
+					
+				};
 			}
 
 			@Override
 			public Font getFont() {
-				// TODO Auto-generated method stub
-				return null;
+				return mock(Font.class);
 			}
 
 			@Override
@@ -893,14 +900,20 @@ public class CanvasWindowTest implements Constants {
 
 			@Override
 			public FontMetrics getFontMetrics(Font f) {
-				// TODO Auto-generated method stub
-				return null;
+				return new FontMetrics(f) {
+
+					@Override
+					public Rectangle2D getStringBounds(String str, Graphics context) {
+						// TODO Auto-generated method stub
+						return new Rectangle(500, 300);
+					}
+					
+				};
 			}
 
 			@Override
 			public Font getFont() {
-				// TODO Auto-generated method stub
-				return null;
+				return mock(Font.class);
 			}
 
 			@Override
@@ -1150,14 +1163,20 @@ public class CanvasWindowTest implements Constants {
 
 			@Override
 			public FontMetrics getFontMetrics(Font f) {
-				// TODO Auto-generated method stub
-				return null;
+				return new FontMetrics(f) {
+
+					@Override
+					public Rectangle2D getStringBounds(String str, Graphics context) {
+						// TODO Auto-generated method stub
+						return new Rectangle(500, 300);
+					}
+					
+				};
 			}
 
 			@Override
 			public Font getFont() {
-				// TODO Auto-generated method stub
-				return null;
+				return mock(Font.class);
 			}
 
 			@Override

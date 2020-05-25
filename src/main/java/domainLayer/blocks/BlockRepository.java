@@ -1398,5 +1398,12 @@ public class BlockRepository {
 		return allBlocks.values().stream().filter(s -> s.getBlockType().definition().equals(blockId))
 				.collect(Collectors.toSet());
 	}
+	/**
+	 * Retrieve the number of blocks that are still able to be added.
+	 * @return the number of blocks that are still able to be added.
+	 */
+	public int getNumberOfRemainingBlocks() {
+		return maxNbOfBlocks-allBlocks.size();
+	}
 
 }
