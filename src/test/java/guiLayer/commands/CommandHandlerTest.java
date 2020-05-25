@@ -309,7 +309,19 @@ public class CommandHandlerTest {
 
 		verify(mock, atLeastOnce()).addShapeToBeforeSnapshot(shape);
 	}
-
+	/**
+	 * Test method for {@link guiLayer.commands.CommandHandler#addShapeToBeforeSnapshot(guiLayer.shapes.Shape)}.
+	 */
+	@Test
+	public void testAddShapeToBeforeSnapshot_CurrentlyHandledBlockCommandNull_Positive() {
+		Stack<Command> executedCommands = new Stack<Command>();
+		executedCommands.add(blockCommand);
+		CommandHandler commandHandler = new CommandHandler(canvas, executedCommands, undoneCommands,  null);
+		
+		commandHandler.addShapeToBeforeSnapshot(shape);
+		
+		verify(blockCommand,atLeastOnce()).addShapeToBeforeSnapshot(shape);
+	}
 	/**
 	 * Test method for
 	 * {@link guiLayer.commands.CommandHandler#clearAllGameWorldCommands()}.

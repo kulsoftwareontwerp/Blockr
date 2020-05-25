@@ -38,6 +38,8 @@ public class CommandHandler {
 			Stack<Command> undoneCommands, BlockCommand currentlyHandledBlockCommand) {
 		this.canvas = canvas;
 		this.currentlyHandledBlockCommand = currentlyHandledBlockCommand;
+		this.executedCommands=executedCommands;
+		this.undoneCommands=undoneCommands;
 	}
 
 	/**
@@ -141,7 +143,15 @@ public class CommandHandler {
 	public void addShapeToBeforeSnapshot(Shape shape) {
 		if (currentlyHandledBlockCommand != null) {
 			currentlyHandledBlockCommand.addShapeToBeforeSnapshot(shape);
-		} 
+		}	
+		else {
+			if(executedCommands.size()!=0 && executedCommands.peek() instanceof BlockCommand) {
+				((BlockCommand) executedCommands.peek()).addShapeToBeforeSnapshot(shape);
+
+			}
+		}
+		
+		
 	}
 
 }
