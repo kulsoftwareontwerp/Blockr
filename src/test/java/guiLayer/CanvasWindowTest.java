@@ -1784,7 +1784,7 @@ public class CanvasWindowTest implements Constants {
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 
-		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
+		when(programArea.checkIfPlaceable(currentShape, domainController)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
@@ -1835,7 +1835,7 @@ public class CanvasWindowTest implements Constants {
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 
-		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
+		when(programArea.checkIfPlaceable(currentShape, domainController)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
@@ -1890,7 +1890,7 @@ public class CanvasWindowTest implements Constants {
 		when(domainController.getAllHeadBlocks()).thenReturn(headBlocks);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 
-		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
+		when(programArea.checkIfPlaceable(currentShape, domainController)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
@@ -1939,7 +1939,7 @@ public class CanvasWindowTest implements Constants {
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 
-		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
+		when(programArea.checkIfPlaceable(currentShape, domainController)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
@@ -1988,7 +1988,7 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 		when(highlightedShape.getConnectedVia()).thenReturn(ConnectionType.UP);
 
-		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
+		when(programArea.checkIfPlaceable(currentShape, domainController)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
 
 		try {
@@ -2037,7 +2037,7 @@ public class CanvasWindowTest implements Constants {
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 
-		when(programArea.checkIfPlaceable(currentShape)).thenReturn(true);
+		when(programArea.checkIfPlaceable(currentShape, domainController)).thenReturn(true);
 		when(currentShape.getConnectedVia()).thenReturn(ConnectionType.NOCONNECTION);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
@@ -2139,7 +2139,7 @@ public class CanvasWindowTest implements Constants {
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 
-		when(programArea.checkIfPlaceable(currentShape)).thenReturn(false);
+		when(programArea.checkIfPlaceable(currentShape, domainController)).thenReturn(false);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
@@ -2166,7 +2166,7 @@ public class CanvasWindowTest implements Constants {
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 
-		when(programArea.checkIfPlaceable(currentShape)).thenReturn(false);
+		when(programArea.checkIfPlaceable(currentShape, domainController)).thenReturn(false);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 
 		try {
@@ -2203,7 +2203,7 @@ public class CanvasWindowTest implements Constants {
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 		when(testActionShape.getPreviousY_coord()).thenReturn(y - 1);
 
-		when(programArea.checkIfPlaceable(currentShape)).thenReturn(false);
+		when(programArea.checkIfPlaceable(currentShape, domainController)).thenReturn(false);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
@@ -2233,7 +2233,7 @@ public class CanvasWindowTest implements Constants {
 
 		when(testActionShape.getPreviousX_coord()).thenReturn(x - 1);
 
-		when(programArea.checkIfPlaceable(currentShape)).thenReturn(false);
+		when(programArea.checkIfPlaceable(currentShape, domainController)).thenReturn(false);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 
 		canvasWindow.handleMouseEvent(MouseEvent.MOUSE_RELEASED, x, y, 1);
@@ -2261,7 +2261,7 @@ public class CanvasWindowTest implements Constants {
 		when(canvasWindow.getCurrentShape()).thenReturn(currentShape);
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(highlightedShape);
 
-		when(programArea.checkIfPlaceable(currentShape)).thenReturn(false);
+		when(programArea.checkIfPlaceable(currentShape, domainController)).thenReturn(false);
 		when(canvasWindow.getShapesInMovement()).thenReturn(shapesInMovement);
 
 		when(testActionShape.getPreviousX_coord()).thenReturn(x - 1);

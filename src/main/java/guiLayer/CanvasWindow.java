@@ -549,7 +549,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					}
 				}
 				getCurrentShape().setCoordinatesShape();
-				boolean placeable = programArea.checkIfPlaceable(getCurrentShape());
+				boolean placeable = programArea.checkIfPlaceable(getCurrentShape(), domainController);
 
 				if (placeable) {
 					if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {

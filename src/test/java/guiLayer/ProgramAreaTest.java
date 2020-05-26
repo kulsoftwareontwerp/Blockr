@@ -333,15 +333,15 @@ public class ProgramAreaTest {
 
 
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape, DomainController)}.
 	 */
 	@Test
 	public void testCheckIfPlaceable_Placeable_NotControlShape() {
-		assertTrue(programArea.checkIfPlaceable(testActionShape));
+		assertTrue(programArea.checkIfPlaceable(testActionShape, mock(DomainController.class)));
 	}
 	
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape, DomainController)}.
 	 */
 	@Test
 	public void testCheckIfPlaceable_NotPlaceable_AlreadyFilledInCoord_NotControlShape() {
@@ -357,77 +357,77 @@ public class ProgramAreaTest {
 			fail("fields have not been initialized.");
 		}
 		testActionShape.setCoordinatesShape();
-		assertFalse(programArea.checkIfPlaceable(testActionShape));
+		assertFalse(programArea.checkIfPlaceable(testActionShape, mock(DomainController.class)));
 	}
 	
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape, DomainController)}.
 	 */
 	@Test
 	public void testCheckIfPlaceable_NotPlaceable_OutOfBounds_NotControlShape() {
 
-		assertFalse(programArea.checkIfPlaceable(testActionShapeOutOfBoundsCoordinate));
+		assertFalse(programArea.checkIfPlaceable(testActionShapeOutOfBoundsCoordinate, mock(DomainController.class)));
 	}
 	
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape, DomainController)}.
 	 */
 	@Test
 	public void testCheckIfPlaceable_Placeable_InBounds_NotControlShape() {
 
-		assertTrue(programArea.checkIfPlaceable(testActionShapeInBoundsCoordinate));
+		assertTrue(programArea.checkIfPlaceable(testActionShapeInBoundsCoordinate, mock(DomainController.class)));
 	}
 	
 	
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape, DomainController)}.
 	 */
 	@Test
 	public void testCheckIfPlaceable_Placeable_ControlShape() {
-		assertTrue(programArea.checkIfPlaceable(testControlShape));
+		assertTrue(programArea.checkIfPlaceable(testControlShape, mock(DomainController.class)));
 	}
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape, DomainController)}.
 	 */
 	@Test
 	public void testCheckIfPlaceable_NotPlaceable_OutOfBounds_ControlShape() {
-		assertFalse(programArea.checkIfPlaceable(testControlShapeOOB));
+		assertFalse(programArea.checkIfPlaceable(testControlShapeOOB, mock(DomainController.class)));
 	}
 	
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape, DomainController)}.
 	 */
 	@Test
 	public void testCheckIfPlaceable_Placeable_WithHighlightedNotControl_ControlShape() {
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(testActionShape);
-		assertTrue(programArea.checkIfPlaceable(testControlShape));
+		assertTrue(programArea.checkIfPlaceable(testControlShape, mock(DomainController.class)));
 	}
 	
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape, DomainController)}.
 	 */
 	@Test
 	public void testCheckIfPlaceable_Placeable_WithHighlightedIF_ControlShape() {
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(testControlShape);
-		assertTrue(programArea.checkIfPlaceable(testControlShape));
+		assertTrue(programArea.checkIfPlaceable(testControlShape, mock(DomainController.class)));
 	}
 	
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape, DomainController)}.
 	 */
 	@Test
 	public void testCheckIfPlaceable_Placeable_WithHighlightedWHILE_ControlShape() {
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(testControlShapeWhile);
-		assertTrue(programArea.checkIfPlaceable(testControlShape));
+		assertTrue(programArea.checkIfPlaceable(testControlShape, mock(DomainController.class)));
 	}
 	
 	/**
-	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape)}.
+	 * Test method for {@link guiLayer.ProgramArea#checkIfPlaceable(guiLayer.Shape, DomainController)}.
 	 */
 	@Test
 	public void testCheckIfPlaceable_Placeable_WithHighlightedWHILE_ControlShapeWhile() {
 		when(programArea.getHighlightedShapeForConnections()).thenReturn(testControlShapeWhile);
-		assertTrue(programArea.checkIfPlaceable(testControlShapeWhile));
+		assertTrue(programArea.checkIfPlaceable(testControlShapeWhile, mock(DomainController.class)));
 	}
 
 	/**

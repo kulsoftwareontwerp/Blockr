@@ -497,5 +497,16 @@ public class DomainController {
 		return blockController.getNumberOfRemainingBlocks();
 	}
 	
-
+	
+	/**
+	 * Check if the given Block is present in the body of another block.
+	 * @param id the blockID to check if it's in the body of another block.
+	 * @return if the given Block is present in the body of another block.
+	 */
+	public boolean checkIfBlockIsInBody(String id) {
+		if (id == null || id == "") {
+			throw new IllegalArgumentException("No blockID given.");
+		}
+		return blockController.checkIfBlockIsInBody(id);
+	}
 }
