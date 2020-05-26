@@ -1598,4 +1598,36 @@ public class BlockRepositoryTest {
 
 		assertEquals(callBlocks, blockRepo.getCallerBlocksByDefinition("definitionBlockId"));
 	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.blocks.BlockRepository#checkIfBlockIsInBody(String)}.
+	 */
+	@Test
+	public void testCheckIfBlockIsInBody_In_Body() {
+		Block b= new WhileBlock("inBody");
+		allBlocks.put("inBody", b);
+		ifBlock.setFirstBlockOfBody(b);
+
+		assertEquals(true, blockRepo.checkIfBlockIsInBody("inBody"));
+		
+		
+	}
+	
+	/**
+	 * Test method for
+	 * {@link domainLayer.blocks.BlockRepository#checkIfBlockIsInBody(String)}.
+	 */
+	@Test
+	public void testCheckIfBlockIsInBody_Not_In_Body() {
+		Block b= new WhileBlock("inBody");
+		allBlocks.put("inBody", b);
+		
+
+		assertEquals(false, blockRepo.checkIfBlockIsInBody("inBody"));
+		
+		
+	}
+	
+	
 }

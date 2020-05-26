@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import applicationLayer.DomainController;
 import guiLayer.shapes.ControlShape;
+import guiLayer.shapes.DefinitionShape;
 import guiLayer.shapes.Shape;
 import guiLayer.types.Constants;
 import guiLayer.types.Coordinate;
@@ -30,7 +31,7 @@ public class ProgramArea implements Constants {
 
 	private HashSet<Shape> shapesInProgramArea;
 	private Shape highlightedShapeForExecution;
-	private int programAndGameBorder= INITIAL_PROGRAM_GAME_BORDER_X;
+	private int programAndGameBorder = INITIAL_PROGRAM_GAME_BORDER_X;
 
 	/**
 	 * Create a new ProgramArea
@@ -40,13 +41,13 @@ public class ProgramArea implements Constants {
 		this.shapesInProgramArea = new HashSet<Shape>();
 	}
 
-	
 	/**
 	 * @param programAndGameBorder the programAndGameBorder to set
 	 */
 	public void setProgramAndGameBorder(int programAndGameBorder) {
 		this.programAndGameBorder = programAndGameBorder;
 	}
+
 	/**
 	 * Retrieve a set with all the shapes in the programArea
 	 * 
@@ -149,29 +150,35 @@ public class ProgramArea implements Constants {
 	 * Check if the given shape can be placed in the programArea.
 	 * 
 	 * @param shapeToPlace the shape to place in the programArea
+	 * @param dc           the domainController on which to check if the new shape
+	 *                     is placeable
 	 * @return a flag indicating if the shape can be placed in the programArea.
 	 */
-	public boolean checkIfPlaceable(Shape shapeToPlace) {
+	public boolean checkIfPlaceable(Shape shapeToPlace, DomainController dc) {
+
+		
 		boolean placeable = !((shapeToPlace.getCoordinatesShape().stream()
-				.anyMatch(i -> this.alreadyFilledInCoordinates.contains(i))))
+				.anyMatch(i -> this.getAlreadyFilledInCoordinates().contains(i))))
 				&& shapeToPlace.getX_coord() + shapeToPlace.getWidth() < programAndGameBorder;
 
-		if ((shapeToPlace.getType() == BlockType.IF || shapeToPlace.getType() == BlockType.WHILE)
-				&& (getHighlightedShapeForConnections() != null
-						&& (getHighlightedShapeForConnections().getType() == BlockType.IF
-								|| getHighlightedShapeForConnections().getType() == BlockType.WHILE))) {
+
+
+		if (!placeable && shapeToPlace instanceof ControlShape && getHighlightedShapeForConnections() != null
+				&& (getHighlightedShapeForConnections() instanceof ControlShape
+						|| getHighlightedShapeForConnections() instanceof DefinitionShape
+						|| dc.checkIfBlockIsInBody(getHighlightedShapeForConnections().getId()))) {
 			placeable = true;
 		}
-		if (shapeToPlace instanceof ControlShape && checkIfInProgramArea(shapeToPlace.getX_coord())) {
-			placeable = true;
-		}
+
 		return placeable;
 	}
 
 	/**
-	 * Retrieve a set with all the coordinates that are already occupied by another shape.
+	 * Retrieve a set with all the coordinates that are already occupied by another
+	 * shape.
 	 * 
-	 * @return a set with all the coordinates that are already occupied by another shape
+	 * @return a set with all the coordinates that are already occupied by another
+	 *         shape
 	 */
 	public Set<Coordinate> getAlreadyFilledInCoordinates() {
 		return alreadyFilledInCoordinates;
@@ -265,7 +272,7 @@ public class ProgramArea implements Constants {
 						blockrGraphics.fillOval(tempx, tempy, 6, 6);
 						blockrGraphics.setColor(Color.black);
 					}
-					
+
 					// only for debugging purposes
 					if (CanvasWindow.debugModus == DebugModus.FILLINGS) {
 						for (Coordinate filledInCoordinate : getAlreadyFilledInCoordinates()) {

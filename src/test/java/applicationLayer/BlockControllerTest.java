@@ -346,10 +346,7 @@ public class BlockControllerTest {
 		BlockType.removeBlockType("1");
 	}
 	
-	@Test
-	public void testAddBlockSnapShotNull() {
-		
-	}
+
 	
 	/**
 	 * Test method for {@link applicationLayer.BlockController#getNumberOfRemainingBlocks()}.
@@ -1237,4 +1234,34 @@ public class BlockControllerTest {
 		bc.checkIfConnectionIsOpen(blockIdParam, ConnectionType.BODY, new HashSet<String>());
 	}
 
+	/**
+	 * Test method for {@link applicationLayer.BlockController#checkIfBlockIsInBody(String)}.
+	 */
+	@Test
+	public void testCheckIfBlockIsInBody_Positive() {
+		String blockIdParam = "blockId";
+		when(blockRepository.getBlockByID(blockIdParam)).thenReturn(controlBlock);
+		when(controlBlock.getBlockType()).thenReturn(BlockType.IF);
+		bc.checkIfBlockIsInBody(blockIdParam);
+
+		verify(blockRepository, atLeastOnce()).checkIfBlockIsInBody(blockIdParam);
+
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.BlockController#checkIfBlockIsInBody(String)}.
+	 */
+	@Test
+	public void testCheckIfBlockIsInBody_NoSuchConnectedBlockException() {
+		String blockIdParam = "blockId";
+		when(blockRepository.getBlockByID(blockIdParam)).thenReturn(null);
+		
+		String excMessage = "The given blockID is not present in the domain.";
+		exceptionRule.expect(NoSuchConnectedBlockException.class);
+		exceptionRule.expectMessage(excMessage);
+		
+		bc.checkIfBlockIsInBody(blockIdParam);
+	}
+
+	
 }

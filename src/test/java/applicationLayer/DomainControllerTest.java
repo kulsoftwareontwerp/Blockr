@@ -870,5 +870,61 @@ public class DomainControllerTest {
 		
 		assertTrue(dc.isGameResetUseful());
 	}
+	
+	
+	
+	/**
+	 * Test method for {@link applicationLayer.DomainController#checkIfBlockIsInBody(String)}.
+	 */
+	@Test
+	public void testCheckIfBlockIsInBody_Positive() {
+		dc.checkIfBlockIsInBody("AnyBlockId");
+		
+		verify(blockController, atLeastOnce()).checkIfBlockIsInBody("AnyBlockId");
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.DomainController#checkIfBlockIsInBody(String)}.
+	 */
+	@Test
+	public void testCheckIfBlockIsInBody_BlockIdNull_IllegalArgumentException() {
+		String excMessage = "No blockID given.";
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage(excMessage);
+		
+		try {
+			dc.getBlockType(null);
+		} catch (IllegalArgumentException e) {
+			assertEquals(excMessage, e.getMessage());
+		}
+		
+		Mockito.verifyNoInteractions(blockController);
+		
+		dc.checkIfBlockIsInBody(null);
+	}
+	
+	/**
+	 * Test method for {@link applicationLayer.DomainController#checkIfBlockIsInBody(String)}.
+	 */
+	@Test
+	public void testCheckIfBlockIsInBody_BlockIdEmpty_IllegalArgumentException() {
+		String excMessage = "No blockID given.";
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage(excMessage);
+		
+		try {
+			dc.getBlockType("");
+		} catch (IllegalArgumentException e) {
+			assertEquals(excMessage, e.getMessage());
+		}
+		
+		Mockito.verifyNoInteractions(blockController);
+		
+		dc.checkIfBlockIsInBody("");
+	}
+	
+	
+	
+	
 
 }

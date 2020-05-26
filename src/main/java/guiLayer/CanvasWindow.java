@@ -549,7 +549,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 					}
 				}
 				getCurrentShape().setCoordinatesShape();
-				boolean placeable = programArea.checkIfPlaceable(getCurrentShape());
+				boolean placeable = programArea.checkIfPlaceable(getCurrentShape(), domainController);
 
 				if (placeable) {
 					if (getCurrentShape().getId().equals(PALETTE_BLOCK_IDENTIFIER)) {
@@ -676,7 +676,7 @@ public class CanvasWindow extends CanvasResource implements GUIListener, Constan
 
 		Shape shape = null;
 
-		for (Shape shapeInMovement : getShapesInMovement()) {
+		for (Shape shapeInMovement : getShapesInMovement().stream().filter(s->s.getId().equals(PALETTE_BLOCK_IDENTIFIER) || !domainController.checkIfBlockIsInBody(s.getId())).collect(Collectors.toSet())) {
 			// The setConnectedVia of all shapes in movement will be reverted
 			shapeInMovement.persistConnectedVia(false);
 

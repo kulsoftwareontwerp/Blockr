@@ -1406,4 +1406,15 @@ public class BlockRepository {
 		return maxNbOfBlocks-allBlocks.size();
 	}
 
+	
+	/**
+	 * Check if the given Block is present in the body of another block.
+	 * @param id the blockID to check if it's in the body of another block.
+	 * @return if the given Block is present in the body of another block.
+	 */
+	public boolean checkIfBlockIsInBody(String id) {
+		return allBlocks.values().stream().filter(s->s instanceof BodyCavityBlock).anyMatch(z->getAllBlockIDsInBody((BodyCavityBlock)z).contains(id));
+		
+	}
+
 }

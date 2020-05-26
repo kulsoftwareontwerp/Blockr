@@ -730,4 +730,17 @@ public class BlockController implements GUISubject, DomainSubject {
 		return programBlockRepository.getNumberOfRemainingBlocks();
 	}
 
+	/**
+	 * Check if the given Block is present in the body of another block.
+	 * @param id the blockID to check if it's in the body of another block.
+	 * @return if the given Block is present in the body of another block.
+	 */
+	public boolean checkIfBlockIsInBody(String id) {
+		Block blockToCheck = programBlockRepository.getBlockByID(id);
+		if (blockToCheck == null) {
+			throw new NoSuchConnectedBlockException("The given blockID is not present in the domain.");
+		}
+		return programBlockRepository.checkIfBlockIsInBody(id);
+	}
+
 }
