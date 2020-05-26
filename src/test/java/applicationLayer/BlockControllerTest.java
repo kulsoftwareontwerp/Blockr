@@ -26,8 +26,10 @@ import org.mockito.stubbing.Answer;
 import org.junit.rules.ExpectedException;
 import org.mockito.*;
 
+import com.kuleuven.swop.group17.GameWorldApi.Action;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorld;
 import com.kuleuven.swop.group17.GameWorldApi.GameWorldSnapshot;
+import com.kuleuven.swop.group17.GameWorldApi.Predicate;
 
 import domainLayer.blocks.ActionBlock;
 import domainLayer.blocks.AssessableBlock;
@@ -268,6 +270,23 @@ public class BlockControllerTest {
 			fail("One or more of the required fields were not declared.");
 		}
 	}
+	
+	private static class TestType extends DynaEnum<TestType>{
+
+		protected TestType(String type, BlockCategory cat, Action action, Predicate predicate, String definition) {
+			super(type, cat, action, predicate, definition);
+		}
+		
+		@SuppressWarnings("unused")
+		public static void removeFromDynaEnum(DynaEnum<?> literal ) {
+			remove(literal);
+		}
+		
+		public static <E> DynaEnum<? extends DynaEnum<?>>[]  values() {
+			return values(BlockType.class);
+		}
+		
+	}
 
 	/**
 	 * Test method for
@@ -275,13 +294,16 @@ public class BlockControllerTest {
 	 */
 	@Test
 	public void testAddBlockPositiveMaxNbOfBlocksReached() {
+		
+		
+		
 		ArgumentCaptor<BlockType> blockType = ArgumentCaptor.forClass(BlockType.class);
 		ArgumentCaptor<ConnectionType> connectionType = ArgumentCaptor.forClass(ConnectionType.class);
 		ArgumentCaptor<String> connectedBlock = ArgumentCaptor.forClass(String.class);
-		
-		for (DynaEnum<? extends DynaEnum<?>> b : BlockType.values()) {
+		//when(blockRepository.getBlockByID("definitionBlockId")).thenReturn(definitionBlock);
+		TestType.removeFromDynaEnum(callBlock.getBlockType());
+		for (DynaEnum<? extends DynaEnum<?>> b : TestType.values()) {
 			for (ConnectionType c : ConnectionType.values()) {
-				
 				when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(false, true);
 				String cb = "connectedActionBlock";
 				BlockSnapshot s = bc.addBlock((BlockType) b, cb, c);
@@ -314,7 +336,7 @@ public class BlockControllerTest {
 		
 		BlockType newType = new BlockType("Call 1", BlockCategory.CALL,"1");
 		Block definition = spy(new ActionBlock("1", BlockType.IF));
-		when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(true);
+//		when(blockRepository.checkIfMaxNbOfBlocksReached()).thenReturn(true);
 		
 		assertExceptionBCAddBlockCombination(newType, null, ConnectionType.NOCONNECTION, excMessage);
 		
@@ -374,9 +396,9 @@ public class BlockControllerTest {
 
 	@Test
 	public void testFireBlockAddedControlBlock() {
-		when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
+		//when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
 		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
-		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
+		//when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
 		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
 		
 		BlockSnapshot bsnap = mock(BlockSnapshot.class);
@@ -393,9 +415,9 @@ public class BlockControllerTest {
 	@Test
 	public void testFireBlockAddedActionBlock() {
 		when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
-		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
-		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
-		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
+//		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
+//		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
+//		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
 	
 		BlockSnapshot bsnap = mock(BlockSnapshot.class);
 		when(bsnap.getBlock()).thenReturn(actionBlockSpy);
@@ -411,10 +433,10 @@ public class BlockControllerTest {
 	
 	@Test
 	public void testFireBlockAddedOperandBlock() {
-		when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
-		when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
+		//when(actionBlockSpy.getNextBlock()).thenReturn(controlBlock);
+		//when(controlBlock.getConditionBlock()).thenReturn(connectedOperatorBlock);
 		when(connectedOperatorBlock.getOperand()).thenReturn(connectedConditionBlock);
-		when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
+		//when(controlBlock.getFirstBlockOfBody()).thenReturn(actionBlock1);
 		
 		BlockSnapshot bsnap = mock(BlockSnapshot.class);
 		when(bsnap.getBlock()).thenReturn(connectedOperatorBlock);
@@ -681,7 +703,7 @@ public class BlockControllerTest {
 	public void testRestoreBlockSnapshot_RemovedFalse_ConnectedBlockBeforeAndAfterSnapshotNotNull_Positive() {
 		when(snapshot.getConnectedBlockBeforeSnapshot()).thenReturn(null);
 		when(snapshot.getBlock()).thenReturn(actionBlockSpy);
-		when(blockRepository.getConnectionType(null, actionBlockSpy)).thenReturn(ConnectionType.NOCONNECTION);
+//		when(blockRepository.getConnectionType(null, actionBlockSpy)).thenReturn(ConnectionType.NOCONNECTION);
 		when(blockRepository.restoreBlockSnapshot(snapshot)).thenReturn(false);
 		when(snapshot.getConnectedBlockBeforeSnapshot()).thenReturn(actionBlockSpy);
 		when(snapshot.getConnectedBlockAfterSnapshot()).thenReturn(actionBlockSpy);
@@ -720,7 +742,7 @@ public class BlockControllerTest {
 	public void testRestoreBlockSnapshot_BeforeNull_WithAssociatedSnapshots_Positive() {
 		when(snapshot.getConnectedBlockBeforeSnapshot()).thenReturn(null);
 		when(snapshot.getBlock()).thenReturn(actionBlockSpy);
-		when(blockRepository.getConnectionType(null, actionBlockSpy)).thenReturn(ConnectionType.NOCONNECTION);
+//		when(blockRepository.getConnectionType(null, actionBlockSpy)).thenReturn(ConnectionType.NOCONNECTION);
 		when(blockRepository.restoreBlockSnapshot(snapshot)).thenReturn(false);
 		when(snapshot.getConnectedBlockBeforeSnapshot()).thenReturn(actionBlockSpy);
 		when(snapshot.getConnectedBlockAfterSnapshot()).thenReturn(actionBlockSpy);
@@ -970,7 +992,7 @@ public class BlockControllerTest {
 		String blockIdParam = "blockId";
 		when(blockRepository.getBlockByID(blockIdParam)).thenReturn(controlBlock);
 		Set<String> blockIDsUnderNeath = new HashSet<String>();
-		when(blockRepository.getAllBlockIDsInBody(controlBlock)).thenReturn(blockIDsUnderNeath);
+//		when(blockRepository.getAllBlockIDsInBody(controlBlock)).thenReturn(blockIDsUnderNeath);
 		
 		assertEquals(blockIDsUnderNeath, bc.getAllBlockIDsBelowCertainBlock(blockIdParam));
 	}
@@ -1136,7 +1158,7 @@ public class BlockControllerTest {
 		Set<ConnectionType> supportedTypes = new HashSet<ConnectionType>();
 		supportedTypes.add(ConnectionType.BODY);
 		when(actionBlockSpy.getSupportedConnectionTypes()).thenReturn(supportedTypes);
-		when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, null)).thenReturn(true);
+		//when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, null)).thenReturn(true);
 		
 		when(blockRepository.getBlockByID("anyBlockId")).thenReturn(controlBlock);
 		when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, controlBlock)).thenReturn(true);
@@ -1156,7 +1178,7 @@ public class BlockControllerTest {
 		Set<ConnectionType> supportedTypes = new HashSet<ConnectionType>();
 		supportedTypes.add(ConnectionType.BODY);
 		when(actionBlockSpy.getSupportedConnectionTypes()).thenReturn(supportedTypes);
-		when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, null)).thenReturn(true);
+//		when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, null)).thenReturn(true);
 		
 		when(blockRepository.getBlockByID("anyBlockId")).thenReturn(controlBlock);
 		when(blockRepository.checkIfConnectionIsOpen(actionBlockSpy, ConnectionType.BODY, controlBlock)).thenReturn(false);
